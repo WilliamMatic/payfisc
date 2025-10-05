@@ -1,0 +1,517 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Container pour les étoiles */
+.starsContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Style pour chaque étoile */
+.star {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  animation: twinkle linear infinite;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.6);
+}
+
+/* Animation de scintillement */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.8);
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #153258;
+  opacity: 0.7;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.card {
+  background-color: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  position: relative;
+}
+
+.header {
+  background: linear-gradient(to right, #153258, #23A974);
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.title {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.subtitle {
+  color: white;
+  opacity: 0.9;
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.formContainer {
+  padding: 2rem;
+  position: relative;
+}
+
+/* Messages d'erreur */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  background-color: #FEF2F2;
+  color: #DC2626;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #FECACA;
+  font-size: 0.875rem;
+}
+
+.errorIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.form {
+  width: 100%;
+}
+
+.inputGroup {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #153258;
+  box-shadow: 0 0 0 3px rgba(21, 50, 88, 0.1);
+}
+
+.input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.passwordContainer {
+  position: relative;
+}
+
+.eyeButton {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.eyeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.eyeIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #6B7280;
+}
+
+.optionsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.rememberMe {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox {
+  height: 1rem;
+  width: 1rem;
+  color: #153258;
+  border-color: #D1D5DB;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.rememberLabel {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.forgotLink {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #153258;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  color: #23A974;
+}
+
+.submitButton {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(to right, #153258, #23A974);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.submitButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.submitButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(21, 50, 88, 0.2);
+}
+
+.submitButton:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.buttonSpinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  border-radius: 1.5rem;
+}
+
+.loadingOverlay .spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #153258;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loadingOverlay p {
+  color: #153258;
+  font-weight: 500;
+}
+
+.copyright {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles pour le logo image */
+.logoImage {
+  width: 180px;
+  height: 60px;
+  object-fit: cover;
+}
+
+/* Styles pour le mot de passe oublié */
+.forgotPasswordContainer {
+  padding: 1.5rem 2rem 2rem;
+}
+
+.forgotPasswordHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.forgotPasswordHeader h2 {
+  color: #153258;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.forgotPasswordHeader p {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.step span {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: #E5E7EB;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step p {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  text-align: center;
+  max-width: 80px;
+}
+
+.step.active span {
+  background-color: #153258;
+  color: white;
+}
+
+.step.active p {
+  color: #153258;
+  font-weight: 500;
+}
+
+.stepLine {
+  flex: 1;
+  height: 2px;
+  background-color: #E5E7EB;
+  margin: 0 0.5rem;
+  position: relative;
+  top: -12px;
+}
+
+.codeHelp {
+  margin-top: 0.5rem;
+  text-align: right;
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+.resendLink {
+  background: none;
+  border: none;
+  color: #153258;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.75rem;
+}
+
+.resendLink:hover {
+  color: #23A974;
+}
+
+.formActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.backButton {
+  padding: 0.75rem 1rem;
+  border: 1px solid #D1D5DB;
+  background-color: white;
+  color: #374151;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background-color: #F9FAFB;
+}
+
+.backButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Messages de succès */
+.successMessage {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #363;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .content {
+    max-width: 100%;
+  }
+  
+  .header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+  
+  .formContainer {
+    padding: 1.5rem;
+  }
+  
+  .optionsContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .forgotLink {
+    align-self: flex-end;
+  }
+  
+  .forgotPasswordContainer {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .header {
+    padding: 1.25rem 1.25rem 0.75rem;
+  }
+  
+  .title {
+    font-size: 1.25rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .formContainer {
+    padding: 1.25rem;
+  }
+  
+  .formActions {
+    flex-direction: column;
+  }
+  
+  .backButton, .submitButton {
+    flex: auto;
+  }
+}

@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --font-saira: 'Saira', sans-serif; /* Ajout de la variable pour Saira */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-saira); /* Remplacement de geist par Saira */
+  --font-mono: var(--font-geist-mono); /* Tu peux garder Geist Mono si tu veux */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans); /* Utilisation de la variable Saira */
+}
