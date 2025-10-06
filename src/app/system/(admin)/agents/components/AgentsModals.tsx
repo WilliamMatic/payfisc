@@ -3,7 +3,6 @@ import AddAgentModal from './modals/AddAgentModal';
 import EditAgentModal from './modals/EditAgentModal';
 import DeleteAgentModal from './modals/DeleteAgentModal';
 import StatusAgentModal from './modals/StatusAgentModal';
-import PrivilegesAgentModal from './modals/PrivilegesAgentModal';
 import { Agent as AgentType, Privilege } from '@/services/agents/agentService';
 
 interface AgentsModalsProps {
@@ -98,19 +97,6 @@ export default function AgentsModals({
             processing={processing}
             onClose={onStatusClose}
             onToggleStatus={onToggleStatus}
-          />
-        </Portal>
-      )}
-
-      {showPrivilegesModal && selectedAgent && (
-        <Portal>
-          <PrivilegesAgentModal
-            agent={selectedAgent}
-            privileges={agentPrivileges}
-            processing={processing}
-            onClose={onPrivilegesClose}
-            onPrivilegesChange={onAgentPrivilegesChange}
-            onSavePrivileges={onSavePrivileges}
           />
         </Portal>
       )}
