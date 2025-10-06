@@ -202,11 +202,11 @@ export default function AgentsPage() {
 
   // Grouper les privilèges par moduleName - ✅ Corrigé
   const groupedPrivileges = agentPrivileges.reduce((groups, privilege) => {
-    const module = privilege.moduleName; // ✅ Utilisation de moduleName
-    if (!groups[module]) {
-      groups[module] = [];
+    const moduleP = privilege.moduleName; // ✅ Utilisation de moduleName
+    if (!groups[moduleP]) {
+      groups[moduleP] = [];
     }
-    groups[module].push(privilege);
+    groups[moduleP].push(privilege);
     return groups;
   }, {} as Record<string, Privilege[]>);
 
