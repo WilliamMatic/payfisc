@@ -17,7 +17,7 @@ interface Agent {
 
 interface Privilege {
   id: number;
-  module: string;
+  moduleName: string; // ✅ Corrigé : module → moduleName
   action: string;
   description: string;
   selected: boolean;
@@ -29,58 +29,58 @@ export default function AgentsPage() {
     { id: 2, nom: "Smith", prenom: "Jane", email: "jane.smith@example.com", actif: true, dateCreation: "2024-01-20" },
   ]);
 
-  // Liste des privilèges disponibles par module
+  // Liste des privilèges disponibles par moduleName
   const [privileges] = useState<Privilege[]>([
     // Dashboard
-    { id: 1, module: "Dashboard", action: "Visualiser", description: "Accéder au tableau de bord", selected: false },
+    { id: 1, moduleName: "Dashboard", action: "Visualiser", description: "Accéder au tableau de bord", selected: false },
     
     // Particuliers
-    { id: 2, module: "Particuliers", action: "Visualiser", description: "Voir la liste des particuliers", selected: false },
-    { id: 3, module: "Particuliers", action: "Créer", description: "Ajouter un nouveau particulier", selected: false },
-    { id: 4, module: "Particuliers", action: "Modifier", description: "Modifier un particulier existant", selected: false },
-    { id: 5, module: "Particuliers", action: "Supprimer", description: "Supprimer un particulier", selected: false },
-    { id: 6, module: "Particuliers", action: "Rechercher", description: "Rechercher des particuliers", selected: false },
+    { id: 2, moduleName: "Particuliers", action: "Visualiser", description: "Voir la liste des particuliers", selected: false },
+    { id: 3, moduleName: "Particuliers", action: "Créer", description: "Ajouter un nouveau particulier", selected: false },
+    { id: 4, moduleName: "Particuliers", action: "Modifier", description: "Modifier un particulier existant", selected: false },
+    { id: 5, moduleName: "Particuliers", action: "Supprimer", description: "Supprimer un particulier", selected: false },
+    { id: 6, moduleName: "Particuliers", action: "Rechercher", description: "Rechercher des particuliers", selected: false },
     
     // Entreprises
-    { id: 7, module: "Entreprises", action: "Visualiser", description: "Voir la liste des entreprises", selected: false },
-    { id: 8, module: "Entreprises", action: "Créer", description: "Ajouter une nouvelle entreprise", selected: false },
-    { id: 9, module: "Entreprises", action: "Modifier", description: "Modifier une entreprise existante", selected: false },
-    { id: 10, module: "Entreprises", action: "Supprimer", description: "Supprimer une entreprise", selected: false },
-    { id: 11, module: "Entreprises", action: "Rechercher", description: "Rechercher des entreprises", selected: false },
+    { id: 7, moduleName: "Entreprises", action: "Visualiser", description: "Voir la liste des entreprises", selected: false },
+    { id: 8, moduleName: "Entreprises", action: "Créer", description: "Ajouter une nouvelle entreprise", selected: false },
+    { id: 9, moduleName: "Entreprises", action: "Modifier", description: "Modifier une entreprise existante", selected: false },
+    { id: 10, moduleName: "Entreprises", action: "Supprimer", description: "Supprimer une entreprise", selected: false },
+    { id: 11, moduleName: "Entreprises", action: "Rechercher", description: "Rechercher des entreprises", selected: false },
     
     // Provinces
-    { id: 12, module: "Provinces", action: "Visualiser", description: "Voir la liste des provinces", selected: false },
-    { id: 13, module: "Provinces", action: "Créer", description: "Ajouter une nouvelle province", selected: false },
-    { id: 14, module: "Provinces", action: "Modifier", description: "Modifier une province existante", selected: false },
-    { id: 15, module: "Provinces", action: "Supprimer", description: "Supprimer une province", selected: false },
+    { id: 12, moduleName: "Provinces", action: "Visualiser", description: "Voir la liste des provinces", selected: false },
+    { id: 13, moduleName: "Provinces", action: "Créer", description: "Ajouter une nouvelle province", selected: false },
+    { id: 14, moduleName: "Provinces", action: "Modifier", description: "Modifier une province existante", selected: false },
+    { id: 15, moduleName: "Provinces", action: "Supprimer", description: "Supprimer une province", selected: false },
     
     // Sites
-    { id: 16, module: "Sites", action: "Visualiser", description: "Voir la liste des sites", selected: false },
-    { id: 17, module: "Sites", action: "Créer", description: "Ajouter un nouveau site", selected: false },
-    { id: 18, module: "Sites", action: "Modifier", description: "Modifier un site existant", selected: false },
-    { id: 19, module: "Sites", action: "Supprimer", description: "Supprimer un site", selected: false },
+    { id: 16, moduleName: "Sites", action: "Visualiser", description: "Voir la liste des sites", selected: false },
+    { id: 17, moduleName: "Sites", action: "Créer", description: "Ajouter un nouveau site", selected: false },
+    { id: 18, moduleName: "Sites", action: "Modifier", description: "Modifier un site existant", selected: false },
+    { id: 19, moduleName: "Sites", action: "Supprimer", description: "Supprimer un site", selected: false },
     
     // Agents
-    { id: 20, module: "Agents", action: "Visualiser", description: "Voir la liste des agents", selected: false },
-    { id: 21, module: "Agents", action: "Créer", description: "Ajouter un nouvel agent", selected: false },
-    { id: 22, module: "Agents", action: "Modifier", description: "Modifier un agent existant", selected: false },
-    { id: 23, module: "Agents", action: "Supprimer", description: "Supprimer un agent", selected: false },
-    { id: 24, module: "Agents", action: "Gérer les privilèges", description: "Attribuer des droits d'accès", selected: false },
+    { id: 20, moduleName: "Agents", action: "Visualiser", description: "Voir la liste des agents", selected: false },
+    { id: 21, moduleName: "Agents", action: "Créer", description: "Ajouter un nouvel agent", selected: false },
+    { id: 22, moduleName: "Agents", action: "Modifier", description: "Modifier un agent existant", selected: false },
+    { id: 23, moduleName: "Agents", action: "Supprimer", description: "Supprimer un agent", selected: false },
+    { id: 24, moduleName: "Agents", action: "Gérer les privilèges", description: "Attribuer des droits d'accès", selected: false },
     
     // Taux
-    { id: 25, module: "Taux", action: "Visualiser", description: "Voir les taux appliqués", selected: false },
-    { id: 26, module: "Taux", action: "Modifier", description: "Modifier les taux", selected: false },
+    { id: 25, moduleName: "Taux", action: "Visualiser", description: "Voir les taux appliqués", selected: false },
+    { id: 26, moduleName: "Taux", action: "Modifier", description: "Modifier les taux", selected: false },
     
     // Recettes fiscales
-    { id: 27, module: "Recettes fiscales", action: "Visualiser", description: "Voir les recettes fiscales", selected: false },
-    { id: 28, module: "Recettes fiscales", action: "Exporter", description: "Exporter les données de recettes", selected: false },
+    { id: 27, moduleName: "Recettes fiscales", action: "Visualiser", description: "Voir les recettes fiscales", selected: false },
+    { id: 28, moduleName: "Recettes fiscales", action: "Exporter", description: "Exporter les données de recettes", selected: false },
     
     // Rôles
-    { id: 29, module: "Rôles", action: "Visualiser", description: "Voir la liste des rôles", selected: false },
-    { id: 30, module: "Rôles", action: "Créer", description: "Créer un nouveau rôle", selected: false },
-    { id: 31, module: "Rôles", action: "Modifier", description: "Modifier un rôle existant", selected: false },
-    { id: 32, module: "Rôles", action: "Supprimer", description: "Supprimer un rôle", selected: false },
-    { id: 33, module: "Rôles", action: "Gérer les permissions", description: "Attribuer des permissions aux rôles", selected: false },
+    { id: 29, moduleName: "Rôles", action: "Visualiser", description: "Voir la liste des rôles", selected: false },
+    { id: 30, moduleName: "Rôles", action: "Créer", description: "Créer un nouveau rôle", selected: false },
+    { id: 31, moduleName: "Rôles", action: "Modifier", description: "Modifier un rôle existant", selected: false },
+    { id: 32, moduleName: "Rôles", action: "Supprimer", description: "Supprimer un rôle", selected: false },
+    { id: 33, moduleName: "Rôles", action: "Gérer les permissions", description: "Attribuer des permissions aux rôles", selected: false },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -200,9 +200,9 @@ export default function AgentsPage() {
     setShowPrivilegesModal(true);
   };
 
-  // Grouper les privilèges par module
+  // Grouper les privilèges par moduleName - ✅ Corrigé
   const groupedPrivileges = agentPrivileges.reduce((groups, privilege) => {
-    const module = privilege.module;
+    const module = privilege.moduleName; // ✅ Utilisation de moduleName
     if (!groups[module]) {
       groups[module] = [];
     }
@@ -585,10 +585,10 @@ export default function AgentsPage() {
               </div>
               <div className="p-6 overflow-y-auto flex-1">
                 <div className="space-y-6">
-                  {Object.entries(groupedPrivileges).map(([module, modulePrivileges]) => (
-                    <div key={module} className="border border-gray-200 rounded-lg overflow-hidden">
+                  {Object.entries(groupedPrivileges).map(([moduleName, modulePrivileges]) => (
+                    <div key={moduleName} className="border border-gray-200 rounded-lg overflow-hidden">
                       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                        <h4 className="font-medium text-gray-800">{module}</h4>
+                        <h4 className="font-medium text-gray-800">{moduleName}</h4>
                       </div>
                       <div className="divide-y divide-gray-100">
                         {modulePrivileges.map(privilege => (

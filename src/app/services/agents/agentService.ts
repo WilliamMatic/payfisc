@@ -17,7 +17,7 @@ export interface Agent {
 // Interface pour les privilèges d'un agent
 export interface Privilege {
   id: number;
-  module: string;
+  moduleName: string;
   action: string;
   description: string;
   selected: boolean;
