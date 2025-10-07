@@ -81,7 +81,7 @@ export default function Sidebar({
         {
           icon: "📑",
           label: "Création Impôt",
-          href: "http://localhost/SOCOFIAPP/Impot/backend/impotCreate",
+          href: "https://mpako.net/impotCreate.php",
         },
       ],
     },
