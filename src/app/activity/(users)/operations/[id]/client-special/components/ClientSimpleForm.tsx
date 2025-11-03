@@ -5,7 +5,6 @@ import {
   soumettreCommandePlaques,
   verifierStockDisponible,
 } from "@/services/client-simple/clientSimpleService";
-import FacturePlaques from "./FacturePlaques";
 
 interface FormData {
   nom: string;
@@ -555,11 +554,6 @@ export default function ClientSimpleForm({
           paiementData={paiementData}
           setPaiementData={setPaiementData}
         />
-      )}
-
-      {/* Modal de Facture */}
-      {showFacture && factureData && (
-        <FacturePlaques data={factureData} onClose={handleCloseFacture} />
       )}
     </>
   );

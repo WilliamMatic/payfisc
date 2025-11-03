@@ -212,7 +212,6 @@ export default function FacturePlaques({ data, onClose }: FacturePlaquesProps) {
 
           <div className="flex items-center justify-end space-x-4 p-6 border-t border-gray-200 bg-gray-50">
             <button
-              // onClick={handlePrint}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Printer className="w-4 h-4" />
