@@ -1,5 +1,3 @@
-// services/sites/siteService.ts
-
 /**
  * Service pour la gestion des sites - Interface avec l'API backend
  */
@@ -10,6 +8,7 @@ export interface Site {
   nom: string;
   code: string;
   description: string;
+  formule: string;
   province_id: number;
   province_nom: string;
   actif: boolean;
@@ -110,6 +109,7 @@ export const addSite = async (siteData: {
   nom: string;
   code: string;
   description: string;
+  formule: string;
   province_id: number;
 }): Promise<ApiResponse> => {
   try {
@@ -117,6 +117,7 @@ export const addSite = async (siteData: {
     formData.append('nom', siteData.nom);
     formData.append('code', siteData.code);
     formData.append('description', siteData.description);
+    formData.append('formule', siteData.formule);
     formData.append('province_id', siteData.province_id.toString());
 
     const response = await fetch(`${API_BASE_URL}/sites/creer_site.php`, {
@@ -153,6 +154,7 @@ export const updateSite = async (
     nom: string;
     code: string;
     description: string;
+    formule: string;
     province_id: number;
   }
 ): Promise<ApiResponse> => {
@@ -162,6 +164,7 @@ export const updateSite = async (
     formData.append('nom', siteData.nom);
     formData.append('code', siteData.code);
     formData.append('description', siteData.description);
+    formData.append('formule', siteData.formule);
     formData.append('province_id', siteData.province_id.toString());
 
     const response = await fetch(`${API_BASE_URL}/sites/modifier_site.php`, {

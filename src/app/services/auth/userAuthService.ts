@@ -6,6 +6,7 @@ export interface UtilisateurSession {
   adresse: string;
   site_nom: string;
   site_code: string;
+  formule?: string;
 }
 
 export interface UserLoginResponse {

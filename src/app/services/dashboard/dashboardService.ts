@@ -93,7 +93,7 @@ export const getDashboardStats = async (
     if (startDate) {
       params.append("start_date", startDate);
     }
-    
+
     if (endDate) {
       params.append("end_date", endDate);
     }
@@ -134,7 +134,12 @@ export const getVerificationData = async (
 
     // Ajouter les filtres aux paramètres
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "" && value !== "all") {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        value !== "all"
+      ) {
         params.append(key, value.toString());
       }
     });
@@ -159,7 +164,8 @@ export const getVerificationData = async (
     console.error("Get verification data error:", error);
     return {
       status: "error",
-      message: "Erreur réseau lors de la récupération des données de vérification",
+      message:
+        "Erreur réseau lors de la récupération des données de vérification",
     };
   }
 };
@@ -195,13 +201,97 @@ export const getUniqueTaxNames = async (): Promise<ApiResponse> => {
 /**
  * Récupère les détails complets d'une déclaration
  */
-export const getDeclarationDetails = async (declarationId: number): Promise<ApiResponse> => {
+export const getDeclarationDetails = async (
+  declarationId: number
+): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/dashboard/declaration_details.php?id=${declarationId}`, {
-      method: 'GET',
-      credentials: 'include',
+    const response = await fetch(
+      `${API_BASE_URL}/dashboard/declaration_details.php?id=${declarationId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Get declaration details error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des détails",
+    };
+  }
+};
+
+/**
+ * Récupère les données complètes pour le rapport d'une déclaration
+ */
+export const getRapportDeclaration = async (
+  declarationId: number
+): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/dashboard/rapport_declaration.php?id=${declarationId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Get rapport declaration error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération du rapport",
+    };
+  }
+};
+
+/**
+ * Récupère les données pour le rapport général
+ */
+export const getRapportGeneral = async (
+  filters: VerificationFilters
+): Promise<ApiResponse> => {
+  try {
+    const params = new URLSearchParams();
+
+    // Ajouter les filtres aux paramètres
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        value !== "all"
+      ) {
+        params.append(key, value.toString());
+      }
+    });
+
+    const url = `${API_BASE_URL}/dashboard/rapport_general.php?${params.toString()}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -212,10 +302,10 @@ export const getDeclarationDetails = async (declarationId: number): Promise<ApiR
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Get declaration details error:', error);
+    console.error("Get rapport general error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la récupération des détails',
+      status: "error",
+      message: "Erreur réseau lors de la récupération du rapport général",
     };
   }
 };

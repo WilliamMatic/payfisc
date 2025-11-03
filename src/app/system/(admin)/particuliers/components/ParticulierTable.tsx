@@ -1,4 +1,5 @@
-import { User, Loader2, Edit, Trash2, Eye, EyeOff, ExternalLink } from 'lucide-react';
+// src/app/system/(admin)/particuliers/components/ParticulierTable.tsx
+import { User, Loader2, Edit, Trash2, Eye, EyeOff, ExternalLink, Percent, DollarSign } from 'lucide-react';
 import { Particulier as ParticulierType } from '@/services/particuliers/particulierService';
 
 interface ParticuliersTableProps {
@@ -29,6 +30,18 @@ export default function ParticuliersTable({
     );
   }
 
+  const formatReduction = (particulier: ParticulierType) => {
+    if (!particulier.reduction_type || particulier.reduction_valeur === 0) {
+      return 'Aucune';
+    }
+    
+    if (particulier.reduction_type === 'pourcentage') {
+      return `${particulier.reduction_valeur}%`;
+    } else {
+      return `${particulier.reduction_valeur} $`;
+    }
+  };
+
   return (
     <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto h-full">
@@ -39,8 +52,8 @@ export default function ParticuliersTable({
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Prénom</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">NIF</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Téléphone</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Réduction</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
-              {/* <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th> */}
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -63,6 +76,16 @@ export default function ParticuliersTable({
                     {particulier.telephone || 'N/A'}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                      {particulier.reduction_type === 'pourcentage' ? (
+                        <Percent className="w-3 h-3 mr-1" />
+                      ) : particulier.reduction_type === 'fixe' ? (
+                        <DollarSign className="w-3 h-3 mr-1" />
+                      ) : null}
+                      {formatReduction(particulier)}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                       particulier.actif 
                         ? 'bg-green-50 text-green-700 border border-green-100' 
@@ -71,9 +94,6 @@ export default function ParticuliersTable({
                       {particulier.actif ? 'Actif' : 'Inactif'}
                     </span>
                   </td>
-                  {/* <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                    {particulier.date_creation ? new Date(particulier.date_creation).toLocaleDateString('fr-FR') : 'N/A'}
-                  </td> */}
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center space-x-1">
                       <button

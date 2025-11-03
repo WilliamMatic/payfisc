@@ -14,8 +14,8 @@ export default function ImpotsHeader({ searchTerm, onSearchChange, onSearch }: I
           <FileText className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">Impôts</h2>
-          <p className="text-sm text-gray-500">Gérez les impôts de votre application</p>
+          <h2 className="text-xl font-semibold text-gray-800">Recettes publiques</h2>
+          <p className="text-sm text-gray-500">Gérez les recettes publiques de votre application</p>
         </div>
       </div>
       
@@ -24,7 +24,7 @@ export default function ImpotsHeader({ searchTerm, onSearchChange, onSearch }: I
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
-            placeholder="Rechercher un impôt..."
+            placeholder="Rechercher une recette..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && onSearch()}

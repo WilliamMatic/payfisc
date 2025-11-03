@@ -113,7 +113,9 @@ export const getImpots = async (): Promise<ApiResponse> => {
 export const enregistrerDeclaration = async (
   idImpot: number,
   montant: number,
-  donneesFormulaire: FormulaireData[]
+  donneesFormulaire: FormulaireData[],
+  utilisateurId?: number,
+  siteCode?: string
 ): Promise<ApiResponse> => {
   try {
     const response = await fetch(
@@ -128,6 +130,8 @@ export const enregistrerDeclaration = async (
           id_impot: idImpot,
           montant: montant,
           donnees_formulaire: donneesFormulaire,
+          utilisateur_id: utilisateurId,
+          site_code: siteCode,
         }),
       }
     );
@@ -190,12 +194,13 @@ export const supprimerDeclaration = async (
 };
 
 /**
- * Traite un paiement avec pénalités
+ * Traite un paiement avec données supplémentaires
  */
 export const traiterPaiement = async (
   idDeclaration: number,
   idMethodePaiement: number,
-  montantPenalites: number = 0
+  montantPenalites: number = 0,
+  donneesPaiement: any = {}
 ): Promise<ApiResponse> => {
   try {
     const response = await fetch(
@@ -210,6 +215,7 @@ export const traiterPaiement = async (
           id_declaration: idDeclaration,
           methode_paiement: idMethodePaiement,
           montant_penalites: montantPenalites,
+          donnees_paiement: donneesPaiement, // Nouvelles données de paiement
         }),
       }
     );
@@ -267,6 +273,152 @@ export const rechercherDeclaration = async (
     return {
       status: "error",
       message: "Erreur réseau lors de la recherche de déclaration",
+    };
+  }
+};
+
+/**
+ * Calcule et enregistre la répartition pour les bénéficiaires
+ */
+export const calculerEtEnregistrerRepartition = async (
+  idDeclaration: number,
+  montantTotal: number,
+  nombreDeclarations: number
+): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/paiements/calculer_repartition.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_declaration: idDeclaration,
+          montant_total: montantTotal,
+          nombre_declarations: nombreDeclarations,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec du calcul de la répartition",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Calcul repartition error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors du calcul de la répartition",
+    };
+  }
+};
+
+/**
+ * Traite un paiement avec pénalités ET répartition des bénéficiaires
+ */
+export const traiterPaiementAvecRepartition = async (
+  idDeclaration: number,
+  idMethodePaiement: number,
+  montantTotal: number,
+  nombreDeclarations: number,
+  montantPenalites: number = 0
+): Promise<ApiResponse> => {
+  try {
+    console.log("🔄 Début traitement paiement avec répartition:", {
+      idDeclaration,
+      montantTotal,
+      nombreDeclarations,
+      montantPenalites,
+    });
+
+    // 1. D'abord calculer la répartition
+    const resultRepartition = await calculerEtEnregistrerRepartition(
+      idDeclaration,
+      montantTotal,
+      nombreDeclarations
+    );
+
+    if (resultRepartition.status !== "success") {
+      console.error("❌ Échec calcul répartition:", resultRepartition.message);
+      return {
+        status: "error",
+        message:
+          "Erreur lors du calcul de la répartition: " +
+          resultRepartition.message,
+      };
+    }
+
+    console.log("✅ Répartition calculée:", resultRepartition.data);
+
+    // 2. Ensuite traiter le paiement
+    const resultPaiement = await traiterPaiement(
+      idDeclaration,
+      idMethodePaiement,
+      montantPenalites
+    );
+
+    if (resultPaiement.status !== "success") {
+      console.error("❌ Échec traitement paiement:", resultPaiement.message);
+      return resultPaiement;
+    }
+
+    console.log("✅ Paiement traité avec succès");
+
+    // 3. Retourner les deux résultats
+    return {
+      status: "success",
+      message: "Paiement et répartition traités avec succès",
+      data: {
+        ...resultPaiement.data,
+        repartition: resultRepartition.data,
+      },
+    };
+  } catch (error) {
+    console.error("❌ Erreur traitement paiement avec répartition:", error);
+    return {
+      status: "error",
+      message: "Erreur lors du traitement du paiement avec répartition",
+    };
+  }
+};
+
+/**
+ * NOUVELLE FONCTION : Récupère les déclarations existantes par NIF
+ */
+export const getDeclarationsByNif = async (nif: string): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/paiements/get_declarations_by_nif.php`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ nif }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la récupération des déclarations",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Get declarations by NIF error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des déclarations",
     };
   }
 };

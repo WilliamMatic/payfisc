@@ -23,6 +23,8 @@ interface EntreprisesModalsProps {
     telephone: string;
     email: string;
     representant_legal: string;
+    reduction_type: 'pourcentage' | 'fixe' | null;
+    reduction_valeur: number;
   };
   processing: boolean;
   formesJuridiques: string[];

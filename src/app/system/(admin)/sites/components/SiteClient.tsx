@@ -27,6 +27,7 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
     nom: '', 
     code: '', 
     description: '', 
+    formule: '',
     province_id: 0 
   });
   const [processing, setProcessing] = useState(false);
@@ -58,7 +59,8 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
     (site.nom && site.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     site.code && site.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
     site.province_nom && site.province_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.description && site.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    site.description && site.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    site.formule && site.formule.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const openEditModal = (site: SiteType) => {
@@ -67,6 +69,7 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
       nom: site.nom || '',
       code: site.code || '',
       description: site.description || '',
+      formule: site.formule || '',
       province_id: site.province_id || 0
     });
     setShowEditModal(true);
@@ -128,7 +131,7 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedSite(null);
-          setFormData({ nom: '', code: '', description: '', province_id: 0 });
+          setFormData({ nom: '', code: '', description: '', formule: '', province_id: 0 });
         }}
         onDeleteClose={() => {
           setShowDeleteModal(false);
@@ -152,7 +155,7 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
             
             if (result.status === 'success') {
               setSuccessMessage(result.message || 'Site ajouté avec succès');
-              setFormData({ nom: '', code: '', description: '', province_id: 0 });
+              setFormData({ nom: '', code: '', description: '', formule: '', province_id: 0 });
               setShowAddModal(false);
               
               // Recharger la liste complète des sites
@@ -181,7 +184,7 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
               setSuccessMessage(result.message || 'Site modifié avec succès');
               setShowEditModal(false);
               setSelectedSite(null);
-              setFormData({ nom: '', code: '', description: '', province_id: 0 });
+              setFormData({ nom: '', code: '', description: '', formule: '', province_id: 0 });
               
               // Recharger la liste complète des sites
               await loadSites();

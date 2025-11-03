@@ -1,3 +1,4 @@
+// src/app/system/(admin)/particuliers/components/ParticulierModals.tsx
 import Portal from "../../components/Portal";
 import AddParticulierModal from "./modals/AddParticulierModal";
 import EditParticulierModal from "./modals/EditParticulierModal";
@@ -29,6 +30,8 @@ interface ParticuliersModalsProps {
     nif: string;
     situation_familiale: string;
     dependants: number;
+    reduction_type: 'pourcentage' | 'fixe' | null;
+    reduction_valeur: number;
   };
   processing: boolean;
   provinces: string[];
@@ -43,7 +46,7 @@ interface ParticuliersModalsProps {
   onEditParticulier: () => Promise<void>;
   onDeleteParticulier: () => Promise<void>;
   onToggleStatus: () => Promise<void>;
-  isFormValid: () => boolean; // ✅ Défini dans l'interface
+  isFormValid: () => boolean;
 }
 
 export default function ParticuliersModals({
@@ -67,7 +70,7 @@ export default function ParticuliersModals({
   onEditParticulier,
   onDeleteParticulier,
   onToggleStatus,
-  isFormValid // ✅ Ajouté ici dans les props déstructurées
+  isFormValid
 }: ParticuliersModalsProps) {
   return (
     <>
@@ -96,7 +99,7 @@ export default function ParticuliersModals({
             onClose={onEditClose}
             onFormDataChange={onFormDataChange}
             onEditParticulier={onEditParticulier}
-            isFormValid={isFormValid} // ✅ Maintenant accessible
+            isFormValid={isFormValid}
           />
         </Portal>
       )}

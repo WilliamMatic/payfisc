@@ -1,8 +1,8 @@
 "use client";
+import { ChevronDown, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronDown, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface MenuItem {
   icon: string; // émoji
@@ -70,9 +70,10 @@ export default function Sidebar({
         { icon: "🌍", label: "Sites", href: "/system/sites" },
         { icon: "👥", label: "Utilisateurs", href: "/system/utilisateurs" },
         { icon: "🧑‍💼", label: "Agents", href: "/system/agents" },
+        { icon: "🤝", label: "Bénéficiaires", href: "/system/beneficiaires" },
+        { icon: "👑", label: "Admin", href: "/system/admins" },
       ],
     },
-
     {
       category: "Fiscale",
       items: [
@@ -81,7 +82,12 @@ export default function Sidebar({
         {
           icon: "📑",
           label: "Création Impôt",
-          href: "https://mpako.net/impotCreate.php",
+          href: "http://localhost/Impot/backend/impotCreate.php",
+        },
+        {
+          icon: "🔢",
+          label: "Séries Plaques",
+          href: "/system/series",
         },
       ],
     },
@@ -125,7 +131,9 @@ export default function Sidebar({
               <span className="text-gray-800 dark:text-white font-semibold text-lg">
                 PayFisc
               </span>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Système fiscal</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Système fiscal
+              </p>
             </div>
           </div>
           <button
@@ -197,8 +205,12 @@ export default function Sidebar({
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Version 1.0.0</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">© 2025 PayFisc</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Version 1.0.0
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              © 2025 PayFisc
+            </p>
           </div>
         </div>
       </aside>

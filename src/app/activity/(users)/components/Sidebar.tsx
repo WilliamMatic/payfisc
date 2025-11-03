@@ -55,10 +55,23 @@ export default function Sidebar({
   const menuItems: MenuEntry[] = [
     { icon: "🖥️", label: "Bienvenue", href: "/activity/speed" },
     {
+      category: "Contribuables",
+      items: [
+        { icon: "👤", label: "Particuliers", href: "/activity/particuliers" },
+        { icon: "🏢", label: "Entreprises", href: "/activity/entreprises" },
+      ],
+    },
+    {
       category: "Opérations",
       items: [
-        { icon: "💳", label: "Mouvement", href: "/activity/paiement" },
-        { icon: "📑", label: "Déclaration", href: "/activity/declaration" },
+        // { icon: "💳", label: "Mouvement", href: "/activity/paiement" },
+        // { icon: "📑", label: "Déclaration", href: "/activity/declaration" },
+        {
+          icon: "🔢",
+          label: "Séries Plaques",
+          href: "/activity/series",
+        },
+        { icon: "⚙️", label: "Opérations", href: "/activity/operations" },
       ],
     },
   ];

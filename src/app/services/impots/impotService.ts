@@ -21,13 +21,27 @@ export interface Impot {
 
 // Interface pour les réponses de l'API
 export interface ApiResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message?: string;
   data?: any;
 }
 
+// Interfaces pour la gestion des bénéficiaires d'impôt
+export interface BeneficiaireImpot {
+  id: number;
+  impot_id: number;
+  beneficiaire_id: number;
+  type_part: "pourcentage" | "montant_fixe";
+  valeur_part: number;
+  nom: string;
+  telephone: string;
+  numero_compte: string;
+}
+
 // URL de base de l'API (à définir dans les variables d'environnement)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
 /**
  * Récupère la liste de tous les impôts
@@ -35,10 +49,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOC
 export const getImpots = async (): Promise<ApiResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/impots/lister_impots.php`, {
-      method: 'GET',
-      credentials: 'include',
+      method: "GET",
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -46,20 +60,20 @@ export const getImpots = async (): Promise<ApiResponse> => {
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la récupération des impôts',
+        status: "error",
+        message: data.message || "Échec de la récupération des impôts",
       };
     }
 
     return {
-      status: 'success',
+      status: "success",
       data: data.data,
     };
   } catch (error) {
-    console.error('Get impots error:', error);
+    console.error("Get impots error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la récupération des impôts',
+      status: "error",
+      message: "Erreur réseau lors de la récupération des impôts",
     };
   }
 };
@@ -74,13 +88,13 @@ export const addImpot = async (impotData: {
 }): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
-    formData.append('nom', impotData.nom);
-    formData.append('description', impotData.description);
-    formData.append('jsonData', impotData.jsonData);
+    formData.append("nom", impotData.nom);
+    formData.append("description", impotData.description);
+    formData.append("jsonData", impotData.jsonData);
 
     const response = await fetch(`${API_BASE_URL}/impots/creer_impot.php`, {
-      method: 'POST',
-      credentials: 'include',
+      method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -88,17 +102,17 @@ export const addImpot = async (impotData: {
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de l\'ajout de l\'impôt',
+        status: "error",
+        message: data.message || "Échec de l'ajout de l'impôt",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Add impot error:', error);
+    console.error("Add impot error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de l\'ajout de l\'impôt',
+      status: "error",
+      message: "Erreur réseau lors de l'ajout de l'impôt",
     };
   }
 };
@@ -116,14 +130,14 @@ export const updateImpot = async (
 ): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
-    formData.append('id', id.toString());
-    formData.append('nom', impotData.nom);
-    formData.append('description', impotData.description);
-    formData.append('jsonData', impotData.jsonData);
+    formData.append("id", id.toString());
+    formData.append("nom", impotData.nom);
+    formData.append("description", impotData.description);
+    formData.append("jsonData", impotData.jsonData);
 
     const response = await fetch(`${API_BASE_URL}/impots/modifier_impot.php`, {
-      method: 'POST',
-      credentials: 'include',
+      method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -131,17 +145,17 @@ export const updateImpot = async (
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la modification de l\'impôt',
+        status: "error",
+        message: data.message || "Échec de la modification de l'impôt",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Update impot error:', error);
+    console.error("Update impot error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la modification de l\'impôt',
+      status: "error",
+      message: "Erreur réseau lors de la modification de l'impôt",
     };
   }
 };
@@ -152,11 +166,11 @@ export const updateImpot = async (
 export const deleteImpot = async (id: number): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
-    formData.append('id', id.toString());
+    formData.append("id", id.toString());
 
     const response = await fetch(`${API_BASE_URL}/impots/supprimer_impot.php`, {
-      method: 'POST',
-      credentials: 'include',
+      method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -164,17 +178,17 @@ export const deleteImpot = async (id: number): Promise<ApiResponse> => {
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la suppression de l\'impôt',
+        status: "error",
+        message: data.message || "Échec de la suppression de l'impôt",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Delete impot error:', error);
+    console.error("Delete impot error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la suppression de l\'impôt',
+      status: "error",
+      message: "Erreur réseau lors de la suppression de l'impôt",
     };
   }
 };
@@ -188,30 +202,33 @@ export const toggleImpotStatus = async (
 ): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
-    formData.append('id', id.toString());
-    formData.append('actif', actif.toString());
+    formData.append("id", id.toString());
+    formData.append("actif", actif.toString());
 
-    const response = await fetch(`${API_BASE_URL}/impots/changer_statut_impot.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/impots/changer_statut_impot.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec du changement de statut de l\'impôt',
+        status: "error",
+        message: data.message || "Échec du changement de statut de l'impôt",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Toggle impot status error:', error);
+    console.error("Toggle impot status error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors du changement de statut de l\'impôt',
+      status: "error",
+      message: "Erreur réseau lors du changement de statut de l'impôt",
     };
   }
 };
@@ -219,15 +236,19 @@ export const toggleImpotStatus = async (
 /**
  * Recherche des impôts par terme
  */
-export const searchImpots = async (searchTerm: string): Promise<ApiResponse> => {
+export const searchImpots = async (
+  searchTerm: string
+): Promise<ApiResponse> => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/impots/rechercher_impots.php?search=${encodeURIComponent(searchTerm)}`,
+      `${API_BASE_URL}/impots/rechercher_impots.php?search=${encodeURIComponent(
+        searchTerm
+      )}`,
       {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }
     );
@@ -236,20 +257,135 @@ export const searchImpots = async (searchTerm: string): Promise<ApiResponse> => 
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la recherche des impôts',
+        status: "error",
+        message: data.message || "Échec de la recherche des impôts",
       };
     }
 
     return {
-      status: 'success',
+      status: "success",
       data: data.data,
     };
   } catch (error) {
-    console.error('Search impots error:', error);
+    console.error("Search impots error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la recherche des impôts',
+      status: "error",
+      message: "Erreur réseau lors de la recherche des impôts",
+    };
+  }
+};
+
+// Services pour les bénéficiaires d'impôt
+export const getBeneficiairesImpot = async (
+  impotId: number
+): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/impots/beneficiaires/lister_beneficiaires_impot.php?impot_id=${impotId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la récupération des bénéficiaires",
+      };
+    }
+
+    return {
+      status: "success",
+      data: data.data,
+    };
+  } catch (error) {
+    console.error("Get beneficiaires impot error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des bénéficiaires",
+    };
+  }
+};
+
+export const addBeneficiaireImpot = async (beneficiaireData: {
+  impot_id: number;
+  beneficiaire_id: number;
+  type_part: "pourcentage" | "montant_fixe";
+  valeur_part: number;
+}): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/impots/beneficiaires/ajouter_beneficiaire_impot.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(beneficiaireData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de l'ajout du bénéficiaire",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Add beneficiaire impot error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de l'ajout du bénéficiaire",
+    };
+  }
+};
+
+export const removeBeneficiaireImpot = async (
+  impotId: number,
+  beneficiaireId: number
+): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/impots/beneficiaires/supprimer_beneficiaire_impot.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          impot_id: impotId,
+          beneficiaire_id: beneficiaireId,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la suppression du bénéficiaire",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Remove beneficiaire impot error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la suppression du bénéficiaire",
     };
   }
 };

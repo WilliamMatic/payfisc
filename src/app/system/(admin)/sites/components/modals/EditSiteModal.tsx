@@ -3,11 +3,11 @@ import { Site as SiteType, Province as ProvinceType } from '@/services/sites/sit
 
 interface EditSiteModalProps {
   site: SiteType;
-  formData: { nom: string; code: string; description: string; province_id: number };
+  formData: { nom: string; code: string; description: string; formule: string; province_id: number };
   provinces: ProvinceType[];
   processing: boolean;
   onClose: () => void;
-  onFormDataChange: (data: { nom: string; code: string; description: string; province_id: number }) => void;
+  onFormDataChange: (data: { nom: string; code: string; description: string; formule: string; province_id: number }) => void;
   onEditSite: () => Promise<void>;
 }
 
@@ -113,6 +113,21 @@ export default function EditSiteModal({
                 rows={3}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] transition-colors resize-none"
                 placeholder="Description du site (optionnel)"
+                disabled={processing}
+              />
+            </div>
+
+            {/* CHAMP FORMULE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Formule
+              </label>
+              <input
+                type="text"
+                value={formData.formule}
+                onChange={(e) => onFormDataChange({...formData, formule: e.target.value})}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] transition-colors"
+                placeholder="Ex: Formule de calcul (optionnel)"
                 disabled={processing}
               />
             </div>

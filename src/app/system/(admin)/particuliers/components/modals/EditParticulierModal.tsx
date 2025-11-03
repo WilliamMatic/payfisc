@@ -1,5 +1,5 @@
 // src/app/system/(admin)/particuliers/components/modals/EditParticulierModal.tsx
-import { Edit, X, Save, Loader2 } from 'lucide-react';
+import { Edit, X, Save, Loader2, Percent, DollarSign } from 'lucide-react';
 import { Particulier as ParticulierType } from '@/services/particuliers/particulierService';
 
 interface EditParticulierModalProps {
@@ -9,6 +9,8 @@ interface EditParticulierModalProps {
     rue: string; ville: string; code_postal: string; province: string;
     id_national: string; telephone: string; email: string;
     nif: string; situation_familiale: string; dependants: number;
+    reduction_type: 'pourcentage' | 'fixe' | null;
+    reduction_valeur: number;
   };
   processing: boolean;
   provinces: string[];
@@ -16,7 +18,7 @@ interface EditParticulierModalProps {
   onClose: () => void;
   onFormDataChange: (data: any) => void;
   onEditParticulier: () => Promise<void>;
-  isFormValid: () => boolean; // Ajout de la prop de validation
+  isFormValid: () => boolean;
 }
 
 export default function EditParticulierModal({
@@ -35,6 +37,14 @@ export default function EditParticulierModal({
     onFormDataChange({
       ...formData,
       [field]: value
+    });
+  };
+
+  const handleReductionTypeChange = (type: 'pourcentage' | 'fixe' | null) => {
+    onFormDataChange({
+      ...formData,
+      reduction_type: type,
+      reduction_valeur: type ? formData.reduction_valeur : 0
     });
   };
 
@@ -64,237 +74,342 @@ export default function EditParticulierModal({
         </div>
         
         <div className="p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nom */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nom <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.nom}
-                onChange={(e) => handleInputChange('nom', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: KABANGU"
-                disabled={processing}
-              />
+          {/* SECTION CHAMPS OBLIGATOIRES */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Informations obligatoires
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Nom */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.nom}
+                  onChange={(e) => handleInputChange('nom', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: KABANGU"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Prénom */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Prénom <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.prenom}
+                  onChange={(e) => handleInputChange('prenom', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: Jean"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* NIF */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  NIF <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.nif}
+                  onChange={(e) => handleInputChange('nif', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: A-1234567-X"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Téléphone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Téléphone <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.telephone}
+                  onChange={(e) => handleInputChange('telephone', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: +243 81 234 5678"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Rue */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rue <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.rue}
+                  onChange={(e) => handleInputChange('rue', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Nom de la rue et numéro"
+                  disabled={processing}
+                />
+              </div>
             </div>
-            
-            {/* Prénom */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prénom <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.prenom}
-                onChange={(e) => handleInputChange('prenom', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: Jean"
-                disabled={processing}
-              />
+          </div>
+
+          {/* SECTION RÉDUCTION */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Réduction
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Type de réduction */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type de réduction
+                </label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reduction-none-edit"
+                      name="reduction_type_edit"
+                      checked={!formData.reduction_type}
+                      onChange={() => handleReductionTypeChange(null)}
+                      className="text-[#153258] focus:ring-[#153258]"
+                      disabled={processing}
+                    />
+                    <label htmlFor="reduction-none-edit" className="text-sm text-gray-700">
+                      Aucune réduction
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reduction-pourcentage-edit"
+                      name="reduction_type_edit"
+                      checked={formData.reduction_type === 'pourcentage'}
+                      onChange={() => handleReductionTypeChange('pourcentage')}
+                      className="text-[#153258] focus:ring-[#153258]"
+                      disabled={processing}
+                    />
+                    <label htmlFor="reduction-pourcentage-edit" className="flex items-center text-sm text-gray-700">
+                      <Percent className="w-4 h-4 mr-1" />
+                      Pourcentage
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reduction-fixe-edit"
+                      name="reduction_type_edit"
+                      checked={formData.reduction_type === 'fixe'}
+                      onChange={() => handleReductionTypeChange('fixe')}
+                      className="text-[#153258] focus:ring-[#153258]"
+                      disabled={processing}
+                    />
+                    <label htmlFor="reduction-fixe-edit" className="flex items-center text-sm text-gray-700">
+                      <DollarSign className="w-4 h-4 mr-1" />
+                      Montant fixe
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Valeur de réduction */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Valeur de réduction
+                  {formData.reduction_type && <span className="text-red-500"> *</span>}
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    value={formData.reduction_valeur}
+                    onChange={(e) => handleInputChange('reduction_valeur', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                    min="0"
+                    step={formData.reduction_type === 'pourcentage' ? "0.1" : "1"}
+                    max={formData.reduction_type === 'pourcentage' ? "100" : undefined}
+                    disabled={!formData.reduction_type || processing}
+                    placeholder={formData.reduction_type === 'pourcentage' ? "Ex: 10" : "Ex: 5000"}
+                  />
+                  {formData.reduction_type === 'pourcentage' && (
+                    <span className="ml-2 text-gray-500">%</span>
+                  )}
+                  {formData.reduction_type === 'fixe' && (
+                    <span className="ml-2 text-gray-500">$</span>
+                  )}
+                </div>
+                {formData.reduction_type === 'pourcentage' && formData.reduction_valeur > 100 && (
+                  <p className="text-red-500 text-xs mt-1">Le pourcentage ne peut pas dépasser 100%</p>
+                )}
+              </div>
             </div>
-            
-            {/* Date de naissance */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date de naissance <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={formData.date_naissance}
-                onChange={(e) => handleInputChange('date_naissance', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Lieu de naissance */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Lieu de naissance
-              </label>
-              <input
-                type="text"
-                value={formData.lieu_naissance}
-                onChange={(e) => handleInputChange('lieu_naissance', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: Kinshasa"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Sexe */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sexe
-              </label>
-              <select
-                value={formData.sexe}
-                onChange={(e) => handleInputChange('sexe', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                disabled={processing}
-              >
-                <option value="">Sélectionner</option>
-                <option value="Masculin">Masculin</option>
-                <option value="Féminin">Féminin</option>
-              </select>
-            </div>
-            
-            {/* NIF */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                NIF <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.nif}
-                onChange={(e) => handleInputChange('nif', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: A-1234567-X"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Téléphone */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                value={formData.telephone}
-                onChange={(e) => handleInputChange('telephone', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: +243 81 234 5678"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="exemple@email.cd"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* ID National */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID National
-              </label>
-              <input
-                type="text"
-                value={formData.id_national}
-                onChange={(e) => handleInputChange('id_national', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: 01-2345-67890"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Situation familiale */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Situation familiale
-              </label>
-              <select
-                value={formData.situation_familiale}
-                onChange={(e) => handleInputChange('situation_familiale', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                disabled={processing}
-              >
-                <option value="">Sélectionner</option>
-                {situationsFamiliales.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Dépendants */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Dépendants
-              </label>
-              <input
-                type="number"
-                value={formData.dependants}
-                onChange={(e) => handleInputChange('dependants', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                min="0"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Rue */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rue
-              </label>
-              <input
-                type="text"
-                value={formData.rue}
-                onChange={(e) => handleInputChange('rue', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Nom de la rue et numéro"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Ville */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ville
-              </label>
-              <input
-                type="text"
-                value={formData.ville}
-                onChange={(e) => handleInputChange('ville', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: Kinshasa"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Code Postal */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Code Postal
-              </label>
-              <input
-                type="text"
-                value={formData.code_postal}
-                onChange={(e) => handleInputChange('code_postal', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                placeholder="Ex: 00000"
-                disabled={processing}
-              />
-            </div>
-            
-            {/* Province */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Province
-              </label>
-              <select
-                value={formData.province}
-                onChange={(e) => handleInputChange('province', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                disabled={processing}
-              >
-                <option value="">Sélectionner une province</option>
-                {provinces.map((prov) => (
-                  <option key={prov} value={prov}>{prov}</option>
-                ))}
-              </select>
+          </div>
+
+          {/* SECTION CHAMPS FACULTATIFS */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Informations complémentaires
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Date de naissance */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date de naissance
+                </label>
+                <input
+                  type="date"
+                  value={formData.date_naissance}
+                  onChange={(e) => handleInputChange('date_naissance', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Lieu de naissance */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lieu de naissance
+                </label>
+                <input
+                  type="text"
+                  value={formData.lieu_naissance}
+                  onChange={(e) => handleInputChange('lieu_naissance', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: Kinshasa"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Sexe */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sexe
+                </label>
+                <select
+                  value={formData.sexe}
+                  onChange={(e) => handleInputChange('sexe', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  disabled={processing}
+                >
+                  <option value="">Sélectionner</option>
+                  <option value="Masculin">Masculin</option>
+                  <option value="Féminin">Féminin</option>
+                </select>
+              </div>
+              
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="exemple@email.cd"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* ID National */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ID National
+                </label>
+                <input
+                  type="text"
+                  value={formData.id_national}
+                  onChange={(e) => handleInputChange('id_national', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: 01-2345-67890"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Situation familiale */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Situation familiale
+                </label>
+                <select
+                  value={formData.situation_familiale}
+                  onChange={(e) => handleInputChange('situation_familiale', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  disabled={processing}
+                >
+                  <option value="">Sélectionner</option>
+                  {situationsFamiliales.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Dépendants */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dépendants
+                </label>
+                <input
+                  type="number"
+                  value={formData.dependants}
+                  onChange={(e) => handleInputChange('dependants', parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  min="0"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Ville */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ville
+                </label>
+                <input
+                  type="text"
+                  value={formData.ville}
+                  onChange={(e) => handleInputChange('ville', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: Kinshasa"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Code Postal */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Code Postal
+                </label>
+                <input
+                  type="text"
+                  value={formData.code_postal}
+                  onChange={(e) => handleInputChange('code_postal', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: 00000"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* Province */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Province
+                </label>
+                <select
+                  value={formData.province}
+                  onChange={(e) => handleInputChange('province', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  disabled={processing}
+                >
+                  <option value="">Sélectionner une province</option>
+                  {provinces.map((prov) => (
+                    <option key={prov} value={prov}>{prov}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
           

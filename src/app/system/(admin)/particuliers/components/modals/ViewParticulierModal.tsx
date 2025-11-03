@@ -1,5 +1,6 @@
+// src/app/system/(admin)/particuliers/components/modals/ViewParticulierModal.tsx
 import { 
-  X, User, Calendar, MapPin, Phone, Mail, IdCard, Users, Home 
+  X, User, Calendar, MapPin, Phone, Mail, IdCard, Users, Home, Percent, DollarSign 
 } from 'lucide-react';
 import { Particulier as ParticulierType } from '@/services/particuliers/particulierService';
 
@@ -15,6 +16,18 @@ export default function ViewParticulierModal({
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  const formatReduction = () => {
+    if (!particulier.reduction_type || particulier.reduction_valeur === 0) {
+      return 'Aucune';
+    }
+    
+    if (particulier.reduction_type === 'pourcentage') {
+      return `${particulier.reduction_valeur}%`;
+    } else {
+      return `${particulier.reduction_valeur} $`;
+    }
   };
 
   return (
@@ -113,6 +126,30 @@ export default function ViewParticulierModal({
                 <Users className="w-4 h-4 text-orange-600 mr-2" />
                 <span className="font-medium">Dépendants:</span>
                 <span className="ml-2 text-orange-700">{particulier.dependants || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+            <h4 className="font-semibold text-indigo-800 text-sm mb-2">Réduction</h4>
+            <div className="space-y-2">
+              <div className="flex items-center text-sm">
+                {particulier.reduction_type === 'pourcentage' ? (
+                  <Percent className="w-4 h-4 text-indigo-600 mr-2" />
+                ) : particulier.reduction_type === 'fixe' ? (
+                  <DollarSign className="w-4 h-4 text-indigo-600 mr-2" />
+                ) : (
+                  <span className="w-4 h-4 mr-2">-</span>
+                )}
+                <span className="font-medium">Type:</span>
+                <span className="ml-2 text-indigo-700">
+                  {particulier.reduction_type === 'pourcentage' ? 'Pourcentage' : 
+                   particulier.reduction_type === 'fixe' ? 'Montant fixe' : 'Aucune'}
+                </span>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className="font-medium">Valeur:</span>
+                <span className="ml-2 text-indigo-700">{formatReduction()}</span>
               </div>
             </div>
           </div>

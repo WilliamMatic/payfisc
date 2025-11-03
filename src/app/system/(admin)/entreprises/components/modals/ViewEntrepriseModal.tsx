@@ -1,5 +1,5 @@
 import { 
-  X, Building2, User, MapPin, Phone, Mail, Calendar, FileText 
+  X, Building2, User, MapPin, Phone, Mail, Calendar, FileText, Percent, DollarSign 
 } from 'lucide-react';
 import { Entreprise as EntrepriseType } from '@/services/entreprises/entrepriseService';
 
@@ -15,6 +15,18 @@ export default function ViewEntrepriseModal({
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  const formatReduction = () => {
+    if (!entreprise.reduction_type || entreprise.reduction_valeur === 0) {
+      return 'Aucune';
+    }
+    
+    if (entreprise.reduction_type === 'pourcentage') {
+      return `${entreprise.reduction_valeur}%`;
+    } else {
+      return `${entreprise.reduction_valeur} $`;
+    }
   };
 
   return (
@@ -93,6 +105,30 @@ export default function ViewEntrepriseModal({
                 <Mail className="w-4 h-4 text-purple-600 mr-2" />
                 <span className="font-medium">Email:</span>
                 <span className="ml-2 text-purple-700">{entreprise.email || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+            <h4 className="font-semibold text-indigo-800 text-sm mb-2">Réduction</h4>
+            <div className="space-y-2">
+              <div className="flex items-center text-sm">
+                {entreprise.reduction_type === 'pourcentage' ? (
+                  <Percent className="w-4 h-4 text-indigo-600 mr-2" />
+                ) : entreprise.reduction_type === 'fixe' ? (
+                  <DollarSign className="w-4 h-4 text-indigo-600 mr-2" />
+                ) : (
+                  <span className="w-4 h-4 mr-2">-</span>
+                )}
+                <span className="font-medium">Type:</span>
+                <span className="ml-2 text-indigo-700">
+                  {entreprise.reduction_type === 'pourcentage' ? 'Pourcentage' : 
+                   entreprise.reduction_type === 'fixe' ? 'Montant fixe' : 'Aucune'}
+                </span>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className="font-medium">Valeur:</span>
+                <span className="ml-2 text-indigo-700">{formatReduction()}</span>
               </div>
             </div>
           </div>

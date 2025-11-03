@@ -12,13 +12,13 @@ interface SiteModalsProps {
   showStatusModal: boolean;
   selectedSite: SiteType | null;
   provinces: ProvinceType[];
-  formData: { nom: string; code: string; description: string; province_id: number };
+  formData: { nom: string; code: string; description: string; formule: string; province_id: number };
   processing: boolean;
   onAddClose: () => void;
   onEditClose: () => void;
   onDeleteClose: () => void;
   onStatusClose: () => void;
-  onFormDataChange: (data: { nom: string; code: string; description: string; province_id: number }) => void;
+  onFormDataChange: (data: { nom: string; code: string; description: string; formule: string; province_id: number }) => void;
   onAddSite: () => Promise<void>;
   onEditSite: () => Promise<void>;
   onDeleteSite: () => Promise<void>;

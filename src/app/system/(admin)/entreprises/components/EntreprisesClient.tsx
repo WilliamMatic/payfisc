@@ -31,7 +31,9 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
     adresse_siege: '',
     telephone: '',
     email: '',
-    representant_legal: ''
+    representant_legal: '',
+    reduction_type: null as 'pourcentage' | 'fixe' | null,
+    reduction_valeur: 0
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -102,7 +104,9 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
       adresse_siege: entreprise.adresse_siege || '',
       telephone: entreprise.telephone || '',
       email: entreprise.email || '',
-      representant_legal: entreprise.representant_legal || ''
+      representant_legal: entreprise.representant_legal || '',
+      reduction_type: entreprise.reduction_type || null,
+      reduction_valeur: entreprise.reduction_valeur || 0
     });
     setShowEditModal(true);
   };
@@ -145,7 +149,22 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onSearch={handleSearch}
-        onAddClick={() => setShowAddModal(true)}
+        onAddClick={() => {
+          setFormData({
+            raison_sociale: '',
+            forme_juridique: '',
+            nif: '',
+            registre_commerce: '',
+            date_creation: '',
+            adresse_siege: '',
+            telephone: '',
+            email: '',
+            representant_legal: '',
+            reduction_type: null,
+            reduction_valeur: 0
+          });
+          setShowAddModal(true);
+        }}
       />
 
       <EntreprisesTable
@@ -180,7 +199,9 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
             adresse_siege: '',
             telephone: '',
             email: '',
-            representant_legal: ''
+            representant_legal: '',
+            reduction_type: null,
+            reduction_valeur: 0
           });
         }}
         onDeleteClose={() => {
@@ -197,8 +218,8 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
         }}
         onFormDataChange={setFormData}
         onAddEntreprise={async () => {
-          if (!formData.raison_sociale || !formData.nif || !formData.registre_commerce) {
-            setError('Les champs raison sociale, NIF et registre de commerce sont obligatoires');
+          if (!formData.raison_sociale || !formData.nif || !formData.registre_commerce || !formData.telephone || !formData.email) {
+            setError('Les champs raison sociale, NIF, registre de commerce, téléphone et email sont obligatoires');
             return;
           }
 
@@ -218,7 +239,9 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
                 adresse_siege: '',
                 telephone: '',
                 email: '',
-                representant_legal: ''
+                representant_legal: '',
+                reduction_type: null,
+                reduction_valeur: 0
               });
               setShowAddModal(false);
               
@@ -234,8 +257,8 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
           }
         }}
         onEditEntreprise={async () => {
-          if (!selectedEntreprise || !formData.raison_sociale || !formData.nif || !formData.registre_commerce) {
-            setError('Les champs raison sociale, NIF et registre de commerce sont obligatoires');
+          if (!selectedEntreprise || !formData.raison_sociale || !formData.nif || !formData.registre_commerce || !formData.telephone || !formData.email) {
+            setError('Les champs raison sociale, NIF, registre de commerce, téléphone et email sont obligatoires');
             return;
           }
 
@@ -257,7 +280,9 @@ export default function EntreprisesClient({ initialEntreprises, initialError }: 
                 adresse_siege: '',
                 telephone: '',
                 email: '',
-                representant_legal: ''
+                representant_legal: '',
+                reduction_type: null,
+                reduction_valeur: 0
               });
               
               // Recharger la liste complète des entreprises

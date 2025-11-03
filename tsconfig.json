@@ -27,6 +27,7 @@
       "@/styles/*": ["styles/*"],
       "@/components/*": ["components/*"],
       "@/services/*": ["app/services/*"],
+      "@/contexts/*": ["app/contexts/*"],
       "@/utils/*": ["utils/*"],
       "@/app/*": ["app/*"]
     }

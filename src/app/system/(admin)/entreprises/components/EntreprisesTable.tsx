@@ -1,4 +1,4 @@
-import { Building2, Loader2, Edit, Trash2, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Building2, Loader2, Edit, Trash2, Eye, EyeOff, ExternalLink, Percent, DollarSign } from 'lucide-react';
 import { Entreprise as EntrepriseType } from '@/services/entreprises/entrepriseService';
 
 interface EntreprisesTableProps {
@@ -29,6 +29,18 @@ export default function EntreprisesTable({
     );
   }
 
+  const formatReduction = (entreprise: EntrepriseType) => {
+    if (!entreprise.reduction_type || entreprise.reduction_valeur === 0) {
+      return 'Aucune';
+    }
+    
+    if (entreprise.reduction_type === 'pourcentage') {
+      return `${entreprise.reduction_valeur}%`;
+    } else {
+      return `${entreprise.reduction_valeur} $`;
+    }
+  };
+
   return (
     <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto h-full">
@@ -37,9 +49,8 @@ export default function EntreprisesTable({
             <tr>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Raison Sociale</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Forme Juridique</th>
-              {/* <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">NIF</th> */}
-              {/* <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">RC</th> */}
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Téléphone</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Réduction</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -54,16 +65,18 @@ export default function EntreprisesTable({
                   <td className="px-5 py-4 whitespace-nowrap text-gray-600 text-sm">
                     {entreprise.forme_juridique || 'N/A'}
                   </td>
-                  {/* <td className="px-5 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                      {entreprise.nif || 'N/A'}
-                    </span>
-                  </td> */}
-                  {/* <td className="px-5 py-4 whitespace-nowrap text-gray-600 text-sm">
-                    {entreprise.registre_commerce || 'N/A'}
-                  </td> */}
                   <td className="px-5 py-4 whitespace-nowrap text-gray-600 text-sm">
                     {entreprise.telephone || 'N/A'}
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                      {entreprise.reduction_type === 'pourcentage' ? (
+                        <Percent className="w-3 h-3 mr-1" />
+                      ) : entreprise.reduction_type === 'fixe' ? (
+                        <DollarSign className="w-3 h-3 mr-1" />
+                      ) : null}
+                      {formatReduction(entreprise)}
+                    </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${

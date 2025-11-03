@@ -1,5 +1,3 @@
-// services/particuliers/particulierService.ts
-
 /**
  * Service pour la gestion des particuliers - Interface avec l'API backend
  */
@@ -24,7 +22,9 @@ export interface Particulier {
   dependants: number;
   actif: boolean;
   date_creation: string;
-  date_modification?: string; // Ajouté
+  date_modification?: string;
+  reduction_type: 'pourcentage' | 'fixe' | null;
+  reduction_valeur: number;
 }
 
 // Interface pour les réponses de l'API
@@ -61,6 +61,8 @@ export const cleanParticulierData = (data: any): Particulier => {
     actif: Boolean(data.actif),
     date_creation: data.date_creation || "",
     date_modification: data.date_modification || "",
+    reduction_type: data.reduction_type || null,
+    reduction_valeur: data.reduction_valeur || 0
   };
 };
 
@@ -165,6 +167,10 @@ export const addParticulier = async (particulierData: {
   nif: string;
   situation_familiale?: string;
   dependants?: number;
+  reduction_type?: 'pourcentage' | 'fixe' | null;
+  reduction_valeur?: number;
+  site?: string;
+  utilisateur?: number;
 }): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
@@ -174,6 +180,11 @@ export const addParticulier = async (particulierData: {
     formData.append("prenom", particulierData.prenom);
     formData.append("date_naissance", particulierData.date_naissance);
     formData.append("nif", particulierData.nif);
+
+    if (particulierData.utilisateur !== undefined)
+      formData.append("utilisateur", String(particulierData.utilisateur));
+    if (particulierData.site !== undefined)
+      formData.append("site", String(particulierData.site));
 
     // Ajout des champs optionnels
     if (particulierData.lieu_naissance)
@@ -197,6 +208,12 @@ export const addParticulier = async (particulierData: {
       );
     if (particulierData.dependants !== undefined)
       formData.append("dependants", particulierData.dependants.toString());
+    
+    // Ajout des champs de réduction
+    if (particulierData.reduction_type !== undefined)
+      formData.append("reduction_type", particulierData.reduction_type || '');
+    if (particulierData.reduction_valeur !== undefined)
+      formData.append("reduction_valeur", particulierData.reduction_valeur.toString());
 
     const response = await fetch(
       `${API_BASE_URL}/particuliers/creer_particulier.php`,
@@ -247,6 +264,8 @@ export const updateParticulier = async (
     nif: string;
     situation_familiale?: string;
     dependants?: number;
+    reduction_type?: 'pourcentage' | 'fixe' | null;
+    reduction_valeur?: number;
   }
 ): Promise<ApiResponse> => {
   try {
@@ -283,6 +302,12 @@ export const updateParticulier = async (
       );
     if (particulierData.dependants !== undefined)
       formData.append("dependants", particulierData.dependants.toString());
+    
+    // Ajout des champs de réduction
+    if (particulierData.reduction_type !== undefined)
+      formData.append("reduction_type", particulierData.reduction_type || '');
+    if (particulierData.reduction_valeur !== undefined)
+      formData.append("reduction_valeur", particulierData.reduction_valeur.toString());
 
     const response = await fetch(
       `${API_BASE_URL}/particuliers/modifier_particulier.php`,

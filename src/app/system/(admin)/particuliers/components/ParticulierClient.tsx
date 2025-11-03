@@ -27,7 +27,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
     nom: '', prenom: '', date_naissance: '', lieu_naissance: '', sexe: '',
     rue: '', ville: '', code_postal: '', province: '',
     id_national: '', telephone: '', email: '',
-    nif: '', situation_familiale: '', dependants: 0
+    nif: '', situation_familiale: '', dependants: 0,
+    reduction_type: null as 'pourcentage' | 'fixe' | null,
+    reduction_valeur: 0
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -125,7 +127,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
           email: details.email || '',
           nif: details.nif || '',
           situation_familiale: details.situation_familiale || '',
-          dependants: details.dependants || 0
+          dependants: details.dependants || 0,
+          reduction_type: details.reduction_type || null,
+          reduction_valeur: details.reduction_valeur || 0
         });
         setShowEditModal(true);
       } else {
@@ -166,15 +170,16 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
     }
   };
 
-  // Validation du formulaire
-  const isFormValid = (): boolean => { // ✅ Type explicite
-  return !!(
-    formData.nom.trim() && 
-    formData.prenom.trim() && 
-    formData.date_naissance && 
-    formData.nif.trim()
-  );
-};
+  // Validation du formulaire - MODIFIÉ POUR LES NOUVEAUX CHAMPS OBLIGATOIRES
+  const isFormValid = (): boolean => {
+    return !!(
+      formData.nom.trim() && 
+      formData.prenom.trim() && 
+      formData.nif.trim() && 
+      formData.telephone.trim() && 
+      formData.rue.trim()
+    );
+  };
 
   // Effacer les messages après un délai
   useEffect(() => {
@@ -204,7 +209,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
             nom: '', prenom: '', date_naissance: '', lieu_naissance: '', sexe: '',
             rue: '', ville: '', code_postal: '', province: '',
             id_national: '', telephone: '', email: '',
-            nif: '', situation_familiale: '', dependants: 0
+            nif: '', situation_familiale: '', dependants: 0,
+            reduction_type: null,
+            reduction_valeur: 0
           });
           setShowAddModal(true);
         }}
@@ -238,7 +245,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
             nom: '', prenom: '', date_naissance: '', lieu_naissance: '', sexe: '',
             rue: '', ville: '', code_postal: '', province: '',
             id_national: '', telephone: '', email: '',
-            nif: '', situation_familiale: '', dependants: 0
+            nif: '', situation_familiale: '', dependants: 0,
+            reduction_type: null,
+            reduction_valeur: 0
           });
         }}
         onDeleteClose={() => {
@@ -255,8 +264,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
         }}
         onFormDataChange={setFormData}
         onAddParticulier={async () => {
+          // MODIFICATION DU MESSAGE D'ERREUR
           if (!isFormValid()) {
-            setError('Les champs nom, prénom, date de naissance et NIF sont obligatoires');
+            setError('Les champs nom, prénom, NIF, téléphone et rue sont obligatoires');
             return;
           }
 
@@ -278,7 +288,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
               email: formData.email,
               nif: formData.nif,
               situation_familiale: formData.situation_familiale,
-              dependants: formData.dependants
+              dependants: formData.dependants,
+              reduction_type: formData.reduction_type,
+              reduction_valeur: formData.reduction_valeur
             });
             
             if (result.status === 'success') {
@@ -295,8 +307,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
           }
         }}
         onEditParticulier={async () => {
+          // MODIFICATION DU MESSAGE D'ERREUR
           if (!selectedParticulier || !isFormValid()) {
-            setError('Les champs nom, prénom, date de naissance et NIF sont obligatoires');
+            setError('Les champs nom, prénom, NIF, téléphone et rue sont obligatoires');
             return;
           }
 
@@ -318,7 +331,9 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
               email: formData.email,
               nif: formData.nif,
               situation_familiale: formData.situation_familiale,
-              dependants: formData.dependants
+              dependants: formData.dependants,
+              reduction_type: formData.reduction_type,
+              reduction_valeur: formData.reduction_valeur
             });
             
             if (result.status === 'success') {
@@ -376,7 +391,7 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
             setProcessing(false);
           }
         }}
-        isFormValid={isFormValid} // Ajout de la prop de validation
+        isFormValid={isFormValid}
       />
     </div>
   );

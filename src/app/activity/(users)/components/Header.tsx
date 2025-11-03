@@ -3,7 +3,7 @@
 import { Maximize, Minimize, ChevronDown, LogOut, Menu } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useAuth } from '../.././../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
   isFullscreen: boolean;

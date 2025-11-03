@@ -4,6 +4,7 @@ import DeleteImpotModal from './modals/DeleteImpotModal';
 import StatusImpotModal from './modals/StatusImpotModal';
 import DetailsImpotModal from './modals/DetailsImpotModal';
 import QRCodeModal from './modals/QRCodeModal';
+import BeneficiairesImpotModal from './modals/BeneficiairesImpotModal';
 import { Impot as ImpotType } from '@/services/impots/impotService';
 
 interface ImpotsModalsProps {
@@ -12,6 +13,7 @@ interface ImpotsModalsProps {
   showStatusModal: boolean;
   showDetailsModal: boolean;
   showQRModal: boolean;
+  showBeneficiairesModal?: boolean;
   selectedImpot: ImpotType | null;
   formData: { nom: string; description: string; jsonData: string };
   processing: boolean;
@@ -20,6 +22,7 @@ interface ImpotsModalsProps {
   onStatusClose: () => void;
   onDetailsClose: () => void;
   onQRClose: () => void;
+  onBeneficiairesClose?: () => void;
   onFormDataChange: (data: { nom: string; description: string; jsonData: string }) => void;
   onEditImpot: () => Promise<void>;
   onDeleteImpot: () => Promise<void>;
@@ -32,6 +35,7 @@ export default function ImpotsModals({
   showStatusModal,
   showDetailsModal,
   showQRModal,
+  showBeneficiairesModal = false,
   selectedImpot,
   formData,
   processing,
@@ -40,6 +44,7 @@ export default function ImpotsModals({
   onStatusClose,
   onDetailsClose,
   onQRClose,
+  onBeneficiairesClose = () => {},
   onFormDataChange,
   onEditImpot,
   onDeleteImpot,
@@ -47,6 +52,7 @@ export default function ImpotsModals({
 }: ImpotsModalsProps) {
   return (
     <>
+      {/* Modal d'édition */}
       {showEditModal && selectedImpot && (
         <Portal>
           <EditImpotModal
@@ -60,6 +66,7 @@ export default function ImpotsModals({
         </Portal>
       )}
 
+      {/* Modal de suppression */}
       {showDeleteModal && selectedImpot && (
         <Portal>
           <DeleteImpotModal
@@ -71,6 +78,7 @@ export default function ImpotsModals({
         </Portal>
       )}
 
+      {/* Modal de changement de statut */}
       {showStatusModal && selectedImpot && (
         <Portal>
           <StatusImpotModal
@@ -82,6 +90,7 @@ export default function ImpotsModals({
         </Portal>
       )}
 
+      {/* Modal de détails */}
       {showDetailsModal && selectedImpot && (
         <Portal>
           <DetailsImpotModal
@@ -91,11 +100,22 @@ export default function ImpotsModals({
         </Portal>
       )}
 
+      {/* Modal QR Code */}
       {showQRModal && selectedImpot && (
         <Portal>
           <QRCodeModal
             impot={selectedImpot}
             onClose={onQRClose}
+          />
+        </Portal>
+      )}
+
+      {/* NOUVEAU Modal de gestion des bénéficiaires */}
+      {showBeneficiairesModal && selectedImpot && (
+        <Portal>
+          <BeneficiairesImpotModal
+            impot={selectedImpot}
+            onClose={onBeneficiairesClose}
           />
         </Portal>
       )}
