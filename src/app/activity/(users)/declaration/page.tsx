@@ -796,8 +796,7 @@ const RechercheDeclarationPage: React.FC = () => {
         selectedPaymentMethod,
         montantTotal,
         1, // nombreDeclarations = 1 pour une recherche
-        montantPenalites,
-        paymentFields
+        montantPenalites
       );
 
       if (result.status === "success") {
