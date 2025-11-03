@@ -1,3 +1,4 @@
+// ClientSimpleForm.tsx avec intégration de FactureA4
 "use client";
 import { useState } from "react";
 import { Save, User, Car, Calculator, X } from "lucide-react";
@@ -5,6 +6,7 @@ import {
   soumettreCommandePlaques,
   verifierStockDisponible,
 } from "@/services/client-simple/clientSimpleService";
+import FactureA4 from "./FactureA4";
 
 interface FormData {
   nom: string;
@@ -38,41 +40,25 @@ interface PaiementData {
   banque?: string;
 }
 
-// Dans ClientSimpleForm, mettre à jour l'interface FactureData
+// Interface pour les données de facture compatibles avec FactureA4
 interface FactureData {
-  particulier: {
-    id: number; // Ajout de l'ID
-    nom: string;
-    prenom: string;
-    telephone: string;
-    email: string;
-    adresse: string;
-  };
-  commande: {
-    nombrePlaques: number;
-    montantUnitaire: number;
-    montantInitial: number;
-    montantFinal: number;
-  };
-  reduction?: {
-    type: string;
-    valeur: number;
-    montant_initial: number;
-    montant_final: number;
-  };
-  plaques: string[];
-  paiement: {
-    mode_paiement: string;
-    operateur?: string;
-    numero_transaction?: string;
-    numero_cheque?: string;
-    banque?: string;
-    date_paiement: string;
-  };
-  utilisateur: {
-    nom_complet: string;
-    site_nom: string;
-  };
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  adresse: string;
+  montant: number;
+  montant_initial: number;
+  mode_paiement: string;
+  operateur: string;
+  numero_transaction: string;
+  date_paiement: string;
+  nombre_plaques: number;
+  site_nom: string;
+  caissier: string;
+  numeros_plaques: string[];
+  reduction_type?: string;
+  reduction_valeur?: number;
 }
 
 export default function ClientSimpleForm({
@@ -197,37 +183,25 @@ export default function ClientSimpleForm({
       if (result.status === "success") {
         setShowPaiement(false);
 
-        // Préparer les données pour la facture
+        // Préparer les données pour la facture A4
         const facture: FactureData = {
-          particulier: {
-            id: result.data?.particulier?.id || 0, // Ajout de l'ID
-            nom: formData.nom,
-            prenom: formData.prenom,
-            telephone: formData.telephone,
-            email: formData.email,
-            adresse: formData.adresse,
-          },
-          commande: {
-            nombrePlaques: nombrePlaques,
-            montantUnitaire: montantUnitaire,
-            montantInitial: montantTotal,
-            montantFinal:
-              result.data?.reduction_appliquee?.montant_final || montantTotal,
-          },
-          reduction: result.data?.reduction_appliquee,
-          plaques: result.data?.numeroPlaques || [],
-          paiement: {
-            mode_paiement: paiementData.modePaiement,
-            operateur: paiementData.operateur,
-            numero_transaction: paiementData.numeroTransaction,
-            numero_cheque: paiementData.numeroCheque,
-            banque: paiementData.banque,
-            date_paiement: new Date().toLocaleString("fr-FR"),
-          },
-          utilisateur: {
-            nom_complet: utilisateur.nom_complet,
-            site_nom: utilisateur.site_nom,
-          },
+          nom: formData.nom,
+          prenom: formData.prenom,
+          telephone: formData.telephone,
+          email: formData.email,
+          adresse: formData.adresse,
+          montant: result.data?.reduction_appliquee?.montant_final || montantTotal,
+          montant_initial: montantTotal,
+          mode_paiement: paiementData.modePaiement,
+          operateur: paiementData.operateur || "",
+          numero_transaction: paiementData.numeroTransaction || "",
+          date_paiement: new Date().toISOString(),
+          nombre_plaques: nombrePlaques,
+          site_nom: utilisateur.site_nom,
+          caissier: utilisateur.nom_complet,
+          numeros_plaques: result.data?.numeroPlaques || [],
+          reduction_type: result.data?.reduction_appliquee?.type,
+          reduction_valeur: result.data?.reduction_appliquee?.valeur,
         };
 
         setFactureData(facture);
@@ -245,6 +219,7 @@ export default function ClientSimpleForm({
 
   const handleCloseFacture = () => {
     setShowFacture(false);
+    setFactureData(null);
     // Réinitialiser le formulaire après fermeture de la facture
     setFormData({
       nom: "",
@@ -553,6 +528,14 @@ export default function ClientSimpleForm({
           isLoading={isSubmitting}
           paiementData={paiementData}
           setPaiementData={setPaiementData}
+        />
+      )}
+
+      {/* Modal Facture A4 */}
+      {showFacture && factureData && (
+        <FactureA4 
+          factureData={factureData} 
+          onClose={handleCloseFacture} 
         />
       )}
     </>

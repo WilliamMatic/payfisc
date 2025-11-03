@@ -53,7 +53,7 @@ export default function Sidebar({
   };
 
   const menuItems: MenuEntry[] = [
-    { icon: "🏠", label: "Dashboard", href: "/system/dashboard" },
+    { icon: "🏠", label: "Dashboard", href: "/system/ia-fiscale" },
 
     {
       category: "Contribuables",
