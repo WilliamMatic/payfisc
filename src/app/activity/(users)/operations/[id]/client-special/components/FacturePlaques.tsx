@@ -46,20 +46,6 @@ interface FacturePlaquesProps {
 export default function FacturePlaques({ data, onClose }: FacturePlaquesProps) {
   const [isPrinting, setIsPrinting] = useState(false);
 
-  // const handlePrint = () => {
-  //   setIsPrinting(true);
-  //   setTimeout(() => {
-  //     window.print();
-  //     setIsPrinting(false);
-  //   }, 500);
-  // };
-
-  const handleDownloadPDF = () => {
-    // Implémentation de la génération PDF avec html2pdf.js
-    // Vous pouvez installer html2pdf.js via npm
-    console.log('Génération PDF...');
-  };
-
   // Calcul des informations sur les plaques
   const premierePlaque = data.plaques[0] || 'N/A';
   const dernierePlaque = data.plaques[data.plaques.length - 1] || 'N/A';
