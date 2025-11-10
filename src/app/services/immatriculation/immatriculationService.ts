@@ -1,5 +1,3 @@
-// services/immatriculation/immatriculationService.ts
-
 /**
  * Service pour la gestion de l'immatriculation des plaques
  */
@@ -31,7 +29,7 @@ export interface PaiementData {
   numeroTransaction?: string;
   numeroCheque?: string;
   banque?: string;
-  serie_item_id?: number;
+  serie_item_id?: number | null; // Accepter null
 }
 
 export interface ImmatriculationResponse {
@@ -125,16 +123,18 @@ export const soumettreImmatriculation = async (
 };
 
 /**
- * Récupère un numéro de plaque disponible (SANS changer le statut)
+ * Récupère un numéro de plaque disponible (SANS changer le statut) selon la province de l'utilisateur
  */
-export const getNumeroPlaqueDisponible = async (): Promise<ImmatriculationResponse> => {
+export const getNumeroPlaqueDisponible = async (utilisateur: any): Promise<ImmatriculationResponse> => {
   try {
+    const formData = new FormData();
+    formData.append('utilisateur_id', utilisateur.id.toString());
+    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+
     const response = await fetch(`${API_BASE_URL}/immatriculation/get_numero_plaque.php`, {
-      method: 'GET',
+      method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: formData,
     });
 
     const data = await response.json();

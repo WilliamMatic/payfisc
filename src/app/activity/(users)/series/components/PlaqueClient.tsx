@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Serie as SerieType } from '@/services/plaques/plaqueService';
+import { Serie as SerieType } from '@/services/plaques/plaqueServiceSite';
 import PlaqueHeader from './PlaqueHeader';
 import PlaqueTable from './PlaqueTable';
 import PlaqueModals from './modals/PlaqueModals';
 import AlertMessage from './AlertMessage';
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PlaqueClientProps {
   initialSeries: SerieType[];
@@ -24,17 +25,23 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
   const [selectedSerie, setSelectedSerie] = useState<SerieType | null>(null);
   const [formData, setFormData] = useState({ 
     nom_serie: '', 
-    description: ''
+    description: '',
+    province_id: '',
+    debut_numeros: '',
+    fin_numeros: ''
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { utilisateur } = useAuth();
 
   // Fonction pour recharger les séries
   const loadSeries = async () => {
+    if (!utilisateur) return;
+
     try {
       setLoading(true);
-      const { getSeries } = await import('@/services/plaques/plaqueService');
-      const result = await getSeries();
+      const { getSeries } = await import('@/services/plaques/plaqueServiceSite');
+      const result = await getSeries(utilisateur.id);
       
       if (result.status === 'success') {
         setSeries(result.data || []);
@@ -61,7 +68,10 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
     setSelectedSerie(serie);
     setFormData({
       nom_serie: serie.nom_serie || '',
-      description: serie.description || ''
+      description: serie.description || '',
+      province_id: serie.province_id.toString(),
+      debut_numeros: serie.debut_numeros.toString(),
+      fin_numeros: serie.fin_numeros.toString()
     });
     setShowEditModal(true);
   };
@@ -124,11 +134,18 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
         selectedSerie={selectedSerie}
         formData={formData}
         processing={processing}
+        utilisateur={utilisateur}
         onAddClose={() => setShowAddModal(false)}
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedSerie(null);
-          setFormData({ nom_serie: '', description: '' });
+          setFormData({ 
+            nom_serie: '', 
+            description: '',
+            province_id: '',
+            debut_numeros: '',
+            fin_numeros: ''
+          });
         }}
         onDeleteClose={() => {
           setShowDeleteModal(false);
@@ -144,6 +161,11 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
         }}
         onFormDataChange={setFormData}
         onAddSerie={async () => {
+          if (!utilisateur) {
+            setError('Utilisateur non connecté');
+            return;
+          }
+
           if (!formData.nom_serie.trim()) {
             setError('Le nom de la série est obligatoire');
             return;
@@ -156,15 +178,24 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
 
           setProcessing(true);
           try {
-            const { addSerie } = await import('@/services/plaques/plaqueService');
+            const { addSerie } = await import('@/services/plaques/plaqueServiceSite');
             const result = await addSerie({
               nom_serie: formData.nom_serie,
+              province_id: parseInt(formData.province_id),
+              debut_numeros: parseInt(formData.debut_numeros),
+              fin_numeros: parseInt(formData.fin_numeros),
               description: formData.description || undefined
-            });
+            }, utilisateur.id);
             
             if (result.status === 'success') {
               setSuccessMessage(result.message || 'Série ajoutée avec succès');
-              setFormData({ nom_serie: '', description: '' });
+              setFormData({ 
+                nom_serie: '', 
+                description: '',
+                province_id: '',
+                debut_numeros: '',
+                fin_numeros: ''
+              });
               setShowAddModal(false);
               
               await loadSeries();
@@ -178,8 +209,8 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
           }
         }}
         onEditSerie={async () => {
-          if (!selectedSerie || !formData.nom_serie.trim()) {
-            setError('Le nom de la série est obligatoire');
+          if (!utilisateur || !selectedSerie || !formData.nom_serie.trim()) {
+            setError('Données manquantes');
             return;
           }
 
@@ -190,17 +221,24 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
 
           setProcessing(true);
           try {
-            const { updateSerie } = await import('@/services/plaques/plaqueService');
+            const { updateSerie } = await import('@/services/plaques/plaqueServiceSite');
             const result = await updateSerie(selectedSerie.id, {
               nom_serie: formData.nom_serie,
+              province_id: parseInt(formData.province_id),
               description: formData.description || undefined
-            });
+            }, utilisateur.id);
             
             if (result.status === 'success') {
               setSuccessMessage(result.message || 'Série modifiée avec succès');
               setShowEditModal(false);
               setSelectedSerie(null);
-              setFormData({ nom_serie: '', description: '' });
+              setFormData({ 
+                nom_serie: '', 
+                description: '',
+                province_id: '',
+                debut_numeros: '',
+                fin_numeros: ''
+              });
               
               await loadSeries();
             } else {
@@ -213,12 +251,12 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
           }
         }}
         onDeleteSerie={async () => {
-          if (!selectedSerie) return;
+          if (!utilisateur || !selectedSerie) return;
 
           setProcessing(true);
           try {
-            const { deleteSerie } = await import('@/services/plaques/plaqueService');
-            const result = await deleteSerie(selectedSerie.id);
+            const { deleteSerie } = await import('@/services/plaques/plaqueServiceSite');
+            const result = await deleteSerie(selectedSerie.id, utilisateur.id);
             
             if (result.status === 'success') {
               setSuccessMessage(result.message || 'Série supprimée avec succès');
@@ -236,12 +274,12 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
           }
         }}
         onToggleStatus={async () => {
-          if (!selectedSerie) return;
+          if (!utilisateur || !selectedSerie) return;
 
           setProcessing(true);
           try {
-            const { toggleSerieStatus } = await import('@/services/plaques/plaqueService');
-            const result = await toggleSerieStatus(selectedSerie.id, !selectedSerie.actif);
+            const { toggleSerieStatus } = await import('@/services/plaques/plaqueServiceSite');
+            const result = await toggleSerieStatus(selectedSerie.id, !selectedSerie.actif, utilisateur.id);
             
             if (result.status === 'success') {
               setSuccessMessage(result.message || 'Statut de la série modifié avec succès');

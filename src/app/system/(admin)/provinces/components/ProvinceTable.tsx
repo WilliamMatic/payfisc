@@ -66,7 +66,7 @@ export default function ProvinceTable({
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                    {province.date_creation ? new Date(province.date_creation).toLocaleDateString('fr-FR') : 'N/A'}
+                    {province.date_creation}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center space-x-1">

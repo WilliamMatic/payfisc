@@ -52,8 +52,9 @@ export default function PlaqueTable({
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
             <tr>
-              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Série</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Série & Province</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Plage Numérique</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Disponibilité</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
@@ -71,6 +72,7 @@ export default function PlaqueTable({
                       </div>
                       <div>
                         <div className="font-bold text-gray-900 text-lg">{serie.nom_serie || 'N/A'}</div>
+                        <div className="text-gray-500 text-sm">{serie.province_nom} ({serie.province_code})</div>
                         <div className="text-gray-500 text-xs">ID: {serie.id}</div>
                       </div>
                     </div>
@@ -78,6 +80,14 @@ export default function PlaqueTable({
                   <td className="px-5 py-4">
                     <div className="text-gray-600 text-sm max-w-xs">
                       {serie.description || 'Aucune description'}
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="text-gray-600 text-sm font-medium">
+                      {serie.debut_numeros} - {serie.fin_numeros}
+                    </div>
+                    <div className="text-gray-500 text-xs">
+                      {serie.fin_numeros - serie.debut_numeros + 1} numéros
                     </div>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">

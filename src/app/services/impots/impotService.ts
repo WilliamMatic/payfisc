@@ -1,5 +1,3 @@
-// services/impots/impotService.ts
-
 /**
  * Service pour la gestion des impôts - Interface avec l'API backend
  */
@@ -11,6 +9,7 @@ export interface Impot {
   description: string;
   periode: string;
   delai_accord: number;
+  prix: number;
   penalites: {
     type: string;
     valeur: number;

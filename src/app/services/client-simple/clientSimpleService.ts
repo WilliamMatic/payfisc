@@ -1,4 +1,6 @@
-// services/client-simple/clientSimpleService.ts
+/**
+ * Service pour la gestion des commandes de plaques pour clients spéciaux
+ */
 
 export interface ParticulierData {
   nom: string;
@@ -10,6 +12,7 @@ export interface ParticulierData {
 
 export interface CommandeData {
   nombrePlaques: number;
+  numeroPlaqueDebut?: string;
 }
 
 export interface PaiementData {
@@ -36,9 +39,16 @@ export interface ClientSimpleResponse {
       montant_final: number;
     };
     repartition?: any;
-    // Ajoutez ces propriétés pour la vérification de stock
+    // Propriétés pour la vérification de stock
     suffisant?: boolean;
     stock_disponible?: number;
+    // Propriétés pour la recherche de plaques
+    suggestions?: Array<{
+      numero_plaque: string;
+      disponible: boolean;
+    }>;
+    sequence_valide?: boolean;
+    sequence_plaques?: string[];
   };
 }
 
@@ -71,6 +81,9 @@ export const soumettreCommandePlaques = async (
     
     // Données de la commande
     formData.append('nombre_plaques', commandeData.nombrePlaques.toString());
+    if (commandeData.numeroPlaqueDebut) {
+      formData.append('numero_plaque_debut', commandeData.numeroPlaqueDebut);
+    }
     
     // Données de paiement
     formData.append('mode_paiement', paiementData.modePaiement);
@@ -106,12 +119,14 @@ export const soumettreCommandePlaques = async (
 };
 
 /**
- * Vérifie le stock disponible
+ * Vérifie le stock disponible selon la province de l'utilisateur
  */
-export const verifierStockDisponible = async (nombrePlaques: number): Promise<ClientSimpleResponse> => {
+export const verifierStockDisponible = async (nombrePlaques: number, utilisateur: any): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
     formData.append('nombre_plaques', nombrePlaques.toString());
+    formData.append('utilisateur_id', utilisateur.id.toString());
+    formData.append('site_id', utilisateur.site_id?.toString() || '1');
 
     const response = await fetch(`${API_BASE_URL}/client-simple/verifier_stock.php`, {
       method: 'POST',
@@ -139,12 +154,85 @@ export const verifierStockDisponible = async (nombrePlaques: number): Promise<Cl
 };
 
 /**
- * Récupère les numéros de plaques disponibles
+ * Recherche des plaques disponibles avec autocomplétion
  */
-export const getNumerosPlaquesDisponibles = async (quantite: number): Promise<ClientSimpleResponse> => {
+export const rechercherPlaquesDisponibles = async (recherche: string, utilisateur: any): Promise<ClientSimpleResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append('recherche', recherche);
+    formData.append('utilisateur_id', utilisateur.id.toString());
+    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+
+    const response = await fetch(`${API_BASE_URL}/client-simple/rechercher_plaques.php`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la recherche des plaques',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Rechercher plaques error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la recherche des plaques',
+    };
+  }
+};
+
+/**
+ * Vérifie si une séquence de plaques est disponible
+ */
+export const verifierSequencePlaques = async (plaqueDebut: string, quantite: number, utilisateur: any): Promise<ClientSimpleResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append('plaque_debut', plaqueDebut);
+    formData.append('quantite', quantite.toString());
+    formData.append('utilisateur_id', utilisateur.id.toString());
+    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+
+    const response = await fetch(`${API_BASE_URL}/client-simple/verifier_sequence.php`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la vérification de la séquence',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Verifier sequence error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la vérification de la séquence',
+    };
+  }
+};
+
+/**
+ * Récupère les numéros de plaques disponibles selon la province de l'utilisateur
+ */
+export const getNumerosPlaquesDisponibles = async (quantite: number, utilisateur: any): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
     formData.append('quantite', quantite.toString());
+    formData.append('utilisateur_id', utilisateur.id.toString());
+    formData.append('site_id', utilisateur.site_id?.toString() || '1');
 
     const response = await fetch(`${API_BASE_URL}/client-simple/get_numeros_plaques.php`, {
       method: 'POST',

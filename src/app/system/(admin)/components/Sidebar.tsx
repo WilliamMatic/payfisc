@@ -75,6 +75,21 @@ export default function Sidebar({
       ],
     },
     {
+      category: "Parc Roulant",
+      items: [
+        { icon: "🚗", label: "Types d'Engins", href: "/system/type-engins" },
+        { icon: "🏷️", label: "Marques", href: "/system/marques-engins" },
+        { icon: "⚡", label: "Énergies", href: "/system/energies" },
+        { icon: "🎨", label: "Couleurs", href: "/system/couleurs" },
+        {
+          icon: "💪",
+          label: "Puissances Fiscales",
+          href: "/system/puissances-fiscales",
+        },
+        { icon: "🔄", label: "Usages", href: "/system/usages" },
+      ],
+    },
+    {
       category: "Fiscale",
       items: [
         { icon: "💰", label: "Impôts", href: "/system/categories" },
@@ -83,6 +98,7 @@ export default function Sidebar({
           icon: "📑",
           label: "Création Impôt",
           href: "https://mpako.net/Backend/models/impotCreate.php",
+          // href: "http://localhost/Impot/backend/impotCreate.php",
         },
         {
           icon: "🔢",
@@ -97,6 +113,11 @@ export default function Sidebar({
       items: [
         { icon: "🔔", label: "Notifications", href: "/system/notifications" },
         { icon: "📈", label: "Web Vitals", href: "/system/web-vitals" },
+        {
+          icon: "📜",
+          label: "Historique des activités",
+          href: "/system/audit-logs",
+        },
         // { icon: "🧾", label: "Paiement", href: "/system/paiement" }
       ],
     },

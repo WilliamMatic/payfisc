@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation';
 export default function Page() {
   const router = useRouter();
 
-  const handlePaiementClick = () => {
-    router.push('/activity/paiement');
-  };
-
-  const handleDeclarationClick = () => {
-    router.push('/activity/declaration');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-4xl mx-auto">
@@ -38,7 +30,7 @@ export default function Page() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Carte Paiement Taxe */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-100 rounded-xl p-6 border border-green-200 hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-100 rounded-xl p-6 border border-green-200">
               <div className="text-4xl mb-4">💳</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Paiement de Taxes
@@ -47,16 +39,10 @@ export default function Page() {
                 Réglez vos impôts et taxes en ligne. 
                 Paiement sécurisé avec reçu immédiat.
               </p>
-              <button 
-                onClick={handlePaiementClick}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 w-full"
-              >
-                Accéder au Paiement
-              </button>
             </div>
 
             {/* Carte Vérification Déclaration */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-100 rounded-xl p-6 border border-blue-200 hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-100 rounded-xl p-6 border border-blue-200">
               <div className="text-4xl mb-4">📋</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 Vérification Déclaration
@@ -65,12 +51,6 @@ export default function Page() {
                 Consultez le statut de vos déclarations. 
                 Historique complet et suivi en temps réel.
               </p>
-              <button 
-                onClick={handleDeclarationClick}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 w-full"
-              >
-                Vérifier mes Déclarations
-              </button>
             </div>
           </div>
         </div>

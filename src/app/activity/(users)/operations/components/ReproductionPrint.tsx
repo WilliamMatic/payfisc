@@ -202,17 +202,6 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
               </div>
             </div>
 
-            <div class="instruction">
-              ↑ RECTO - Imprimez cette face en premier
-            </div>
-            
-            <!-- SAUT DE PAGE FORCÉ -->
-            <div class="page-break"></div>
-            
-            <div class="instruction">
-              ↓ VERSO - Retournez la feuille et réinsérez-la pour imprimer le verso
-            </div>
-
             <!-- VERSO (PAGE 2) -->
             <div class="card" style="height: 40mm;">
               <table>

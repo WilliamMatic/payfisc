@@ -16,8 +16,12 @@ interface PlaqueModalsProps {
   formData: { 
     nom_serie: string; 
     description: string;
+    province_id: string;
+    debut_numeros: string;
+    fin_numeros: string;
   };
   processing: boolean;
+  utilisateur: any;
   onAddClose: () => void;
   onEditClose: () => void;
   onDeleteClose: () => void;
@@ -26,6 +30,9 @@ interface PlaqueModalsProps {
   onFormDataChange: (data: { 
     nom_serie: string; 
     description: string;
+    province_id: string;
+    debut_numeros: string;
+    fin_numeros: string;
   }) => void;
   onAddSerie: () => Promise<void>;
   onEditSerie: () => Promise<void>;
@@ -42,6 +49,7 @@ export default function PlaqueModals({
   selectedSerie,
   formData,
   processing,
+  utilisateur,
   onAddClose,
   onEditClose,
   onDeleteClose,
@@ -60,6 +68,7 @@ export default function PlaqueModals({
           <AddSerieModal
             formData={formData}
             processing={processing}
+            utilisateur={utilisateur}
             onClose={onAddClose}
             onFormDataChange={onFormDataChange}
             onAddSerie={onAddSerie}
@@ -73,6 +82,7 @@ export default function PlaqueModals({
             serie={selectedSerie}
             formData={formData}
             processing={processing}
+            utilisateur={utilisateur}
             onClose={onEditClose}
             onFormDataChange={onFormDataChange}
             onEditSerie={onEditSerie}

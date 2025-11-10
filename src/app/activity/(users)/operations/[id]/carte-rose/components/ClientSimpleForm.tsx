@@ -1,8 +1,34 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, User, Car, Calculator, ArrowRight, ArrowLeft, Printer, CheckCircle, X } from 'lucide-react';
 import { verifierPlaqueTelephone, soumettreCarteRose, type VerificationData, type ParticulierData, type EnginData, type CarteRoseResponse } from '@/services/carte-rose/carteRoseService';
 import CarteRosePrint from './CarteRosePrint';
+
+// Import des services pour les données dynamiques
+import {
+  getTypeEnginsActifs,
+  type TypeEngin
+} from "@/services/type-engins/typeEnginService";
+import {
+  getEnergies,
+  type Energie
+} from "@/services/energies/energieService";
+import {
+  getCouleurs,
+  type EnginCouleur
+} from "@/services/couleurs/couleurService";
+import {
+  getUsages,
+  type UsageEngin
+} from "@/services/usages/usageService";
+import {
+  getMarquesEngins,
+  type MarqueEngin
+} from "@/services/marques-engins/marqueEnginService";
+import {
+  getPuissancesFiscalesActives,
+  type PuissanceFiscale
+} from "@/services/puissances-fiscales/puissanceFiscaleService";
 
 interface FormData {
   // Étape vérification
@@ -94,6 +120,26 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
     numeroMoteur: '',
   });
 
+  // États pour les données dynamiques (comme dans le screen 2)
+  const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
+  const [energies, setEnergies] = useState<Energie[]>([]);
+  const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
+  const [usages, setUsages] = useState<UsageEngin[]>([]);
+  const [marques, setMarques] = useState<MarqueEngin[]>([]);
+  const [puissancesFiscales, setPuissancesFiscales] = useState<PuissanceFiscale[]>([]);
+  const [filteredMarques, setFilteredMarques] = useState<MarqueEngin[]>([]);
+  const [filteredPuissances, setFilteredPuissances] = useState<PuissanceFiscale[]>([]);
+
+  // États de chargement
+  const [loading, setLoading] = useState({
+    typeEngins: false,
+    energies: false,
+    couleurs: false,
+    usages: false,
+    marques: false,
+    puissances: false,
+  });
+
   const [plaqueInfo, setPlaqueInfo] = useState<PlaqueInfo | null>(null);
   const [particulierInfo, setParticulierInfo] = useState<ParticulierInfo | null>(null);
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -106,14 +152,111 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
   const [showPrint, setShowPrint] = useState(false);
   const [printData, setPrintData] = useState<any>(null);
 
-  // Options pour les listes déroulantes
-  const typeEnginOptions = ["Moto", "Voiture", "Camion", "Bus", "Autocar"];
+  // Générer les options d'années (comme dans le screen 2)
   const anneeOptions = Array.from({ length: 30 }, (_, i) => (2025 - i).toString());
-  const couleurOptions = ["Beige", "Blanc", "Bleu", "Gris", "Jaune", "Marron", "Noir", "Orange", "Rose", "Rouge", "Vert", "Violet"];
-  const puissanceOptions = ["3CV", "5CV", "7CV", "10CV", "12CV", "15CV", "20CV"];
-  const usageOptions = ["TAXI", "PRIVE", "SOCIETE", "TRANSPORT", "LOCATION"];
-  const marqueOptions = ["TVS", "HAOUJUE", "HAOJIN", "BOXER", "YAMAHA", "ZONG SHEN", "HONDA", "AG", "DT", "MAX 125", "TOYOTA", "NISSAN", "RENAULT", "PEUGEOT", "MERCEDES", "BMW", "AUDI", "VOLKSWAGEN", "HYUNDAI", "KIA"];
-  const energieOptions = ["Essence", "Diesel", "Électrique", "Hybride", "GPL"];
+
+  // Chargement des données initiales (comme dans le screen 2)
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Charger les types d'engins
+        setLoading(prev => ({ ...prev, typeEngins: true }));
+        const typeEnginsResponse = await getTypeEnginsActifs();
+        if (typeEnginsResponse.status === 'success') {
+          setTypeEngins(typeEnginsResponse.data || []);
+        }
+
+        // Charger les énergies
+        setLoading(prev => ({ ...prev, energies: true }));
+        const energiesResponse = await getEnergies();
+        if (energiesResponse.status === 'success') {
+          setEnergies(energiesResponse.data || []);
+        }
+
+        // Charger les couleurs
+        setLoading(prev => ({ ...prev, couleurs: true }));
+        const couleursResponse = await getCouleurs();
+        if (couleursResponse.status === 'success') {
+          setCouleurs(couleursResponse.data || []);
+        }
+
+        // Charger les usages
+        setLoading(prev => ({ ...prev, usages: true }));
+        const usagesResponse = await getUsages();
+        if (usagesResponse.status === 'success') {
+          setUsages(usagesResponse.data || []);
+        }
+
+        // Charger toutes les marques
+        setLoading(prev => ({ ...prev, marques: true }));
+        const marquesResponse = await getMarquesEngins();
+        if (marquesResponse.status === 'success') {
+          setMarques(marquesResponse.data || []);
+        }
+
+        // Charger toutes les puissances fiscales
+        setLoading(prev => ({ ...prev, puissances: true }));
+        const puissancesResponse = await getPuissancesFiscalesActives();
+        if (puissancesResponse.status === 'success') {
+          setPuissancesFiscales(puissancesResponse.data || []);
+        }
+
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+      } finally {
+        setLoading({
+          typeEngins: false,
+          energies: false,
+          couleurs: false,
+          usages: false,
+          marques: false,
+          puissances: false,
+        });
+      }
+    };
+
+    loadInitialData();
+  }, []);
+
+  // Filtrer les marques et puissances quand le type d'engin change (comme dans le screen 2)
+  useEffect(() => {
+    if (formData.typeEngin) {
+      // Filtrer les marques par libellé du type d'engin
+      const marquesFiltrees = marques.filter(marque => 
+        marque.type_engin_libelle === formData.typeEngin
+      );
+      setFilteredMarques(marquesFiltrees);
+      
+      // Filtrer les puissances fiscales par libellé du type d'engin
+      const puissancesFiltrees = puissancesFiscales.filter(puissance =>
+        puissance.type_engin_libelle === formData.typeEngin
+      );
+      setFilteredPuissances(puissancesFiltrees);
+
+      // Réinitialiser les sélections dépendantes si nécessaire
+      if (marquesFiltrees.length === 0) {
+        setFormData(prev => ({ ...prev, marque: "" }));
+      }
+      if (puissancesFiltrees.length === 0) {
+        setFormData(prev => ({ ...prev, puissanceFiscal: "" }));
+      }
+    } else {
+      setFilteredMarques([]);
+      setFilteredPuissances([]);
+    }
+  }, [formData.typeEngin, marques, puissancesFiscales]);
+
+  // Réinitialiser l'année de circulation si l'année de fabrication change (comme dans le screen 2)
+  useEffect(() => {
+    if (formData.anneeFabrication && formData.anneeCirculation) {
+      const anneeFab = parseInt(formData.anneeFabrication);
+      const anneeCirc = parseInt(formData.anneeCirculation);
+      
+      if (anneeCirc < anneeFab) {
+        setFormData(prev => ({ ...prev, anneeCirculation: "" }));
+      }
+    }
+  }, [formData.anneeFabrication]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
@@ -127,6 +270,15 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
         [field]: undefined
       }));
     }
+  };
+
+  // Obtenir les années disponibles pour la circulation (comme dans le screen 2)
+  const getAnneesCirculationDisponibles = () => {
+    if (!formData.anneeFabrication) {
+      return anneeOptions;
+    }
+    const anneeFab = parseInt(formData.anneeFabrication);
+    return anneeOptions.filter(year => parseInt(year) >= anneeFab);
   };
 
   // ÉTAPE 1: Vérification du téléphone et plaque
@@ -198,6 +350,25 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
     if (!formData.adresse.trim()) newErrors.adresse = 'L\'adresse est obligatoire';
     if (!formData.typeEngin) newErrors.typeEngin = 'Le type d\'engin est obligatoire';
     if (!formData.marque) newErrors.marque = 'La marque est obligatoire';
+
+    const phoneRegex = /^[0-9+\-\s()]{8,}$/;
+    if (formData.telephoneAssujetti && !phoneRegex.test(formData.telephoneAssujetti.replace(/\s/g, ''))) {
+      newErrors.telephoneAssujetti = 'Format de téléphone invalide';
+    }
+
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Format d\'email invalide';
+    }
+
+    // Validation des années (comme dans le screen 2)
+    if (formData.anneeFabrication && formData.anneeCirculation) {
+      const anneeFab = parseInt(formData.anneeFabrication);
+      const anneeCirc = parseInt(formData.anneeCirculation);
+      
+      if (anneeCirc < anneeFab) {
+        newErrors.anneeCirculation = 'L\'année de circulation ne peut pas être antérieure à l\'année de fabrication';
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -415,7 +586,7 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
     </div>
   );
 
-  // Rendu de l'étape formulaire
+  // Rendu de l'étape formulaire - SECTION ENGIN ADAPTÉE DU SCREEN 2
   const renderEtapeFormulaire = () => (
     <form onSubmit={handleSubmitForm} className="space-y-8">
       {/* AFFICHAGE DES INFOS VÉRIFIÉES */}
@@ -593,7 +764,7 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
         </div>
       </div>
 
-      {/* SECTION ENGIN */}
+      {/* SECTION ENGIN - ADAPTÉE DU SCREEN 2 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
           <div className="bg-green-100 p-2 rounded-lg">
@@ -610,68 +781,105 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* TYPE D'ENGIN */}
+          {/* Type d'engin */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Type d'engin <span className="text-red-500">*</span>
             </label>
-            <select
-              value={formData.typeEngin}
-              onChange={(e) => handleInputChange('typeEngin', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.typeEngin ? 'border-red-300' : 'border-gray-300'
-              }`}
-            >
-              <option value="">Sélectionner le type d'engin</option>
-              {typeEnginOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.typeEngin}
+                onChange={(e) => handleInputChange('typeEngin', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.typeEngin ? 'border-red-300' : 'border-gray-300'
+                }`}
+                disabled={loading.typeEngins}
+              >
+                <option value="">Sélectionner le type d'engin</option>
+                {typeEngins.map((typeEngin) => (
+                  <option key={typeEngin.id} value={typeEngin.libelle}>
+                    {typeEngin.libelle}
+                  </option>
+                ))}
+              </select>
+              {loading.typeEngins && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
             {errors.typeEngin && (
               <p className="text-red-600 text-sm mt-1">{errors.typeEngin}</p>
             )}
           </div>
 
-          {/* MARQUE */}
+          {/* Marque */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Marque <span className="text-red-500">*</span>
             </label>
-            <select
-              value={formData.marque}
-              onChange={(e) => handleInputChange('marque', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.marque ? 'border-red-300' : 'border-gray-300'
-              }`}
-            >
-              <option value="">Sélectionner la marque</option>
-              {marqueOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.marque}
+                onChange={(e) => handleInputChange('marque', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.marque ? 'border-red-300' : 'border-gray-300'
+                }`}
+                disabled={loading.marques || !formData.typeEngin}
+              >
+                <option value="">
+                  {!formData.typeEngin ? "Sélectionnez d'abord le type d'engin" : "Sélectionner la marque"}
+                </option>
+                {filteredMarques.map((marque) => (
+                  <option key={marque.id} value={marque.libelle}>
+                    {marque.libelle}
+                  </option>
+                ))}
+              </select>
+              {loading.marques && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
             {errors.marque && (
               <p className="text-red-600 text-sm mt-1">{errors.marque}</p>
             )}
+            {formData.typeEngin && filteredMarques.length === 0 && !loading.marques && (
+              <p className="text-amber-600 text-sm mt-1">
+                Aucune marque disponible pour ce type d'engin
+              </p>
+            )}
           </div>
 
-          {/* ÉNERGIE */}
+          {/* Énergie */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Énergie
             </label>
-            <select
-              value={formData.energie}
-              onChange={(e) => handleInputChange('energie', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner l'énergie</option>
-              {energieOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.energie}
+                onChange={(e) => handleInputChange('energie', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading.energies}
+              >
+                <option value="">Sélectionner l'énergie</option>
+                {energies.map((energie) => (
+                  <option key={energie.id} value={energie.nom}>
+                    {energie.nom}
+                  </option>
+                ))}
+              </select>
+              {loading.energies && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* ANNÉE FABRICATION */}
+          {/* Année de fabrication */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Année de fabrication
@@ -683,12 +891,14 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
             >
               <option value="">Sélectionner l'année</option>
               {anneeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
           </div>
 
-          {/* ANNÉE CIRCULATION */}
+          {/* Année de circulation */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Année de circulation
@@ -696,67 +906,119 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
             <select
               value={formData.anneeCirculation}
               onChange={(e) => handleInputChange('anneeCirculation', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.anneeCirculation ? 'border-red-300' : 'border-gray-300'
+              }`}
+              disabled={!formData.anneeFabrication}
             >
-              <option value="">Sélectionner l'année</option>
-              {anneeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              <option value="">
+                {!formData.anneeFabrication ? "Sélectionnez d'abord l'année de fabrication" : "Sélectionner l'année"}
+              </option>
+              {getAnneesCirculationDisponibles().map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
+            {errors.anneeCirculation && (
+              <p className="text-red-600 text-sm mt-1">{errors.anneeCirculation}</p>
+            )}
+            {formData.anneeFabrication && (
+              <p className="text-blue-600 text-xs mt-1">
+                Années disponibles à partir de {formData.anneeFabrication}
+              </p>
+            )}
           </div>
 
-          {/* COULEUR */}
+          {/* Couleur */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Couleur
             </label>
-            <select
-              value={formData.couleur}
-              onChange={(e) => handleInputChange('couleur', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner la couleur</option>
-              {couleurOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.couleur}
+                onChange={(e) => handleInputChange('couleur', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading.couleurs}
+              >
+                <option value="">Sélectionner la couleur</option>
+                {couleurs.map((couleur) => (
+                  <option key={couleur.id} value={couleur.nom}>
+                    {couleur.nom}
+                  </option>
+                ))}
+              </select>
+              {loading.couleurs && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* PUISSANCE FISCAL */}
+          {/* Puissance Fiscal */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Puissance Fiscal
             </label>
-            <select
-              value={formData.puissanceFiscal}
-              onChange={(e) => handleInputChange('puissanceFiscal', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner la puissance</option>
-              {puissanceOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.puissanceFiscal}
+                onChange={(e) => handleInputChange('puissanceFiscal', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading.puissances || !formData.typeEngin}
+              >
+                <option value="">
+                  {!formData.typeEngin ? "Sélectionnez d'abord le type d'engin" : "Sélectionner la puissance"}
+                </option>
+                {filteredPuissances.map((puissance) => (
+                  <option key={puissance.id} value={puissance.libelle}>
+                    {puissance.libelle} ({puissance.valeur} CV)
+                  </option>
+                ))}
+              </select>
+              {loading.puissances && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            {formData.typeEngin && filteredPuissances.length === 0 && !loading.puissances && (
+              <p className="text-amber-600 text-sm mt-1">
+                Aucune puissance disponible pour ce type d'engin
+              </p>
+            )}
           </div>
 
-          {/* USAGE */}
+          {/* Usage */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Usage
             </label>
-            <select
-              value={formData.usage}
-              onChange={(e) => handleInputChange('usage', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner l'usage</option>
-              {usageOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={formData.usage}
+                onChange={(e) => handleInputChange('usage', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading.usages}
+              >
+                <option value="">Sélectionner l'usage</option>
+                {usages.map((usage) => (
+                  <option key={usage.id} value={usage.libelle}>
+                    {usage.libelle}
+                  </option>
+                ))}
+              </select>
+              {loading.usages && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* NUMÉRO CHÂSSIS */}
+          {/* Numéro de châssis */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Numéro de châssis
@@ -770,7 +1032,7 @@ export default function ClientSimpleForm({ impotId, utilisateur }: ClientSimpleF
             />
           </div>
 
-          {/* NUMÉRO MOTEUR */}
+          {/* Numéro de moteur */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Numéro de moteur

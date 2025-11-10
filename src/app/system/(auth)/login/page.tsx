@@ -61,8 +61,8 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Connexion - PayFisc</title>
-        <meta name="description" content="Connectez-vous à votre compte PayFisc" />
+        <title>Connexion - Mpako</title>
+        <meta name="description" content="Connectez-vous à votre compte Mpako" />
       </Head>
 
       <div className={styles.container}>
@@ -74,7 +74,7 @@ export default function Login() {
               <div className={styles.logoContainer}>
                 <Image
                   src="/logo.png"
-                  alt="PayFisc Logo"
+                  alt="Mpako Logo"
                   width={80}
                   height={80}
                   priority
@@ -106,7 +106,7 @@ export default function Login() {
           </div>
 
           <div className={styles.copyright}>
-            <p>© {new Date().getFullYear()} PayFisc. Tous droits réservés.</p>
+            <p>© {new Date().getFullYear()} Mpako. Tous droits réservés.</p>
           </div>
         </div>
       </div>

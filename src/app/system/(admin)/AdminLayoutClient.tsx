@@ -17,28 +17,41 @@ interface Notification {
   date_lu: string | null;
 }
 
+interface AuditLog {
+  id: number;
+  user_id: string;
+  user_type: string;
+  action: string;
+  timestamp: string;
+}
+
 interface AdminLayoutClientProps {
   children: React.ReactNode;
-  notifications: Notification[]; // Notifications passées en props
+  notifications: Notification[];
+  auditLogs: AuditLog[];
 }
 
 export default function AdminLayoutClient({
   children,
-  notifications: initialNotifications // Recevoir les notifications du layout
+  notifications: initialNotifications,
+  auditLogs: initialAuditLogs
 }: AdminLayoutClientProps) {
-  const { theme } = useTheme(); // Récupérer le thème depuis le context
+  const { theme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
   const { isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
 
+  // Rediriger vers la page de connexion si non authentifié
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/system/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Gestion du mode plein écran
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -49,6 +62,7 @@ export default function AdminLayoutClient({
     }
   };
 
+  // État de chargement
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -57,6 +71,7 @@ export default function AdminLayoutClient({
     );
   }
 
+  // Ne rien afficher si non authentifié (redirection en cours)
   if (!isAuthenticated) {
     return null;
   }
@@ -80,13 +95,14 @@ export default function AdminLayoutClient({
 
         {/* Contenu principal */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Header avec notifications */}
+          {/* Header avec notifications et logs d'audit */}
           <Header 
             isFullscreen={isFullscreen}
             toggleFullscreen={toggleFullscreen}
             setIsSidebarOpen={setIsSidebarOpen}
             onLogout={logout}
-            notifications={notifications} // Passer les notifications au Header
+            notifications={notifications}
+            auditLogs={auditLogs}
           />
 
           {/* Section principale avec défilement */}
@@ -98,7 +114,7 @@ export default function AdminLayoutClient({
             </div>
           </main>
 
-          {/* Footer */}
+          {/* Footer (optionnel) */}
           {/* <Footer /> */}
         </div>
       </div>

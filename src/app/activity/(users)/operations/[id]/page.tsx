@@ -19,6 +19,8 @@ export default async function ImpotPage({ params }: ImpotPageProps) {
     const impots: Impot[] = impotsResult.data || [];
     const impot = impots.find(i => i.id === parseInt(params.id));
 
+    console.log('Loaded impot:', impot);
+
     if (!impot) {
       return (
         <div className="min-h-screen flex items-center justify-center">

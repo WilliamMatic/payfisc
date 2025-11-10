@@ -70,7 +70,7 @@ export default function SiteTable({
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                    {site.date_creation ? new Date(site.date_creation).toLocaleDateString('fr-FR') : 'N/A'}
+                    {site.date_creation}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center space-x-1">

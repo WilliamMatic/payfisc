@@ -44,6 +44,14 @@ export default function DetailsImpotModal({
     }
   };
 
+  // Fonction pour formater le prix
+  const formatPrix = (prix: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(prix) + ' $';
+  };
+
   // Fonction pour le texte descriptif des pénalités
   const getPenaliteDescription = () => {
     if (!impot.penalites || impot.penalites.type === 'aucune') {
@@ -113,6 +121,14 @@ export default function DetailsImpotModal({
                 <span className="text-sm font-medium text-gray-700">Délai d'accord</span>
               </div>
               <p className="text-gray-900 font-semibold">{impot.delai_accord || 0} jours</p>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center mb-2">
+                <DollarSign className="w-4 h-4 text-green-500 mr-2" />
+                <span className="text-sm font-medium text-gray-700">Prix</span>
+              </div>
+              <p className="text-gray-900 font-semibold">{formatPrix(impot.prix || 0)}</p>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg p-4">

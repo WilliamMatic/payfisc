@@ -1,50 +1,51 @@
-import { Edit, X, Save, Loader2 } from 'lucide-react';
-import { Serie as SerieType } from '@/services/plaques/plaqueService';
+import { X } from 'lucide-react';
+import { Serie as SerieType, Province } from '@/services/plaques/plaqueService';
 
 interface EditSerieModalProps {
   serie: SerieType;
-  formData: { 
-    nom_serie: string; 
+  formData: {
+    nom_serie: string;
+    province_id: string;
+    debut_numeros: number;
+    fin_numeros: number;
     description: string;
   };
+  provinces: Province[];
   processing: boolean;
   onClose: () => void;
-  onFormDataChange: (data: { 
-    nom_serie: string; 
-    description: string;
-  }) => void;
+  onFormDataChange: (data: any) => void;
   onEditSerie: () => Promise<void>;
 }
 
 export default function EditSerieModal({
   serie,
   formData,
+  provinces,
   processing,
   onClose,
   onFormDataChange,
   onEditSerie
 }: EditSerieModalProps) {
-  const handleNomSerieChange = (value: string) => {
-    const uppercaseValue = value.toUpperCase().slice(0, 2);
-    onFormDataChange({ ...formData, nom_serie: uppercaseValue });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onEditSerie();
+  };
+
+  const handleChange = (field: string, value: string | number) => {
+    onFormDataChange({
+      ...formData,
+      [field]: value
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4">
-      <div 
-        className="bg-white rounded-xl shadow-xl w-full max-w-md animate-in fade-in-90 zoom-in-90 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* EN-TÊTE MODALE */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <div className="flex items-center">
-            <div className="bg-[#2D5B7A] p-2 rounded-lg mr-3">
-              <Edit className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">Modifier la Série</h3>
-              <p className="text-sm text-gray-500">Mettre à jour les informations</p>
-            </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">Modifier la Série</h2>
+            <p className="text-gray-500 text-sm mt-1">Modifier les informations de la série</p>
           </div>
           <button
             onClick={onClose}
@@ -54,11 +55,30 @@ export default function EditSerieModal({
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        
-        {/* CORPS DE LA MODALE */}
-        <div className="p-5">
-          <div className="space-y-4">
-            {/* CHAMP NOM SÉRIE */}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Informations actuelles */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Informations actuelles</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-blue-600">Série:</span> {serie.nom_serie}
+              </div>
+              <div>
+                <span className="text-blue-600">Province:</span> {serie.province_nom}
+              </div>
+              <div>
+                <span className="text-blue-600">Plage:</span> {serie.debut_numeros}-{serie.fin_numeros}
+              </div>
+              <div>
+                <span className="text-blue-600">Total:</span> {serie.total_items} numéros
+              </div>
+            </div>
+          </div>
+
+          {/* Série et Province */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nom de la série <span className="text-red-500">*</span>
@@ -66,72 +86,111 @@ export default function EditSerieModal({
               <input
                 type="text"
                 value={formData.nom_serie}
-                onChange={(e) => handleNomSerieChange(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] transition-colors text-center text-lg font-bold uppercase"
-                placeholder="AA"
+                onChange={(e) => handleChange('nom_serie', e.target.value.toUpperCase())}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
+                placeholder="Ex: AB"
                 maxLength={2}
+                required
                 disabled={processing}
               />
+              <p className="text-xs text-gray-500 mt-1">2 lettres majuscules uniquement</p>
             </div>
 
-            {/* CHAMP DESCRIPTION */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
+                Province <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => onFormDataChange({...formData, description: e.target.value})}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] transition-colors resize-none"
-                placeholder="Description optionnelle de la série..."
-                rows={3}
+              <select
+                value={formData.province_id}
+                onChange={(e) => handleChange('province_id', e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
+                required
                 disabled={processing}
-              />
+              >
+                <option value="">Sélectionnez une province</option>
+                {provinces.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.nom} ({province.code})
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
 
-            {/* STATISTIQUES */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-gray-700 text-sm font-medium mb-2">Statistiques de la série :</p>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900">{serie.total_items}</div>
-                  <div className="text-gray-500">Total</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-green-600">{serie.items_disponibles}</div>
-                  <div className="text-gray-500">Disponibles</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-red-600">{serie.items_utilises}</div>
-                  <div className="text-gray-500">Utilisés</div>
+          {/* Plage Numérique (lecture seule) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Plage Numérique
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Début</label>
+                <input
+                  type="number"
+                  value={formData.debut_numeros}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Fin</label>
+                <input
+                  type="number"
+                  value={formData.fin_numeros}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                  readOnly
+                  disabled
+                />
+              </div>
+              <div className="flex items-center">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center w-full">
+                  <div className="text-sm text-gray-600">Total</div>
+                  <div className="text-lg font-semibold text-gray-800">
+                    {formData.fin_numeros - formData.debut_numeros + 1} numéros
+                  </div>
                 </div>
               </div>
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              La plage numérique ne peut pas être modifiée après la création
+            </p>
           </div>
-          
-          {/* PIED DE PAGE */}
-          <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] resize-none"
+              placeholder="Description optionnelle de la série..."
+              disabled={processing}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
+              type="button"
               onClick={onClose}
-              className="px-4 py-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
+              className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={processing}
             >
               Annuler
             </button>
             <button
-              onClick={onEditSerie}
-              disabled={!formData.nom_serie.trim() || formData.nom_serie.length !== 2 || processing}
-              className="flex items-center space-x-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              type="submit"
+              disabled={processing || !formData.nom_serie || !formData.province_id}
+              className="px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {processing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              <span>{processing ? 'Enregistrement...' : 'Modifier'}</span>
+              {processing ? 'Modification...' : 'Modifier la Série'}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

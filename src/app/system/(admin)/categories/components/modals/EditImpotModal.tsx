@@ -18,6 +18,32 @@ export default function EditImpotModal({
   onFormDataChange,
   onEditImpot
 }: EditImpotModalProps) {
+
+  // Fonction pour parser et mettre à jour le JSON avec le prix
+  const handleJsonDataChange = (newJsonData: string) => {
+    try {
+      const jsonObj = JSON.parse(newJsonData);
+      // S'assurer que le prix est inclus dans le JSON
+      if (typeof jsonObj.prix === 'undefined') {
+        jsonObj.prix = impot.prix || 0.00;
+      }
+      onFormDataChange({...formData, jsonData: JSON.stringify(jsonObj, null, 2)});
+    } catch (e) {
+      // Si le JSON est invalide, on garde la valeur telle quelle
+      onFormDataChange({...formData, jsonData: newJsonData});
+    }
+  };
+
+  // Récupérer le prix depuis le JSON pour l'affichage
+  const getCurrentPrix = () => {
+    try {
+      const jsonObj = JSON.parse(formData.jsonData);
+      return jsonObj.prix || 0.00;
+    } catch (e) {
+      return 0.00;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4">
       <div 
@@ -72,6 +98,40 @@ export default function EditImpotModal({
                 disabled={processing}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Prix (en $) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={getCurrentPrix()}
+                  onChange={(e) => {
+                    const newPrix = parseFloat(e.target.value) || 0;
+                    try {
+                      const jsonObj = JSON.parse(formData.jsonData);
+                      jsonObj.prix = newPrix;
+                      onFormDataChange({...formData, jsonData: JSON.stringify(jsonObj, null, 2)});
+                    } catch (e) {
+                      // Si le JSON est invalide, on crée un nouvel objet
+                      const newJsonObj = {
+                        periode: impot.periode || 'annuel',
+                        delaiAccord: impot.delai_accord || 0,
+                        penalites: impot.penalites || { type: 'aucune', valeur: 0 },
+                        prix: newPrix
+                      };
+                      onFormDataChange({...formData, jsonData: JSON.stringify(newJsonObj, null, 2)});
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="0.00"
+                  disabled={processing}
+                />
+              </div>
+            </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -79,14 +139,14 @@ export default function EditImpotModal({
               </label>
               <textarea
                 value={formData.jsonData}
-                onChange={(e) => onFormDataChange({...formData, jsonData: e.target.value})}
+                onChange={(e) => handleJsonDataChange(e.target.value)}
                 rows={6}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors resize-none font-mono text-sm"
-                placeholder='{"periode": "annuel", "delaiAccord": 30, "penalites": {"type": "pourcentage", "valeur": 5}}'
+                placeholder='{"periode": "annuel", "delaiAccord": 30, "penalites": {"type": "pourcentage", "valeur": 5}, "prix": 100.00}'
                 disabled={processing}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Format JSON contenant la période, le délai d'accord et les pénalités
+                Format JSON contenant la période, le délai d'accord, les pénalités et le prix
               </p>
             </div>
           </div>

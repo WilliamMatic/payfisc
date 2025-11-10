@@ -6,6 +6,14 @@ import { Impot } from '@/services/impots/impotService';
 import { verifierPlaque, traiterReproduction, DonneesPlaque, PaiementReproductionData } from '@/services/reproduction/reproductionService';
 import ReproductionPrint from './ReproductionPrint';
 
+// Import des services pour les données dynamiques
+import { getTypeEnginsActifs, type TypeEngin } from '@/services/type-engins/typeEnginService';
+import { getEnergies, type Energie } from '@/services/energies/energieService';
+import { getCouleurs, type EnginCouleur } from '@/services/couleurs/couleurService';
+import { getUsages, type UsageEngin } from '@/services/usages/usageService';
+import { getMarquesEngins, type MarqueEngin } from '@/services/marques-engins/marqueEnginService';
+import { getPuissancesFiscalesActives, type PuissanceFiscale } from '@/services/puissances-fiscales/puissanceFiscaleService';
+
 interface ReproductionServicesClientProps {
   impot: Impot;
 }
@@ -82,7 +90,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
       numeroTransaction: modePaiement === 'mobile_money' ? numeroTransaction : undefined,
       numeroCheque: modePaiement === 'cheque' ? numeroCheque : undefined,
       banque: modePaiement === 'banque' ? banque : undefined,
-      montant: '10'
+      montant: montant.replace(' $', '')
     });
   };
 
@@ -293,13 +301,23 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
   const [showPrint, setShowPrint] = useState(false);
   const [paiementData, setPaiementData] = useState<PaiementData>({
     modePaiement: '',
-    montant: '10'
+    montant: impot.prix.toString()
   });
   const [isPaiementProcessing, setIsPaiementProcessing] = useState(false);
   const [donneesPlaque, setDonneesPlaque] = useState<DonneesPlaque | null>(null);
   const [erreurVerification, setErreurVerification] = useState('');
   const [successData, setSuccessData] = useState<any>(null);
   const [printData, setPrintData] = useState<any>(null);
+
+  // États pour les données dynamiques
+  const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
+  const [energies, setEnergies] = useState<Energie[]>([]);
+  const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
+  const [usages, setUsages] = useState<UsageEngin[]>([]);
+  const [marques, setMarques] = useState<MarqueEngin[]>([]);
+  const [puissancesFiscales, setPuissancesFiscales] = useState<PuissanceFiscale[]>([]);
+  const [filteredMarques, setFilteredMarques] = useState<MarqueEngin[]>([]);
+  const [filteredPuissances, setFilteredPuissances] = useState<PuissanceFiscale[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     nom: '',
@@ -321,16 +339,76 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
     numeroMoteur: ''
   });
 
-  // Options pour les listes déroulantes
-  const typeEnginOptions = ['Moto', 'Voiture', 'Camion', 'Bus', 'Utilitaire'];
-  const anneeOptions = Array.from({length: 30}, (_, i) => (new Date().getFullYear() - i).toString());
-  const couleurOptions = ['Beige', 'Blanc', 'Bleu', 'Gris', 'Jaune', 'Marron', 'Noir', 'Orange', 'Rose', 'Rouge', 'Vert', 'Violet'];
-  const puissanceOptions = ['3CV', '5CV', '7CV', '10CV', '12CV', '15CV'];
-  const usageOptions = ['TAXI', 'PRIVE', 'SOCIETE', 'TRANSPORT', 'OFFICIEL', 'LOCATION'];
-  const marqueOptions = ['TOYOTA', 'RENAULT', 'PEUGEOT', 'HONDA', 'YAMAHA', 'SUZUKI', 'MERCEDES', 'BMW', 'AUDI', 'VOLKSWAGEN'];
-  const energieOptions = ['Essence', 'Diesel', 'Électrique', 'Hybride'];
+  // Formatage du prix - CORRIGÉ : Utilise le prix de la table impot
+  const prixFormate = `${impot.prix} $`;
 
-  // Récupération des données depuis la base DGI
+  // Chargement des données dynamiques au montage du composant
+  useEffect(() => {
+    const loadDynamicData = async () => {
+      try {
+        // Charger les types d'engins
+        const typeEnginsResponse = await getTypeEnginsActifs();
+        if (typeEnginsResponse.status === 'success') {
+          setTypeEngins(typeEnginsResponse.data || []);
+        }
+
+        // Charger les énergies
+        const energiesResponse = await getEnergies();
+        if (energiesResponse.status === 'success') {
+          setEnergies(energiesResponse.data || []);
+        }
+
+        // Charger les couleurs
+        const couleursResponse = await getCouleurs();
+        if (couleursResponse.status === 'success') {
+          setCouleurs(couleursResponse.data || []);
+        }
+
+        // Charger les usages
+        const usagesResponse = await getUsages();
+        if (usagesResponse.status === 'success') {
+          setUsages(usagesResponse.data || []);
+        }
+
+        // Charger les marques
+        const marquesResponse = await getMarquesEngins();
+        if (marquesResponse.status === 'success') {
+          setMarques(marquesResponse.data || []);
+        }
+
+        // Charger les puissances fiscales
+        const puissancesResponse = await getPuissancesFiscalesActives();
+        if (puissancesResponse.status === 'success') {
+          setPuissancesFiscales(puissancesResponse.data || []);
+        }
+
+      } catch (error) {
+        console.error('Erreur lors du chargement des données dynamiques:', error);
+      }
+    };
+
+    loadDynamicData();
+  }, []);
+
+  // Filtrer les marques et puissances quand le type d'engin change
+  useEffect(() => {
+    if (formData.typeEngin) {
+      const marquesFiltrees = marques.filter(marque => 
+        marque.type_engin_libelle === formData.typeEngin
+      );
+      setFilteredMarques(marquesFiltrees);
+      
+      const puissancesFiltrees = puissancesFiscales.filter(puissance =>
+        puissance.type_engin_libelle === formData.typeEngin
+      );
+      setFilteredPuissances(puissancesFiltrees);
+    } else {
+      setFilteredMarques([]);
+      setFilteredPuissances([]);
+    }
+  }, [formData.typeEngin, marques, puissancesFiscales]);
+
+  // Récupération des données depuis la base DGI - CORRIGÉ
   const recupererDonneesPlaque = async (plaque: string) => {
     setIsLoading(true);
     setErreurVerification('');
@@ -346,7 +424,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
       const donnees = result.data as DonneesPlaque;
       setDonneesPlaque(donnees);
       
-      // Mise à jour du formulaire avec les données récupérées
+      // Mise à jour du formulaire avec les données récupérées - CORRIGÉ
       setFormData({
         nom: donnees.nom || '',
         prenom: donnees.prenom || '',
@@ -359,15 +437,13 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
         anneeCirculation: donnees.annee_circulation || '',
         couleur: donnees.couleur || '',
         puissanceFiscal: donnees.puissance_fiscal || '',
-        usage: donnees.usage_engin || '',
-        marque: donnees.marque || '',
+        usage: donnees.usage_engin || '',  // ← CORRIGÉ: usage_engin
+        marque: donnees.marque || '',      // ← CORRIGÉ: marque
         energie: donnees.energie || '',
         numeroPlaque: donnees.numero_plaque || '',
         numeroChassis: donnees.numero_chassis || '',
         numeroMoteur: donnees.numero_moteur || ''
       });
-
-      console.log('Données récupérées:', donnees);
       
       setEtapeActuelle('confirmation');
       
@@ -445,7 +521,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           annee_fabrication: formData.anneeFabrication,
           annee_circulation: formData.anneeCirculation,
           puissance_fiscal: formData.puissanceFiscal,
-          montant: '10'
+          montant: impot.prix.toString() // ← CORRIGÉ: Utilise le prix de l'impôt
         };
 
         setSuccessData(completeData);
@@ -493,6 +569,9 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
       numeroPlaque: '', numeroChassis: '', numeroMoteur: ''
     });
   };
+
+  // Générer les options d'années
+  const anneeOptions = Array.from({ length: 30 }, (_, i) => (new Date().getFullYear() - i).toString());
 
   // Rendu de l'étape de vérification
   const renderEtapeVerification = () => (
@@ -547,7 +626,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <div>
               <h4 className="font-semibold text-blue-800 text-sm">Coût du Service</h4>
               <p className="text-blue-700 text-sm mt-1">
-                Frais de reproduction de carte : <strong>10 $</strong>
+                Frais de reproduction de carte : <strong>{prixFormate}</strong>
               </p>
             </div>
           </div>
@@ -736,8 +815,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner le type d'engin</option>
-              {typeEnginOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {typeEngins.map((option) => (
+                <option key={option.id} value={option.libelle}>{option.libelle}</option>
               ))}
             </select>
           </div>
@@ -752,8 +831,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner la marque</option>
-              {marqueOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {filteredMarques.map((option) => (
+                <option key={option.id} value={option.libelle}>{option.libelle}</option>
               ))}
             </select>
           </div>
@@ -768,8 +847,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner l'énergie</option>
-              {energieOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {energies.map((option) => (
+                <option key={option.id} value={option.nom}>{option.nom}</option>
               ))}
             </select>
           </div>
@@ -816,8 +895,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner la couleur</option>
-              {couleurOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {couleurs.map((option) => (
+                <option key={option.id} value={option.nom}>{option.nom}</option>
               ))}
             </select>
           </div>
@@ -832,15 +911,15 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner la puissance</option>
-              {puissanceOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {filteredPuissances.map((option) => (
+                <option key={option.id} value={option.libelle}>{option.libelle}</option>
               ))}
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Usage
+              Usage <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.usage}
@@ -848,8 +927,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner l'usage</option>
-              {usageOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {usages.map((option) => (
+                <option key={option.id} value={option.libelle}>{option.libelle}</option>
               ))}
             </select>
           </div>
@@ -887,7 +966,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
         <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200 mb-6">
           <div>
             <div className="text-sm text-orange-600">Frais de Reproduction</div>
-            <div className="text-2xl font-bold text-orange-800">10 $</div>
+            <div className="text-2xl font-bold text-orange-800">{prixFormate}</div>
             <div className="text-xs text-orange-600 mt-1">
               Pour l'impression de la nouvelle carte
             </div>
@@ -1000,14 +1079,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           isOpen={showPaiement}
           onClose={() => setShowPaiement(false)}
           onPaiement={traiterPaiement}
-          montant="10 $"
+          montant={prixFormate}
           isLoading={isPaiementProcessing}
         />
 
         <SuccessModal
           isOpen={showSuccess}
           onClose={handleSuccessClose}
-          onPrint={handlePrint}
+          onPrint={handlePrint} 
           data={successData}
         />
 

@@ -74,9 +74,7 @@ export default function UtilisateurTable({
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                    {utilisateur.date_creation 
-                      ? new Date(utilisateur.date_creation).toLocaleDateString('fr-FR') 
-                      : 'N/A'}
+                    {utilisateur.date_creation }
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center space-x-1">

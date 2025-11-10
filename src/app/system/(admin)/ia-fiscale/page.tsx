@@ -16,7 +16,7 @@ export default function IAFiscale() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: 'Bonjour ! Je suis votre assistant IA fiscal spécialisé dans l\'immatriculation des engins. Je peux vous aider avec les données des particuliers, les plaques, les paiements, et toute question fiscale. Comment puis-je vous aider aujourd\'hui ?',
+      content: 'Bonjour ! Je suis votre assistant IA fiscal spécialisé dans l\'immatriculation des engins. Je peux vous aider avec les données des particuliers, les plaques, les paiements, les sites d\'enregistrement, les localités, et toute question fiscale. Comment puis-je vous aider aujourd\'hui ?',
       isUser: false,
       timestamp: new Date(),
     },
@@ -82,7 +82,7 @@ export default function IAFiscale() {
     
     const messageChargement: Message = {
       id: Date.now().toString(),
-      content: '🔄 Génération de l\'analyse fiscale complète en cours...',
+      content: '🔄 Génération de l\'analyse fiscale complète en cours... Cette analyse inclut les sites, localités et données temporelles.',
       isUser: false,
       timestamp: new Date(),
     };
@@ -124,7 +124,7 @@ export default function IAFiscale() {
     
     const messageChargement: Message = {
       id: Date.now().toString(),
-      content: `🔍 Vérification de la conformité fiscale pour le NIF: ${nif}...`,
+      content: `🔍 Vérification de la conformité fiscale pour le NIF: ${nif}... (incluant localisation et sites)`,
       isUser: false,
       timestamp: new Date(),
     };
@@ -194,7 +194,7 @@ export default function IAFiscale() {
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold text-white">IA Fiscal - Assistant Immobilisation</h2>
-                    <p className="text-blue-100 text-sm">Système d'immatriculation • Données temps réel</p>
+                    <p className="text-blue-100 text-sm">Système d'immatriculation • Données temps réel • Sites & Localités</p>
                   </div>
                 </div>
                 <div className="flex space-x-2">
@@ -298,7 +298,7 @@ export default function IAFiscale() {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Posez votre question sur les immatriculations, les particuliers, les plaques, les paiements..."
+                    placeholder="Posez votre question sur les immatriculations, les particuliers, les plaques, les paiements, les sites, les localités..."
                     className="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-[#2D5B7A]/20 focus:border-[#2D5B7A] transition-all duration-200 bg-gray-50/50 backdrop-blur-sm"
                     disabled={isLoading}
                   />
@@ -344,7 +344,10 @@ export default function IAFiscale() {
                     "Liste des particuliers avec plusieurs véhicules ?",
                     "Statut des plaques série AB ?",
                     "Paiements du dernier mois ?",
-                    "Véhicules par type d'énergie ?"
+                    "Véhicules par type d'énergie ?",
+                    "Sites d'enregistrement à Kinshasa ?",
+                    "Motos immatriculées à Maniema ?",
+                    "Dernières modifications des engins ?"
                   ].map((suggestion, index) => (
                     <button
                       key={index}
@@ -372,15 +375,21 @@ export default function IAFiscale() {
           </div>
           <p className="text-gray-600 max-w-4xl mx-auto leading-relaxed">
             <strong>Information importante :</strong> L'IA analyse les données temps réel du système d'immatriculation. 
-            Les réponses sont basées sur les données disponibles des tables SQL (particuliers, engins, paiements, séries). 
+            Les réponses sont basées sur les données disponibles des tables SQL (particuliers, engins, paiements, séries, sites, provinces, audits). 
             Pour des situations complexes, consultez toujours un expert fiscal agréé.
           </p>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-500">
             <div className="flex items-center justify-center space-x-2">
               <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <span>Données temps réel</span>
+            </div>
+            <div className="flex items-center justify-center space-x-2">
+              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Sites & Localités</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
               <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,7 +401,7 @@ export default function IAFiscale() {
               <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span>Integration SQL complète</span>
+              <span>Audits & Historique</span>
             </div>
           </div>
         </div>

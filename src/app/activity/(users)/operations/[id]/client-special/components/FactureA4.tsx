@@ -34,18 +34,23 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: `Facture-${factureData.numeros_plaques[0] || 'PLAQUES'}`,
-    onAfterPrint: onClose,
     pageStyle: `
       @page {
         size: A4;
         margin: 15mm;
       }
       @media print {
-        html, body {
-          height: 100%;
-          margin: 0 !important;
-          padding: 0 !important;
-          overflow: visible;
+        body * {
+          visibility: hidden;
+        }
+        .facture-content, .facture-content * {
+          visibility: visible;
+        }
+        .facture-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
         }
         .no-print {
           display: none !important;
@@ -61,21 +66,22 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      {/* Conteneur principal avec largeur limitée */}
-      <div className="bg-white rounded-2xl w-full max-w-4xl mx-auto p-6 shadow-2xl border border-gray-100">
-        <div className="flex items-center justify-between mb-6 no-print">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
+      {/* Conteneur principal avec hauteur automatique */}
+      <div className="bg-white rounded-2xl w-full max-w-4xl mx-auto my-8 p-6 shadow-2xl border border-gray-100">
+        {/* En-tête avec boutons - TOUJOURS VISIBLE */}
+        <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-gray-900">Facture A4</h3>
           <div className="flex space-x-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-print"
             >
               Imprimer
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors no-print"
             >
               Fermer
             </button>
@@ -85,25 +91,12 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
         {/* Contenu de la facture avec largeur A4 */}
         <div 
           ref={contentRef} 
-          className="bg-white p-8 mx-auto"
+          className="facture-content bg-white p-8 mx-auto border border-gray-200"
           style={{ 
             width: '210mm', // Largeur A4
             minHeight: '297mm', // Hauteur A4
           }}
         >
-          <style>{`
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              @page {
-                size: A4;
-                margin: 15mm;
-              }
-            }
-          `}</style>
-
           {/* En-tête */}
           <div className="text-center border-b-2 border-gray-300 pb-4 mb-6">
             <h1 className="text-3xl font-bold text-gray-900">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</h1>

@@ -101,11 +101,7 @@ export default function BeneficiaireTable({
                       </span>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                      {beneficiaire.date_creation
-                        ? new Date(
-                            beneficiaire.date_creation
-                          ).toLocaleDateString("fr-FR")
-                        : "N/A"}
+                      {beneficiaire.date_creation}
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center justify-center space-x-1">

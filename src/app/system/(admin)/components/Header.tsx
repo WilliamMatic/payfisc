@@ -9,11 +9,12 @@ import {
   LogOut,
   Menu,
   X,
+  History,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useTheme } from "../../../contexts/ThemeContext"; // Importer le hook
+import { useTheme } from "../../../contexts/ThemeContext";
 
 interface Notification {
   id: number;
@@ -25,12 +26,21 @@ interface Notification {
   date_lu: string | null;
 }
 
+interface AuditLog {
+  id: number;
+  user_id: string;
+  user_type: string;
+  action: string;
+  timestamp: string;
+}
+
 interface HeaderProps {
   isFullscreen: boolean;
   toggleFullscreen: () => void;
   setIsSidebarOpen: (open: boolean) => void;
   onLogout: () => void;
   notifications: Notification[];
+  auditLogs: AuditLog[];
 }
 
 export default function Header({
@@ -39,13 +49,16 @@ export default function Header({
   setIsSidebarOpen,
   onLogout,
   notifications,
+  auditLogs,
 }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { agent } = useAuth();
-  const { theme, toggleTheme } = useTheme(); // Utiliser le hook theme
+  const { theme, toggleTheme } = useTheme();
 
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const auditLogsRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Fermer les menus en cliquant à l'extérieur
@@ -56,6 +69,12 @@ export default function Header({
         !notificationsRef.current.contains(event.target as Node)
       ) {
         setShowNotifications(false);
+      }
+      if (
+        auditLogsRef.current &&
+        !auditLogsRef.current.contains(event.target as Node)
+      ) {
+        setShowAuditLogs(false);
       }
       if (
         userMenuRef.current &&
@@ -90,9 +109,22 @@ export default function Header({
       declaration_enregistree: "📝",
       declaration_supprimee: "🗑️",
       paiement_effectue: "💳",
+      vente_synchronisee: "📱",
       default: "🔔",
     };
     return emojiMap[type] || emojiMap["default"];
+  };
+
+  // Fonction pour obtenir un emoji basé sur le type d'utilisateur
+  const getUserTypeEmoji = (userType: string) => {
+    const emojiMap: { [key: string]: string } = {
+      admin: "👑",
+      agent: "👤",
+      utilisateur: "👥",
+      system: "⚙️",
+      default: "🔔",
+    };
+    return emojiMap[userType] || emojiMap["default"];
   };
 
   const userName = agent ? `${agent.prenom} ${agent.nom}` : "Utilisateur";
@@ -128,6 +160,72 @@ export default function Header({
 
         {/* Actions */}
         <div className="flex items-center space-x-2">
+          {/* Logs d'audit */}
+          <div className="relative" ref={auditLogsRef}>
+            <button
+              onClick={() => setShowAuditLogs(!showAuditLogs)}
+              className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
+              aria-label="Historique des activités"
+            >
+              <History className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              {auditLogs.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {auditLogs.length}
+                </span>
+              )}
+            </button>
+
+            {showAuditLogs && (
+              <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-50">
+                <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                    Historique des activités
+                  </h3>
+                  <button
+                    onClick={() => setShowAuditLogs(false)}
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    aria-label="Fermer l'historique"
+                  >
+                    <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {auditLogs.length > 0 ? (
+                    auditLogs.map((log) => (
+                      <div
+                        key={log.id}
+                        className="p-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="flex items-start space-x-3">
+                          <span className="text-lg mt-0.5">
+                            {getUserTypeEmoji(log.user_type)}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                              {log.action}
+                            </p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                {log.user_type}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-500">
+                                {formatRelativeTime(log.timestamp)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                      Aucune activité récente
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <button

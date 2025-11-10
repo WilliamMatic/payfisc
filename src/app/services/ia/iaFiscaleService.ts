@@ -7,11 +7,18 @@ export interface DonneesFiscales {
   paiements: any[];
   beneficiaires: any[];
   impots: any[];
+  sites: {
+    sites: any[];
+    provinces: any[];
+  };
+  audits: any[];
   metadata: {
     timestamp: string;
     total_particuliers: number;
     total_engins: number;
     total_paiements: number;
+    total_sites: number;
+    total_provinces: number;
   };
 }
 
@@ -138,7 +145,7 @@ export const poserQuestionIAFiscale = async (
 };
 
 /**
- * Construit un prompt contextuel pour l'IA
+ * Construit un prompt contextuel pour l'IA avec toutes les données
  */
 const construirePromptContextuel = (
   question: string,
@@ -148,10 +155,12 @@ const construirePromptContextuel = (
   let contexte = `Vous êtes un expert fiscal assistant pour un système de gestion des immatriculations de véhicules.
 
 CONTEXTE DU SYSTÈME:
-- Gestion des séries de plaques d'immatriculation
-- Suivi des particuliers et de leurs véhicules
-- Traitement des paiements et répartitions
+- Gestion des séries de plaques d'immatriculation par province
+- Suivi des particuliers et de leurs véhicules avec localisation
+- Traitement des paiements et répartitions par site
 - Gestion des bénéficiaires des paiements
+- Suivi des sites d'enregistrement et des provinces
+- Audit complet des activités du système
 
 DONNÉES DISPONIBLES:
 `;
@@ -163,25 +172,68 @@ Statistiques générales:
 - ${donneesFiscales.metadata.total_particuliers} particuliers enregistrés
 - ${donneesFiscales.metadata.total_engins} véhicules immatriculés
 - ${donneesFiscales.metadata.total_paiements} paiements traités
+- ${donneesFiscales.metadata.total_sites} sites d'enregistrement
+- ${donneesFiscales.metadata.total_provinces} provinces couvertes
 - Dernière mise à jour: ${donneesFiscales.metadata.timestamp}
 `;
   }
 
+  // Ajout des informations sur les sites et provinces
+  if (donneesFiscales?.sites) {
+    contexte += '\nSITES ET PROVINCES:\n';
+    
+    if (donneesFiscales.sites.provinces && donneesFiscales.sites.provinces.length > 0) {
+      contexte += `- Provinces: ${donneesFiscales.sites.provinces.map((p: any) => `${p.nom} (${p.code})`).join(', ')}\n`;
+    }
+    
+    if (donneesFiscales.sites.sites && donneesFiscales.sites.sites.length > 0) {
+      contexte += `- Sites d'enregistrement: ${donneesFiscales.sites.sites.map((s: any) => `${s.nom} (${s.code})`).join(', ')}\n`;
+    }
+  }
+
   // Ajout des données de recherche spécifiques si disponibles
   if (rechercheResult.status === 'success' && rechercheResult.data) {
-    contexte += '\nDONNÉS SPÉCIFIQUES PERTINENTES:\n';
+    contexte += '\nDONNÉES SPÉCIFIQUES PERTINENTES:\n';
     
     if (rechercheResult.data.par_nif && rechercheResult.data.par_nif.length > 0) {
-      contexte += `- Données trouvées par NIF: ${JSON.stringify(rechercheResult.data.par_nif, null, 2)}\n`;
+      const particulier = rechercheResult.data.par_nif[0];
+      contexte += `- Données trouvées par NIF: ${particulier.nom} ${particulier.prenom} (${particulier.nif})\n`;
+      contexte += `  Localité: ${particulier.ville}, ${particulier.province}\n`;
+      contexte += `  Site: ${particulier.site_nom || 'Non spécifié'}\n`;
+      contexte += `  Nombre d'engins: ${particulier.nombre_engins || 0}\n`;
     }
     
     if (rechercheResult.data.par_plaque && rechercheResult.data.par_plaque.length > 0) {
-      contexte += `- Données trouvées par plaque: ${JSON.stringify(rechercheResult.data.par_plaque, null, 2)}\n`;
+      const engin = rechercheResult.data.par_plaque[0];
+      contexte += `- Données trouvées par plaque: ${engin.numero_plaque}\n`;
+      contexte += `  Propriétaire: ${engin.nom} ${engin.prenom}\n`;
+      contexte += `  Site d'immatriculation: ${engin.engin_site_nom || 'Non spécifié'}\n`;
+      contexte += `  Type: ${engin.type_engin || 'Non spécifié'}\n`;
     }
     
     if (rechercheResult.data.par_nom && rechercheResult.data.par_nom.length > 0) {
-      contexte += `- Données trouvées par nom: ${JSON.stringify(rechercheResult.data.par_nom, null, 2)}\n`;
+      const particulier = rechercheResult.data.par_nom[0];
+      contexte += `- Données trouvées par nom: ${particulier.nom} ${particulier.prenom}\n`;
+      contexte += `  Localité: ${particulier.ville}, ${particulier.province}\n`;
+      contexte += `  Engins: ${particulier.nombre_engins || 0} véhicule(s)\n`;
     }
+
+    if (rechercheResult.data.par_localite && rechercheResult.data.par_localite.length > 0) {
+      contexte += `- Données trouvées par localité: ${rechercheResult.data.par_localite.length} particulier(s) trouvé(s)\n`;
+    }
+
+    if (rechercheResult.data.par_type_engin && rechercheResult.data.par_type_engin.length > 0) {
+      contexte += `- Données trouvées par type d'engin: ${rechercheResult.data.par_type_engin.length} engin(s) trouvé(s)\n`;
+    }
+  }
+
+  // Ajout des informations sur les audits récents
+  if (donneesFiscales?.audits && donneesFiscales.audits.length > 0) {
+    contexte += '\nAUDITS RÉCENTS (activités du système):\n';
+    const auditsRecents = donneesFiscales.audits.slice(0, 5); // 5 derniers audits
+    auditsRecents.forEach((audit: any) => {
+      contexte += `- [${audit.timestamp}] ${audit.action}\n`;
+    });
   }
 
   contexte += `
@@ -194,8 +246,10 @@ INSTRUCTIONS POUR VOTRE RÉPONSE:
 3. Si les données sont insuffisantes, demandez des précisions
 4. Structurez votre réponse de manière claire
 5. Utilisez des termes fiscaux appropriés
-6. Si c'est une question sur un particulier spécifique, utilisez les données trouvées
-7. Pour les questions statistiques, utilisez les métadonnées disponibles
+6. Pour les questions de localisation, utilisez les données de sites et provinces
+7. Pour les questions sur les engins, précisez le type et le site d'immatriculation
+8. Pour les questions temporelles, utilisez les dates de création et modification
+9. Mentionnez les audits récents si pertinents pour la question
 
 RÉPONSE (en français, soyez concis mais complet):`;
 
@@ -220,13 +274,16 @@ DONNÉES DU SYSTÈME:
 ${JSON.stringify(donneesResult.data, null, 2)}
 
 Veuillez fournir une analyse incluant:
-1. Aperçu général de l'activité
-2. Points forts et points d'amélioration
-3. Recommandations pour l'optimisation fiscale
-4. Alertes sur d'éventuels problèmes
-5. Perspectives d'évolution
+1. Aperçu général de l'activité par province et site
+2. Répartition géographique des immatriculations
+3. Analyse des types d'engins par localité
+4. Performance des sites d'enregistrement
+5. Points forts et points d'amélioration
+6. Recommandations pour l'optimisation fiscale
+7. Alertes sur d'éventuels problèmes
+8. Perspectives d'évolution basées sur les audits
 
-Structurez votre réponse de manière professionnelle.
+Structurez votre réponse de manière professionnelle avec des sections claires.
 `;
 
     return await askGemini(promptAnalyse);
@@ -250,7 +307,7 @@ export const verifierConformiteFiscale = async (nif: string): Promise<ApiRespons
       return donneesResult;
     }
 
-    // Trouver le particulier par NIF
+    // Recherche du particulier par NIF
     const particulier = donneesResult.data.particuliers.find((p: any) => p.nif === nif);
     
     if (!particulier) {
@@ -267,13 +324,14 @@ DONNÉES DU PARTICULIER:
 ${JSON.stringify(particulier, null, 2)}
 
 Vérifiez:
-1. Complétude des informations
-2. Cohérence des données
-3. Conformité réglementaire
-4. Points d'attention
-5. Recommandations spécifiques
+1. Complétude des informations personnelles et de localisation
+2. Cohérence des données avec le site d'enregistrement
+3. Conformité réglementaire des engins immatriculés
+4. Historique des paiements et répartitions
+5. Points d'attention sur les dates de modification
+6. Recommandations spécifiques par rapport à la localité
 
-Fournissez une analyse détaillée de la conformité.
+Fournissez une analyse détaillée de la conformité incluant les aspects géographiques et temporels.
 `;
 
     return await askGemini(promptConformite);

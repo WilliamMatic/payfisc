@@ -1,10 +1,11 @@
-// ClientSimpleForm.tsx avec intégration de FactureA4
 "use client";
-import { useState } from "react";
-import { Save, User, Car, Calculator, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Save, User, Car, Calculator, X, Search } from "lucide-react";
 import {
   soumettreCommandePlaques,
   verifierStockDisponible,
+  rechercherPlaquesDisponibles,
+  verifierSequencePlaques,
 } from "@/services/client-simple/clientSimpleService";
 import FactureA4 from "./FactureA4";
 
@@ -15,6 +16,7 @@ interface FormData {
   email: string;
   adresse: string;
   nombrePlaques: string;
+  numeroPlaqueDebut: string;
 }
 
 interface Utilisateur {
@@ -40,7 +42,11 @@ interface PaiementData {
   banque?: string;
 }
 
-// Interface pour les données de facture compatibles avec FactureA4
+interface PlaqueSuggestion {
+  numero_plaque: string;
+  disponible: boolean;
+}
+
 interface FactureData {
   nom: string;
   prenom: string;
@@ -72,6 +78,7 @@ export default function ClientSimpleForm({
     email: "",
     adresse: "",
     nombrePlaques: "1",
+    numeroPlaqueDebut: "",
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -83,6 +90,15 @@ export default function ClientSimpleForm({
   const [paiementData, setPaiementData] = useState<PaiementData>({
     modePaiement: "mobile_money",
   });
+  
+  // États pour la recherche de plaques
+  const [suggestionsPlaques, setSuggestionsPlaques] = useState<PlaqueSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [rechercheEnCours, setRechercheEnCours] = useState(false);
+  const [sequenceValide, setSequenceValide] = useState(false);
+  const [messageSequence, setMessageSequence] = useState("");
+  const [sequencePlaques, setSequencePlaques] = useState<string[]>([]);
+  const rechercheTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculs
   const montantUnitaire = utilisateur?.formule
@@ -95,6 +111,87 @@ export default function ClientSimpleForm({
   const formuleCalcul = utilisateur?.formule
     ? `Montant = ${utilisateur.formule} × ${nombrePlaques} plaque(s)`
     : `Montant = 32 × ${nombrePlaques} plaque(s)`;
+
+  // Recherche des plaques en temps réel
+  useEffect(() => {
+    if (rechercheTimeoutRef.current) {
+      clearTimeout(rechercheTimeoutRef.current);
+    }
+
+    if (formData.numeroPlaqueDebut.length >= 2) {
+      setRechercheEnCours(true);
+      rechercheTimeoutRef.current = setTimeout(async () => {
+        try {
+          const result = await rechercherPlaquesDisponibles(
+            formData.numeroPlaqueDebut,
+            utilisateur
+          );
+          
+          if (result.status === "success" && result.data?.suggestions) {
+            setSuggestionsPlaques(result.data.suggestions);
+            setShowSuggestions(true);
+          } else {
+            setSuggestionsPlaques([]);
+            setShowSuggestions(false);
+          }
+        } catch (error) {
+          console.error("Erreur recherche plaques:", error);
+          setSuggestionsPlaques([]);
+        } finally {
+          setRechercheEnCours(false);
+        }
+      }, 300);
+    } else {
+      setSuggestionsPlaques([]);
+      setShowSuggestions(false);
+      setSequenceValide(false);
+      setMessageSequence("");
+      setSequencePlaques([]);
+    }
+
+    return () => {
+      if (rechercheTimeoutRef.current) {
+        clearTimeout(rechercheTimeoutRef.current);
+      }
+    };
+  }, [formData.numeroPlaqueDebut, utilisateur]);
+
+  // Vérification de la séquence quand la plaque de début ou la quantité change
+  useEffect(() => {
+    if (formData.numeroPlaqueDebut && nombrePlaques > 0) {
+      verifierSequenceDisponible();
+    } else {
+      setSequenceValide(false);
+      setMessageSequence("");
+      setSequencePlaques([]);
+    }
+  }, [formData.numeroPlaqueDebut, formData.nombrePlaques]);
+
+  const verifierSequenceDisponible = async () => {
+    if (!formData.numeroPlaqueDebut || !nombrePlaques) return;
+
+    try {
+      const result = await verifierSequencePlaques(
+        formData.numeroPlaqueDebut,
+        nombrePlaques,
+        utilisateur
+      );
+
+      if (result.status === "success" && result.data?.sequence_valide) {
+        setSequenceValide(true);
+        setMessageSequence(`Séquence valide: ${result.data.sequence_plaques?.join(', ')}`);
+        setSequencePlaques(result.data.sequence_plaques || []);
+      } else {
+        setSequenceValide(false);
+        setMessageSequence(result.message || "Séquence non disponible");
+        setSequencePlaques([]);
+      }
+    } catch (error) {
+      setSequenceValide(false);
+      setMessageSequence("Erreur de vérification");
+      setSequencePlaques([]);
+    }
+  };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
@@ -110,6 +207,14 @@ export default function ClientSimpleForm({
     }
   };
 
+  const selectPlaque = (plaque: string) => {
+    setFormData(prev => ({
+      ...prev,
+      numeroPlaqueDebut: plaque
+    }));
+    setShowSuggestions(false);
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
@@ -119,6 +224,8 @@ export default function ClientSimpleForm({
       newErrors.telephone = "Le téléphone est obligatoire";
     if (!formData.adresse.trim())
       newErrors.adresse = "L'adresse est obligatoire";
+    if (!formData.numeroPlaqueDebut.trim())
+      newErrors.numeroPlaqueDebut = "Le numéro de plaque de début est obligatoire";
 
     const nbPlaques = parseInt(formData.nombrePlaques);
     if (isNaN(nbPlaques) || nbPlaques < 1) {
@@ -126,18 +233,21 @@ export default function ClientSimpleForm({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0 && sequenceValide;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      if (!sequenceValide) {
+        alert("Veuillez sélectionner une séquence de plaques valide");
+      }
       return;
     }
 
     // Vérifier le stock avant de continuer
-    const stockResult = await verifierStockDisponible(nombrePlaques);
+    const stockResult = await verifierStockDisponible(nombrePlaques, utilisateur);
     if (stockResult.status === "error" || !stockResult.data?.suffisant) {
       alert(
         `Stock insuffisant! Disponible: ${
@@ -175,6 +285,7 @@ export default function ClientSimpleForm({
         },
         {
           nombrePlaques: nombrePlaques,
+          numeroPlaqueDebut: formData.numeroPlaqueDebut,
         },
         paiementData,
         utilisateur
@@ -228,7 +339,11 @@ export default function ClientSimpleForm({
       email: "",
       adresse: "",
       nombrePlaques: "1",
+      numeroPlaqueDebut: "",
     });
+    setSequenceValide(false);
+    setMessageSequence("");
+    setSequencePlaques([]);
   };
 
   return (
@@ -359,16 +474,68 @@ export default function ClientSimpleForm({
                 Commande de Plaques
               </h2>
               <p className="text-gray-600 text-sm">
-                Spécifiez le nombre de plaques à acheter
+                Spécifiez le numéro de plaque de début et la quantité
               </p>
             </div>
           </div>
 
-          <div className="max-w-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* NUMERO PLAQUE DEBUT */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Numéro de plaque de début <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.numeroPlaqueDebut}
+                  onChange={(e) => handleInputChange("numeroPlaqueDebut", e.target.value)}
+                  placeholder="Ex: AC12, BD25, etc."
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.numeroPlaqueDebut ? "border-red-300" : "border-gray-300"
+                  }`}
+                />
+                {rechercheEnCours && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              {errors.numeroPlaqueDebut && (
+                <p className="text-red-600 text-sm mt-1">{errors.numeroPlaqueDebut}</p>
+              )}
+
+              {/* Suggestions de plaques */}
+              {showSuggestions && suggestionsPlaques.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                  {suggestionsPlaques.map((plaque, index) => (
+                    <div
+                      key={index}
+                      onClick={() => plaque.disponible && selectPlaque(plaque.numero_plaque)}
+                      className={`p-3 cursor-pointer border-b border-gray-100 last:border-b-0 ${
+                        plaque.disponible 
+                          ? "hover:bg-blue-50 text-gray-800" 
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{plaque.numero_plaque}</span>
+                        {plaque.disponible ? (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Disponible</span>
+                        ) : (
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Occupé</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* NOMBRE DE PLAQUES */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre de plaques à acheter{" "}
-                <span className="text-red-500">*</span>
+                Nombre de plaques à acheter <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -392,6 +559,32 @@ export default function ClientSimpleForm({
               </p>
             </div>
           </div>
+
+          {/* Affichage de la séquence */}
+          {formData.numeroPlaqueDebut && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+              <div className="flex items-center space-x-2 mb-2">
+                <Search className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">Séquence de plaques:</span>
+              </div>
+              {sequenceValide ? (
+                <div className="text-green-600 text-sm">
+                  <div className="font-semibold">✓ Séquence disponible</div>
+                  <div className="mt-1">
+                    {sequencePlaques.join(' → ')}
+                  </div>
+                </div>
+              ) : messageSequence ? (
+                <div className="text-red-600 text-sm">
+                  <div className="font-semibold">✗ {messageSequence}</div>
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm">
+                  Saisissez un numéro de plaque valide pour voir la séquence
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* CALCUL ET SOUMISSION */}
@@ -441,7 +634,7 @@ export default function ClientSimpleForm({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !sequenceValide}
               className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {isSubmitting ? (
@@ -487,7 +680,13 @@ export default function ClientSimpleForm({
                     <strong>Téléphone:</strong> {formData.telephone}
                   </div>
                   <div>
+                    <strong>Plaque de début:</strong> {formData.numeroPlaqueDebut}
+                  </div>
+                  <div>
                     <strong>Nombre de plaques:</strong> {nombrePlaques}
+                  </div>
+                  <div>
+                    <strong>Séquence:</strong> {sequencePlaques.join(', ')}
                   </div>
                   <div>
                     <strong>Montant total:</strong> {montantAPayer}
@@ -542,7 +741,7 @@ export default function ClientSimpleForm({
   );
 }
 
-// Composant Modal de Paiement
+// Composant Modal de Paiement (inchangé)
 interface ModalPaiementProps {
   montant: string;
   onClose: () => void;

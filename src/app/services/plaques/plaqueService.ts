@@ -1,8 +1,15 @@
-/**
+ /**
  * Service pour la gestion des plaques - Interface avec l'API backend
  */
 
 // Interfaces pour les données
+export interface Province {
+  id: number;
+  nom: string;
+  code: string;
+  actif: boolean;
+}
+
 export interface Serie {
   id: number;
   nom_serie: string;
@@ -13,6 +20,11 @@ export interface Serie {
   items_utilises: number;
   date_creation: string;
   date_creation_formatted?: string;
+  province_id: number;
+  province_nom: string;
+  province_code: string;
+  debut_numeros: number;
+  fin_numeros: number;
 }
 
 export interface SerieItem {
@@ -21,6 +33,7 @@ export interface SerieItem {
   value: number;
   statut: "0" | "1";
   nom_serie: string;
+  province_nom: string;
   date_creation: string;
 }
 
@@ -72,6 +85,41 @@ export const getSeries = async (): Promise<ApiResponse> => {
 };
 
 /**
+ * Récupère la liste des provinces actives
+ */
+export const getProvinces = async (): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/plaques/lister_provinces.php`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la récupération des provinces",
+      };
+    }
+
+    return {
+      status: "success",
+      data: data.data,
+    };
+  } catch (error) {
+    console.error("Get provinces error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des provinces",
+    };
+  }
+};
+
+/**
  * Récupère les items d'une série spécifique
  */
 export const getSerieItems = async (serieId: number): Promise<ApiResponse> => {
@@ -114,11 +162,17 @@ export const getSerieItems = async (serieId: number): Promise<ApiResponse> => {
  */
 export const addSerie = async (serieData: {
   nom_serie: string;
+  province_id: number;
+  debut_numeros: number;
+  fin_numeros: number;
   description?: string;
 }): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
     formData.append("nom_serie", serieData.nom_serie);
+    formData.append("province_id", serieData.province_id.toString());
+    formData.append("debut_numeros", serieData.debut_numeros.toString());
+    formData.append("fin_numeros", serieData.fin_numeros.toString());
     if (serieData.description) {
       formData.append("description", serieData.description);
     }
@@ -155,6 +209,7 @@ export const updateSerie = async (
   id: number,
   serieData: {
     nom_serie: string;
+    province_id: number;
     description?: string;
   }
 ): Promise<ApiResponse> => {
@@ -162,6 +217,7 @@ export const updateSerie = async (
     const formData = new FormData();
     formData.append("id", id.toString());
     formData.append("nom_serie", serieData.nom_serie);
+    formData.append("province_id", serieData.province_id.toString());
     if (serieData.description) {
       formData.append("description", serieData.description);
     }

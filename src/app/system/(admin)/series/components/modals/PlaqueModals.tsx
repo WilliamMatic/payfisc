@@ -4,7 +4,7 @@ import EditSerieModal from './EditSerieModal';
 import DeleteSerieModal from './DeleteSerieModal';
 import StatusSerieModal from './StatusSerieModal';
 import ItemsSerieModal from './ItemsSerieModal';
-import { Serie as SerieType } from '@/services/plaques/plaqueService';
+import { Serie as SerieType, Province } from '@/services/plaques/plaqueService';
 
 interface PlaqueModalsProps {
   showAddModal: boolean;
@@ -15,8 +15,12 @@ interface PlaqueModalsProps {
   selectedSerie: SerieType | null;
   formData: { 
     nom_serie: string; 
+    province_id: string;
+    debut_numeros: number;
+    fin_numeros: number;
     description: string;
   };
+  provinces: Province[];
   processing: boolean;
   onAddClose: () => void;
   onEditClose: () => void;
@@ -25,6 +29,9 @@ interface PlaqueModalsProps {
   onItemsClose: () => void;
   onFormDataChange: (data: { 
     nom_serie: string; 
+    province_id: string;
+    debut_numeros: number;
+    fin_numeros: number;
     description: string;
   }) => void;
   onAddSerie: () => Promise<void>;
@@ -41,6 +48,7 @@ export default function PlaqueModals({
   showItemsModal,
   selectedSerie,
   formData,
+  provinces,
   processing,
   onAddClose,
   onEditClose,
@@ -59,6 +67,7 @@ export default function PlaqueModals({
         <Portal>
           <AddSerieModal
             formData={formData}
+            provinces={provinces}
             processing={processing}
             onClose={onAddClose}
             onFormDataChange={onFormDataChange}
@@ -72,6 +81,7 @@ export default function PlaqueModals({
           <EditSerieModal
             serie={selectedSerie}
             formData={formData}
+            provinces={provinces}
             processing={processing}
             onClose={onEditClose}
             onFormDataChange={onFormDataChange}
