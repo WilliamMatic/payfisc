@@ -4,6 +4,15 @@
  * Service pour la gestion des utilisateurs - Interface avec l'API backend
  */
 
+// Interface pour les privilèges d'un utilisateur
+export interface Privileges {
+  simple: boolean;
+  special: boolean;
+  delivrance: boolean;
+  plaque: boolean;
+  reproduction: boolean;
+}
+
 // Interface pour les données d'un utilisateur
 export interface Utilisateur {
   id: number;
@@ -15,6 +24,7 @@ export interface Utilisateur {
   site_code: string;
   site_affecte_id: number;
   date_creation: string;
+  privileges: Privileges;
 }
 
 // Interface pour les sites
@@ -22,6 +32,15 @@ export interface Site {
   id: number;
   nom: string;
   code: string;
+}
+
+// Interface pour les données de formulaire utilisateur
+export interface UtilisateurFormData {
+  nom_complet: string;
+  telephone: string;
+  adresse: string;
+  site_affecte_id: number;
+  privileges: Privileges;
 }
 
 // Interface pour les réponses de l'API
@@ -72,18 +91,14 @@ export const getUtilisateurs = async (): Promise<ApiResponse> => {
 /**
  * Ajoute un nouvel utilisateur
  */
-export const addUtilisateur = async (utilisateurData: {
-  nom_complet: string;
-  telephone: string;
-  adresse: string;
-  site_affecte_id: number;
-}): Promise<ApiResponse> => {
+export const addUtilisateur = async (utilisateurData: UtilisateurFormData): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
     formData.append('nom_complet', utilisateurData.nom_complet);
     formData.append('telephone', utilisateurData.telephone);
     formData.append('adresse', utilisateurData.adresse);
     formData.append('site_affecte_id', utilisateurData.site_affecte_id.toString());
+    formData.append('privileges', JSON.stringify(utilisateurData.privileges));
 
     const response = await fetch(`${API_BASE_URL}/utilisateurs/creer_utilisateur.php`, {
       method: 'POST',
@@ -115,12 +130,7 @@ export const addUtilisateur = async (utilisateurData: {
  */
 export const updateUtilisateur = async (
   id: number,
-  utilisateurData: {
-    nom_complet: string;
-    telephone: string;
-    adresse: string;
-    site_affecte_id: number;
-  }
+  utilisateurData: UtilisateurFormData
 ): Promise<ApiResponse> => {
   try {
     const formData = new FormData();
@@ -129,6 +139,7 @@ export const updateUtilisateur = async (
     formData.append('telephone', utilisateurData.telephone);
     formData.append('adresse', utilisateurData.adresse);
     formData.append('site_affecte_id', utilisateurData.site_affecte_id.toString());
+    formData.append('privileges', JSON.stringify(utilisateurData.privileges));
 
     const response = await fetch(`${API_BASE_URL}/utilisateurs/modifier_utilisateur.php`, {
       method: 'POST',

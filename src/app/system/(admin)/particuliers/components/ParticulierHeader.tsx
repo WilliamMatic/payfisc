@@ -15,8 +15,8 @@ export default function ParticuliersHeader({ searchTerm, onSearchChange, onSearc
           <User className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">Contribuables Particuliers</h2>
-          <p className="text-sm text-gray-500">Gérez les particuliers contribuables</p>
+          <h2 className="text-xl font-semibold text-gray-800">Contribuables</h2>
+          <p className="text-sm text-gray-500">Gérez les assujettis</p>
         </div>
       </div>
       

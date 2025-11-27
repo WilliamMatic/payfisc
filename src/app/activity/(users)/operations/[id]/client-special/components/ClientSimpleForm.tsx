@@ -7,6 +7,7 @@ import {
   rechercherPlaquesDisponibles,
   verifierSequencePlaques,
 } from "@/services/client-simple/clientSimpleService";
+import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import FactureA4 from "./FactureA4";
 
 interface FormData {
@@ -65,6 +66,7 @@ interface FactureData {
   numeros_plaques: string[];
   reduction_type?: string;
   reduction_valeur?: number;
+  montant_francs?: string;
 }
 
 export default function ClientSimpleForm({
@@ -80,6 +82,10 @@ export default function ClientSimpleForm({
     nombrePlaques: "1",
     numeroPlaqueDebut: "",
   });
+
+  // État pour le taux
+  const [tauxActif, setTauxActif] = useState<Taux | null>(null);
+  const [loadingTaux, setLoadingTaux] = useState(false);
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,17 +106,42 @@ export default function ClientSimpleForm({
   const [sequencePlaques, setSequencePlaques] = useState<string[]>([]);
   const rechercheTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Calculs
+  // Calculs avec taux
   const montantUnitaire = utilisateur?.formule
     ? parseFloat(utilisateur.formule)
     : 32;
   const nombrePlaques = parseInt(formData.nombrePlaques) || 1;
   const montantTotal = montantUnitaire * nombrePlaques;
+  
+  // Calcul des montants en francs
+  const montantFrancs = tauxActif 
+    ? (montantTotal * tauxActif.valeur).toLocaleString('fr-FR')
+    : "Calcul en cours...";
 
   const montantAPayer = `${montantTotal} $`;
+  const montantEnFrancs = `${montantFrancs} CDF`;
   const formuleCalcul = utilisateur?.formule
     ? `Montant = ${utilisateur.formule} × ${nombrePlaques} plaque(s)`
     : `Montant = 32 × ${nombrePlaques} plaque(s)`;
+
+  // Chargement du taux actif
+  useEffect(() => {
+    const chargerTaux = async () => {
+      setLoadingTaux(true);
+      try {
+        const tauxResponse = await getTauxActif();
+        if (tauxResponse.status === "success" && tauxResponse.data) {
+          setTauxActif(tauxResponse.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du taux:", error);
+      } finally {
+        setLoadingTaux(false);
+      }
+    };
+
+    chargerTaux();
+  }, []);
 
   // Recherche des plaques en temps réel
   useEffect(() => {
@@ -313,6 +344,7 @@ export default function ClientSimpleForm({
           numeros_plaques: result.data?.numeroPlaques || [],
           reduction_type: result.data?.reduction_appliquee?.type,
           reduction_valeur: result.data?.reduction_appliquee?.valeur,
+          montant_francs: montantEnFrancs,
         };
 
         setFactureData(facture);
@@ -603,21 +635,31 @@ export default function ClientSimpleForm({
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6">
+          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
             <div>
-              <div className="text-sm text-gray-600">Détail du calcul</div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-sm text-blue-600 font-medium">
+                Montant à payer
+              </div>
+              <div className="text-2xl font-bold text-blue-800">
                 {montantAPayer}
               </div>
-              <div className="text-xs text-gray-500 mt-1">{formuleCalcul}</div>
+              <div className="text-lg font-semibold text-blue-700 mt-2">
+                {montantEnFrancs}
+              </div>
+              {tauxActif && (
+                <div className="text-sm text-blue-500 mt-2">
+                  Taux: 1$ = {tauxActif.valeur.toLocaleString('fr-FR')} CDF
+                </div>
+              )}
+              <div className="text-xs text-blue-500 mt-1">{formuleCalcul}</div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-600">Délai d'accord</div>
-              <div className="text-lg font-semibold text-green-600">
-                Immédiat
+              <div className="text-sm text-blue-600 font-medium">
+                Délai d'accord
               </div>
+              <div className="text-xl font-bold text-green-600">Immédiat</div>
               {utilisateur && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-sm text-blue-500 mt-2">
                   Site: {utilisateur.site_nom}
                 </div>
               )}
@@ -628,14 +670,14 @@ export default function ClientSimpleForm({
             <button
               type="button"
               onClick={() => window.history.back()}
-              className="px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+              className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium border-2 border-transparent hover:border-gray-300"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !sequenceValide}
-              className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {isSubmitting ? (
                 <>
@@ -691,6 +733,9 @@ export default function ClientSimpleForm({
                   <div>
                     <strong>Montant total:</strong> {montantAPayer}
                   </div>
+                  <div>
+                    <strong>Équivalent:</strong> {montantEnFrancs}
+                  </div>
                 </div>
               </div>
 
@@ -709,7 +754,7 @@ export default function ClientSimpleForm({
               </button>
               <button
                 onClick={handleConfirmation}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-semibold"
               >
                 Confirmer et Payer
               </button>
@@ -722,6 +767,7 @@ export default function ClientSimpleForm({
       {showPaiement && (
         <ModalPaiement
           montant={montantAPayer}
+          montantEnFrancs={montantEnFrancs}
           onClose={() => setShowPaiement(false)}
           onSubmit={handlePaiementSubmit}
           isLoading={isSubmitting}
@@ -741,9 +787,10 @@ export default function ClientSimpleForm({
   );
 }
 
-// Composant Modal de Paiement (inchangé)
+// Composant Modal de Paiement avec taux
 interface ModalPaiementProps {
   montant: string;
+  montantEnFrancs: string;
   onClose: () => void;
   onSubmit: () => void;
   isLoading: boolean;
@@ -753,6 +800,7 @@ interface ModalPaiementProps {
 
 function ModalPaiement({
   montant,
+  montantEnFrancs,
   onClose,
   onSubmit,
   isLoading,
@@ -895,6 +943,9 @@ function ModalPaiement({
               Montant à payer
             </div>
             <div className="text-3xl font-bold text-blue-800">{montant}</div>
+            <div className="text-lg font-semibold text-blue-700 mt-2">
+              {montantEnFrancs}
+            </div>
           </div>
 
           {/* Actions */}

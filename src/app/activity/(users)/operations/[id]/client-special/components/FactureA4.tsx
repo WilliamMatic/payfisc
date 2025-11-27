@@ -21,6 +21,7 @@ interface FactureData {
   numeros_plaques: string[];
   reduction_type?: string;
   reduction_valeur?: number;
+  montant_francs?: string;
 }
 
 interface FactureA4Props {
@@ -37,7 +38,7 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
     pageStyle: `
       @page {
         size: A4;
-        margin: 15mm;
+        margin: 10mm;
       }
       @media print {
         body * {
@@ -65,6 +66,10 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
       : factureData.reduction_valeur
     : 0;
 
+  // Récupérer le premier et dernier numéro de plaque
+  const premierePlaque = factureData.numeros_plaques[0] || '';
+  const dernierePlaque = factureData.numeros_plaques[factureData.numeros_plaques.length - 1] || '';
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
       {/* Conteneur principal avec hauteur automatique */}
@@ -91,45 +96,45 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
         {/* Contenu de la facture avec largeur A4 */}
         <div 
           ref={contentRef} 
-          className="facture-content bg-white p-8 mx-auto border border-gray-200"
+          className="facture-content bg-white p-6 mx-auto border border-gray-200"
           style={{ 
             width: '210mm', // Largeur A4
             minHeight: '297mm', // Hauteur A4
           }}
         >
           {/* En-tête */}
-          <div className="text-center border-b-2 border-gray-300 pb-4 mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</h1>
-            <h2 className="text-2xl font-semibold text-gray-800 mt-2">DIRECTION GÉNÉRALE DES IMPÔTS</h2>
-            <p className="text-lg text-gray-600 mt-1">{factureData.site_nom}</p>
+          <div className="text-center border-b border-gray-300 pb-3 mb-4">
+            <h1 className="text-xl font-bold text-gray-900">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</h1>
+            <h2 className="text-lg font-semibold text-gray-800 mt-1">TSC-NPS</h2>
+            <p className="text-sm text-gray-600 mt-1">{factureData.site_nom}</p>
           </div>
 
           {/* Titre Facture */}
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-blue-800 uppercase">FACTURE D'ACHAT DE PLAQUES</h3>
-            <p className="text-gray-600 mt-2">Reçu de paiement N°: {factureData.numeros_plaques[0] || 'N/A'}</p>
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-bold text-blue-800 uppercase">FACTURE D'ACHAT DE PLAQUES</h3>
+            <p className="text-gray-600 text-sm mt-1">Reçu de paiement N°: {factureData.numeros_plaques[0] || 'N/A'}</p>
           </div>
 
           {/* Informations Client */}
-          <div className="grid grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <h4 className="font-bold text-lg text-gray-900 mb-3 border-b pb-1">INFORMATIONS DU CLIENT</h4>
-              <div className="space-y-2 text-sm">
+              <h4 className="font-bold text-md text-gray-900 mb-2 border-b pb-1">INFORMATIONS DU CLIENT</h4>
+              <div className="space-y-1 text-xs">
                 <div><strong>Nom:</strong> {factureData.nom}</div>
                 <div><strong>Prénom:</strong> {factureData.prenom}</div>
                 <div><strong>Téléphone:</strong> {factureData.telephone}</div>
-                <div><strong>Email:</strong> {factureData.email}</div>
+                <div><strong>Email:</strong> {factureData.email || 'Non renseigné'}</div>
                 <div><strong>Adresse:</strong> {factureData.adresse}</div>
               </div>
             </div>
 
             <div>
-              <h4 className="font-bold text-lg text-gray-900 mb-3 border-b pb-1">INFORMATIONS DE LA FACTURE</h4>
-              <div className="space-y-2 text-sm">
-                <div><strong>Date:</strong> {new Date(factureData.date_paiement).toLocaleDateString()}</div>
-                <div><strong>Heure:</strong> {new Date(factureData.date_paiement).toLocaleTimeString()}</div>
-                <div><strong>Mode paiement:</strong> {factureData.mode_paiement}</div>
-                {factureData.operateur && <div><strong>Opérateur:</strong> {factureData.operateur}</div>}
+              <h4 className="font-bold text-md text-gray-900 mb-2 border-b pb-1">INFORMATIONS DE LA FACTURE</h4>
+              <div className="space-y-1 text-xs">
+                <div><strong>Date:</strong> {new Date(factureData.date_paiement).toLocaleDateString('fr-FR')}</div>
+                <div><strong>Heure:</strong> {new Date(factureData.date_paiement).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div><strong>Mode paiement:</strong> {factureData.mode_paiement.toUpperCase()}</div>
+                {factureData.operateur && <div><strong>Opérateur:</strong> {factureData.operateur.toUpperCase()}</div>}
                 {factureData.numero_transaction && <div><strong>N° Transaction:</strong> {factureData.numero_transaction}</div>}
                 <div><strong>Caissier:</strong> {factureData.caissier}</div>
               </div>
@@ -137,73 +142,137 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
           </div>
 
           {/* Détails de la Commande */}
-          <div className="mb-8">
-            <h4 className="font-bold text-lg text-gray-900 mb-3 border-b pb-1">DÉTAILS DE LA COMMANDE</h4>
-            <table className="w-full border-collapse border border-gray-300">
+          <div className="mb-6">
+            <h4 className="font-bold text-md text-gray-900 mb-2 border-b pb-1">DÉTAILS DE LA COMMANDE</h4>
+            <table className="w-full border-collapse border border-gray-300 text-xs">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2 text-left">Description</th>
-                  <th className="border border-gray-300 p-2 text-center">Quantité</th>
-                  <th className="border border-gray-300 p-2 text-right">Prix Unitaire</th>
-                  <th className="border border-gray-300 p-2 text-right">Montant</th>
+                  <th className="border border-gray-300 p-1 text-left">Description</th>
+                  <th className="border border-gray-300 p-1 text-center">Quantité</th>
+                  <th className="border border-gray-300 p-1 text-right">Prix Unitaire</th>
+                  <th className="border border-gray-300 p-1 text-right">Montant ($)</th>
+                  <th className="border border-gray-300 p-1 text-right">Montant (CDF)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 p-2">Plaques d'immatriculation</td>
-                  <td className="border border-gray-300 p-2 text-center">{factureData.nombre_plaques}</td>
-                  <td className="border border-gray-300 p-2 text-right">
+                  <td className="border border-gray-300 p-1">Plaques d'immatriculation</td>
+                  <td className="border border-gray-300 p-1 text-center">{factureData.nombre_plaques}</td>
+                  <td className="border border-gray-300 p-1 text-right">
                     {(factureData.montant_initial / factureData.nombre_plaques).toFixed(2)} $
                   </td>
-                  <td className="border border-gray-300 p-2 text-right">{factureData.montant_initial.toFixed(2)} $</td>
+                  <td className="border border-gray-300 p-1 text-right">{factureData.montant_initial.toFixed(2)} $</td>
+                  <td className="border border-gray-300 p-1 text-right">{factureData.montant_francs || 'N/A'}</td>
                 </tr>
                 {reductionMontant > 0 && (
                   <tr>
-                    <td className="border border-gray-300 p-2" colSpan={3}>
+                    <td className="border border-gray-300 p-1" colSpan={3}>
                       Réduction ({factureData.reduction_type === 'pourcentage' ? `${factureData.reduction_valeur}%` : 'Montant fixe'})
                     </td>
-                    <td className="border border-gray-300 p-2 text-right text-red-600">
+                    <td className="border border-gray-300 p-1 text-right text-red-600">
                       -{reductionMontant.toFixed(2)} $
+                    </td>
+                    <td className="border border-gray-300 p-1 text-right text-red-600">
+                      -
                     </td>
                   </tr>
                 )}
               </tbody>
               <tfoot>
                 <tr className="bg-gray-50 font-bold">
-                  <td className="border border-gray-300 p-2" colSpan={3}>TOTAL</td>
-                  <td className="border border-gray-300 p-2 text-right">{factureData.montant.toFixed(2)} $</td>
+                  <td className="border border-gray-300 p-1" colSpan={3}>TOTAL</td>
+                  <td className="border border-gray-300 p-1 text-right">{factureData.montant.toFixed(2)} $</td>
+                  <td className="border border-gray-300 p-1 text-right">{factureData.montant_francs || 'N/A'}</td>
                 </tr>
               </tfoot>
             </table>
           </div>
 
           {/* Numéros de Plaques Attribués */}
-          <div className="mb-8">
-            <h4 className="font-bold text-lg text-gray-900 mb-3 border-b pb-1">NUMÉROS DE PLAQUES ATTRIBUÉS</h4>
-            <div className="grid grid-cols-3 gap-2">
-              {factureData.numeros_plaques.map((numero, index) => (
-                <div key={index} className="bg-blue-50 border border-blue-200 p-3 text-center rounded">
-                  <span className="font-mono font-bold text-blue-800">{numero}</span>
-                </div>
-              ))}
+          <div className="mb-6">
+            <h4 className="font-bold text-md text-gray-900 mb-2 border-b pb-1">NUMÉROS DE PLAQUES ATTRIBUÉS</h4>
+            <div className="text-xs text-gray-600 mb-2">
+              Quantité totale: {factureData.nombre_plaques} plaque(s)
             </div>
+            <div className="flex justify-center items-center space-x-8">
+              {/* Première plaque */}
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Début de séquence</div>
+                <div className="bg-blue-50 border-2 border-blue-300 p-3 text-center rounded-lg min-w-[100px]">
+                  <span className="font-mono font-bold text-blue-800 text-lg">{premierePlaque}</span>
+                </div>
+              </div>
+
+              {/* Indicateur de séquence */}
+              {factureData.nombre_plaques > 1 && (
+                <>
+                  <div className="flex items-center">
+                    <div className="w-8 h-0.5 bg-gray-400"></div>
+                    <div className="mx-2 text-gray-500 text-sm">→</div>
+                    <div className="w-8 h-0.5 bg-gray-400"></div>
+                  </div>
+
+                  {/* Dernière plaque */}
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Fin de séquence</div>
+                    <div className="bg-green-50 border-2 border-green-300 p-3 text-center rounded-lg min-w-[100px]">
+                      <span className="font-mono font-bold text-green-800 text-lg">{dernierePlaque}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Liste complète en petit pour référence */}
+            {/* {factureData.nombre_plaques > 2 && (
+              <div className="mt-3 p-2 bg-gray-50 rounded border border-gray-200">
+                <div className="text-xs text-gray-500 text-center mb-1">
+                  Séquence complète ({factureData.nombre_plaques} plaques):
+                </div>
+                <div className="text-xs text-gray-600 text-center font-mono">
+                  {factureData.numeros_plaques.join(' → ')}
+                </div>
+              </div>
+            )} */}
+          </div>
+
+          {/* Informations supplémentaires */}
+          <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+            <h5 className="font-bold text-yellow-800 mb-1">INFORMATIONS IMPORTANTES:</h5>
+            <ul className="list-disc list-inside space-y-1 text-yellow-700">
+              <li>Cette facture est un justificatif de paiement officiel</li>
+              <li>Conservez ce document pour toute réclamation</li>
+              <li>Les plaques sont attribuées de manière séquentielle</li>
+              <li>Validité immédiate après paiement</li>
+            </ul>
           </div>
 
           {/* Pied de page */}
-          <div className="border-t-2 border-gray-300 pt-4 text-center text-sm text-gray-600">
-            <p>Ce document fait foi de paiement et d'attribution des plaques mentionnées ci-dessus.</p>
-            <p className="mt-2">Merci pour votre confiance !</p>
-            <div className="mt-6 flex justify-between">
+          <div className="border-t border-gray-300 pt-3 text-center text-xs text-gray-600">
+            <p className="font-semibold">Ce document fait foi de paiement et d'attribution des plaques mentionnées ci-dessus.</p>
+            <p className="mt-1">Merci pour votre confiance !</p>
+            <div className="mt-4 flex justify-between items-start">
               <div className="text-left">
-                <p>Cachet et signature</p>
-                <div className="mt-16 border-t border-gray-400 w-48"></div>
-                <p className="text-xs">Direction Générale des Impôts</p>
+                <p className="font-semibold">Cachet et signature</p>
+                <div className="mt-8 border-t border-gray-400 w-32"></div>
+                <p className="text-xs mt-1">TSC-NPS</p>
+                <p className="text-xs text-gray-500">{factureData.site_nom}</p>
               </div>
               <div className="text-right">
-                <p>Signature du client</p>
-                <div className="mt-16 border-t border-gray-400 w-48 ml-auto"></div>
-                <p className="text-xs">{factureData.prenom} {factureData.nom}</p>
+                <p className="font-semibold">Signature du client</p>
+                <div className="mt-8 border-t border-gray-400 w-32 ml-auto"></div>
+                <p className="text-xs mt-1">{factureData.prenom} {factureData.nom}</p>
+                <p className="text-xs text-gray-500">{factureData.telephone}</p>
               </div>
+            </div>
+            
+            {/* Numéro de référence */}
+            <div className="mt-4 p-2 bg-gray-100 rounded border border-gray-300">
+              <p className="font-mono text-xs">
+                Réf: {factureData.numeros_plaques[0] || 'N/A'} | 
+                Date: {new Date(factureData.date_paiement).toLocaleDateString('fr-FR')} | 
+                Client: {factureData.nom.slice(0, 3).toUpperCase()}{factureData.prenom.slice(0, 3).toUpperCase()}
+              </p>
             </div>
           </div>
         </div>

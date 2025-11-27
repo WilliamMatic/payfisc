@@ -1,71 +1,130 @@
 // src/app/system/(admin)/particuliers/components/ParticulierClient.tsx
-'use client';
-import { useState, useEffect } from 'react';
-import { Particulier as ParticulierType, getParticuliers, searchParticuliers, getParticulierDetails } from '@/services/particuliers/particulierService';
-import ParticuliersHeader from './ParticulierHeader';
-import ParticuliersTable from './ParticulierTable';
-import ParticuliersModals from './ParticulierModals';
-import AlertMessage from './AlertMessage';
+"use client";
+import { useState, useEffect } from "react";
+import {
+  Particulier as ParticulierType,
+  getParticuliers,
+  searchParticuliers,
+  getParticulierDetails,
+} from "@/services/particuliers/particulierService";
+import ParticuliersHeader from "./ParticulierHeader";
+import ParticuliersTable from "./ParticulierTable";
+import ParticuliersModals from "./ParticulierModals";
+import AlertMessage from "./AlertMessage";
 
 interface ParticuliersClientProps {
   initialParticuliers: ParticulierType[];
   initialError: string | null;
 }
 
-export default function ParticuliersClient({ initialParticuliers, initialError }: ParticuliersClientProps) {
-  const [particuliers, setParticuliers] = useState<ParticulierType[]>(initialParticuliers || []);
+export default function ParticuliersClient({
+  initialParticuliers,
+  initialError,
+}: ParticuliersClientProps) {
+  const [particuliers, setParticuliers] = useState<ParticulierType[]>(
+    initialParticuliers || []
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedParticulier, setSelectedParticulier] = useState<ParticulierType | null>(null);
+  const [selectedParticulier, setSelectedParticulier] =
+    useState<ParticulierType | null>(null);
   const [formData, setFormData] = useState({
-    nom: '', prenom: '', date_naissance: '', lieu_naissance: '', sexe: '',
-    rue: '', ville: '', code_postal: '', province: '',
-    id_national: '', telephone: '', email: '',
-    nif: '', situation_familiale: '', dependants: 0,
-    reduction_type: null as 'pourcentage' | 'fixe' | null,
-    reduction_valeur: 0
+    nom: "",
+    prenom: "",
+    date_naissance: "",
+    lieu_naissance: "",
+    sexe: "",
+    rue: "",
+    ville: "",
+    code_postal: "",
+    province: "",
+    id_national: "",
+    telephone: "",
+    email: "",
+    nif: "",
+    situation_familiale: "",
+    dependants: 0,
+    reduction_type: null as "pourcentage" | "fixe" | null,
+    reduction_valeur: 0,
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const provinces = ["Kinshasa", "Bas-Congo", "Katanga", "Kasaï", "Orientale", "Équateur"];
-  const situationsFamiliales = ["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve"];
+  const provinces = [
+    "Bas-Uele",
+    "Équateur",
+    "Haut-Katanga",
+    "Haut-Lomami",
+    "Haut-Uele",
+    "Ituri",
+    "Kasaï",
+    "Kasaï Central",
+    "Kasaï Oriental",
+    "Kinshasa",
+    "Kongo Central",
+    "Kwango",
+    "Kwilu",
+    "Lomami",
+    "Lualaba",
+    "Mai-Ndombe",
+    "Maniema",
+    "Mongala",
+    "Nord-Kivu",
+    "Nord-Ubangi",
+    "Sankuru",
+    "Sud-Kivu",
+    "Sud-Ubangi",
+    "Tanganyika",
+    "Tshopo",
+    "Tshuapa",
+  ];
+
+  const situationsFamiliales = [
+    "Célibataire",
+    "Marié(e)",
+    "Divorcé(e)",
+    "Veuf/Veuve",
+  ];
 
   // Fonction pour recharger les particuliers
   const loadParticuliers = async () => {
     try {
       setLoading(true);
       const result = await getParticuliers();
-      
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
         setParticuliers(result.data || []);
         setError(null);
       } else {
-        setError(result.message || 'Erreur lors du chargement des particuliers');
+        setError(
+          result.message || "Erreur lors du chargement des particuliers"
+        );
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
   };
 
   // Fonction pour charger les détails complets d'un particulier
-  const loadParticulierDetails = async (id: number): Promise<ParticulierType | null> => {
+  const loadParticulierDetails = async (
+    id: number
+  ): Promise<ParticulierType | null> => {
     try {
       const result = await getParticulierDetails(id);
-      if (result.status === 'success') {
+      if (result.status === "success") {
         return result.data;
       }
       return null;
     } catch (err) {
-      console.error('Error loading particulier details:', err);
+      console.error("Error loading particulier details:", err);
       return null;
     }
   };
@@ -80,28 +139,30 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
     try {
       setLoading(true);
       const result = await searchParticuliers(searchTerm);
-      
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
         setParticuliers(result.data || []);
         setError(null);
       } else {
-        setError(result.message || 'Erreur lors de la recherche des particuliers');
+        setError(
+          result.message || "Erreur lors de la recherche des particuliers"
+        );
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
   };
 
   // Filtrage local des particuliers
-  const filteredParticuliers = particuliers.filter(particulier =>
-    particulier && (
-      particulier.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      particulier.prenom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      particulier.nif?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      particulier.telephone?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredParticuliers = particuliers.filter(
+    (particulier) =>
+      particulier &&
+      (particulier.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        particulier.prenom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        particulier.nif?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        particulier.telephone?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const openEditModal = async (particulier: ParticulierType) => {
@@ -109,34 +170,36 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
       setProcessing(true);
       // Charger les détails complets du particulier
       const details = await loadParticulierDetails(particulier.id);
-      
+
       if (details) {
         setSelectedParticulier(details);
         setFormData({
-          nom: details.nom || '',
-          prenom: details.prenom || '',
-          date_naissance: details.date_naissance ? new Date(details.date_naissance).toISOString().split('T')[0] : '',
-          lieu_naissance: details.lieu_naissance || '',
-          sexe: details.sexe || '',
-          rue: details.rue || '',
-          ville: details.ville || '',
-          code_postal: details.code_postal || '',
-          province: details.province || '',
-          id_national: details.id_national || '',
-          telephone: details.telephone || '',
-          email: details.email || '',
-          nif: details.nif || '',
-          situation_familiale: details.situation_familiale || '',
+          nom: details.nom || "",
+          prenom: details.prenom || "",
+          date_naissance: details.date_naissance
+            ? new Date(details.date_naissance).toISOString().split("T")[0]
+            : "",
+          lieu_naissance: details.lieu_naissance || "",
+          sexe: details.sexe || "",
+          rue: details.rue || "",
+          ville: details.ville || "",
+          code_postal: details.code_postal || "",
+          province: details.province || "",
+          id_national: details.id_national || "",
+          telephone: details.telephone || "",
+          email: details.email || "",
+          nif: details.nif || "",
+          situation_familiale: details.situation_familiale || "",
           dependants: details.dependants || 0,
           reduction_type: details.reduction_type || null,
-          reduction_valeur: details.reduction_valeur || 0
+          reduction_valeur: details.reduction_valeur || 0,
         });
         setShowEditModal(true);
       } else {
-        setError('Impossible de charger les détails du particulier');
+        setError("Impossible de charger les détails du particulier");
       }
     } catch (err) {
-      setError('Erreur lors du chargement des détails');
+      setError("Erreur lors du chargement des détails");
     } finally {
       setProcessing(false);
     }
@@ -161,10 +224,10 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
         setSelectedParticulier(details);
         setShowViewModal(true);
       } else {
-        setError('Impossible de charger les détails du particulier');
+        setError("Impossible de charger les détails du particulier");
       }
     } catch (err) {
-      setError('Erreur lors du chargement des détails');
+      setError("Erreur lors du chargement des détails");
     } finally {
       setProcessing(false);
     }
@@ -173,10 +236,10 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
   // Validation du formulaire - MODIFIÉ POUR LES NOUVEAUX CHAMPS OBLIGATOIRES
   const isFormValid = (): boolean => {
     return !!(
-      formData.nom.trim() && 
-      formData.prenom.trim() && 
-      formData.nif.trim() && 
-      formData.telephone.trim() && 
+      formData.nom.trim() &&
+      formData.prenom.trim() &&
+      formData.nif.trim() &&
+      formData.telephone.trim() &&
       formData.rue.trim()
     );
   };
@@ -199,19 +262,30 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
   return (
     <div className="h-full flex flex-col">
       <AlertMessage error={error} successMessage={successMessage} />
-      
-      <ParticuliersHeader 
+
+      <ParticuliersHeader
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onSearch={handleSearch}
         onAddClick={() => {
           setFormData({
-            nom: '', prenom: '', date_naissance: '', lieu_naissance: '', sexe: '',
-            rue: '', ville: '', code_postal: '', province: '',
-            id_national: '', telephone: '', email: '',
-            nif: '', situation_familiale: '', dependants: 0,
+            nom: "",
+            prenom: "",
+            date_naissance: "",
+            lieu_naissance: "",
+            sexe: "",
+            rue: "",
+            ville: "",
+            code_postal: "",
+            province: "",
+            id_national: "",
+            telephone: "",
+            email: "",
+            nif: "",
+            situation_familiale: "",
+            dependants: 0,
             reduction_type: null,
-            reduction_valeur: 0
+            reduction_valeur: 0,
           });
           setShowAddModal(true);
         }}
@@ -242,12 +316,23 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
           setShowEditModal(false);
           setSelectedParticulier(null);
           setFormData({
-            nom: '', prenom: '', date_naissance: '', lieu_naissance: '', sexe: '',
-            rue: '', ville: '', code_postal: '', province: '',
-            id_national: '', telephone: '', email: '',
-            nif: '', situation_familiale: '', dependants: 0,
+            nom: "",
+            prenom: "",
+            date_naissance: "",
+            lieu_naissance: "",
+            sexe: "",
+            rue: "",
+            ville: "",
+            code_postal: "",
+            province: "",
+            id_national: "",
+            telephone: "",
+            email: "",
+            nif: "",
+            situation_familiale: "",
+            dependants: 0,
             reduction_type: null,
-            reduction_valeur: 0
+            reduction_valeur: 0,
           });
         }}
         onDeleteClose={() => {
@@ -266,13 +351,17 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
         onAddParticulier={async () => {
           // MODIFICATION DU MESSAGE D'ERREUR
           if (!isFormValid()) {
-            setError('Les champs nom, prénom, NIF, téléphone et rue sont obligatoires');
+            setError(
+              "Les champs nom, prénom, NIF, téléphone et rue sont obligatoires"
+            );
             return;
           }
 
           setProcessing(true);
           try {
-            const { addParticulier } = await import('@/services/particuliers/particulierService');
+            const { addParticulier } = await import(
+              "@/services/particuliers/particulierService"
+            );
             const result = await addParticulier({
               nom: formData.nom,
               prenom: formData.prenom,
@@ -290,18 +379,22 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
               situation_familiale: formData.situation_familiale,
               dependants: formData.dependants,
               reduction_type: formData.reduction_type,
-              reduction_valeur: formData.reduction_valeur
+              reduction_valeur: formData.reduction_valeur,
             });
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Particulier ajouté avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Particulier ajouté avec succès"
+              );
               setShowAddModal(false);
               await loadParticuliers();
             } else {
-              setError(result.message || 'Erreur lors de l\'ajout du particulier');
+              setError(
+                result.message || "Erreur lors de l'ajout du particulier"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -309,13 +402,17 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
         onEditParticulier={async () => {
           // MODIFICATION DU MESSAGE D'ERREUR
           if (!selectedParticulier || !isFormValid()) {
-            setError('Les champs nom, prénom, NIF, téléphone et rue sont obligatoires');
+            setError(
+              "Les champs nom, prénom, NIF, téléphone et rue sont obligatoires"
+            );
             return;
           }
 
           setProcessing(true);
           try {
-            const { updateParticulier } = await import('@/services/particuliers/particulierService');
+            const { updateParticulier } = await import(
+              "@/services/particuliers/particulierService"
+            );
             const result = await updateParticulier(selectedParticulier.id, {
               nom: formData.nom,
               prenom: formData.prenom,
@@ -333,18 +430,23 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
               situation_familiale: formData.situation_familiale,
               dependants: formData.dependants,
               reduction_type: formData.reduction_type,
-              reduction_valeur: formData.reduction_valeur
+              reduction_valeur: formData.reduction_valeur,
             });
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Particulier modifié avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Particulier modifié avec succès"
+              );
               setShowEditModal(false);
               await loadParticuliers();
             } else {
-              setError(result.message || 'Erreur lors de la modification du particulier');
+              setError(
+                result.message ||
+                  "Erreur lors de la modification du particulier"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -354,18 +456,24 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
 
           setProcessing(true);
           try {
-            const { deleteParticulier } = await import('@/services/particuliers/particulierService');
+            const { deleteParticulier } = await import(
+              "@/services/particuliers/particulierService"
+            );
             const result = await deleteParticulier(selectedParticulier.id);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Particulier supprimé avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Particulier supprimé avec succès"
+              );
               setShowDeleteModal(false);
               await loadParticuliers();
             } else {
-              setError(result.message || 'Erreur lors de la suppression du particulier');
+              setError(
+                result.message || "Erreur lors de la suppression du particulier"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -375,18 +483,28 @@ export default function ParticuliersClient({ initialParticuliers, initialError }
 
           setProcessing(true);
           try {
-            const { toggleParticulierStatus } = await import('@/services/particuliers/particulierService');
-            const result = await toggleParticulierStatus(selectedParticulier.id, !selectedParticulier.actif);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Statut du particulier modifié avec succès');
+            const { toggleParticulierStatus } = await import(
+              "@/services/particuliers/particulierService"
+            );
+            const result = await toggleParticulierStatus(
+              selectedParticulier.id,
+              !selectedParticulier.actif
+            );
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Statut du particulier modifié avec succès"
+              );
               setShowStatusModal(false);
               await loadParticuliers();
             } else {
-              setError(result.message || 'Erreur lors du changement de statut du particulier');
+              setError(
+                result.message ||
+                  "Erreur lors du changement de statut du particulier"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }

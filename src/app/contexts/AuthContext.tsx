@@ -13,6 +13,7 @@ interface UtilisateurSession {
   site_nom: string;
   site_code: string;
   formule?: string;
+  privileges?: any;
 }
 
 interface AuthContextType {

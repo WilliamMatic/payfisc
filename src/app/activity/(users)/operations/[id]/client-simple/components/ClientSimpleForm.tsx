@@ -40,6 +40,7 @@ import {
   rechercherPlaques,
   type PlaqueResult,
 } from "@/services/immatriculation/plaqueService";
+import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import ImmatriculationPrint from "./ImmatriculationPrint";
 
 interface FormData {
@@ -84,6 +85,7 @@ interface ConfirmationModalProps {
   onConfirm: () => void;
   formData: FormData;
   montantAPayer: string;
+  montantEnFrancs: string;
   numeroPlaque: string;
   isLoading: boolean;
 }
@@ -93,6 +95,7 @@ interface PaiementModalProps {
   onClose: () => void;
   onPaiement: (paiementData: PaiementData) => void;
   montant: string;
+  montantEnFrancs: string;
   isLoading: boolean;
 }
 
@@ -108,6 +111,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
   onClose,
   onPaiement,
   montant,
+  montantEnFrancs,
   isLoading,
 }) => {
   const [modePaiement, setModePaiement] = useState<
@@ -235,6 +239,9 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
               Montant à payer
             </div>
             <div className="text-2xl font-bold text-blue-800">{montant}</div>
+            <div className="text-lg font-semibold text-blue-700 mt-1">
+              {montantEnFrancs}
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">
@@ -266,6 +273,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   formData,
   montantAPayer,
+  montantEnFrancs,
   numeroPlaque,
   isLoading,
 }) => {
@@ -394,6 +402,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   Montant total à payer
                 </div>
                 <div className="text-3xl font-bold mt-1">{montantAPayer}</div>
+                <div className="text-xl font-semibold mt-2">
+                  {montantEnFrancs}
+                </div>
               </div>
             </div>
           </div>
@@ -476,6 +487,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
               <div>
                 <span className="text-gray-500 text-xs">Montant payé:</span>
                 <p className="font-semibold text-gray-800">{data?.montant} $</p>
+                <p className="text-xs text-gray-600">{data?.montant_francs}</p>
               </div>
             </div>
           </div>
@@ -532,6 +544,10 @@ export default function ClientSimpleForm({
     PuissanceFiscale[]
   >([]);
 
+  // États pour le taux
+  const [tauxActif, setTauxActif] = useState<Taux | null>(null);
+  const [loadingTaux, setLoadingTaux] = useState(false);
+
   // États pour la recherche de plaques
   const [plaquesSuggestions, setPlaquesSuggestions] = useState<PlaqueResult[]>(
     []
@@ -562,10 +578,14 @@ export default function ClientSimpleForm({
   const [printData, setPrintData] = useState<any>(null);
   const [serieItemId, setSerieItemId] = useState<number | null>(null);
 
-  const montantAPayer = utilisateur?.formule
-    ? `${utilisateur.formule} $`
-    : "32 $";
-  const montantNumerique = utilisateur?.formule || "32";
+  // Calcul des montants avec le taux
+  const montantDollars = utilisateur?.formule || "32";
+  const montantFrancs = tauxActif 
+    ? (parseFloat(montantDollars) * tauxActif.valeur).toLocaleString('fr-FR')
+    : "Calcul en cours...";
+  
+  const montantAPayer = `${montantDollars} $`;
+  const montantEnFrancs = `${montantFrancs} CDF`;
 
   // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
@@ -576,6 +596,13 @@ export default function ClientSimpleForm({
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        // Charger le taux actif en premier
+        setLoadingTaux(true);
+        const tauxResponse = await getTauxActif();
+        if (tauxResponse.status === "success" && tauxResponse.data) {
+          setTauxActif(tauxResponse.data);
+        }
+
         // Charger les types d'engins
         setLoading((prev) => ({ ...prev, typeEngins: true }));
         const typeEnginsResponse = await getTypeEnginsActifs();
@@ -628,6 +655,7 @@ export default function ClientSimpleForm({
           marques: false,
           puissances: false,
         });
+        setLoadingTaux(false);
       }
     };
 
@@ -725,7 +753,7 @@ export default function ClientSimpleForm({
           ) {
             setFormData((prev) => ({
               ...prev,
-              numeroPlaque: response.data!.numeroPlaque, // Utilisation de ! pour indiquer que data n'est pas undefined
+              numeroPlaque: response.data!.numeroPlaque,
             }));
             setSerieItemId(response.data.serie_item_id || null);
             setPlaqueDisponible(true);
@@ -943,6 +971,7 @@ export default function ClientSimpleForm({
           prenom: formData.prenom,
           adresse: formData.adresse,
           telephone: formData.telephone,
+          montant_francs: montantEnFrancs,
         };
 
         setSuccessData(completeData);
@@ -1571,11 +1600,14 @@ export default function ClientSimpleForm({
               <div className="text-3xl font-bold text-blue-800">
                 {montantAPayer}
               </div>
-              <div className="text-sm text-blue-500 mt-2">
-                {utilisateur?.formule
-                  ? `Montant = ${utilisateur.formule}`
-                  : "Montant = 32"}
+              <div className="text-lg font-semibold text-blue-700 mt-2">
+                {montantEnFrancs}
               </div>
+              {tauxActif && (
+                <div className="text-sm text-blue-500 mt-2">
+                  Taux: 1$ = {tauxActif.valeur.toLocaleString('fr-FR')} CDF
+                </div>
+              )}
             </div>
             <div className="text-right">
               <div className="text-sm text-blue-600 font-medium">
@@ -1626,6 +1658,7 @@ export default function ClientSimpleForm({
         onConfirm={handleConfirmation}
         formData={formData}
         montantAPayer={montantAPayer}
+        montantEnFrancs={montantEnFrancs}
         numeroPlaque={formData.numeroPlaque}
         isLoading={isSubmitting}
       />
@@ -1635,6 +1668,7 @@ export default function ClientSimpleForm({
         onClose={() => setShowPaiement(false)}
         onPaiement={handlePaiement}
         montant={montantAPayer}
+        montantEnFrancs={montantEnFrancs}
         isLoading={isSubmitting}
       />
 

@@ -28,7 +28,7 @@ export default function QuickActions() {
       icon: <BarChart3 className="w-6 h-6" />,
       label: "Statistiques",
       description: "Voir les rapports et analyses",
-      href: "/system/dashboard",
+      href: "/system/ia-fiscale",
       color: "from-orange-500 to-orange-600"
     }
   ];

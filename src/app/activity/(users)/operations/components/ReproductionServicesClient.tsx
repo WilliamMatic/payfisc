@@ -1,18 +1,55 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Car, CreditCard, Smartphone, Building, FileText, DollarSign, CheckCircle, Printer, Search, AlertCircle, X, CheckCircle2, Hash } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { Impot } from '@/services/impots/impotService';
-import { verifierPlaque, traiterReproduction, DonneesPlaque, PaiementReproductionData } from '@/services/reproduction/reproductionService';
-import ReproductionPrint from './ReproductionPrint';
+"use client";
+import { useState, useEffect } from "react";
+import {
+  ArrowLeft,
+  User,
+  Car,
+  CreditCard,
+  Smartphone,
+  Building,
+  FileText,
+  DollarSign,
+  CheckCircle,
+  Printer,
+  Search,
+  AlertCircle,
+  X,
+  CheckCircle2,
+  Hash,
+  Lock
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Impot } from "@/services/impots/impotService";
+import {
+  verifierPlaque,
+  traiterReproduction,
+  DonneesPlaque,
+  PaiementReproductionData,
+} from "@/services/reproduction/reproductionService";
+import { getTauxActif, type Taux } from "@/services/taux/tauxService";
+import ReproductionPrint from "./ReproductionPrint";
+
+import { useAuth } from "@/contexts/AuthContext";
 
 // Import des services pour les données dynamiques
-import { getTypeEnginsActifs, type TypeEngin } from '@/services/type-engins/typeEnginService';
-import { getEnergies, type Energie } from '@/services/energies/energieService';
-import { getCouleurs, type EnginCouleur } from '@/services/couleurs/couleurService';
-import { getUsages, type UsageEngin } from '@/services/usages/usageService';
-import { getMarquesEngins, type MarqueEngin } from '@/services/marques-engins/marqueEnginService';
-import { getPuissancesFiscalesActives, type PuissanceFiscale } from '@/services/puissances-fiscales/puissanceFiscaleService';
+import {
+  getTypeEnginsActifs,
+  type TypeEngin,
+} from "@/services/type-engins/typeEnginService";
+import { getEnergies, type Energie } from "@/services/energies/energieService";
+import {
+  getCouleurs,
+  type EnginCouleur,
+} from "@/services/couleurs/couleurService";
+import { getUsages, type UsageEngin } from "@/services/usages/usageService";
+import {
+  getMarquesEngins,
+  type MarqueEngin,
+} from "@/services/marques-engins/marqueEnginService";
+import {
+  getPuissancesFiscalesActives,
+  type PuissanceFiscale,
+} from "@/services/puissances-fiscales/puissanceFiscaleService";
 
 interface ReproductionServicesClientProps {
   impot: Impot;
@@ -26,7 +63,7 @@ interface FormData {
   email: string;
   adresse: string;
   nif: string;
-  
+
   // Informations de l'engin
   typeEngin: string;
   anneeFabrication: string;
@@ -42,7 +79,7 @@ interface FormData {
 }
 
 interface PaiementData {
-  modePaiement: 'mobile_money' | 'cheque' | 'banque' | 'espece' | '';
+  modePaiement: "mobile_money" | "cheque" | "banque" | "espece" | "";
   operateur?: string;
   numeroTransaction?: string;
   numeroCheque?: string;
@@ -50,7 +87,7 @@ interface PaiementData {
   montant: string;
 }
 
-type Etape = 'verification' | 'confirmation' | 'paiement' | 'recapitulatif';
+type Etape = "verification" | "confirmation" | "paiement" | "recapitulatif";
 
 // Interfaces pour les modals
 interface PaiementModalProps {
@@ -58,6 +95,7 @@ interface PaiementModalProps {
   onClose: () => void;
   onPaiement: (paiementData: PaiementData) => void;
   montant: string;
+  montantEnFrancs: string;
   isLoading: boolean;
 }
 
@@ -74,23 +112,27 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
   onClose,
   onPaiement,
   montant,
+  montantEnFrancs,
   isLoading,
 }) => {
-  const [modePaiement, setModePaiement] = useState<'mobile_money' | 'cheque' | 'banque' | 'espece'>('mobile_money');
-  const [operateur, setOperateur] = useState('');
-  const [numeroTransaction, setNumeroTransaction] = useState('');
-  const [numeroCheque, setNumeroCheque] = useState('');
-  const [banque, setBanque] = useState('');
+  const [modePaiement, setModePaiement] = useState<
+    "mobile_money" | "cheque" | "banque" | "espece"
+  >("mobile_money");
+  const [operateur, setOperateur] = useState("");
+  const [numeroTransaction, setNumeroTransaction] = useState("");
+  const [numeroCheque, setNumeroCheque] = useState("");
+  const [banque, setBanque] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onPaiement({
       modePaiement,
-      operateur: modePaiement === 'mobile_money' ? operateur : undefined,
-      numeroTransaction: modePaiement === 'mobile_money' ? numeroTransaction : undefined,
-      numeroCheque: modePaiement === 'cheque' ? numeroCheque : undefined,
-      banque: modePaiement === 'banque' ? banque : undefined,
-      montant: montant.replace(' $', '')
+      operateur: modePaiement === "mobile_money" ? operateur : undefined,
+      numeroTransaction:
+        modePaiement === "mobile_money" ? numeroTransaction : undefined,
+      numeroCheque: modePaiement === "cheque" ? numeroCheque : undefined,
+      banque: modePaiement === "banque" ? banque : undefined,
+      montant: montant.replace(" $", ""),
     });
   };
 
@@ -127,7 +169,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             </select>
           </div>
 
-          {modePaiement === 'mobile_money' && (
+          {modePaiement === "mobile_money" && (
             <>
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -162,7 +204,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             </>
           )}
 
-          {modePaiement === 'cheque' && (
+          {modePaiement === "cheque" && (
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Numéro de chèque *
@@ -178,12 +220,12 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             </div>
           )}
 
-          {modePaiement === 'banque' && (
+          {modePaiement === "banque" && (
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Banque *
               </label>
-                <input
+              <input
                 type="text"
                 value={banque}
                 onChange={(e) => setBanque(e.target.value)}
@@ -195,8 +237,13 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
           )}
 
           <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-            <div className="text-sm text-blue-600 font-medium">Montant à payer</div>
+            <div className="text-sm text-blue-600 font-medium">
+              Montant à payer
+            </div>
             <div className="text-2xl font-bold text-blue-800">{montant}</div>
+            <div className="text-lg font-semibold text-blue-700 mt-2">
+              {montantEnFrancs}
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">
@@ -213,7 +260,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
               disabled={isLoading}
               className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold disabled:opacity-50"
             >
-              {isLoading ? 'Traitement...' : 'Confirmer'}
+              {isLoading ? "Traitement..." : "Confirmer"}
             </button>
           </div>
         </form>
@@ -267,6 +314,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
               <div>
                 <span className="text-gray-500 text-xs">Montant payé:</span>
                 <p className="font-semibold text-gray-800">{data?.montant} $</p>
+                <p className="text-xs text-gray-600">{data?.montant_francs}</p>
               </div>
             </div>
           </div>
@@ -291,23 +339,31 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   );
 };
 
-export default function ReproductionServicesClient({ impot }: ReproductionServicesClientProps) {
+export default function ReproductionServicesClient({
+  impot,
+}: ReproductionServicesClientProps) {
   const router = useRouter();
-  const [etapeActuelle, setEtapeActuelle] = useState<Etape>('verification');
-  const [numeroPlaque, setNumeroPlaque] = useState('');
+  const [etapeActuelle, setEtapeActuelle] = useState<Etape>("verification");
+  const [numeroPlaque, setNumeroPlaque] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPaiement, setShowPaiement] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
   const [paiementData, setPaiementData] = useState<PaiementData>({
-    modePaiement: '',
-    montant: impot.prix.toString()
+    modePaiement: "",
+    montant: impot.prix.toString(),
   });
   const [isPaiementProcessing, setIsPaiementProcessing] = useState(false);
-  const [donneesPlaque, setDonneesPlaque] = useState<DonneesPlaque | null>(null);
-  const [erreurVerification, setErreurVerification] = useState('');
+  const [donneesPlaque, setDonneesPlaque] = useState<DonneesPlaque | null>(
+    null
+  );
+  const [erreurVerification, setErreurVerification] = useState("");
   const [successData, setSuccessData] = useState<any>(null);
   const [printData, setPrintData] = useState<any>(null);
+
+  // États pour le taux
+  const [tauxActif, setTauxActif] = useState<Taux | null>(null);
+  const [loadingTaux, setLoadingTaux] = useState(false);
 
   // États pour les données dynamiques
   const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
@@ -315,32 +371,110 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
   const [usages, setUsages] = useState<UsageEngin[]>([]);
   const [marques, setMarques] = useState<MarqueEngin[]>([]);
-  const [puissancesFiscales, setPuissancesFiscales] = useState<PuissanceFiscale[]>([]);
+  const [puissancesFiscales, setPuissancesFiscales] = useState<
+    PuissanceFiscale[]
+  >([]);
   const [filteredMarques, setFilteredMarques] = useState<MarqueEngin[]>([]);
-  const [filteredPuissances, setFilteredPuissances] = useState<PuissanceFiscale[]>([]);
+  const [filteredPuissances, setFilteredPuissances] = useState<
+    PuissanceFiscale[]
+  >([]);
 
   const [formData, setFormData] = useState<FormData>({
-    nom: '',
-    prenom: '',
-    telephone: '',
-    email: '',
-    adresse: '',
-    nif: '',
-    typeEngin: '',
-    anneeFabrication: '',
-    anneeCirculation: '',
-    couleur: '',
-    puissanceFiscal: '',
-    usage: '',
-    marque: '',
-    energie: '',
-    numeroPlaque: '',
-    numeroChassis: '',
-    numeroMoteur: ''
+    nom: "",
+    prenom: "",
+    telephone: "",
+    email: "",
+    adresse: "",
+    nif: "",
+    typeEngin: "",
+    anneeFabrication: "",
+    anneeCirculation: "",
+    couleur: "",
+    puissanceFiscal: "",
+    usage: "",
+    marque: "",
+    energie: "",
+    numeroPlaque: "",
+    numeroChassis: "",
+    numeroMoteur: "",
   });
 
-  // Formatage du prix - CORRIGÉ : Utilise le prix de la table impot
-  const prixFormate = `${impot.prix} $`;
+  const { utilisateur } = useAuth();
+
+  // Afficher un écran de chargement ou d'erreur si pas les privilèges
+  if (!utilisateur) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-blue-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Vérification des autorisations...
+          </h2>
+          <p className="text-gray-600">
+            Veuillez patienter pendant que nous vérifions vos accès.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!utilisateur.privileges?.reproduction) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Accès Refusé
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Vous n'avez pas les privilèges nécessaires pour accéder à cette
+              fonctionnalité.
+            </p>
+            <button
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Retour</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calcul des montants avec taux
+  const montantDollars = impot.prix.toString();
+  const montantFrancs = tauxActif
+    ? (impot.prix * tauxActif.valeur).toLocaleString("fr-FR")
+    : "Calcul en cours...";
+
+  const prixFormate = `${montantDollars} $`;
+  const montantEnFrancs = `${montantFrancs} CDF`;
+
+  // Chargement du taux actif
+  useEffect(() => {
+    const chargerTaux = async () => {
+      setLoadingTaux(true);
+      try {
+        const tauxResponse = await getTauxActif();
+        if (tauxResponse.status === "success" && tauxResponse.data) {
+          setTauxActif(tauxResponse.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement du taux:", error);
+      } finally {
+        setLoadingTaux(false);
+      }
+    };
+
+    chargerTaux();
+  }, []);
 
   // Chargement des données dynamiques au montage du composant
   useEffect(() => {
@@ -348,42 +482,44 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
       try {
         // Charger les types d'engins
         const typeEnginsResponse = await getTypeEnginsActifs();
-        if (typeEnginsResponse.status === 'success') {
+        if (typeEnginsResponse.status === "success") {
           setTypeEngins(typeEnginsResponse.data || []);
         }
 
         // Charger les énergies
         const energiesResponse = await getEnergies();
-        if (energiesResponse.status === 'success') {
+        if (energiesResponse.status === "success") {
           setEnergies(energiesResponse.data || []);
         }
 
         // Charger les couleurs
         const couleursResponse = await getCouleurs();
-        if (couleursResponse.status === 'success') {
+        if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
 
         // Charger les usages
         const usagesResponse = await getUsages();
-        if (usagesResponse.status === 'success') {
+        if (usagesResponse.status === "success") {
           setUsages(usagesResponse.data || []);
         }
 
         // Charger les marques
         const marquesResponse = await getMarquesEngins();
-        if (marquesResponse.status === 'success') {
+        if (marquesResponse.status === "success") {
           setMarques(marquesResponse.data || []);
         }
 
         // Charger les puissances fiscales
         const puissancesResponse = await getPuissancesFiscalesActives();
-        if (puissancesResponse.status === 'success') {
+        if (puissancesResponse.status === "success") {
           setPuissancesFiscales(puissancesResponse.data || []);
         }
-
       } catch (error) {
-        console.error('Erreur lors du chargement des données dynamiques:', error);
+        console.error(
+          "Erreur lors du chargement des données dynamiques:",
+          error
+        );
       }
     };
 
@@ -393,13 +529,13 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
   // Filtrer les marques et puissances quand le type d'engin change
   useEffect(() => {
     if (formData.typeEngin) {
-      const marquesFiltrees = marques.filter(marque => 
-        marque.type_engin_libelle === formData.typeEngin
+      const marquesFiltrees = marques.filter(
+        (marque) => marque.type_engin_libelle === formData.typeEngin
       );
       setFilteredMarques(marquesFiltrees);
-      
-      const puissancesFiltrees = puissancesFiscales.filter(puissance =>
-        puissance.type_engin_libelle === formData.typeEngin
+
+      const puissancesFiltrees = puissancesFiscales.filter(
+        (puissance) => puissance.type_engin_libelle === formData.typeEngin
       );
       setFilteredPuissances(puissancesFiltrees);
     } else {
@@ -411,45 +547,48 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
   // Récupération des données depuis la base DGI - CORRIGÉ
   const recupererDonneesPlaque = async (plaque: string) => {
     setIsLoading(true);
-    setErreurVerification('');
-    
+    setErreurVerification("");
+
     try {
       const result = await verifierPlaque(plaque);
-      
-      if (result.status === 'error') {
-        setErreurVerification(result.message || 'Erreur lors de la vérification');
+
+      if (result.status === "error") {
+        setErreurVerification(
+          result.message || "Erreur lors de la vérification"
+        );
         return;
       }
 
       const donnees = result.data as DonneesPlaque;
       setDonneesPlaque(donnees);
-      
+
       // Mise à jour du formulaire avec les données récupérées - CORRIGÉ
       setFormData({
-        nom: donnees.nom || '',
-        prenom: donnees.prenom || '',
-        telephone: donnees.telephone || '',
-        email: donnees.email || '',
-        adresse: donnees.adresse || '',
-        nif: '', // Le NIF n'est pas fourni par l'API, on le laisse vide
-        typeEngin: donnees.type_engin || '',
-        anneeFabrication: donnees.annee_fabrication || '',
-        anneeCirculation: donnees.annee_circulation || '',
-        couleur: donnees.couleur || '',
-        puissanceFiscal: donnees.puissance_fiscal || '',
-        usage: donnees.usage_engin || '',  // ← CORRIGÉ: usage_engin
-        marque: donnees.marque || '',      // ← CORRIGÉ: marque
-        energie: donnees.energie || '',
-        numeroPlaque: donnees.numero_plaque || '',
-        numeroChassis: donnees.numero_chassis || '',
-        numeroMoteur: donnees.numero_moteur || ''
+        nom: donnees.nom || "",
+        prenom: donnees.prenom || "",
+        telephone: donnees.telephone || "",
+        email: donnees.email || "",
+        adresse: donnees.adresse || "",
+        nif: "", // Le NIF n'est pas fourni par l'API, on le laisse vide
+        typeEngin: donnees.type_engin || "",
+        anneeFabrication: donnees.annee_fabrication || "",
+        anneeCirculation: donnees.annee_circulation || "",
+        couleur: donnees.couleur || "",
+        puissanceFiscal: donnees.puissance_fiscal || "",
+        usage: donnees.usage_engin || "", // ← CORRIGÉ: usage_engin
+        marque: donnees.marque || "", // ← CORRIGÉ: marque
+        energie: donnees.energie || "",
+        numeroPlaque: donnees.numero_plaque || "",
+        numeroChassis: donnees.numero_chassis || "",
+        numeroMoteur: donnees.numero_moteur || "",
       });
-      
-      setEtapeActuelle('confirmation');
-      
+
+      setEtapeActuelle("confirmation");
     } catch (error) {
-      console.error('Erreur lors de la récupération des données:', error);
-      setErreurVerification('Erreur lors de la récupération des informations de la plaque.');
+      console.error("Erreur lors de la récupération des données:", error);
+      setErreurVerification(
+        "Erreur lors de la récupération des informations de la plaque."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -457,17 +596,17 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
 
   const handleVerification = () => {
     if (!numeroPlaque.trim()) {
-      setErreurVerification('Veuillez saisir le numéro de plaque');
+      setErreurVerification("Veuillez saisir le numéro de plaque");
       return;
     }
-    
+
     recupererDonneesPlaque(numeroPlaque);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -482,15 +621,19 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
       // Simulation des données utilisateur (à remplacer par les vraies données)
       const utilisateur = {
         id: 1,
-        site_id: 1
+        site_id: 1,
       };
 
       const paiementReproductionData: PaiementReproductionData = {
-        modePaiement: paiementDataForm.modePaiement as 'mobile_money' | 'cheque' | 'banque' | 'espece',
+        modePaiement: paiementDataForm.modePaiement as
+          | "mobile_money"
+          | "cheque"
+          | "banque"
+          | "espece",
         operateur: paiementDataForm.operateur,
         numeroTransaction: paiementDataForm.numeroTransaction,
         numeroCheque: paiementDataForm.numeroCheque,
-        banque: paiementDataForm.banque
+        banque: paiementDataForm.banque,
       };
 
       const result = await traiterReproduction(
@@ -500,9 +643,9 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
         utilisateur
       );
 
-      if (result.status === 'success') {
+      if (result.status === "success") {
         setShowPaiement(false);
-        
+
         // Préparer les données pour l'impression
         const completeData = {
           ...result.data,
@@ -521,19 +664,19 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           annee_fabrication: formData.anneeFabrication,
           annee_circulation: formData.anneeCirculation,
           puissance_fiscal: formData.puissanceFiscal,
-          montant: impot.prix.toString() // ← CORRIGÉ: Utilise le prix de l'impôt
+          montant: impot.prix.toString(), // ← CORRIGÉ: Utilise le prix de l'impôt
+          montant_francs: montantEnFrancs,
         };
 
         setSuccessData(completeData);
         setPrintData(completeData);
         setShowSuccess(true);
       } else {
-        alert(result.message || 'Erreur lors du traitement du paiement');
+        alert(result.message || "Erreur lors du traitement du paiement");
       }
-      
     } catch (error) {
-      console.error('Erreur lors du paiement:', error);
-      alert('Erreur lors du traitement du paiement.');
+      console.error("Erreur lors du paiement:", error);
+      alert("Erreur lors du traitement du paiement.");
     } finally {
       setIsPaiementProcessing(false);
     }
@@ -547,31 +690,59 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
   const handleSuccessClose = () => {
     setShowSuccess(false);
     // Réinitialiser pour une nouvelle reproduction
-    setEtapeActuelle('verification');
-    setNumeroPlaque('');
+    setEtapeActuelle("verification");
+    setNumeroPlaque("");
     setFormData({
-      nom: '', prenom: '', telephone: '', email: '', adresse: '', nif: '',
-      typeEngin: '', anneeFabrication: '', anneeCirculation: '', couleur: '', 
-      puissanceFiscal: '', usage: '', marque: '', energie: '',
-      numeroPlaque: '', numeroChassis: '', numeroMoteur: ''
+      nom: "",
+      prenom: "",
+      telephone: "",
+      email: "",
+      adresse: "",
+      nif: "",
+      typeEngin: "",
+      anneeFabrication: "",
+      anneeCirculation: "",
+      couleur: "",
+      puissanceFiscal: "",
+      usage: "",
+      marque: "",
+      energie: "",
+      numeroPlaque: "",
+      numeroChassis: "",
+      numeroMoteur: "",
     });
   };
 
   const handlePrintClose = () => {
     setShowPrint(false);
     // Réinitialiser complètement
-    setEtapeActuelle('verification');
-    setNumeroPlaque('');
+    setEtapeActuelle("verification");
+    setNumeroPlaque("");
     setFormData({
-      nom: '', prenom: '', telephone: '', email: '', adresse: '', nif: '',
-      typeEngin: '', anneeFabrication: '', anneeCirculation: '', couleur: '', 
-      puissanceFiscal: '', usage: '', marque: '', energie: '',
-      numeroPlaque: '', numeroChassis: '', numeroMoteur: ''
+      nom: "",
+      prenom: "",
+      telephone: "",
+      email: "",
+      adresse: "",
+      nif: "",
+      typeEngin: "",
+      anneeFabrication: "",
+      anneeCirculation: "",
+      couleur: "",
+      puissanceFiscal: "",
+      usage: "",
+      marque: "",
+      energie: "",
+      numeroPlaque: "",
+      numeroChassis: "",
+      numeroMoteur: "",
     });
   };
 
   // Générer les options d'années
-  const anneeOptions = Array.from({ length: 30 }, (_, i) => (new Date().getFullYear() - i).toString());
+  const anneeOptions = Array.from({ length: 30 }, (_, i) =>
+    (new Date().getFullYear() - i).toString()
+  );
 
   // Rendu de l'étape de vérification
   const renderEtapeVerification = () => (
@@ -585,7 +756,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             Étape 1: Vérification de la Plaque
           </h2>
           <p className="text-gray-600 text-sm">
-            Saisissez le numéro de plaque pour récupérer les informations du véhicule
+            Saisissez le numéro de plaque pour récupérer les informations du
+            véhicule
           </p>
         </div>
       </div>
@@ -600,13 +772,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             value={numeroPlaque}
             onChange={(e) => {
               setNumeroPlaque(e.target.value.toUpperCase());
-              setErreurVerification('');
+              setErreurVerification("");
             }}
             placeholder="Ex: AB-123-CD"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-gray-500 text-sm mt-2">
-            Le système récupérera automatiquement les informations depuis la base DGI
+            Le système récupérera automatiquement les informations depuis la
+            base DGI
           </p>
         </div>
 
@@ -614,20 +787,32 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
             <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-red-800 text-sm">Erreur de vérification</h4>
+              <h4 className="font-semibold text-red-800 text-sm">
+                Erreur de vérification
+              </h4>
               <p className="text-red-700 text-sm mt-1">{erreurVerification}</p>
             </div>
           </div>
         )}
 
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
           <div className="flex items-start space-x-3">
             <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <h4 className="font-semibold text-blue-800 text-sm">Coût du Service</h4>
-              <p className="text-blue-700 text-sm mt-1">
-                Frais de reproduction de carte : <strong>{prixFormate}</strong>
-              </p>
+              <h4 className="font-semibold text-blue-800 text-sm">
+                Coût du Service
+              </h4>
+              <div className="text-lg font-bold text-blue-800">
+                {prixFormate}
+              </div>
+              <div className="text-md font-semibold text-blue-700 mt-1">
+                {montantEnFrancs}
+              </div>
+              {tauxActif && (
+                <div className="text-xs text-blue-600 mt-1">
+                  Taux: 1$ = {tauxActif.valeur.toLocaleString("fr-FR")} CDF
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -636,7 +821,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           <button
             onClick={handleVerification}
             disabled={isLoading || !numeroPlaque.trim()}
-            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {isLoading ? (
               <>
@@ -661,7 +846,9 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
       {/* EN-TÊTE AVEC DONNÉES RÉCUPÉRÉES */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-700">Informations Récupérées</h3>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Informations Récupérées
+          </h3>
           <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
             ✓ Données DGI
           </span>
@@ -669,15 +856,21 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Numéro de Plaque:</span>
-            <div className="text-gray-700 font-medium">{formData.numeroPlaque}</div>
+            <div className="text-gray-700 font-medium">
+              {formData.numeroPlaque}
+            </div>
           </div>
           <div>
             <span className="text-gray-500">Propriétaire:</span>
-            <div className="text-gray-700 font-medium">{formData.prenom} {formData.nom}</div>
+            <div className="text-gray-700 font-medium">
+              {formData.prenom} {formData.nom}
+            </div>
           </div>
           <div>
             <span className="text-gray-500">Téléphone:</span>
-            <div className="text-gray-700 font-medium">{formData.telephone}</div>
+            <div className="text-gray-700 font-medium">
+              {formData.telephone}
+            </div>
           </div>
         </div>
       </div>
@@ -706,7 +899,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="text"
               value={formData.nom}
-              onChange={(e) => handleInputChange('nom', e.target.value)}
+              onChange={(e) => handleInputChange("nom", e.target.value)}
               placeholder="Entrez votre nom"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -719,7 +912,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="text"
               value={formData.prenom}
-              onChange={(e) => handleInputChange('prenom', e.target.value)}
+              onChange={(e) => handleInputChange("prenom", e.target.value)}
               placeholder="Entrez votre prénom"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -732,7 +925,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="tel"
               value={formData.telephone}
-              onChange={(e) => handleInputChange('telephone', e.target.value)}
+              onChange={(e) => handleInputChange("telephone", e.target.value)}
               placeholder="Ex: +243 00 00 00 000"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -745,7 +938,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="email"
               value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="exemple@email.com"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -758,7 +951,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="text"
               value={formData.adresse}
-              onChange={(e) => handleInputChange('adresse', e.target.value)}
+              onChange={(e) => handleInputChange("adresse", e.target.value)}
               placeholder="Entrez votre adresse complète"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -772,7 +965,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               <input
                 type="text"
                 value={formData.nif}
-                onChange={(e) => handleInputChange('nif', e.target.value)}
+                onChange={(e) => handleInputChange("nif", e.target.value)}
                 placeholder="Généré automatiquement après validation"
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
                 readOnly
@@ -782,7 +975,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               </div>
             </div>
             <p className="text-gray-500 text-sm mt-2">
-              Le NIF sera généré automatiquement lors de la validation du formulaire
+              Le NIF sera généré automatiquement lors de la validation du
+              formulaire
             </p>
           </div>
         </div>
@@ -811,12 +1005,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.typeEngin}
-              onChange={(e) => handleInputChange('typeEngin', e.target.value)}
+              onChange={(e) => handleInputChange("typeEngin", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner le type d'engin</option>
               {typeEngins.map((option) => (
-                <option key={option.id} value={option.libelle}>{option.libelle}</option>
+                <option key={option.id} value={option.libelle}>
+                  {option.libelle}
+                </option>
               ))}
             </select>
           </div>
@@ -827,12 +1023,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.marque}
-              onChange={(e) => handleInputChange('marque', e.target.value)}
+              onChange={(e) => handleInputChange("marque", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner la marque</option>
               {filteredMarques.map((option) => (
-                <option key={option.id} value={option.libelle}>{option.libelle}</option>
+                <option key={option.id} value={option.libelle}>
+                  {option.libelle}
+                </option>
               ))}
             </select>
           </div>
@@ -843,12 +1041,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.energie}
-              onChange={(e) => handleInputChange('energie', e.target.value)}
+              onChange={(e) => handleInputChange("energie", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner l'énergie</option>
               {energies.map((option) => (
-                <option key={option.id} value={option.nom}>{option.nom}</option>
+                <option key={option.id} value={option.nom}>
+                  {option.nom}
+                </option>
               ))}
             </select>
           </div>
@@ -859,12 +1059,16 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.anneeFabrication}
-              onChange={(e) => handleInputChange('anneeFabrication', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("anneeFabrication", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner l'année</option>
               {anneeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
           </div>
@@ -875,12 +1079,16 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.anneeCirculation}
-              onChange={(e) => handleInputChange('anneeCirculation', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("anneeCirculation", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner l'année</option>
               {anneeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
           </div>
@@ -891,12 +1099,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.couleur}
-              onChange={(e) => handleInputChange('couleur', e.target.value)}
+              onChange={(e) => handleInputChange("couleur", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner la couleur</option>
               {couleurs.map((option) => (
-                <option key={option.id} value={option.nom}>{option.nom}</option>
+                <option key={option.id} value={option.nom}>
+                  {option.nom}
+                </option>
               ))}
             </select>
           </div>
@@ -907,12 +1117,16 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.puissanceFiscal}
-              onChange={(e) => handleInputChange('puissanceFiscal', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("puissanceFiscal", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner la puissance</option>
               {filteredPuissances.map((option) => (
-                <option key={option.id} value={option.libelle}>{option.libelle}</option>
+                <option key={option.id} value={option.libelle}>
+                  {option.libelle}
+                </option>
               ))}
             </select>
           </div>
@@ -923,12 +1137,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             </label>
             <select
               value={formData.usage}
-              onChange={(e) => handleInputChange('usage', e.target.value)}
+              onChange={(e) => handleInputChange("usage", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner l'usage</option>
               {usages.map((option) => (
-                <option key={option.id} value={option.libelle}>{option.libelle}</option>
+                <option key={option.id} value={option.libelle}>
+                  {option.libelle}
+                </option>
               ))}
             </select>
           </div>
@@ -940,7 +1156,9 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="text"
               value={formData.numeroChassis}
-              onChange={(e) => handleInputChange('numeroChassis', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("numeroChassis", e.target.value)
+              }
               placeholder="Entrez le numéro de châssis"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -953,7 +1171,9 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
             <input
               type="text"
               value={formData.numeroMoteur}
-              onChange={(e) => handleInputChange('numeroMoteur', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("numeroMoteur", e.target.value)
+              }
               placeholder="Entrez le numéro de moteur"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -963,27 +1183,36 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
 
       {/* RÉSUMÉ ET PAIEMENT */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200 mb-6">
+        <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
           <div>
-            <div className="text-sm text-orange-600">Frais de Reproduction</div>
-            <div className="text-2xl font-bold text-orange-800">{prixFormate}</div>
-            <div className="text-xs text-orange-600 mt-1">
-              Pour l'impression de la nouvelle carte
+            <div className="text-sm text-blue-600 font-medium">
+              Frais de Reproduction
             </div>
+            <div className="text-2xl font-bold text-blue-800">
+              {prixFormate}
+            </div>
+            <div className="text-lg font-semibold text-blue-700 mt-2">
+              {montantEnFrancs}
+            </div>
+            {tauxActif && (
+              <div className="text-sm text-blue-500 mt-2">
+                Taux: 1$ = {tauxActif.valeur.toLocaleString("fr-FR")} CDF
+              </div>
+            )}
           </div>
           <div className="text-right">
-            <div className="text-sm text-orange-600">Délai</div>
-            <div className="text-lg font-semibold text-green-600">Immédiat</div>
+            <div className="text-sm text-blue-600 font-medium">Délai</div>
+            <div className="text-xl font-bold text-green-600">Immédiat</div>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <button
             onClick={() => {
-              setEtapeActuelle('verification');
-              setErreurVerification('');
+              setEtapeActuelle("verification");
+              setErreurVerification("");
             }}
-            className="flex items-center space-x-2 px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+            className="flex items-center space-x-2 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium border-2 border-transparent hover:border-gray-300"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Retour</span>
@@ -991,7 +1220,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
 
           <button
             onClick={procederAuPaiement}
-            className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
           >
             <CreditCard className="w-4 h-4" />
             <span>Procéder au Paiement</span>
@@ -1014,9 +1243,7 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Retour aux services</span>
             </button>
-            <div className="text-sm text-gray-500">
-              ID: #{impot.id}
-            </div>
+            <div className="text-sm text-gray-500">ID: #{impot.id}</div>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -1036,28 +1263,52 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           {/* DESCRIPTION */}
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-blue-800 text-sm">
-              Ce service permet de reproduire une carte d'immatriculation perdue ou endommagée. 
-              Saisissez le numéro de plaque pour récupérer automatiquement les informations du véhicule.
+              Ce service permet de reproduire une carte d'immatriculation perdue
+              ou endommagée. Saisissez le numéro de plaque pour récupérer
+              automatiquement les informations du véhicule.
             </p>
           </div>
 
           {/* INDICATEUR D'ÉTAPE */}
           <div className="mt-6">
             <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {['verification', 'confirmation', 'paiement', 'recapitulatif'].map((etape, index) => (
+              {[
+                "verification",
+                "confirmation",
+                "paiement",
+                "recapitulatif",
+              ].map((etape, index) => (
                 <div key={etape} className="flex items-center">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    etapeActuelle === etape ? 'bg-blue-600 text-white' :
-                    index < ['verification', 'confirmation', 'paiement', 'recapitulatif'].indexOf(etapeActuelle) ? 
-                    'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
-                    {index < ['verification', 'confirmation', 'paiement', 'recapitulatif'].indexOf(etapeActuelle) ? (
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                      etapeActuelle === etape
+                        ? "bg-blue-600 text-white"
+                        : index <
+                          [
+                            "verification",
+                            "confirmation",
+                            "paiement",
+                            "recapitulatif",
+                          ].indexOf(etapeActuelle)
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-300 text-gray-600"
+                    }`}
+                  >
+                    {index <
+                    [
+                      "verification",
+                      "confirmation",
+                      "paiement",
+                      "recapitulatif",
+                    ].indexOf(etapeActuelle) ? (
                       <CheckCircle className="w-4 h-4" />
                     ) : (
                       index + 1
                     )}
                   </div>
-                  {index < 3 && <div className="w-16 h-1 bg-gray-300 mx-2"></div>}
+                  {index < 3 && (
+                    <div className="w-16 h-1 bg-gray-300 mx-2"></div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1071,8 +1322,8 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
         </div>
 
         {/* CONTENU PRINCIPAL */}
-        {etapeActuelle === 'verification' && renderEtapeVerification()}
-        {etapeActuelle === 'confirmation' && renderEtapeConfirmation()}
+        {etapeActuelle === "verification" && renderEtapeVerification()}
+        {etapeActuelle === "confirmation" && renderEtapeConfirmation()}
 
         {/* MODALS */}
         <PaiementModal
@@ -1080,13 +1331,14 @@ export default function ReproductionServicesClient({ impot }: ReproductionServic
           onClose={() => setShowPaiement(false)}
           onPaiement={traiterPaiement}
           montant={prixFormate}
+          montantEnFrancs={montantEnFrancs}
           isLoading={isPaiementProcessing}
         />
 
         <SuccessModal
           isOpen={showSuccess}
           onClose={handleSuccessClose}
-          onPrint={handlePrint} 
+          onPrint={handlePrint}
           data={successData}
         />
 

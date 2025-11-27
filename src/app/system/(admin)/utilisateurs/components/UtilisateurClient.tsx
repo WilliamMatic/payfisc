@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { 
   Utilisateur as UtilisateurType, 
   Site,
+  UtilisateurFormData,
+  Privileges,
   getUtilisateurs,
   getSitesActifs
 } from '@/services/utilisateurs/utilisateurService';
@@ -32,11 +34,18 @@ export default function UtilisateurClient({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedUtilisateur, setSelectedUtilisateur] = useState<UtilisateurType | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<UtilisateurFormData>({
     nom_complet: '',
     telephone: '',
     adresse: '',
     site_affecte_id: 0,
+    privileges: {
+      simple: false,
+      special: false,
+      delivrance: false,
+      plaque: false,
+      reproduction: false
+    }
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -91,6 +100,7 @@ export default function UtilisateurClient({
       telephone: utilisateur.telephone,
       adresse: utilisateur.adresse,
       site_affecte_id: utilisateur.site_affecte_id,
+      privileges: utilisateur.privileges
     });
     setShowEditModal(true);
   };
@@ -103,6 +113,17 @@ export default function UtilisateurClient({
   const openStatusModal = (utilisateur: UtilisateurType) => {
     setSelectedUtilisateur(utilisateur);
     setShowStatusModal(true);
+  };
+
+  // Mise à jour des privilèges dans le formData
+  const updatePrivilege = (privilege: keyof Privileges, value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      privileges: {
+        ...prev.privileges,
+        [privilege]: value
+      }
+    }));
   };
 
   // Effacer les messages après un délai
@@ -151,7 +172,19 @@ export default function UtilisateurClient({
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedUtilisateur(null);
-          setFormData({ nom_complet: '', telephone: '', adresse: '', site_affecte_id: 0 });
+          setFormData({ 
+            nom_complet: '', 
+            telephone: '', 
+            adresse: '', 
+            site_affecte_id: 0,
+            privileges: {
+              simple: false,
+              special: false,
+              delivrance: false,
+              plaque: false,
+              reproduction: false
+            }
+          });
         }}
         onDeleteClose={() => {
           setShowDeleteModal(false);
@@ -162,6 +195,7 @@ export default function UtilisateurClient({
           setSelectedUtilisateur(null);
         }}
         onFormDataChange={setFormData}
+        onPrivilegeChange={updatePrivilege}
         onAddUtilisateur={async () => {
           if (!formData.nom_complet || !formData.telephone || !formData.site_affecte_id || formData.site_affecte_id === 0) {
             setError('Le nom complet, le téléphone et le site sont obligatoires');
@@ -175,7 +209,19 @@ export default function UtilisateurClient({
             
             if (result.status === 'success') {
               setSuccessMessage(result.message || 'Utilisateur ajouté avec succès');
-              setFormData({ nom_complet: '', telephone: '', adresse: '', site_affecte_id: 0 });
+              setFormData({ 
+                nom_complet: '', 
+                telephone: '', 
+                adresse: '', 
+                site_affecte_id: 0,
+                privileges: {
+                  simple: false,
+                  special: false,
+                  delivrance: false,
+                  plaque: false,
+                  reproduction: false
+                }
+              });
               setShowAddModal(false);
               
               // Recharger la liste complète des utilisateurs
@@ -204,7 +250,19 @@ export default function UtilisateurClient({
               setSuccessMessage(result.message || 'Utilisateur modifié avec succès');
               setShowEditModal(false);
               setSelectedUtilisateur(null);
-              setFormData({ nom_complet: '', telephone: '', adresse: '', site_affecte_id: 0 });
+              setFormData({ 
+                nom_complet: '', 
+                telephone: '', 
+                adresse: '', 
+                site_affecte_id: 0,
+                privileges: {
+                  simple: false,
+                  special: false,
+                  delivrance: false,
+                  plaque: false,
+                  reproduction: false
+                }
+              });
               
               // Recharger la liste complète des utilisateurs
               await loadUtilisateurs();

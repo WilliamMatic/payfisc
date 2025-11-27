@@ -239,3 +239,38 @@ export const deactivateTaux = async (id: number): Promise<ApiResponse> => {
     };
   }
 };
+
+/**
+ * Récupère le taux actif
+ */
+export const getTauxActif = async (): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/taux/get_taux_actif.php`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la récupération du taux actif',
+      };
+    }
+
+    return {
+      status: 'success',
+      data: data.data,
+    };
+  } catch (error) {
+    console.error('Get taux actif error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la récupération du taux actif',
+    };
+  }
+};

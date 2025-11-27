@@ -1,4 +1,4 @@
-import { Users, Loader2, Edit, Trash2, Eye, EyeOff, Phone, MapPin } from 'lucide-react';
+import { Users, Loader2, Edit, Trash2, Eye, EyeOff, Phone, MapPin, Shield } from 'lucide-react';
 import { Utilisateur as UtilisateurType } from '@/services/utilisateurs/utilisateurService';
 
 interface UtilisateurTableProps {
@@ -16,6 +16,14 @@ export default function UtilisateurTable({
   onDelete, 
   onToggleStatus 
 }: UtilisateurTableProps) {
+  const privilegeLabels: Record<string, string> = {
+    simple: 'S',
+    special: 'SP',
+    delivrance: 'D',
+    plaque: 'P',
+    reproduction: 'R'
+  };
+
   if (loading) {
     return (
       <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -37,6 +45,7 @@ export default function UtilisateurTable({
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Téléphone</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Adresse</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Site Affecté</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Privilèges</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -65,6 +74,25 @@ export default function UtilisateurTable({
                     {utilisateur.site_nom || 'N/A'}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-1">
+                      {Object.entries(utilisateur.privileges).map(([privilege, hasAccess]) => 
+                        hasAccess && (
+                          <span
+                            key={privilege}
+                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                            title={privilege}
+                          >
+                            <Shield className="w-3 h-3 mr-1" />
+                            {privilegeLabels[privilege]}
+                          </span>
+                        )
+                      )}
+                      {!Object.values(utilisateur.privileges).some(Boolean) && (
+                        <span className="text-xs text-gray-400">Aucun</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                       utilisateur.actif 
                         ? 'bg-green-50 text-green-700 border border-green-100' 
@@ -74,7 +102,7 @@ export default function UtilisateurTable({
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                    {utilisateur.date_creation }
+                    {utilisateur.date_creation}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center space-x-1">

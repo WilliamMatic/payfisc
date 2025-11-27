@@ -3,7 +3,7 @@ import AddUtilisateurModal from './modals/AddUtilisateurModal';
 import EditUtilisateurModal from './modals/EditUtilisateurModal';
 import DeleteUtilisateurModal from './modals/DeleteUtilisateurModal';
 import StatusUtilisateurModal from './modals/StatusUtilisateurModal';
-import { Utilisateur as UtilisateurType, Site } from '@/services/utilisateurs/utilisateurService';
+import { Utilisateur as UtilisateurType, Site, UtilisateurFormData, Privileges } from '@/services/utilisateurs/utilisateurService';
 
 interface UtilisateurModalsProps {
   showAddModal: boolean;
@@ -11,14 +11,15 @@ interface UtilisateurModalsProps {
   showDeleteModal: boolean;
   showStatusModal: boolean;
   selectedUtilisateur: UtilisateurType | null;
-  formData: { nom_complet: string; telephone: string; adresse: string; site_affecte_id: number };
+  formData: UtilisateurFormData;
   sites: Site[];
   processing: boolean;
   onAddClose: () => void;
   onEditClose: () => void;
   onDeleteClose: () => void;
   onStatusClose: () => void;
-  onFormDataChange: (data: { nom_complet: string; telephone: string; adresse: string; site_affecte_id: number }) => void;
+  onFormDataChange: (data: UtilisateurFormData) => void;
+  onPrivilegeChange: (privilege: keyof Privileges, value: boolean) => void;
   onAddUtilisateur: () => Promise<void>;
   onEditUtilisateur: () => Promise<void>;
   onDeleteUtilisateur: () => Promise<void>;
@@ -39,6 +40,7 @@ export default function UtilisateurModals({
   onDeleteClose,
   onStatusClose,
   onFormDataChange,
+  onPrivilegeChange,
   onAddUtilisateur,
   onEditUtilisateur,
   onDeleteUtilisateur,
@@ -54,6 +56,7 @@ export default function UtilisateurModals({
             processing={processing}
             onClose={onAddClose}
             onFormDataChange={onFormDataChange}
+            onPrivilegeChange={onPrivilegeChange}
             onAddUtilisateur={onAddUtilisateur}
           />
         </Portal>
@@ -68,6 +71,7 @@ export default function UtilisateurModals({
             processing={processing}
             onClose={onEditClose}
             onFormDataChange={onFormDataChange}
+            onPrivilegeChange={onPrivilegeChange}
             onEditUtilisateur={onEditUtilisateur}
           />
         </Portal>

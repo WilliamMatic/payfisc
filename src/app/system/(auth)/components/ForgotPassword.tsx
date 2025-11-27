@@ -19,7 +19,7 @@ export const ForgotPasswordForm = ({
   onBackToLogin,
 }: ForgotPasswordFormProps) => {
   const [step, setStep] = useState<Step>(1);
-  const [email, setEmail] = useState("");
+  const [identifiant, setIdentifiant] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +28,8 @@ export const ForgotPasswordForm = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [agentId, setAgentId] = useState<number | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [userType, setUserType] = useState<'agent' | 'utilisateur' | null>(null);
 
   const handleSendCode = async (e: FormEvent) => {
     e.preventDefault();
@@ -37,12 +38,12 @@ export const ForgotPasswordForm = ({
     setSuccess("");
 
     try {
-      const result = await requestPasswordReset(email);
+      const result = await requestPasswordReset(identifiant);
 
       if (result.status === "success") {
         setStep(2);
         setSuccess(
-          "Un code de vérification a été envoyé à votre adresse email."
+          "Un code de vérification a été envoyé à votre adresse email ou téléphone."
         );
       } else {
         setError(result.message || "Erreur lors de l'envoi du code");
@@ -62,14 +63,15 @@ export const ForgotPasswordForm = ({
     setSuccess("");
 
     try {
-      const result = await verifyResetCode(email, code);
+      const result = await verifyResetCode(identifiant, code);
 
       if (result.status === "success") {
-        // Changé ici - accédez à agent_id directement depuis result
-        setAgentId(result.agent_id || null);
+        setUserId(result.agent_id || result.utilisateur_id || null);
+        setUserType(result.user_type || null);
         setStep(3);
         setSuccess("Code vérifié avec succès.");
-        console.log("Agent ID récupéré:", result.agent_id); // Pour debug
+        console.log("User ID récupéré:", result.agent_id || result.utilisateur_id);
+        console.log("User Type:", result.user_type);
       } else {
         setError(result.message || "Code invalide");
       }
@@ -100,14 +102,14 @@ export const ForgotPasswordForm = ({
       return;
     }
 
-    if (!agentId) {
+    if (!userId || !userType) {
       setError("Erreur de session. Veuillez recommencer le processus.");
       setIsLoading(false);
       return;
     }
 
     try {
-      const result = await resetPassword(agentId, code, newPassword);
+      const result = await resetPassword(userId, userType, code, newPassword);
 
       if (result.status === "success") {
         setSuccess("Mot de passe réinitialisé avec succès!");
@@ -131,10 +133,10 @@ export const ForgotPasswordForm = ({
     setSuccess("");
 
     try {
-      const result = await requestPasswordReset(email);
+      const result = await requestPasswordReset(identifiant);
 
       if (result.status === "success") {
-        setSuccess("Un nouveau code a été envoyé à votre adresse email.");
+        setSuccess("Un nouveau code a été envoyé.");
       } else {
         setError(result.message || "Erreur lors de l'envoi du code");
       }
@@ -150,7 +152,7 @@ export const ForgotPasswordForm = ({
     <div className={styles.stepIndicator}>
       <div className={`${styles.step} ${step >= 1 ? styles.active : ""}`}>
         <span>1</span>
-        <p>Email</p>
+        <p>Identifiant</p>
       </div>
       <div className={styles.stepLine}></div>
       <div className={`${styles.step} ${step >= 2 ? styles.active : ""}`}>
@@ -165,15 +167,27 @@ export const ForgotPasswordForm = ({
     </div>
   );
 
+  // Fonction pour déterminer le type d'identifiant
+  const getIdentifiantType = (identifiant: string): 'email' | 'telephone' => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\+?[0-9\s\-\(\)]{8,20}$/;
+    
+    if (emailRegex.test(identifiant)) return 'email';
+    if (phoneRegex.test(identifiant)) return 'telephone';
+    return 'email'; // Par défaut
+  };
+
+  const identifiantType = getIdentifiantType(identifiant);
+
   return (
     <div className={styles.forgotPasswordContainer}>
       <div className={styles.forgotPasswordHeader}>
         <h2>Réinitialiser votre mot de passe</h2>
         <p>
           {step === 1 &&
-            "Entrez votre adresse email pour recevoir un code de vérification"}
+            `Entrez votre ${identifiantType === 'email' ? 'adresse email' : 'numéro de téléphone'} pour recevoir un code de vérification`}
           {step === 2 &&
-            "Entrez le code de vérification envoyé à votre adresse email"}
+            `Entrez le code de vérification envoyé à votre ${identifiantType === 'email' ? 'adresse email' : 'téléphone'}`}
           {step === 3 && "Définissez votre nouveau mot de passe"}
         </p>
       </div>
@@ -204,20 +218,27 @@ export const ForgotPasswordForm = ({
       >
         {step === 1 && (
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>
-              Adresse email
+            <label htmlFor="identifiant" className={styles.label}>
+              {identifiantType === 'email' ? 'Adresse email' : 'Numéro de téléphone'}
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="identifiant"
+              name="identifiant"
+              type={identifiantType === 'email' ? 'email' : 'tel'}
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifiant}
+              onChange={(e) => setIdentifiant(e.target.value)}
               className={styles.input}
-              placeholder="votre@email.com"
+              placeholder={identifiantType === 'email' ? "votre@email.com" : "+225 07 00 00 00 00"}
               disabled={isLoading}
             />
+            <div className={styles.identifiantHelp}>
+              <p>
+                {identifiantType === 'email' 
+                  ? "Pour les agents administratifs" 
+                  : "Pour les utilisateurs des sites"}
+              </p>
+            </div>
           </div>
         )}
 

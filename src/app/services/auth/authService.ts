@@ -10,6 +10,18 @@ export interface AgentSession {
   email: string;
 }
 
+// Interface pour les données d'un utilisateur connecté
+export interface UtilisateurSession {
+  id: number;
+  nom_complet: string;
+  telephone: string;
+  adresse: string;
+  site_nom: string;
+  site_code: string;
+  formule: string;
+  privileges: any;
+}
+
 // Interface pour les privilèges
 export interface Privilege {
   id: number;
@@ -24,8 +36,9 @@ export interface LoginResponse {
   status: 'success' | 'error';
   message?: string;
   data?: {
-    agent: AgentSession;
-    privileges: Privilege[];
+    agent?: AgentSession;
+    utilisateur?: UtilisateurSession;
+    privileges?: Privilege[];
   };
 }
 
@@ -34,8 +47,9 @@ export interface SessionCheckResponse {
   status: 'success' | 'error';
   message?: string;
   data?: {
-    agent: AgentSession;
-    privileges: Privilege[];
+    agent?: AgentSession;
+    utilisateur?: UtilisateurSession;
+    privileges?: Privilege[];
   };
 }
 
@@ -45,6 +59,8 @@ export interface PasswordResetResponse {
   message?: string;
   data?: {
     agent_id?: number;
+    utilisateur_id?: number;
+    user_type?: 'agent' | 'utilisateur';
   };
 }
 
@@ -52,7 +68,9 @@ export interface PasswordResetResponse {
 export interface VerifyCodeResponse {
   status: 'success' | 'error';
   message?: string;
-  agent_id?: number; // Changé ici
+  agent_id?: number;
+  utilisateur_id?: number;
+  user_type?: 'agent' | 'utilisateur';
 }
 
 // URL de base de l'API
@@ -92,9 +110,42 @@ export const loginAgent = async (email: string, password: string): Promise<Login
 };
 
 /**
- * Déconnecte l'agent
+ * Authentifie un utilisateur
  */
-export const logoutAgent = async (): Promise<{ status: 'success' | 'error'; message?: string }> => {
+export const loginUtilisateur = async (telephone: string, password: string): Promise<LoginResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login_utilisateur.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ telephone, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de l\'authentification',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Login utilisateur error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de l\'authentification',
+    };
+  }
+};
+
+/**
+ * Déconnecte l'utilisateur/agent
+ */
+export const logoutUser = async (): Promise<{ status: 'success' | 'error'; message?: string }> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/logout.php`, {
       method: 'POST',
@@ -153,16 +204,16 @@ export const checkSession = async (): Promise<SessionCheckResponse> => {
 };
 
 /**
- * Demande l'envoi d'un code de réinitialisation
+ * Demande l'envoi d'un code de réinitialisation (pour agents ET utilisateurs)
  */
-export const requestPasswordReset = async (email: string): Promise<PasswordResetResponse> => {
+export const requestPasswordReset = async (identifiant: string): Promise<PasswordResetResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/request_reset.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ identifiant }),
     });
 
     const data = await response.json();
@@ -185,17 +236,16 @@ export const requestPasswordReset = async (email: string): Promise<PasswordReset
 };
 
 /**
- * Vérifie un code de réinitialisation
+ * Vérifie un code de réinitialisation (pour agents ET utilisateurs)
  */
-// Dans verifyResetCode, modifiez le type de retour
-export const verifyResetCode = async (email: string, code: string): Promise<VerifyCodeResponse> => {
+export const verifyResetCode = async (identifiant: string, code: string): Promise<VerifyCodeResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/verify_code.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ identifiant, code }),
     });
 
     const data = await response.json();
@@ -218,16 +268,26 @@ export const verifyResetCode = async (email: string, code: string): Promise<Veri
 };
 
 /**
- * Réinitialise le mot de passe
+ * Réinitialise le mot de passe (pour agents ET utilisateurs)
  */
-export const resetPassword = async (agentId: number, code: string, newPassword: string): Promise<PasswordResetResponse> => {
+export const resetPassword = async (
+  userId: number, 
+  userType: 'agent' | 'utilisateur', 
+  code: string, 
+  newPassword: string
+): Promise<PasswordResetResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/reset_password.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ agent_id: agentId, code, new_password: newPassword }),
+      body: JSON.stringify({ 
+        user_id: userId, 
+        user_type: userType, 
+        code, 
+        new_password: newPassword 
+      }),
     });
 
     const data = await response.json();
@@ -245,6 +305,35 @@ export const resetPassword = async (agentId: number, code: string, newPassword: 
     return {
       status: 'error',
       message: 'Erreur réseau lors de la réinitialisation',
+    };
+  }
+};
+
+/**
+ * Déconnecte l'agent
+ */
+export const logoutAgent = async (): Promise<{ status: 'success' | 'error'; message?: string }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/logout.php`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la déconnexion',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la déconnexion',
     };
   }
 };
