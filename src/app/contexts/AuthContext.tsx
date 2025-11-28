@@ -47,9 +47,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // D'abord vérifier la session agent
         const agentResult = await checkSession();
-        if (agentResult.status === 'success' && agentResult.data) {
+        if (agentResult.status === 'success' && agentResult.data && agentResult.data.agent) {
           setAgent(agentResult.data.agent);
-          setPrivileges(agentResult.data.privileges);
+          setPrivileges(agentResult.data.privileges || []);
           setUserType('agent');
           setIsLoading(false);
           return;
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Si pas d'agent, vérifier la session utilisateur
         const userResult = await checkSessionUtilisateur();
-        if (userResult.status === 'success' && userResult.data) {
+        if (userResult.status === 'success' && userResult.data && userResult.data.utilisateur) {
           setUtilisateur(userResult.data.utilisateur);
           setUserType('utilisateur');
           setIsLoading(false);
@@ -79,9 +79,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Essayer d'abord de se connecter en tant qu'agent (avec email)
       const agentResult = await loginAgent(identifiant, password);
       
-      if (agentResult.status === 'success' && agentResult.data) {
+      if (agentResult.status === 'success' && agentResult.data && agentResult.data.agent) {
         setAgent(agentResult.data.agent);
-        setPrivileges(agentResult.data.privileges);
+        setPrivileges(agentResult.data.privileges || []);
         setUserType('agent');
         return { success: true, userType: 'agent' };
       }
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Si échec, essayer de se connecter en tant qu'utilisateur (avec téléphone)
       const userResult = await loginUtilisateur(identifiant, password);
       
-      if (userResult.status === 'success' && userResult.data) {
+      if (userResult.status === 'success' && userResult.data && userResult.data.utilisateur) {
         setUtilisateur(userResult.data.utilisateur);
         setUserType('utilisateur');
         return { success: true, userType: 'utilisateur' };
