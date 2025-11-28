@@ -401,53 +401,6 @@ export default function ReproductionServicesClient({
 
   const { utilisateur } = useAuth();
 
-  // Afficher un écran de chargement ou d'erreur si pas les privilèges
-  if (!utilisateur) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="w-8 h-8 text-blue-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Vérification des autorisations...
-          </h2>
-          <p className="text-gray-600">
-            Veuillez patienter pendant que nous vérifions vos accès.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!utilisateur.privileges?.reproduction) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-red-600" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Accès Refusé
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Vous n'avez pas les privilèges nécessaires pour accéder à cette
-              fonctionnalité.
-            </p>
-            <button
-              onClick={() => router.back()}
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Retour</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Calcul des montants avec taux
   const montantDollars = impot.prix.toString();
   const montantFrancs = tauxActif
@@ -743,6 +696,53 @@ export default function ReproductionServicesClient({
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
     (new Date().getFullYear() - i).toString()
   );
+
+  // Afficher un écran de chargement ou d'erreur si pas les privilèges
+  if (!utilisateur) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-blue-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Vérification des autorisations...
+          </h2>
+          <p className="text-gray-600">
+            Veuillez patienter pendant que nous vérifions vos accès.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!utilisateur.privileges?.reproduction) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Accès Refusé
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Vous n'avez pas les privilèges nécessaires pour accéder à cette
+              fonctionnalité.
+            </p>
+            <button
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Retour</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Rendu de l'étape de vérification
   const renderEtapeVerification = () => (
