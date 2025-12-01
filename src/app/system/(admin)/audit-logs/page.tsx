@@ -1,5 +1,9 @@
 import AuditLogsPageClient from './AuditLogsPageClient';
 
+// Ajoute ces deux lignes pour déclarer la page comme dynamique
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   title: "Historique des activités",
   description: "Consultez l'historique complet des activités du système.",
@@ -16,7 +20,7 @@ async function getAuditStats() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 60 }, // Revalider toutes les 60 secondes
+      // Retirer next.revalidate car avec force-dynamic, tout est dynamique
     });
 
     if (!response.ok) {
@@ -52,7 +56,7 @@ async function getAuditLogs() {
       headers: {
         "Content-Type": "application/json",
       },
-      cache: 'no-store', // Toujours récupérer les données fraîches
+      // Retirer cache: 'no-store' car force-dynamic s'en charge
     });
 
     if (!response.ok) {

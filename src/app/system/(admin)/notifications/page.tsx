@@ -1,6 +1,9 @@
 // app/notifications/page.tsx
 import NotificationsPageClient from './NotificationsPageClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   title: "Notifications",
   description: "Consultez vos notifications et restez informé de vos activités fiscales.",
@@ -17,7 +20,7 @@ async function getStats() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 30 }, // Revalider toutes les 30 secondes
+      // Plus besoin de next.revalidate avec force-dynamic
     });
 
     if (!response.ok) {
@@ -53,7 +56,7 @@ async function getNotificationsNonLues() {
       headers: {
         "Content-Type": "application/json",
       },
-      cache: 'no-store', // Toujours récupérer les données fraîches
+      // Retirer cache: 'no-store' car force-dynamic suffit
     });
 
     if (!response.ok) {
