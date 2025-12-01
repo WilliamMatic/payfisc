@@ -1,4 +1,3 @@
-// src/app/system/(admin)/particuliers/components/ParticulierClient.tsx
 "use client";
 import { useState, useEffect } from "react";
 import {
@@ -50,7 +49,7 @@ export default function ParticuliersClient({
     nif: "",
     situation_familiale: "",
     dependants: 0,
-    reduction_type: null as "pourcentage" | "fixe" | null,
+    reduction_type: null as "pourcentage" | "montant_fixe" | null,
     reduction_valeur: 0,
   });
   const [processing, setProcessing] = useState(false);
@@ -233,12 +232,11 @@ export default function ParticuliersClient({
     }
   };
 
-  // Validation du formulaire - MODIFIÉ POUR LES NOUVEAUX CHAMPS OBLIGATOIRES
+  // Validation du formulaire - CORRIGÉ : seulement nom, prénom, téléphone, rue obligatoires
   const isFormValid = (): boolean => {
     return !!(
       formData.nom.trim() &&
       formData.prenom.trim() &&
-      formData.nif.trim() &&
       formData.telephone.trim() &&
       formData.rue.trim()
     );
@@ -349,11 +347,9 @@ export default function ParticuliersClient({
         }}
         onFormDataChange={setFormData}
         onAddParticulier={async () => {
-          // MODIFICATION DU MESSAGE D'ERREUR
+          // CORRECTION : Message d'erreur mis à jour
           if (!isFormValid()) {
-            setError(
-              "Les champs nom, prénom, NIF, téléphone et rue sont obligatoires"
-            );
+            setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
             return;
           }
 
@@ -365,20 +361,20 @@ export default function ParticuliersClient({
             const result = await addParticulier({
               nom: formData.nom,
               prenom: formData.prenom,
-              date_naissance: formData.date_naissance,
-              lieu_naissance: formData.lieu_naissance,
-              sexe: formData.sexe,
+              date_naissance: formData.date_naissance || undefined,
+              lieu_naissance: formData.lieu_naissance || undefined,
+              sexe: formData.sexe || undefined,
               rue: formData.rue,
-              ville: formData.ville,
-              code_postal: formData.code_postal,
-              province: formData.province,
-              id_national: formData.id_national,
+              ville: formData.ville || undefined,
+              code_postal: formData.code_postal || undefined,
+              province: formData.province || undefined,
+              id_national: formData.id_national || undefined,
               telephone: formData.telephone,
-              email: formData.email,
-              nif: formData.nif,
-              situation_familiale: formData.situation_familiale,
+              email: formData.email || undefined,
+              nif: formData.nif || undefined,
+              situation_familiale: formData.situation_familiale || undefined,
               dependants: formData.dependants,
-              reduction_type: formData.reduction_type,
+              reduction_type: formData.reduction_type || undefined,
               reduction_valeur: formData.reduction_valeur,
             });
 
@@ -400,11 +396,9 @@ export default function ParticuliersClient({
           }
         }}
         onEditParticulier={async () => {
-          // MODIFICATION DU MESSAGE D'ERREUR
+          // CORRECTION : Message d'erreur mis à jour
           if (!selectedParticulier || !isFormValid()) {
-            setError(
-              "Les champs nom, prénom, NIF, téléphone et rue sont obligatoires"
-            );
+            setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
             return;
           }
 
@@ -441,8 +435,7 @@ export default function ParticuliersClient({
               await loadParticuliers();
             } else {
               setError(
-                result.message ||
-                  "Erreur lors de la modification du particulier"
+                result.message || "Erreur lors de la modification du particulier"
               );
             }
           } catch (err) {
@@ -499,8 +492,7 @@ export default function ParticuliersClient({
               await loadParticuliers();
             } else {
               setError(
-                result.message ||
-                  "Erreur lors du changement de statut du particulier"
+                result.message || "Erreur lors du changement de statut du particulier"
               );
             }
           } catch (err) {

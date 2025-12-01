@@ -79,7 +79,7 @@ export default function ParticuliersTable({
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
                       {particulier.reduction_type === 'pourcentage' ? (
                         <Percent className="w-3 h-3 mr-1" />
-                      ) : particulier.reduction_type === 'fixe' ? (
+                      ) : particulier.reduction_type === 'montant_fixe' ? (
                         <DollarSign className="w-3 h-3 mr-1" />
                       ) : null}
                       {formatReduction(particulier)}

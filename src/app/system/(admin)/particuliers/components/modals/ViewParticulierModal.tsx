@@ -136,7 +136,7 @@ export default function ViewParticulierModal({
               <div className="flex items-center text-sm">
                 {particulier.reduction_type === 'pourcentage' ? (
                   <Percent className="w-4 h-4 text-indigo-600 mr-2" />
-                ) : particulier.reduction_type === 'fixe' ? (
+                ) : particulier.reduction_type === 'montant_fixe' ? (
                   <DollarSign className="w-4 h-4 text-indigo-600 mr-2" />
                 ) : (
                   <span className="w-4 h-4 mr-2">-</span>
@@ -144,7 +144,7 @@ export default function ViewParticulierModal({
                 <span className="font-medium">Type:</span>
                 <span className="ml-2 text-indigo-700">
                   {particulier.reduction_type === 'pourcentage' ? 'Pourcentage' : 
-                   particulier.reduction_type === 'fixe' ? 'Montant fixe' : 'Aucune'}
+                   particulier.reduction_type === 'montant_fixe' ? 'Montant fixe' : 'Aucune'}
                 </span>
               </div>
               <div className="flex items-center text-sm">

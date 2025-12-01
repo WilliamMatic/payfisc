@@ -1,3 +1,4 @@
+// ServicesGrid.tsx
 import Link from 'next/link';
 import { 
   User, 
@@ -7,7 +8,8 @@ import {
   ArrowRight, 
   Zap, 
   Crown,
-  Shield
+  Shield,
+  RefreshCw // Nouvelle icône pour le refactor
 } from 'lucide-react';
 import { Impot as ImpotType } from '@/services/impots/impotService';
 
@@ -52,6 +54,15 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
       color: 'orange',
       features: ['Processus complet', 'Coordination DGI', 'Livraison groupée'],
       popular: false
+    },
+    {
+      id: 'refactor-carte',
+      title: 'Gestion des Erreurs',
+      description: 'Refactorisation des cartes roses avec informations mal saisies. Correction et réimpression des documents.',
+      icon: RefreshCw,
+      color: 'red',
+      features: ['Correction des données', 'Réimpression immédiate', 'Historique des modifications'],
+      popular: false
     }
   ];
 
@@ -84,6 +95,13 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
         icon: 'text-orange-600',
         button: 'bg-orange-600 hover:bg-orange-700',
         badge: 'bg-orange-100 text-orange-800'
+      },
+      red: {
+        bg: 'bg-red-50',
+        border: 'border-red-200',
+        icon: 'text-red-600',
+        button: 'bg-red-600 hover:bg-red-700',
+        badge: 'bg-red-100 text-red-800'
       }
     };
     return classes[color as keyof typeof classes] || classes.blue;

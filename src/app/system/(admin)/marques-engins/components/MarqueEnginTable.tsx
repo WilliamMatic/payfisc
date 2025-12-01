@@ -1,4 +1,4 @@
-import { Tag, Loader2, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Tag, Loader2, Edit, Trash2, Eye, EyeOff, Plus, List } from 'lucide-react';
 import { MarqueEngin as MarqueEnginType } from '@/services/marques-engins/marqueEnginService';
 
 interface MarqueEnginTableProps {
@@ -7,6 +7,8 @@ interface MarqueEnginTableProps {
   onEdit: (marque: MarqueEnginType) => void;
   onDelete: (marque: MarqueEnginType) => void;
   onToggleStatus: (marque: MarqueEnginType) => void;
+  onAddModele: (marque: MarqueEnginType) => void;
+  onViewModeles: (marque: MarqueEnginType) => void;
 }
 
 export default function MarqueEnginTable({ 
@@ -14,7 +16,9 @@ export default function MarqueEnginTable({
   loading, 
   onEdit, 
   onDelete, 
-  onToggleStatus 
+  onToggleStatus,
+  onAddModele,
+  onViewModeles
 }: MarqueEnginTableProps) {
   if (loading) {
     return (
@@ -36,6 +40,7 @@ export default function MarqueEnginTable({
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Marque</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type d'Engin</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Modèles</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -57,6 +62,15 @@ export default function MarqueEnginTable({
                     {marque.description || 'Aucune description'}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => onViewModeles(marque)}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100 hover:bg-purple-100 transition-colors"
+                    >
+                      <List className="w-3 h-3 mr-1" />
+                      Voir modèles ({marque.modeles_count || 0})
+                    </button>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                       marque.actif 
                         ? 'bg-green-50 text-green-700 border border-green-100' 
@@ -70,6 +84,13 @@ export default function MarqueEnginTable({
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center space-x-1">
+                      <button
+                        onClick={() => onAddModele(marque)}
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="Ajouter un modèle"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => onToggleStatus(marque)}
                         className={`p-2 rounded-lg transition-colors ${

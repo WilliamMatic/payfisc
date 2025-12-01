@@ -1,12 +1,18 @@
-import { Car, Search, Plus } from 'lucide-react';
+import { Car, Search, Plus, FileText } from 'lucide-react';
 
 interface PlaqueHeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   onAddClick: () => void;
+  onRapportClick: () => void;
 }
 
-export default function PlaqueHeader({ searchTerm, onSearchChange, onAddClick }: PlaqueHeaderProps) {
+export default function PlaqueHeader({ 
+  searchTerm, 
+  onSearchChange, 
+  onAddClick, 
+  onRapportClick 
+}: PlaqueHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
       {/* TITRE */}
@@ -20,7 +26,7 @@ export default function PlaqueHeader({ searchTerm, onSearchChange, onAddClick }:
         </div>
       </div>
       
-      {/* BARRE DE RECHERCHE ET BOUTON */}
+      {/* BARRE DE RECHERCHE ET BOUTONS */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
         <div className="relative flex-1 sm:w-56">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -33,13 +39,23 @@ export default function PlaqueHeader({ searchTerm, onSearchChange, onAddClick }:
           />
         </div>
         
-        <button
-          onClick={onAddClick}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors duration-200 shadow-sm hover:shadow-md"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="font-medium text-sm">Nouvelle Série</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRapportClick}
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-sm hover:shadow-md"
+          >
+            <FileText className="w-4 h-4" />
+            <span className="font-medium text-sm">Rapport</span>
+          </button>
+          
+          <button
+            onClick={onAddClick}
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors duration-200 shadow-sm hover:shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-medium text-sm">Nouvelle Série</span>
+          </button>
+        </div>
       </div>
     </div>
   );

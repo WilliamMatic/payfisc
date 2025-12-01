@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Save,
   User,
@@ -30,7 +31,9 @@ import {
 import { getUsages, type UsageEngin } from "@/services/usages/usageService";
 import {
   getMarquesEngins,
+  getModelesEngins,
   type MarqueEngin,
+  type ModeleEngin,
 } from "@/services/marques-engins/marqueEnginService";
 import {
   getPuissancesFiscalesActives,
@@ -57,6 +60,7 @@ interface FormData {
   puissanceFiscal: string;
   usage: string;
   marque: string;
+  modele: string;
   energie: string;
   numeroChassis: string;
   numeroMoteur: string;
@@ -104,6 +108,11 @@ interface SuccessModalProps {
   onClose: () => void;
   onPrint: () => void;
   data: any;
+}
+
+interface MarqueAvecModeles {
+  marque: MarqueEngin;
+  modeles: ModeleEngin[];
 }
 
 const PaiementModal: React.FC<PaiementModalProps> = ({
@@ -355,6 +364,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     </p>
                   </div>
                   <div>
+                    <span className="text-gray-500 text-xs">Modèle:</span>
+                    <p className="font-semibold text-gray-800">
+                      {formData.modele || "Non spécifié"}
+                    </p>
+                  </div>
+                  <div>
                     <span className="text-gray-500 text-xs">
                       Puissance fiscale:
                     </span>
@@ -524,11 +539,14 @@ export default function ClientSimpleForm({
     puissanceFiscal: "",
     usage: "",
     marque: "",
+    modele: "",
     energie: "",
     numeroChassis: "",
     numeroMoteur: "",
     numeroPlaque: "",
   });
+
+  const router = useRouter();
 
   // États pour les données dynamiques
   const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
@@ -536,6 +554,10 @@ export default function ClientSimpleForm({
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
   const [usages, setUsages] = useState<UsageEngin[]>([]);
   const [marques, setMarques] = useState<MarqueEngin[]>([]);
+  const [modeles, setModeles] = useState<ModeleEngin[]>([]);
+  const [marquesAvecModeles, setMarquesAvecModeles] = useState<
+    MarqueAvecModeles[]
+  >([]);
   const [puissancesFiscales, setPuissancesFiscales] = useState<
     PuissanceFiscale[]
   >([]);
@@ -565,6 +587,7 @@ export default function ClientSimpleForm({
     couleurs: false,
     usages: false,
     marques: false,
+    modeles: false,
     puissances: false,
   });
 
@@ -580,10 +603,10 @@ export default function ClientSimpleForm({
 
   // Calcul des montants avec le taux
   const montantDollars = utilisateur?.formule || "32";
-  const montantFrancs = tauxActif 
-    ? (parseFloat(montantDollars) * tauxActif.valeur).toLocaleString('fr-FR')
+  const montantFrancs = tauxActif
+    ? (parseFloat(montantDollars) * tauxActif.valeur).toLocaleString("fr-FR")
     : "Calcul en cours...";
-  
+
   const montantAPayer = `${montantDollars} $`;
   const montantEnFrancs = `${montantFrancs} CDF`;
 
@@ -638,6 +661,13 @@ export default function ClientSimpleForm({
           setMarques(marquesResponse.data || []);
         }
 
+        // Charger tous les modèles
+        setLoading((prev) => ({ ...prev, modeles: true }));
+        const modelesResponse = await getModelesEngins();
+        if (modelesResponse.status === "success") {
+          setModeles(modelesResponse.data || []);
+        }
+
         // Charger toutes les puissances fiscales
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
@@ -653,6 +683,7 @@ export default function ClientSimpleForm({
           couleurs: false,
           usages: false,
           marques: false,
+          modeles: false,
           puissances: false,
         });
         setLoadingTaux(false);
@@ -662,12 +693,30 @@ export default function ClientSimpleForm({
     loadInitialData();
   }, []);
 
+  // Organiser les marques avec leurs modèles
+  useEffect(() => {
+    if (marques.length > 0 && modeles.length > 0) {
+      const marquesAvecModeles = marques
+        .filter((marque) => marque.actif)
+        .map((marque) => ({
+          marque,
+          modeles: modeles.filter(
+            (modele) => modele.marque_engin_id === marque.id && modele.actif
+          ),
+        }))
+        .filter((item) => item.modeles.length > 0); // Ne garder que les marques qui ont des modèles
+
+      setMarquesAvecModeles(marquesAvecModeles);
+    }
+  }, [marques, modeles]);
+
   // Filtrer les marques et puissances quand le type d'engin change
   useEffect(() => {
     if (formData.typeEngin) {
       // Filtrer les marques par libellé du type d'engin
       const marquesFiltrees = marques.filter(
-        (marque) => marque.type_engin_libelle === formData.typeEngin
+        (marque) =>
+          marque.type_engin_libelle === formData.typeEngin && marque.actif
       );
       setFilteredMarques(marquesFiltrees);
 
@@ -677,16 +726,22 @@ export default function ClientSimpleForm({
       );
       setFilteredPuissances(puissancesFiltrees);
 
-      // Réinitialiser les sélections dépendantes si nécessaire
-      if (marquesFiltrees.length === 0) {
-        setFormData((prev) => ({ ...prev, marque: "" }));
-      }
-      if (puissancesFiltrees.length === 0) {
-        setFormData((prev) => ({ ...prev, puissanceFiscal: "" }));
-      }
+      // Réinitialiser les sélections dépendantes
+      setFormData((prev) => ({
+        ...prev,
+        marque: "",
+        modele: "",
+        puissanceFiscal: "",
+      }));
     } else {
       setFilteredMarques([]);
       setFilteredPuissances([]);
+      setFormData((prev) => ({
+        ...prev,
+        marque: "",
+        modele: "",
+        puissanceFiscal: "",
+      }));
     }
   }, [formData.typeEngin, marques, puissancesFiscales]);
 
@@ -791,6 +846,7 @@ export default function ClientSimpleForm({
       puissanceFiscal: "",
       usage: "",
       marque: "",
+      modele: "",
       energie: "",
       numeroChassis: "",
       numeroMoteur: "",
@@ -808,6 +864,14 @@ export default function ClientSimpleForm({
       ...prev,
       [field]: value,
     }));
+
+    // Réinitialiser le modèle si la marque change
+    if (field === "marque") {
+      setFormData((prev) => ({
+        ...prev,
+        modele: "",
+      }));
+    }
 
     if (errors[field]) {
       setErrors((prev) => ({
@@ -927,6 +991,7 @@ export default function ClientSimpleForm({
       const enginData: EnginData = {
         typeEngin: formData.typeEngin,
         marque: formData.marque,
+        modele: formData.modele,
         energie: formData.energie,
         anneeFabrication: formData.anneeFabrication,
         anneeCirculation: formData.anneeCirculation,
@@ -952,7 +1017,7 @@ export default function ClientSimpleForm({
         utilisateur
       );
 
-      if (response.status === "success") {
+      if (response.status === "success" && response.data) {
         // Préparer les données complètes pour l'impression
         const completeData = {
           ...response.data,
@@ -967,11 +1032,13 @@ export default function ClientSimpleForm({
           numero_moteur: formData.numeroMoteur,
           type_engin: formData.typeEngin,
           marque: formData.marque,
+          modele: formData.modele,
           nom: formData.nom,
           prenom: formData.prenom,
           adresse: formData.adresse,
           telephone: formData.telephone,
           montant_francs: montantEnFrancs,
+          paiement_id: response.data.paiement_id.toString(),
         };
 
         setSuccessData(completeData);
@@ -979,7 +1046,9 @@ export default function ClientSimpleForm({
         setShowPaiement(false);
         setShowSuccess(true);
       } else {
-        alert("Erreur: " + response.message);
+        alert(
+          "Erreur: " + (response.message || "Données de réponse manquantes")
+        );
       }
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
@@ -1002,6 +1071,7 @@ export default function ClientSimpleForm({
   const handlePrintClose = () => {
     setShowPrint(false);
     resetForm();
+    router.back();
   };
 
   // Obtenir les années disponibles pour la circulation
@@ -1011,6 +1081,17 @@ export default function ClientSimpleForm({
     }
     const anneeFab = parseInt(formData.anneeFabrication);
     return anneeOptions.filter((year) => parseInt(year) >= anneeFab);
+  };
+
+  // Obtenir les modèles pour la marque sélectionnée
+  const getModelesPourMarque = () => {
+    if (!formData.marque) return [];
+
+    const marqueTrouvee = marquesAvecModeles.find(
+      (item) => item.marque.libelle === formData.marque
+    );
+
+    return marqueTrouvee ? marqueTrouvee.modeles : [];
   };
 
   const isSubmitDisabled = isSubmitting || plaqueDisponible === false;
@@ -1220,7 +1301,7 @@ export default function ClientSimpleForm({
               )}
             </div>
 
-            {/* Marque */}
+            {/* Marque et Modèle */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Marque <span className="text-red-500">*</span>
@@ -1241,11 +1322,26 @@ export default function ClientSimpleForm({
                       ? "Sélectionnez d'abord le type d'engin"
                       : "Sélectionner la marque"}
                   </option>
-                  {filteredMarques.map((marque) => (
-                    <option key={marque.id} value={marque.libelle}>
-                      {marque.libelle}
-                    </option>
-                  ))}
+                  {marquesAvecModeles
+                    .filter(
+                      (item) =>
+                        item.marque.type_engin_libelle === formData.typeEngin
+                    )
+                    .map((item) => (
+                      <optgroup
+                        key={item.marque.id}
+                        label={item.marque.libelle}
+                      >
+                        {item.modeles.map((modele) => (
+                          <option
+                            key={modele.id}
+                            value={`${item.marque.libelle}|${modele.libelle}`}
+                          >
+                            {modele.libelle}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
                 </select>
                 {loading.marques && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -1259,10 +1355,13 @@ export default function ClientSimpleForm({
                 </p>
               )}
               {formData.typeEngin &&
-                filteredMarques.length === 0 &&
+                marquesAvecModeles.filter(
+                  (item) =>
+                    item.marque.type_engin_libelle === formData.typeEngin
+                ).length === 0 &&
                 !loading.marques && (
                   <p className="text-amber-600 text-sm mt-2">
-                    Aucune marque disponible pour ce type d'engin
+                    Aucune marque avec modèles disponible pour ce type d'engin
                   </p>
                 )}
             </div>
@@ -1605,7 +1704,7 @@ export default function ClientSimpleForm({
               </div>
               {tauxActif && (
                 <div className="text-sm text-blue-500 mt-2">
-                  Taux: 1$ = {tauxActif.valeur.toLocaleString('fr-FR')} CDF
+                  Taux: 1$ = {tauxActif.valeur.toLocaleString("fr-FR")} CDF
                 </div>
               )}
             </div>

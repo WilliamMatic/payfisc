@@ -30,7 +30,7 @@ interface ParticuliersModalsProps {
     nif: string;
     situation_familiale: string;
     dependants: number;
-    reduction_type: 'pourcentage' | 'fixe' | null;
+    reduction_type: 'pourcentage' | 'montant_fixe' | null;
     reduction_valeur: number;
   };
   processing: boolean;

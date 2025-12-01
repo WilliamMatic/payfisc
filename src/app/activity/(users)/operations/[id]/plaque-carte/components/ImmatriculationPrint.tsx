@@ -155,7 +155,6 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                 color: #666;
                 margin: 3mm 0;
                 padding: 1.5mm;
-                border: 0.15mm dashed #999;
                 background: #f9f9f9;
               }
 
@@ -172,15 +171,18 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
           <body>
             <!-- RECTO (PAGE 1) -->
             <div class="card" style="height: 40mm !important;">
+              <div style="position: absolute;top: 0;left: 0;right: 0;display: flex;justify-content: center;align-items: center;">
+                <span style="font-size: .5em;">DGRK/11/2025/895687</span>
+              </div>
               <table>
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 1px;">${data.nom} ${data.prenom}</td>
+                    <td style="position: relative; top: 3px;text-transform: uppercase;">${data.nom} ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 1px;">${data.adresse}</td>
+                    <td style="position: relative; top: 4px;text-transform: uppercase;">${data.adresse}</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
@@ -188,57 +190,58 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
-                    <td style="position: relative; top: 24px;">${data.annee_circulation}</td>
+                    <td style="position: relative; top: 24px;text-transform: uppercase;">${data.annee_circulation}</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
-                    <td style="position: relative; top: 14px;" class="plaque-number">${data.numero_plaque}</td>
+                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${data.numero_plaque}</td>
                   </tr>
                 </tbody>
               </table>
               
               <div class="qr">
                 ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ''}
+                <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">29/11/2025</span>
               </div>
             </div>
 
             <!-- VERSO (PAGE 2) -->
-            <div class="card" style="height: 40mm;">
+            <div class="card" style="height: 40mm;margin-top: 30px;">
               <table>
                 <tbody>
                   <tr style="position: relative; top: -11px;">
                     <th></th>
-                    <td>${data.marque} - ${data.type_engin}</td>
+                    <td style="text-transform: uppercase;">${data.marque}</td>
                   </tr>
                   <tr style="position: relative; top: -17px;">
                     <th></th>
-                    <td>${data.usage_engin}</td>
+                    <td style="text-transform: uppercase;">${data.usage_engin}</td>
                   </tr>
                   <tr style="position: relative; top: -23px;">
                     <th></th>
-                    <td>${data.numero_chassis || '-'}</td>
+                    <td style="text-transform: uppercase;">${data.numero_chassis || '-'}</td>
                   </tr>
                   <tr style="position: relative; top: -29px;">
                     <th></th>
-                    <td>${data.numero_moteur || '-'}</td>
+                    <td style="text-transform: uppercase;">${data.numero_moteur || '-'}</td>
                   </tr>
                   <tr style="position: relative; top: -33px;">
                     <th></th>
-                    <td>${data.annee_fabrication || '-'}</td>
+                    <td style="text-transform: uppercase;">${data.annee_fabrication || '-'}</td>
                   </tr>
                   <tr style="position: relative; top: -38px;">
                     <th></th>
-                    <td>${data.couleur || '-'}</td>
+                    <td style="text-transform: uppercase;">${data.couleur || '-'}</td>
                   </tr>
                   <tr style="position: relative; top: -43px;">
                     <th></th>
-                    <td>${data.puissance_fiscal || '-'}</td>
+                    <td style="text-transform: uppercase;">${data.puissance_fiscal || '-'}</td>
                   </tr>
                 </tbody>
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box">Signature</div>
+                <div class="signature-box"><img src="https://willyaminsi.com/signature-fixe.jpg" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             

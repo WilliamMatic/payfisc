@@ -24,6 +24,7 @@ export interface DonneesPlaque {
   adresse: string;
   reduction_type: string;
   reduction_valeur: number;
+  nif: string;
 }
 
 export interface PaiementReproductionData {
@@ -32,6 +33,7 @@ export interface PaiementReproductionData {
   numeroTransaction?: string;
   numeroCheque?: string;
   banque?: string;
+  codePromo?: string;
 }
 
 export interface ReproductionResponse {
@@ -100,6 +102,7 @@ export const traiterReproduction = async (
     formData.append('numero_transaction', paiementData.numeroTransaction || '');
     formData.append('numero_cheque', paiementData.numeroCheque || '');
     formData.append('banque', paiementData.banque || '');
+    formData.append('code_promo', paiementData.codePromo || '');
 
     const response = await fetch(`${API_BASE_URL}/reproduction/traiter_reproduction.php`, {
       method: 'POST',

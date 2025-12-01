@@ -1,4 +1,4 @@
- /**
+/**
  * Service pour la gestion des plaques - Interface avec l'API backend
  */
 
@@ -35,6 +35,37 @@ export interface SerieItem {
   nom_serie: string;
   province_nom: string;
   date_creation: string;
+}
+
+export interface RapportSeries {
+  periode_debut: string;
+  periode_fin: string;
+  province_id?: number;
+  province_nom?: string;
+  total_series: number;
+  series_actives: number;
+  series_inactives: number;
+  total_plaques: number;
+  plaques_disponibles: number;
+  plaques_utilisees: number;
+  series_par_province: Array<{
+    province_nom: string;
+    province_code: string;
+    total_series: number;
+    total_plaques: number;
+  }>;
+  details_series: Array<{
+    id: number;
+    nom_serie: string;
+    province_nom: string;
+    date_creation: string;
+    actif: boolean;
+    total_items: number;
+    items_disponibles: number;
+    items_utilises: number;
+    createur_nom?: string;
+    createur_prenom?: string;
+  }>;
 }
 
 // Interface pour les réponses de l'API
@@ -361,6 +392,54 @@ export const searchSeries = async (
     return {
       status: "error",
       message: "Erreur réseau lors de la recherche des séries",
+    };
+  }
+};
+
+/**
+ * Génère un rapport des séries
+ */
+export const genererRapportSeries = async (params: {
+  date_debut: string;
+  date_fin: string;
+  province_id?: number;
+}): Promise<ApiResponse> => {
+  try {
+    const queryParams = new URLSearchParams({
+      date_debut: params.date_debut,
+      date_fin: params.date_fin,
+      ...(params.province_id && { province_id: params.province_id.toString() })
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/plaques/generer_rapport_series.php?${queryParams}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la génération du rapport",
+      };
+    }
+
+    return {
+      status: "success",
+      data: data.data,
+    };
+  } catch (error) {
+    console.error("Generate report error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la génération du rapport",
     };
   }
 };

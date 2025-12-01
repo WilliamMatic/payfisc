@@ -1,6 +1,7 @@
-'use client';
-import { useRef, useEffect, useState } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+"use client";
+import { useRef, useEffect, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import { formatPlaque } from '../utils/formatPlaque';
 
 interface PrintData {
   nom: string;
@@ -18,6 +19,9 @@ interface PrintData {
   puissance_fiscal: string;
   energie: string;
   montant: string;
+  nif: string;
+  paiement_id: string;
+  date_jour: string;
 }
 
 interface ReproductionPrintProps {
@@ -26,24 +30,39 @@ interface ReproductionPrintProps {
   onClose: () => void;
 }
 
-export default function ReproductionPrint({ data, isOpen, onClose }: ReproductionPrintProps) {
+export default function ReproductionPrint({
+  data,
+  isOpen,
+  onClose,
+}: ReproductionPrintProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // Générer le format DGRK/mois/année/idpaiement
+  const getReferencePaiement = () => {
+    if (!data.paiement_id) return "DGRK/--/----/------";
+    const now = new Date();
+    const mois = (now.getMonth() + 1).toString().padStart(2, "0");
+    const annee = now.getFullYear().toString();
+    return `DGRK/${mois}/${annee}/${data.paiement_id}`;
+  };
+
   const handlePrint = () => {
     if (printRef.current) {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open("", "_blank");
       if (!printWindow) return;
 
       // Récupérer le QR Code SVG
-      const qrElement = document.querySelector('.qr-code-canvas canvas');
-      const qrDataUrl = qrElement ? (qrElement as HTMLCanvasElement).toDataURL() : '';
+      const qrElement = document.querySelector(".qr-code-canvas canvas");
+      const qrDataUrl = qrElement
+        ? (qrElement as HTMLCanvasElement).toDataURL()
+        : "";
 
       const printContent = `
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Reproduction Carte - ${data.numero_plaque}</title>
+            <title>Immatriculation - ${data.numero_plaque}</title>
             <style>
               @page { 
                 size: auto; 
@@ -155,7 +174,6 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
                 color: #666;
                 margin: 3mm 0;
                 padding: 1.5mm;
-                border: 0.15mm dashed #999;
                 background: #f9f9f9;
               }
 
@@ -172,73 +190,97 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
           <body>
             <!-- RECTO (PAGE 1) -->
             <div class="card" style="height: 40mm !important;">
+              <div style="position: absolute;top: 0;left: 0;right: 0;display: flex;justify-content: center;align-items: center;">
+                <span style="font-size: .5em;">${getReferencePaiement()}</span>
+              </div>
               <table>
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 1px;">${data.nom} ${data.prenom}</td>
+                    <td style="position: relative; top: 3px;text-transform: uppercase;">${
+                      data.nom
+                    } ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 1px;">${data.adresse}</td>
+                    <td style="position: relative; top: 4px;text-transform: uppercase;">${
+                      data.adresse
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td></td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;">${
+                      data.nif || ""
+                    }</td>
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
-                    <td style="position: relative; top: 24px;">${data.annee_circulation}</td>
+                    <td style="position: relative; top: 24px;text-transform: uppercase;">${
+                      data.annee_circulation
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
-                    <td style="position: relative; top: 14px;" class="plaque-number">${data.numero_plaque}</td>
+                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${formatPlaque(data.numero_plaque)}</td>
                   </tr>
                 </tbody>
               </table>
               
               <div class="qr">
-                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ''}
+                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
+                <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${
+                  data.date_jour
+                }</span>
               </div>
             </div>
 
             <!-- VERSO (PAGE 2) -->
-            <div class="card" style="height: 40mm;">
+            <div class="card" style="height: 40mm;margin-top: 30px;">
               <table>
                 <tbody>
                   <tr style="position: relative; top: -11px;">
                     <th></th>
-                    <td>${data.marque} - ${data.type_engin}</td>
+                    <td style="text-transform: uppercase;">${data.marque}</td>
                   </tr>
                   <tr style="position: relative; top: -17px;">
                     <th></th>
-                    <td>${data.usage}</td>
+                    <td style="text-transform: uppercase;">${data.usage}</td>
                   </tr>
                   <tr style="position: relative; top: -23px;">
                     <th></th>
-                    <td>${data.numero_chassis || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_chassis || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -29px;">
                     <th></th>
-                    <td>${data.numero_moteur || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_moteur || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -33px;">
                     <th></th>
-                    <td>${data.annee_fabrication || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.annee_fabrication || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -38px;">
                     <th></th>
-                    <td>${data.couleur || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.couleur || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -43px;">
                     <th></th>
-                    <td>${data.puissance_fiscal || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.puissance_fiscal || "-"
+                    }</td>
                   </tr>
                 </tbody>
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box">Signature</div>
+                <div class="signature-box"><img src="https://willyaminsi.com/signature-fixe.jpg" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             
@@ -265,19 +307,19 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -314,11 +356,16 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
               <strong>Instructions d'impression recto-verso :</strong>
             </p>
             <ul className="text-blue-700 text-sm mt-2 ml-4 list-disc space-y-1">
-              <li>Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression</li>
+              <li>
+                Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression
+              </li>
               <li>Le recto s'imprimera sur la page 1</li>
               <li>Retournez la feuille et réinsérez-la dans l'imprimante</li>
               <li>Le verso s'imprimera sur la page 2 (au dos du recto)</li>
-              <li>Cliquez sur la carte ci-dessous pour prévisualiser le recto et le verso</li>
+              <li>
+                Cliquez sur la carte ci-dessous pour prévisualiser le recto et
+                le verso
+              </li>
             </ul>
           </div>
         </div>
@@ -326,9 +373,12 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
           {/* Zone d'impression cachée pour le QR Code */}
-          <div className="qr-code-canvas" style={{ position: 'absolute', left: '-9999px' }}>
-            <QRCodeCanvas 
-              value={data.numero_plaque} 
+          <div
+            className="qr-code-canvas"
+            style={{ position: "absolute", left: "-9999px" }}
+          >
+            <QRCodeCanvas
+              value={data.numero_plaque}
               size={128}
               level="H"
               bgColor="#FFFFFF"
@@ -422,6 +472,12 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
                   color: #dc2626;
                 }
 
+                .reference-number {
+                  font-size: 1.8mm;
+                  color: #666;
+                  text-align: center;
+                }
+
                 .qr { 
                   position: absolute; 
                   right: 2mm; 
@@ -468,11 +524,11 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
             </style>
 
             <div className="stage">
-              <div 
-                className={`card ${isFlipped ? 'flipped' : ''}`} 
+              <div
+                className={`card ${isFlipped ? "flipped" : ""}`}
                 onClick={toggleFlip}
-                role="button" 
-                aria-label="Carte 86 par 54 millimètres recto verso" 
+                role="button"
+                aria-label="Carte 86 par 54 millimètres recto verso"
                 tabIndex={0}
               >
                 <div className="hint">Cliquez pour retourner la carte</div>
@@ -480,11 +536,25 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
                 <div className="flip">
                   {/* RECTO */}
                   <div className="face front" aria-hidden={isFlipped}>
+                    <div
+                      className="reference-number"
+                      style={{
+                        position: "absolute",
+                        top: "2mm",
+                        left: "0",
+                        right: "0",
+                        textAlign: "center",
+                      }}
+                    >
+                      {getReferencePaiement()}
+                    </div>
                     <table>
                       <tbody>
                         <tr>
                           <th>Nom / Raison sociale</th>
-                          <td>{data.nom} {data.prenom}</td>
+                          <td>
+                            {data.nom} {data.prenom}
+                          </td>
                         </tr>
                         <tr>
                           <th>Adresse physique</th>
@@ -505,13 +575,23 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
 
                     {/* QR Code */}
                     <div className="qr" aria-hidden={isFlipped} title="QR code">
-                      <QRCodeCanvas 
-                        value={data.numero_plaque} 
+                      <QRCodeCanvas
+                        value={data.numero_plaque}
                         size={40}
                         level="H"
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                       />
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "-15px",
+                          fontSize: "8px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {data.date_jour}
+                      </span>
                     </div>
                   </div>
 
@@ -521,7 +601,9 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
                       <tbody>
                         <tr>
                           <th>Marque et type</th>
-                          <td>{data.marque} - {data.type_engin}</td>
+                          <td>
+                            {data.marque} - {data.type_engin}
+                          </td>
                         </tr>
                         <tr>
                           <th>Usage</th>
@@ -529,23 +611,27 @@ export default function ReproductionPrint({ data, isOpen, onClose }: Reproductio
                         </tr>
                         <tr>
                           <th>N. chassis</th>
-                          <td>{data.numero_chassis || '-'}</td>
+                          <td>{data.numero_chassis || "-"}</td>
                         </tr>
                         <tr>
                           <th>N. moteur</th>
-                          <td>{data.numero_moteur || '-'}</td>
+                          <td>{data.numero_moteur || "-"}</td>
                         </tr>
                         <tr>
                           <th>Année de fabrication</th>
-                          <td>{data.annee_fabrication || '-'}</td>
+                          <td>{data.annee_fabrication || "-"}</td>
                         </tr>
                         <tr>
                           <th>Couleur</th>
-                          <td>{data.couleur || '-'}</td>
+                          <td>{data.couleur || "-"}</td>
                         </tr>
                         <tr>
                           <th>Puissance fiscal</th>
-                          <td>{data.puissance_fiscal || '-'}</td>
+                          <td>{data.puissance_fiscal || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>NIF</th>
+                          <td>{data.nif || "-"}</td>
                         </tr>
                       </tbody>
                     </table>

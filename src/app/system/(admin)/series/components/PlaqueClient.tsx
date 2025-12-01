@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Serie as SerieType, Province } from '@/services/plaques/plaqueService';
+import { Serie as SerieType, Province, RapportSeries } from '@/services/plaques/plaqueService';
 import PlaqueHeader from './PlaqueHeader';
 import PlaqueTable from './PlaqueTable';
 import PlaqueModals from './modals/PlaqueModals';
 import AlertMessage from './AlertMessage';
+import RapportSeriesModal from './RapportSeriesModal';
 
 interface PlaqueClientProps {
   initialSeries: SerieType[];
@@ -22,6 +23,7 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showItemsModal, setShowItemsModal] = useState(false);
+  const [showRapportModal, setShowRapportModal] = useState(false);
   const [selectedSerie, setSelectedSerie] = useState<SerieType | null>(null);
   const [formData, setFormData] = useState({ 
     nom_serie: '', 
@@ -32,6 +34,8 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [rapportData, setRapportData] = useState<RapportSeries | null>(null);
+  const [rapportLoading, setRapportLoading] = useState(false);
 
   // Charger les provinces au montage
   useEffect(() => {
@@ -68,6 +72,26 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Générer un rapport
+  const handleGenererRapport = async (params: { date_debut: string; date_fin: string; province_id?: number }) => {
+    try {
+      setRapportLoading(true);
+      const { genererRapportSeries } = await import('@/services/plaques/plaqueService');
+      const result = await genererRapportSeries(params);
+      
+      if (result.status === 'success') {
+        setRapportData(result.data);
+        setError(null);
+      } else {
+        setError(result.message || 'Erreur lors de la génération du rapport');
+      }
+    } catch (err) {
+      setError('Erreur de connexion au serveur');
+    } finally {
+      setRapportLoading(false);
     }
   };
 
@@ -130,6 +154,7 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onAddClick={() => setShowAddModal(true)}
+        onRapportClick={() => setShowRapportModal(true)}
       />
 
       <PlaqueTable
@@ -331,6 +356,18 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
             setProcessing(false);
           }
         }}
+      />
+
+      <RapportSeriesModal
+        isOpen={showRapportModal}
+        onClose={() => {
+          setShowRapportModal(false);
+          setRapportData(null);
+        }}
+        provinces={provinces}
+        onGenererRapport={handleGenererRapport}
+        rapportData={rapportData}
+        loading={rapportLoading}
       />
     </div>
   );

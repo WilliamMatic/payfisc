@@ -388,3 +388,36 @@ export const removeBeneficiaireImpot = async (
     };
   }
 };
+
+/**
+ * Récupère un impôt par son ID
+ */
+export const getImpotById = async (id: string): Promise<ApiResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/impots/get_impot_by_id.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Erreur lors de la récupération de l\'impôt',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Get impot by id error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la récupération de l\'impôt',
+    };
+  }
+};

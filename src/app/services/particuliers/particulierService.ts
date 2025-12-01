@@ -23,7 +23,7 @@ export interface Particulier {
   actif: boolean;
   date_creation: string;
   date_modification?: string;
-  reduction_type: 'pourcentage' | 'fixe' | null;
+  reduction_type: 'pourcentage' | 'montant_fixe' | null;
   reduction_valeur: number;
 }
 
@@ -109,7 +109,9 @@ export const getParticuliers = async (): Promise<ApiResponse> => {
   }
 };
 
-// Ajouter une fonction pour récupérer les détails complets
+/**
+ * Récupère les détails complets d'un particulier
+ */
 export const getParticulierDetails = async (
   id: number
 ): Promise<ApiResponse> => {
@@ -154,20 +156,20 @@ export const getParticulierDetails = async (
 export const addParticulier = async (particulierData: {
   nom: string;
   prenom: string;
-  date_naissance: string;
+  date_naissance?: string;
   lieu_naissance?: string;
   sexe?: string;
-  rue?: string;
+  rue: string;
   ville?: string;
   code_postal?: string;
   province?: string;
   id_national?: string;
-  telephone?: string;
+  telephone: string;
   email?: string;
-  nif: string;
+  nif?: string;
   situation_familiale?: string;
   dependants?: number;
-  reduction_type?: 'pourcentage' | 'fixe' | null;
+  reduction_type?: 'pourcentage' | 'montant_fixe' | null;
   reduction_valeur?: number;
   site?: string;
   utilisateur?: number;
@@ -178,42 +180,33 @@ export const addParticulier = async (particulierData: {
     // Ajout des champs obligatoires
     formData.append("nom", particulierData.nom);
     formData.append("prenom", particulierData.prenom);
-    formData.append("date_naissance", particulierData.date_naissance);
-    formData.append("nif", particulierData.nif);
+    formData.append("telephone", particulierData.telephone);
+    formData.append("rue", particulierData.rue);
 
+    // Ajout des champs optionnels - CORRIGÉ : tous les champs non obligatoires
+    if (particulierData.nif) formData.append("nif", particulierData.nif);
+    if (particulierData.date_naissance) formData.append("date_naissance", particulierData.date_naissance);
+    if (particulierData.lieu_naissance) formData.append("lieu_naissance", particulierData.lieu_naissance);
+    if (particulierData.sexe) formData.append("sexe", particulierData.sexe);
+    if (particulierData.ville) formData.append("ville", particulierData.ville);
+    if (particulierData.code_postal) formData.append("code_postal", particulierData.code_postal);
+    if (particulierData.province) formData.append("province", particulierData.province);
+    if (particulierData.id_national) formData.append("id_national", particulierData.id_national);
+    if (particulierData.email) formData.append("email", particulierData.email);
+    if (particulierData.situation_familiale) formData.append("situation_familiale", particulierData.situation_familiale);
+    if (particulierData.dependants !== undefined) formData.append("dependants", particulierData.dependants.toString());
+    
+    // Ajout des champs de réduction
+    if (particulierData.reduction_type !== undefined && particulierData.reduction_type !== null)
+      formData.append("reduction_type", particulierData.reduction_type);
+    if (particulierData.reduction_valeur !== undefined)
+      formData.append("reduction_valeur", particulierData.reduction_valeur.toString());
+
+    // Champs système
     if (particulierData.utilisateur !== undefined)
       formData.append("utilisateur", String(particulierData.utilisateur));
     if (particulierData.site !== undefined)
       formData.append("site", String(particulierData.site));
-
-    // Ajout des champs optionnels
-    if (particulierData.lieu_naissance)
-      formData.append("lieu_naissance", particulierData.lieu_naissance);
-    if (particulierData.sexe) formData.append("sexe", particulierData.sexe);
-    if (particulierData.rue) formData.append("rue", particulierData.rue);
-    if (particulierData.ville) formData.append("ville", particulierData.ville);
-    if (particulierData.code_postal)
-      formData.append("code_postal", particulierData.code_postal);
-    if (particulierData.province)
-      formData.append("province", particulierData.province);
-    if (particulierData.id_national)
-      formData.append("id_national", particulierData.id_national);
-    if (particulierData.telephone)
-      formData.append("telephone", particulierData.telephone);
-    if (particulierData.email) formData.append("email", particulierData.email);
-    if (particulierData.situation_familiale)
-      formData.append(
-        "situation_familiale",
-        particulierData.situation_familiale
-      );
-    if (particulierData.dependants !== undefined)
-      formData.append("dependants", particulierData.dependants.toString());
-    
-    // Ajout des champs de réduction
-    if (particulierData.reduction_type !== undefined)
-      formData.append("reduction_type", particulierData.reduction_type || '');
-    if (particulierData.reduction_valeur !== undefined)
-      formData.append("reduction_valeur", particulierData.reduction_valeur.toString());
 
     const response = await fetch(
       `${API_BASE_URL}/particuliers/creer_particulier.php`,
@@ -251,20 +244,20 @@ export const updateParticulier = async (
   particulierData: {
     nom: string;
     prenom: string;
-    date_naissance: string;
+    date_naissance?: string;
     lieu_naissance?: string;
     sexe?: string;
-    rue?: string;
+    rue: string;
     ville?: string;
     code_postal?: string;
     province?: string;
     id_national?: string;
-    telephone?: string;
+    telephone: string;
     email?: string;
-    nif: string;
+    nif?: string;
     situation_familiale?: string;
     dependants?: number;
-    reduction_type?: 'pourcentage' | 'fixe' | null;
+    reduction_type?: 'pourcentage' | 'montant_fixe' | null;
     reduction_valeur?: number;
   }
 ): Promise<ApiResponse> => {
@@ -277,31 +270,21 @@ export const updateParticulier = async (
     // Ajout des champs obligatoires
     formData.append("nom", particulierData.nom);
     formData.append("prenom", particulierData.prenom);
-    formData.append("date_naissance", particulierData.date_naissance);
-    formData.append("nif", particulierData.nif);
+    formData.append("telephone", particulierData.telephone);
+    formData.append("rue", particulierData.rue);
 
-    // Ajout des champs optionnels
-    if (particulierData.lieu_naissance)
-      formData.append("lieu_naissance", particulierData.lieu_naissance);
-    if (particulierData.sexe) formData.append("sexe", particulierData.sexe);
-    if (particulierData.rue) formData.append("rue", particulierData.rue);
-    if (particulierData.ville) formData.append("ville", particulierData.ville);
-    if (particulierData.code_postal)
-      formData.append("code_postal", particulierData.code_postal);
-    if (particulierData.province)
-      formData.append("province", particulierData.province);
-    if (particulierData.id_national)
-      formData.append("id_national", particulierData.id_national);
-    if (particulierData.telephone)
-      formData.append("telephone", particulierData.telephone);
-    if (particulierData.email) formData.append("email", particulierData.email);
-    if (particulierData.situation_familiale)
-      formData.append(
-        "situation_familiale",
-        particulierData.situation_familiale
-      );
-    if (particulierData.dependants !== undefined)
-      formData.append("dependants", particulierData.dependants.toString());
+    // Ajout des champs optionnels - CORRIGÉ : tous les champs non obligatoires
+    if (particulierData.nif !== undefined) formData.append("nif", particulierData.nif || '');
+    if (particulierData.date_naissance !== undefined) formData.append("date_naissance", particulierData.date_naissance || '');
+    if (particulierData.lieu_naissance !== undefined) formData.append("lieu_naissance", particulierData.lieu_naissance || '');
+    if (particulierData.sexe !== undefined) formData.append("sexe", particulierData.sexe || '');
+    if (particulierData.ville !== undefined) formData.append("ville", particulierData.ville || '');
+    if (particulierData.code_postal !== undefined) formData.append("code_postal", particulierData.code_postal || '');
+    if (particulierData.province !== undefined) formData.append("province", particulierData.province || '');
+    if (particulierData.id_national !== undefined) formData.append("id_national", particulierData.id_national || '');
+    if (particulierData.email !== undefined) formData.append("email", particulierData.email || '');
+    if (particulierData.situation_familiale !== undefined) formData.append("situation_familiale", particulierData.situation_familiale || '');
+    if (particulierData.dependants !== undefined) formData.append("dependants", particulierData.dependants.toString());
     
     // Ajout des champs de réduction
     if (particulierData.reduction_type !== undefined)

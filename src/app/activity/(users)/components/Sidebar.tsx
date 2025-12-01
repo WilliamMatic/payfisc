@@ -57,8 +57,8 @@ export default function Sidebar({
     {
       category: "Contribuables",
       items: [
-        { icon: "👤", label: "Particuliers", href: "/activity/particuliers" },
-        { icon: "🏢", label: "Entreprises", href: "/activity/entreprises" },
+        { icon: "👤", label: "Assujettis", href: "/activity/particuliers" },
+        // { icon: "🏢", label: "Entreprises", href: "/activity/entreprises" },
       ],
     },
     {
