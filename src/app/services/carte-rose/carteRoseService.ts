@@ -62,8 +62,32 @@ export interface CarteRoseResponse {
     engin_id?: number;
     nif?: string;
     particulier_existant?: boolean;
-    paiement_id?: string; // AJOUT
+    paiement_id?: string;
   };
+}
+
+export interface RechercheModeleResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: Array<{
+    id: number;
+    libelle: string;
+    description: string;
+    marque_engin_id: number;
+    marque_libelle: string;
+  }>;
+}
+
+export interface RecherchePuissanceResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: Array<{
+    id: number;
+    libelle: string;
+    valeur: number;
+    description: string;
+    type_engin_libelle: string;
+  }>;
 }
 
 const API_BASE_URL =
@@ -110,6 +134,210 @@ export const verifierPlaqueTelephone = async (
 };
 
 /**
+ * Vérifie si un téléphone existe déjà
+ */
+export const verifierTelephoneExistant = async (
+  telephone: string
+): Promise<CarteRoseResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("telephone", telephone);
+
+    const response = await fetch(
+      `${API_BASE_URL}/carterose/verifier_telephone.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la vérification du téléphone",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Verification telephone error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification du téléphone",
+    };
+  }
+};
+
+/**
+ * Recherche des modèles par marque et terme de recherche
+ */
+export const rechercherModeles = async (
+  marqueId: number,
+  searchTerm: string
+): Promise<RechercheModeleResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("marque_id", marqueId.toString());
+    formData.append("search", searchTerm);
+
+    const response = await fetch(
+      `${API_BASE_URL}/marques-engins/rechercher__modeles.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des modèles",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Recherche modeles error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des modèles",
+    };
+  }
+};
+
+/**
+ * Crée un nouveau modèle
+ */
+export const creerModele = async (
+  libelle: string,
+  marqueEnginId: number,
+  description: string = ""
+): Promise<RechercheModeleResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("libelle", libelle);
+    formData.append("marque_engin_id", marqueEnginId.toString());
+    formData.append("description", description);
+
+    const response = await fetch(
+      `${API_BASE_URL}/marques-engins/creer_modele.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la création du modèle",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Creation modele error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la création du modèle",
+    };
+  }
+};
+
+/**
+ * Recherche des puissances fiscales par type d'engin et terme
+ */
+export const rechercherPuissancesFiscales = async (
+  typeEnginLibelle: string,
+  searchTerm: string
+): Promise<RecherchePuissanceResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("type_engin_libelle", typeEnginLibelle);
+    formData.append("search", searchTerm);
+
+    const response = await fetch(
+      `${API_BASE_URL}/puissances-fiscales/rechercher__puissances_par_type.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des puissances",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Recherche puissances error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des puissances",
+    };
+  }
+};
+
+/**
+ * Crée une nouvelle puissance fiscale
+ */
+export const creerPuissanceFiscale = async (
+  libelle: string,
+  valeur: number,
+  typeEnginLibelle: string,
+  description: string = ""
+): Promise<RecherchePuissanceResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("libelle", libelle);
+    formData.append("valeur", valeur.toString());
+    formData.append("type_engin_libelle", typeEnginLibelle);
+    formData.append("description", description);
+
+    const response = await fetch(
+      `${API_BASE_URL}/puissances-fiscales/creer__puissance_fiscale_type.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la création de la puissance",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Creation puissance error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la création de la puissance",
+    };
+  }
+};
+
+/**
  * Soumet la carte rose complète
  */
 export const soumettreCarteRose = async (
@@ -140,9 +368,8 @@ export const soumettreCarteRose = async (
     formData.append("code_postal", particulierData.code_postal || "");
     formData.append("province", particulierData.province || "");
 
-    // Données de l'engin - CORRECTION ICI
+    // Données de l'engin - CORRECTION: concaténation marque + espace + modèle
     formData.append("type_engin", enginData.typeEngin);
-    // Concaténer marque et modèle avec un espace
     const marqueComplete = `${enginData.marque} ${enginData.modele}`;
     formData.append("marque", marqueComplete);
     formData.append("energie", enginData.energie || "");

@@ -8,6 +8,9 @@ export interface ParticulierData {
   telephone: string;
   email?: string;
   adresse: string;
+  nif?: string;
+  reduction_type?: string;
+  reduction_valeur?: number;
 }
 
 export interface CommandeData {
@@ -21,6 +24,17 @@ export interface PaiementData {
   numeroTransaction?: string;
   numeroCheque?: string;
   banque?: string;
+}
+
+export interface AssujettiInfo {
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  rue: string;
+  nif: string;
+  reduction_type: 'pourcentage' | 'montant_fixe' | null;
+  reduction_valeur: number;
 }
 
 export interface ClientSimpleResponse {
@@ -49,10 +63,50 @@ export interface ClientSimpleResponse {
     }>;
     sequence_valide?: boolean;
     sequence_plaques?: string[];
+    // Propriété pour la recherche d'assujetti
+    assujetti?: AssujettiInfo;
   };
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/Impot/backend/calls';
+
+/**
+ * Recherche un assujetti par numéro de téléphone
+ */
+export const rechercherAssujettiParTelephone = async (
+  telephone: string,
+  utilisateur: any
+): Promise<ClientSimpleResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append('telephone', telephone);
+    formData.append('utilisateur_id', utilisateur.id.toString());
+    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+
+    const response = await fetch(`${API_BASE_URL}/client-simple/rechercher_assujetti.php`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la recherche de l\'assujetti',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Rechercher assujetti error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la recherche de l\'assujetti',
+    };
+  }
+};
 
 /**
  * Soumet une commande de plaques complète
@@ -72,12 +126,21 @@ export const soumettreCommandePlaques = async (
     formData.append('utilisateur_id', utilisateur.id.toString());
     formData.append('site_id', utilisateur.site_id?.toString() || '1');
     
-    // Données du particulier
+    // Données du particulier (avec réduction)
     formData.append('nom', particulierData.nom);
     formData.append('prenom', particulierData.prenom);
     formData.append('telephone', particulierData.telephone);
     formData.append('email', particulierData.email || '');
     formData.append('adresse', particulierData.adresse);
+    formData.append('nif', particulierData.nif || '');
+    
+    // Ajouter les données de réduction si présentes
+    if (particulierData.reduction_type) {
+      formData.append('reduction_type', particulierData.reduction_type);
+    }
+    if (particulierData.reduction_valeur !== undefined) {
+      formData.append('reduction_valeur', particulierData.reduction_valeur.toString());
+    }
     
     // Données de la commande
     formData.append('nombre_plaques', commandeData.nombrePlaques.toString());

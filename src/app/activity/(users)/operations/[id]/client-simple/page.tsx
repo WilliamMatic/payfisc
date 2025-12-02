@@ -3,16 +3,50 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, User, Lock } from 'lucide-react';
 import ClientSimpleForm from './components/ClientSimpleForm';
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ClientSimplePage() {
   const params = useParams();
   const router = useRouter();
   const impotId = params.id as string;
-  const { utilisateur } = useAuth();
+  const { utilisateur, isLoading: authLoading } = useAuth();
+  const [privileges, setPrivileges] = useState<any>(null);
 
-  // Afficher un écran de chargement ou d'erreur si pas les privilèges
-  if (!utilisateur) {
+  // Parser les privilèges quand utilisateur change
+  useEffect(() => {
+    if (utilisateur?.privileges_include) {
+      try {
+        const parsedPrivileges = JSON.parse(utilisateur.privileges_include);
+        setPrivileges(parsedPrivileges);
+      } catch (error) {
+        console.error('Erreur lors du parsing des privilèges:', error);
+        setPrivileges({});
+      }
+    } else if (utilisateur) {
+      // Si pas de privilèges dans utilisateur, créer un objet par défaut
+      setPrivileges({});
+    }
+  }, [utilisateur]);
+
+  // Afficher un écran de chargement pendant la vérification d'authentification
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Chargement des autorisations...
+          </h2>
+          <p className="text-gray-600">
+            Veuillez patienter pendant que nous vérifions vos accès.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher un écran de chargement pendant le parsing des privilèges
+  if (!utilisateur || privileges === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -30,7 +64,8 @@ export default function ClientSimplePage() {
     );
   }
 
-  if (!utilisateur.privileges?.simple) {
+  // Vérifier si l'utilisateur a le privilège "simple"
+  if (!privileges.simple) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
@@ -44,6 +79,17 @@ export default function ClientSimplePage() {
             <p className="text-gray-600 mb-6">
               Vous n'avez pas les privilèges nécessaires pour accéder à cette fonctionnalité.
             </p>
+            <div className="text-sm text-gray-500 mb-4">
+              Privilèges disponibles:
+              <div className="mt-2 text-left">
+                {Object.entries(privileges).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${value ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span>{key}: {value ? '✓' : '✗'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
             <button
               onClick={() => router.back()}
               className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
@@ -94,24 +140,6 @@ export default function ClientSimplePage() {
             <p className="text-blue-800 text-sm">
               L'immatriculation des plaques consiste à enregistrer officiellement un véhicule auprès des services compétents afin de lui attribuer un numéro unique d'identification. Elle permet de certifier la propriété, faciliter le contrôle routier et assurer la traçabilité du véhicule sur tout le territoire.
             </p>
-          </div>
-
-          {/* INFO UTILISATEUR CONNECTÉ */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between text-sm">
-              <div>
-                <span className="text-gray-600">Opérateur connecté:</span>
-                <span className="font-semibold text-gray-800 ml-2">
-                  {utilisateur.nom_complet}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Site:</span>
-                <span className="font-semibold text-gray-800 ml-2">
-                  {utilisateur.site_nom} ({utilisateur.site_code})
-                </span>
-              </div>
-            </div>
           </div>
         </div>
 

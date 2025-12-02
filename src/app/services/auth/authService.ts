@@ -235,6 +235,45 @@ export const requestPasswordReset = async (identifiant: string): Promise<Passwor
   }
 };
 
+// services/auth/authService.ts
+export const checkAnySession = async (): Promise<{
+  status: 'success' | 'error';
+  message?: string;
+  userType?: 'agent' | 'utilisateur';
+  data?: {
+    agent?: AgentSession;
+    utilisateur?: UtilisateurSession;
+    privileges?: Privilege[];
+  };
+}> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/check_any_session.php`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Session invalide",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Session check error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification de session",
+    };
+  }
+};
+
 /**
  * Vérifie un code de réinitialisation (pour agents ET utilisateurs)
  */

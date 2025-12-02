@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Save,
   User,
@@ -10,14 +10,23 @@ import {
   Printer,
   CheckCircle,
   X,
+  Search,
+  Plus,
 } from "lucide-react";
 import {
   verifierPlaqueTelephone,
   soumettreCarteRose,
+  verifierTelephoneExistant,
+  rechercherModeles,
+  creerModele,
+  rechercherPuissancesFiscales,
+  creerPuissanceFiscale,
   type VerificationData,
   type ParticulierData,
   type EnginData,
   type CarteRoseResponse,
+  type RechercheModeleResponse,
+  type RecherchePuissanceResponse,
 } from "@/services/carte-rose/carteRoseService";
 import CarteRosePrint from "./CarteRosePrint";
 
@@ -57,6 +66,7 @@ interface FormData {
   ville: string;
   code_postal: string;
   province: string;
+  nif: string;
 
   // Informations de l'engin
   typeEngin: string;
@@ -64,9 +74,12 @@ interface FormData {
   anneeCirculation: string;
   couleur: string;
   puissanceFiscal: string;
+  puissanceFiscalValeur: string;
   usage: string;
   marque: string;
+  marqueId: string;
   modele: string;
+  modeleId: string;
   energie: string;
   numeroChassis: string;
   numeroMoteur: string;
@@ -107,11 +120,19 @@ interface ParticulierInfo {
   adresse: string;
   ville?: string;
   province?: string;
+  nif?: string;
 }
 
 interface MarqueAvecModeles {
   marque: MarqueEngin;
   modeles: ModeleEngin[];
+}
+
+interface Suggestion {
+  id: number;
+  libelle: string;
+  description?: string;
+  valeur?: number;
 }
 
 export default function ClientSimpleForm({
@@ -130,20 +151,24 @@ export default function ClientSimpleForm({
     ville: "",
     code_postal: "",
     province: "",
+    nif: "",
     typeEngin: "",
     anneeFabrication: "",
     anneeCirculation: "",
     couleur: "",
     puissanceFiscal: "",
+    puissanceFiscalValeur: "",
     usage: "",
     marque: "",
+    marqueId: "",
     modele: "",
+    modeleId: "",
     energie: "",
     numeroChassis: "",
     numeroMoteur: "",
   });
 
-  // États pour les données dynamiques (comme dans le screen 2)
+  // États pour les données dynamiques
   const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
   const [energies, setEnergies] = useState<Energie[]>([]);
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
@@ -169,6 +194,9 @@ export default function ClientSimpleForm({
     marques: false,
     modeles: false,
     puissances: false,
+    verificationTelephone: false,
+    rechercheModeles: false,
+    recherchePuissances: false,
   });
 
   const [plaqueInfo, setPlaqueInfo] = useState<PlaqueInfo | null>(null);
@@ -184,12 +212,23 @@ export default function ClientSimpleForm({
   const [showPrint, setShowPrint] = useState(false);
   const [printData, setPrintData] = useState<any>(null);
 
-  // Générer les options d'années (comme dans le screen 2)
+  // États pour l'auto-complétion
+  const [suggestionsModeles, setSuggestionsModeles] = useState<Suggestion[]>([]);
+  const [suggestionsPuissances, setSuggestionsPuissances] = useState<Suggestion[]>([]);
+  const [showSuggestionsModeles, setShowSuggestionsModeles] = useState(false);
+  const [showSuggestionsPuissances, setShowSuggestionsPuissances] = useState(false);
+  
+  // Références pour les timeouts
+  const rechercheModeleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
     (2025 - i).toString()
   );
 
-  // Chargement des données initiales (comme dans le screen 2)
+  // Chargement des données initiales
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -228,13 +267,6 @@ export default function ClientSimpleForm({
           setMarques(marquesResponse.data || []);
         }
 
-        // Charger tous les modèles
-        setLoading((prev) => ({ ...prev, modeles: true }));
-        const modelesResponse = await getModelesEngins();
-        if (modelesResponse.status === "success") {
-          setModeles(modelesResponse.data || []);
-        }
-
         // Charger toutes les puissances fiscales
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
@@ -252,6 +284,9 @@ export default function ClientSimpleForm({
           marques: false,
           modeles: false,
           puissances: false,
+          verificationTelephone: false,
+          rechercheModeles: false,
+          recherchePuissances: false,
         });
       }
     };
@@ -259,51 +294,7 @@ export default function ClientSimpleForm({
     loadInitialData();
   }, []);
 
-  // Organiser les marques avec leurs modèles
-  useEffect(() => {
-    if (marques.length > 0 && modeles.length > 0) {
-      const marquesAvecModeles = marques
-        .filter((marque) => marque.actif)
-        .map((marque) => ({
-          marque,
-          modeles: modeles.filter(
-            (modele) => modele.marque_engin_id === marque.id && modele.actif
-          ),
-        }))
-        .filter((item) => item.modeles.length > 0); // Ne garder que les marques qui ont des modèles
-
-      setMarquesAvecModeles(marquesAvecModeles);
-    }
-  }, [marques, modeles]);
-
-  // Filtrer les puissances quand le type d'engin change (comme dans le screen 2)
-  useEffect(() => {
-    if (formData.typeEngin) {
-      // Filtrer les puissances fiscales par libellé du type d'engin
-      const puissancesFiltrees = puissancesFiscales.filter(
-        (puissance) => puissance.type_engin_libelle === formData.typeEngin
-      );
-      setFilteredPuissances(puissancesFiltrees);
-
-      // Réinitialiser les sélections dépendantes
-      setFormData((prev) => ({
-        ...prev,
-        marque: "",
-        modele: "",
-        puissanceFiscal: "",
-      }));
-    } else {
-      setFilteredPuissances([]);
-      setFormData((prev) => ({
-        ...prev,
-        marque: "",
-        modele: "",
-        puissanceFiscal: "",
-      }));
-    }
-  }, [formData.typeEngin, puissancesFiscales]);
-
-  // Réinitialiser l'année de circulation si l'année de fabrication change (comme dans le screen 2)
+  // Réinitialiser l'année de circulation si l'année de fabrication change
   useEffect(() => {
     if (formData.anneeFabrication && formData.anneeCirculation) {
       const anneeFab = parseInt(formData.anneeFabrication);
@@ -326,7 +317,21 @@ export default function ClientSimpleForm({
       setFormData((prev) => ({
         ...prev,
         modele: "",
+        modeleId: "",
       }));
+      setSuggestionsModeles([]);
+      setShowSuggestionsModeles(false);
+    }
+
+    // Réinitialiser la puissance si le type d'engin change
+    if (field === "typeEngin") {
+      setFormData((prev) => ({
+        ...prev,
+        puissanceFiscal: "",
+        puissanceFiscalValeur: "",
+      }));
+      setSuggestionsPuissances([]);
+      setShowSuggestionsPuissances(false);
     }
 
     if (errors[field]) {
@@ -337,7 +342,256 @@ export default function ClientSimpleForm({
     }
   };
 
-  // Obtenir les années disponibles pour la circulation (comme dans le screen 2)
+  // Vérification du téléphone en temps réel
+  const handleTelephoneChange = async (telephone: string) => {
+    setFormData((prev) => ({ ...prev, telephoneAssujetti: telephone }));
+    
+    if (verificationTelephoneTimeoutRef.current) {
+      clearTimeout(verificationTelephoneTimeoutRef.current);
+    }
+    
+    if (telephone.length >= 8) {
+      verificationTelephoneTimeoutRef.current = setTimeout(async () => {
+        setLoading((prev) => ({ ...prev, verificationTelephone: true }));
+        
+        try {
+          const result = await verifierTelephoneExistant(telephone);
+          
+          if (result.status === "success" && result.data?.particulier) {
+            const particulier = result.data.particulier;
+            
+            // Pré-remplir les champs avec les informations du particulier
+            setFormData((prev) => ({
+              ...prev,
+              nom: particulier.nom || "",
+              prenom: particulier.prenom || "",
+              email: particulier.email || "",
+              adresse: particulier.adresse || "",
+              ville: particulier.ville || "",
+              province: particulier.province || "",
+              nif: particulier.nif || "",
+            }));
+            
+            // Afficher un message de succès
+            setMessageErreur("✅ Informations du particulier chargées avec succès");
+            setTimeout(() => setMessageErreur(""), 3000);
+          } else {
+            // Réinitialiser les champs si aucun particulier trouvé
+            setFormData((prev) => ({
+              ...prev,
+              nom: "",
+              prenom: "",
+              email: "",
+              adresse: "",
+              ville: "",
+              province: "",
+              nif: "",
+            }));
+          }
+        } catch (error) {
+          console.error("Erreur lors de la vérification du téléphone:", error);
+        } finally {
+          setLoading((prev) => ({ ...prev, verificationTelephone: false }));
+        }
+      }, 800); // Délai de 800ms après la dernière frappe
+    }
+  };
+
+  // Recherche des modèles en temps réel
+  const handleModeleSearch = async (searchTerm: string) => {
+    if (!formData.marqueId || formData.marqueId === "") {
+      return;
+    }
+    
+    if (rechercheModeleTimeoutRef.current) {
+      clearTimeout(rechercheModeleTimeoutRef.current);
+    }
+    
+    if (searchTerm.length >= 2) {
+      rechercheModeleTimeoutRef.current = setTimeout(async () => {
+        setLoading((prev) => ({ ...prev, rechercheModeles: true }));
+        
+        try {
+          const result = await rechercherModeles(parseInt(formData.marqueId), searchTerm);
+          
+          if (result.status === "success" && result.data) {
+            const suggestions = result.data.map((modele: any) => ({
+              id: modele.id,
+              libelle: modele.libelle,
+              description: modele.description,
+            }));
+            
+            setSuggestionsModeles(suggestions);
+            setShowSuggestionsModeles(true);
+          } else {
+            setSuggestionsModeles([]);
+            setShowSuggestionsModeles(false);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des modèles:", error);
+          setSuggestionsModeles([]);
+        } finally {
+          setLoading((prev) => ({ ...prev, rechercheModeles: false }));
+        }
+      }, 500);
+    } else {
+      setSuggestionsModeles([]);
+      setShowSuggestionsModeles(false);
+    }
+  };
+
+  // Sélection d'un modèle
+  const handleSelectModele = (modele: Suggestion) => {
+    setFormData((prev) => ({
+      ...prev,
+      modele: modele.libelle,
+      modeleId: modele.id.toString(),
+    }));
+    setShowSuggestionsModeles(false);
+  };
+
+  // Création d'un nouveau modèle
+  const handleCreateModele = async () => {
+    if (!formData.modele || !formData.marqueId || formData.marqueId === "") {
+      return;
+    }
+    
+    try {
+      setLoading((prev) => ({ ...prev, rechercheModeles: true }));
+      
+      const result = await creerModele(formData.modele, parseInt(formData.marqueId));
+      
+      if (result.status === "success" && result.data) {
+        // Mettre à jour les suggestions avec le nouveau modèle
+        const newModele = {
+          id: result.data[0]?.id || Date.now(),
+          libelle: formData.modele,
+          description: "Nouveau modèle créé",
+        };
+        
+        setFormData((prev) => ({
+          ...prev,
+          modeleId: newModele.id.toString(),
+        }));
+        
+        setSuggestionsModeles([newModele, ...suggestionsModeles]);
+        
+        setMessageErreur("✅ Modèle créé avec succès");
+        setTimeout(() => setMessageErreur(""), 3000);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la création du modèle:", error);
+      setMessageErreur("❌ Erreur lors de la création du modèle");
+      setTimeout(() => setMessageErreur(""), 3000);
+    } finally {
+      setLoading((prev) => ({ ...prev, rechercheModeles: false }));
+    }
+  };
+
+  // Recherche des puissances fiscales en temps réel
+  const handlePuissanceSearch = async (searchTerm: string) => {
+    if (!formData.typeEngin) {
+      return;
+    }
+    
+    if (recherchePuissanceTimeoutRef.current) {
+      clearTimeout(recherchePuissanceTimeoutRef.current);
+    }
+    
+    if (searchTerm.length >= 1) {
+      recherchePuissanceTimeoutRef.current = setTimeout(async () => {
+        setLoading((prev) => ({ ...prev, recherchePuissances: true }));
+        
+        try {
+          const result = await rechercherPuissancesFiscales(formData.typeEngin, searchTerm);
+          
+          if (result.status === "success" && result.data) {
+            const suggestions = result.data.map((puissance: any) => ({
+              id: puissance.id,
+              libelle: puissance.libelle,
+              valeur: puissance.valeur,
+              description: puissance.description,
+            }));
+            
+            setSuggestionsPuissances(suggestions);
+            setShowSuggestionsPuissances(true);
+          } else {
+            setSuggestionsPuissances([]);
+            setShowSuggestionsPuissances(false);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des puissances:", error);
+          setSuggestionsPuissances([]);
+        } finally {
+          setLoading((prev) => ({ ...prev, recherchePuissances: false }));
+        }
+      }, 500);
+    } else {
+      setSuggestionsPuissances([]);
+      setShowSuggestionsPuissances(false);
+    }
+  };
+
+  // Sélection d'une puissance fiscale
+  const handleSelectPuissance = (puissance: Suggestion) => {
+    setFormData((prev) => ({
+      ...prev,
+      puissanceFiscal: puissance.libelle,
+      puissanceFiscalValeur: puissance.valeur?.toString() || "",
+    }));
+    setShowSuggestionsPuissances(false);
+  };
+
+  // Création d'une nouvelle puissance fiscale
+  const handleCreatePuissance = async () => {
+    if (!formData.puissanceFiscal || !formData.typeEngin) {
+      return;
+    }
+    
+    // Extraire la valeur numérique de la puissance
+    const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
+    const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
+    
+    if (valeur === 0) {
+      setMessageErreur("❌ Veuillez spécifier une valeur numérique pour la puissance");
+      setTimeout(() => setMessageErreur(""), 3000);
+      return;
+    }
+    
+    try {
+      setLoading((prev) => ({ ...prev, recherchePuissances: true }));
+      
+      const result = await creerPuissanceFiscale(
+        formData.puissanceFiscal,
+        valeur,
+        formData.typeEngin,
+        `Puissance ${formData.puissanceFiscal}`
+      );
+      
+      if (result.status === "success" && result.data) {
+        // Mettre à jour les suggestions avec la nouvelle puissance
+        const newPuissance = {
+          id: result.data[0]?.id || Date.now(),
+          libelle: formData.puissanceFiscal,
+          valeur: valeur,
+          description: "Nouvelle puissance créée",
+        };
+        
+        setSuggestionsPuissances([newPuissance, ...suggestionsPuissances]);
+        
+        setMessageErreur("✅ Puissance fiscale créée avec succès");
+        setTimeout(() => setMessageErreur(""), 3000);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la création de la puissance:", error);
+      setMessageErreur("❌ Erreur lors de la création de la puissance fiscale");
+      setTimeout(() => setMessageErreur(""), 3000);
+    } finally {
+      setLoading((prev) => ({ ...prev, recherchePuissances: false }));
+    }
+  };
+
+  // Obtenir les années disponibles pour la circulation
   const getAnneesCirculationDisponibles = () => {
     if (!formData.anneeFabrication) {
       return anneeOptions;
@@ -421,6 +675,7 @@ export default function ClientSimpleForm({
     if (!formData.typeEngin)
       newErrors.typeEngin = "Le type d'engin est obligatoire";
     if (!formData.marque) newErrors.marque = "La marque est obligatoire";
+    if (!formData.modele) newErrors.modele = "Le modèle est obligatoire";
 
     const phoneRegex = /^[0-9+\-\s()]{8,}$/;
     if (
@@ -434,7 +689,7 @@ export default function ClientSimpleForm({
       newErrors.email = "Format d'email invalide";
     }
 
-    // Validation des années (comme dans le screen 2)
+    // Validation des années
     if (formData.anneeFabrication && formData.anneeCirculation) {
       const anneeFab = parseInt(formData.anneeFabrication);
       const anneeCirc = parseInt(formData.anneeCirculation);
@@ -465,8 +720,30 @@ export default function ClientSimpleForm({
     setIsSubmitting(true);
 
     try {
-      // SÉPARER LA MARQUE ET LE MODÈLE
-      const [marque, modele] = formData.marque.split("|");
+      // Vérifier et créer le modèle si nécessaire
+      if (formData.modele && formData.marqueId && !formData.modeleId) {
+        const modeleResult = await creerModele(formData.modele, parseInt(formData.marqueId));
+        if (modeleResult.status === "success" && modeleResult.data?.[0]?.id) {
+          formData.modeleId = modeleResult.data[0].id.toString();
+        }
+      }
+
+      // Vérifier et créer la puissance fiscale si nécessaire
+      if (formData.puissanceFiscal && formData.typeEngin && !formData.puissanceFiscalValeur) {
+        const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
+        const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
+        
+        if (valeur > 0) {
+          const puissanceResult = await creerPuissanceFiscale(
+            formData.puissanceFiscal,
+            valeur,
+            formData.typeEngin
+          );
+          if (puissanceResult.status === "success") {
+            formData.puissanceFiscalValeur = valeur.toString();
+          }
+        }
+      }
 
       const particulierData: ParticulierData = {
         nom: formData.nom,
@@ -481,8 +758,8 @@ export default function ClientSimpleForm({
 
       const enginData: EnginData = {
         typeEngin: formData.typeEngin,
-        marque: marque, // Juste la marque
-        modele: modele, // Juste le modèle
+        marque: formData.marque,
+        modele: formData.modele,
         energie: formData.energie,
         anneeFabrication: formData.anneeFabrication,
         anneeCirculation: formData.anneeCirculation,
@@ -505,9 +782,6 @@ export default function ClientSimpleForm({
       );
 
       if (result.status === "success" && result.data) {
-        // Préparer les données pour l'impression - CORRECTION ICI
-        const marqueComplete = `${marque} ${modele}`; // Marque + Modèle avec espace
-
         const completeData = {
           ...result.data,
           nom: formData.nom,
@@ -515,7 +789,7 @@ export default function ClientSimpleForm({
           adresse: formData.adresse,
           telephone: formData.telephoneAssujetti,
           type_engin: formData.typeEngin,
-          marque: marqueComplete, // Marque complète avec modèle
+          marque: `${formData.marque} ${formData.modele}`,
           energie: formData.energie,
           annee_fabrication: formData.anneeFabrication,
           annee_circulation: formData.anneeCirculation,
@@ -561,14 +835,18 @@ export default function ClientSimpleForm({
       ville: "",
       code_postal: "",
       province: "",
+      nif: "",
       typeEngin: "",
       anneeFabrication: "",
       anneeCirculation: "",
       couleur: "",
       puissanceFiscal: "",
+      puissanceFiscalValeur: "",
       usage: "",
       marque: "",
+      marqueId: "",
       modele: "",
+      modeleId: "",
       energie: "",
       numeroChassis: "",
       numeroMoteur: "",
@@ -576,6 +854,10 @@ export default function ClientSimpleForm({
     setPlaqueInfo(null);
     setParticulierInfo(null);
     setEtapeActuelle("verification");
+    setSuggestionsModeles([]);
+    setSuggestionsPuissances([]);
+    setShowSuggestionsModeles(false);
+    setShowSuggestionsPuissances(false);
   };
 
   const handleRetourFormulaire = () => {
@@ -669,7 +951,7 @@ export default function ClientSimpleForm({
     </div>
   );
 
-  // Rendu de l'étape formulaire - SECTION ENGIN ADAPTÉE DU SCREEN 2
+  // Rendu de l'étape formulaire
   const renderEtapeFormulaire = () => (
     <form onSubmit={handleSubmitForm} className="space-y-8">
       {/* AFFICHAGE DES INFOS VÉRIFIÉES */}
@@ -725,6 +1007,38 @@ export default function ClientSimpleForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* TÉLÉPHONE - PLACÉ EN PREMIER */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de téléphone <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="tel"
+                value={formData.telephoneAssujetti}
+                onChange={(e) => handleTelephoneChange(e.target.value)}
+                onBlur={() => setMessageErreur("")}
+                placeholder="Entrez votre numéro de téléphone"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.telephoneAssujetti ? "border-red-300" : "border-gray-300"
+                }`}
+              />
+              {loading.verificationTelephone && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            {errors.telephoneAssujetti && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.telephoneAssujetti}
+              </p>
+            )}
+            <p className="text-blue-600 text-xs mt-1">
+              Le système vérifie automatiquement si ce téléphone existe déjà
+            </p>
+          </div>
+
           {/* NOM */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -763,29 +1077,6 @@ export default function ClientSimpleForm({
             )}
           </div>
 
-          {/* TÉLÉPHONE */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Numéro de téléphone <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              value={formData.telephoneAssujetti}
-              onChange={(e) =>
-                handleInputChange("telephoneAssujetti", e.target.value)
-              }
-              placeholder="Entrez votre numéro de téléphone"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.telephoneAssujetti ? "border-red-300" : "border-gray-300"
-              }`}
-            />
-            {errors.telephoneAssujetti && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.telephoneAssujetti}
-              </p>
-            )}
-          </div>
-
           {/* EMAIL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -817,6 +1108,20 @@ export default function ClientSimpleForm({
             {errors.adresse && (
               <p className="text-red-600 text-sm mt-1">{errors.adresse}</p>
             )}
+          </div>
+
+          {/* NIF */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              NIF
+            </label>
+            <input
+              type="text"
+              value={formData.nif}
+              onChange={(e) => handleInputChange("nif", e.target.value)}
+              placeholder="NIF du particulier"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           {/* VILLE */}
@@ -863,7 +1168,7 @@ export default function ClientSimpleForm({
         </div>
       </div>
 
-      {/* SECTION ENGIN - AVEC MARQUES ET MODÈLES GROUPÉS */}
+      {/* SECTION ENGIN */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
           <div className="bg-green-100 p-2 rounded-lg">
@@ -912,15 +1217,22 @@ export default function ClientSimpleForm({
             )}
           </div>
 
-          {/* Marque et Modèle */}
+          {/* Marque */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Marque <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <select
-                value={formData.marque}
-                onChange={(e) => handleInputChange("marque", e.target.value)}
+                value={formData.marqueId}
+                onChange={(e) => {
+                  const selectedMarque = marques.find(m => m.id.toString() === e.target.value);
+                  setFormData(prev => ({
+                    ...prev,
+                    marque: selectedMarque?.libelle || "",
+                    marqueId: e.target.value,
+                  }));
+                }}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.marque ? "border-red-300" : "border-gray-300"
                 }`}
@@ -931,22 +1243,12 @@ export default function ClientSimpleForm({
                     ? "Sélectionnez d'abord le type d'engin"
                     : "Sélectionner la marque"}
                 </option>
-                {marquesAvecModeles
-                  .filter(
-                    (item) =>
-                      item.marque.type_engin_libelle === formData.typeEngin
-                  )
-                  .map((item) => (
-                    <optgroup key={item.marque.id} label={item.marque.libelle}>
-                      {item.modeles.map((modele) => (
-                        <option
-                          key={modele.id}
-                          value={`${item.marque.libelle}|${modele.libelle}`}
-                        >
-                          {modele.libelle}
-                        </option>
-                      ))}
-                    </optgroup>
+                {marques
+                  .filter(marque => marque.type_engin_libelle === formData.typeEngin && marque.actif)
+                  .map((marque) => (
+                    <option key={marque.id} value={marque.id}>
+                      {marque.libelle}
+                    </option>
                   ))}
               </select>
               {loading.marques && (
@@ -958,15 +1260,75 @@ export default function ClientSimpleForm({
             {errors.marque && (
               <p className="text-red-600 text-sm mt-1">{errors.marque}</p>
             )}
-            {formData.typeEngin &&
-              marquesAvecModeles.filter(
-                (item) => item.marque.type_engin_libelle === formData.typeEngin
-              ).length === 0 &&
-              !loading.marques && (
-                <p className="text-amber-600 text-sm mt-1">
-                  Aucune marque avec modèles disponible pour ce type d'engin
-                </p>
+          </div>
+
+          {/* Modèle - Auto-complétion */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Modèle <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.modele}
+                onChange={(e) => {
+                  handleInputChange("modele", e.target.value);
+                  handleModeleSearch(e.target.value);
+                }}
+                onFocus={() => {
+                  if (formData.modele && formData.marqueId) {
+                    handleModeleSearch(formData.modele);
+                  }
+                }}
+                placeholder="Saisissez le modèle"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.modele ? "border-red-300" : "border-gray-300"
+                }`}
+                disabled={!formData.marqueId}
+              />
+              {loading.rechercheModeles && (
+                <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
               )}
+              {formData.modele && !formData.modeleId && (
+                <button
+                  type="button"
+                  onClick={handleCreateModele}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-700"
+                  title="Créer ce modèle"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            {errors.modele && (
+              <p className="text-red-600 text-sm mt-1">{errors.modele}</p>
+            )}
+            
+            {/* Suggestions de modèles */}
+            {showSuggestionsModeles && suggestionsModeles.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                {suggestionsModeles.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    onClick={() => handleSelectModele(suggestion)}
+                  >
+                    <div className="font-medium">{suggestion.libelle}</div>
+                    {suggestion.description && (
+                      <div className="text-xs text-gray-500">{suggestion.description}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {formData.marqueId && !formData.modeleId && (
+              <p className="text-amber-600 text-xs mt-1">
+                Saisissez le modèle. S'il n'existe pas, cliquez sur <Plus className="w-3 h-3 inline" /> pour le créer.
+              </p>
+            )}
           </div>
 
           {/* Énergie */}
@@ -1082,44 +1444,71 @@ export default function ClientSimpleForm({
             </div>
           </div>
 
-          {/* Puissance Fiscal */}
-          <div>
+          {/* Puissance Fiscal - Auto-complétion */}
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Puissance Fiscal
             </label>
             <div className="relative">
-              <select
+              <input
+                type="text"
                 value={formData.puissanceFiscal}
-                onChange={(e) =>
-                  handleInputChange("puissanceFiscal", e.target.value)
-                }
+                onChange={(e) => {
+                  handleInputChange("puissanceFiscal", e.target.value);
+                  handlePuissanceSearch(e.target.value);
+                }}
+                onFocus={() => {
+                  if (formData.puissanceFiscal && formData.typeEngin) {
+                    handlePuissanceSearch(formData.puissanceFiscal);
+                  }
+                }}
+                placeholder="Ex: 10 CV, 12 CV..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={loading.puissances || !formData.typeEngin}
-              >
-                <option value="">
-                  {!formData.typeEngin
-                    ? "Sélectionnez d'abord le type d'engin"
-                    : "Sélectionner la puissance"}
-                </option>
-                {filteredPuissances.map((puissance) => (
-                  <option key={puissance.id} value={puissance.libelle}>
-                    {puissance.libelle} ({puissance.valeur} CV)
-                  </option>
-                ))}
-              </select>
-              {loading.puissances && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                disabled={!formData.typeEngin}
+              />
+              {loading.recherchePuissances && (
+                <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
-            </div>
-            {formData.typeEngin &&
-              filteredPuissances.length === 0 &&
-              !loading.puissances && (
-                <p className="text-amber-600 text-sm mt-1">
-                  Aucune puissance disponible pour ce type d'engin
-                </p>
+              {formData.puissanceFiscal && !formData.puissanceFiscalValeur && (
+                <button
+                  type="button"
+                  onClick={handleCreatePuissance}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-700"
+                  title="Créer cette puissance"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
               )}
+            </div>
+            
+            {/* Suggestions de puissances */}
+            {showSuggestionsPuissances && suggestionsPuissances.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                {suggestionsPuissances.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    onClick={() => handleSelectPuissance(suggestion)}
+                  >
+                    <div className="font-medium">{suggestion.libelle}</div>
+                    {suggestion.valeur && (
+                      <div className="text-xs text-gray-500">{suggestion.valeur} CV</div>
+                    )}
+                    {suggestion.description && (
+                      <div className="text-xs text-gray-500">{suggestion.description}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {formData.typeEngin && (
+              <p className="text-blue-600 text-xs mt-1">
+                Saisissez la puissance (ex: 10 CV). Système intelligent de recherche.
+              </p>
+            )}
           </div>
 
           {/* Usage */}
@@ -1182,6 +1571,17 @@ export default function ClientSimpleForm({
           </div>
         </div>
       </div>
+
+      {/* MESSAGE D'ERREUR GLOBAL */}
+      {messageErreur && (
+        <div className={`p-3 rounded-lg border ${
+          messageErreur.includes("✅") 
+            ? "bg-green-50 border-green-200 text-green-700" 
+            : "bg-red-50 border-red-200 text-red-700"
+        }`}>
+          <p className="text-sm">{messageErreur}</p>
+        </div>
+      )}
 
       {/* BOUTONS NAVIGATION */}
       <div className="flex items-center justify-between">
@@ -1410,13 +1810,25 @@ export default function ClientSimpleForm({
                     <div>
                       <span className="text-blue-600">Marque:</span>
                       <div className="font-medium">
-                        {formData.marque.split("|")[0]}
+                        {formData.marque}
                       </div>
                     </div>
                     <div>
                       <span className="text-blue-600">Modèle:</span>
                       <div className="font-medium">
-                        {formData.marque.split("|")[1] || "Non spécifié"}
+                        {formData.modele}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600">Puissance:</span>
+                      <div className="font-medium">
+                        {formData.puissanceFiscal}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600">Téléphone:</span>
+                      <div className="font-medium">
+                        {formData.telephoneAssujetti}
                       </div>
                     </div>
                   </div>

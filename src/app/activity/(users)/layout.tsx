@@ -1,3 +1,4 @@
+// app/system/mouvements/layout.tsx
 import type { Metadata } from "next";
 import MouvementsLayoutClient from "./UserLayoutClient";
 

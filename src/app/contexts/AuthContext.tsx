@@ -1,9 +1,26 @@
 // contexts/AuthContext.tsx
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { AgentSession, Privilege, loginAgent, logoutAgent, checkSession } from '@/services/auth/authService';
-import { loginUtilisateur, checkSessionUtilisateur, logoutUtilisateur } from '@/services/auth/userAuthService';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import {
+  AgentSession,
+  Privilege,
+  loginAgent,
+  logoutAgent,
+  checkSession,
+  checkAnySession
+} from "@/services/auth/authService";
+import {
+  loginUtilisateur,
+  checkSessionUtilisateur,
+  logoutUtilisateur,
+} from "@/services/auth/userAuthService";
 
 interface UtilisateurSession {
   id: number;
@@ -14,6 +31,7 @@ interface UtilisateurSession {
   site_code: string;
   formule?: string;
   privileges?: any;
+  privileges_include?: any;
 }
 
 interface AuthContextType {
@@ -21,9 +39,12 @@ interface AuthContextType {
   utilisateur: UtilisateurSession | null;
   privileges: Privilege[];
   isAuthenticated: boolean;
-  userType: 'agent' | 'utilisateur' | null;
+  userType: "agent" | "utilisateur" | null;
   isLoading: boolean;
-  login: (identifiant: string, password: string) => Promise<{ success: boolean; message?: string; userType?: string }>;
+  login: (
+    identifiant: string,
+    password: string
+  ) => Promise<{ success: boolean; message?: string; userType?: string }>;
   logout: () => Promise<void>;
   hasPermission: (module: string, action: string) => boolean;
 }
@@ -36,37 +57,40 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [agent, setAgent] = useState<AgentSession | null>(null);
-  const [utilisateur, setUtilisateur] = useState<UtilisateurSession | null>(null);
+  const [utilisateur, setUtilisateur] = useState<UtilisateurSession | null>(
+    null
+  );
   const [privileges, setPrivileges] = useState<Privilege[]>([]);
-  const [userType, setUserType] = useState<'agent' | 'utilisateur' | null>(null);
+  const [userType, setUserType] = useState<"agent" | "utilisateur" | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
 
+  // contexts/AuthContext.tsx - Modification de verifySession
   useEffect(() => {
     // Vérifier la session au chargement de l'application
     const verifySession = async () => {
       try {
-        // D'abord vérifier la session agent
-        const agentResult = await checkSession();
-        if (agentResult.status === 'success' && agentResult.data && agentResult.data.agent) {
-          setAgent(agentResult.data.agent);
-          setPrivileges(agentResult.data.privileges || []);
-          setUserType('agent');
-          setIsLoading(false);
-          return;
-        }
+        // Utiliser le nouveau endpoint unique
+        const sessionResult = await checkAnySession();
 
-        // Si pas d'agent, vérifier la session utilisateur
-        const userResult = await checkSessionUtilisateur();
-        if (userResult.status === 'success' && userResult.data && userResult.data.utilisateur) {
-          setUtilisateur(userResult.data.utilisateur);
-          setUserType('utilisateur');
-          setIsLoading(false);
-          return;
+        if (sessionResult.status === "success" && sessionResult.data) {
+          if (sessionResult.userType === "agent" && sessionResult.data.agent) {
+            setAgent(sessionResult.data.agent);
+            setPrivileges(sessionResult.data.privileges || []);
+            setUserType("agent");
+          } else if (
+            sessionResult.userType === "utilisateur" &&
+            sessionResult.data.utilisateur
+          ) {
+            setUtilisateur(sessionResult.data.utilisateur);
+            setUserType("utilisateur");
+          }
         }
 
         setIsLoading(false);
       } catch (error) {
-        console.error('Session verification failed:', error);
+        console.error("Session verification failed:", error);
         setIsLoading(false);
       }
     };
@@ -78,59 +102,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Essayer d'abord de se connecter en tant qu'agent (avec email)
       const agentResult = await loginAgent(identifiant, password);
-      
-      if (agentResult.status === 'success' && agentResult.data && agentResult.data.agent) {
+
+      if (
+        agentResult.status === "success" &&
+        agentResult.data &&
+        agentResult.data.agent
+      ) {
         setAgent(agentResult.data.agent);
         setPrivileges(agentResult.data.privileges || []);
-        setUserType('agent');
-        return { success: true, userType: 'agent' };
+        setUserType("agent");
+        return { success: true, userType: "agent" };
       }
 
       // Si échec, essayer de se connecter en tant qu'utilisateur (avec téléphone)
       const userResult = await loginUtilisateur(identifiant, password);
-      
-      if (userResult.status === 'success' && userResult.data && userResult.data.utilisateur) {
+
+      if (
+        userResult.status === "success" &&
+        userResult.data &&
+        userResult.data.utilisateur
+      ) {
         setUtilisateur(userResult.data.utilisateur);
-        setUserType('utilisateur');
-        return { success: true, userType: 'utilisateur' };
+        setUserType("utilisateur");
+        return { success: true, userType: "utilisateur" };
       }
 
       // Si les deux échouent, retourner l'erreur de l'utilisateur
-      return { 
-        success: false, 
-        message: userResult.message || 'Identifiants incorrects' 
+      return {
+        success: false,
+        message: userResult.message || "Identifiants incorrects",
       };
-
     } catch (error) {
-      console.error('Login failed:', error);
-      return { success: false, message: 'Erreur lors de la connexion' };
+      console.error("Login failed:", error);
+      return { success: false, message: "Erreur lors de la connexion" };
     }
   };
 
   const logout = async () => {
     try {
-      if (userType === 'agent') {
+      if (userType === "agent") {
         await logoutAgent();
-      } else if (userType === 'utilisateur') {
+      } else if (userType === "utilisateur") {
         await logoutUtilisateur();
       }
-      
+
       setAgent(null);
       setUtilisateur(null);
       setPrivileges([]);
       setUserType(null);
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
   const hasPermission = (module: string, action: string): boolean => {
-    if (userType !== 'agent' || !agent) return false;
-    
+    if (userType !== "agent" || !agent) return false;
+
     return privileges.some(
-      privilege => 
-        privilege.module === module && 
-        privilege.action === action && 
+      (privilege) =>
+        privilege.module === module &&
+        privilege.action === action &&
         privilege.selected
     );
   };
@@ -147,17 +178,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     hasPermission,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

@@ -208,7 +208,7 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td style="position: relative; top: 8px;text-transform: uppercase;">${data.nif || ''}</td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;">${data.nif || '-'}</td>
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>

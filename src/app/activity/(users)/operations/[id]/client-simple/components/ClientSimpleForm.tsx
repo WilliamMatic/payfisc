@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Save,
@@ -15,9 +15,13 @@ import {
   soumettreImmatriculation,
   getNumeroPlaqueDisponible,
   verifierNumeroChassis,
+  verifierParticulierParTelephone,
+  rechercherModeles,
+  rechercherPuissances,
   type ParticulierData,
   type EnginData,
   type PaiementData,
+  type ImmatriculationResponse,
 } from "@/services/immatriculation/immatriculationService";
 import {
   getTypeEnginsActifs,
@@ -31,9 +35,7 @@ import {
 import { getUsages, type UsageEngin } from "@/services/usages/usageService";
 import {
   getMarquesEngins,
-  getModelesEngins,
   type MarqueEngin,
-  type ModeleEngin,
 } from "@/services/marques-engins/marqueEnginService";
 import {
   getPuissancesFiscalesActives,
@@ -65,6 +67,8 @@ interface FormData {
   numeroChassis: string;
   numeroMoteur: string;
   numeroPlaque: string;
+  reduction_type: 'pourcentage' | 'montant_fixe' | '';
+  reduction_valeur: string;
 }
 
 interface Utilisateur {
@@ -108,11 +112,6 @@ interface SuccessModalProps {
   onClose: () => void;
   onPrint: () => void;
   data: any;
-}
-
-interface MarqueAvecModeles {
-  marque: MarqueEngin;
-  modeles: ModeleEngin[];
 }
 
 const PaiementModal: React.FC<PaiementModalProps> = ({
@@ -326,6 +325,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                       {formData.telephone}
                     </p>
                   </div>
+                  {formData.reduction_type && (
+                    <div>
+                      <span className="text-gray-500 text-xs">Réduction:</span>
+                      <p className="font-semibold text-gray-800">
+                        {formData.reduction_type === 'pourcentage' 
+                          ? `${formData.reduction_valeur}%`
+                          : `${formData.reduction_valeur} $`}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <div>
@@ -544,6 +553,8 @@ export default function ClientSimpleForm({
     numeroChassis: "",
     numeroMoteur: "",
     numeroPlaque: "",
+    reduction_type: '',
+    reduction_valeur: "",
   });
 
   const router = useRouter();
@@ -554,40 +565,36 @@ export default function ClientSimpleForm({
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
   const [usages, setUsages] = useState<UsageEngin[]>([]);
   const [marques, setMarques] = useState<MarqueEngin[]>([]);
-  const [modeles, setModeles] = useState<ModeleEngin[]>([]);
-  const [marquesAvecModeles, setMarquesAvecModeles] = useState<
-    MarqueAvecModeles[]
-  >([]);
-  const [puissancesFiscales, setPuissancesFiscales] = useState<
-    PuissanceFiscale[]
-  >([]);
+  const [puissancesFiscales, setPuissancesFiscales] = useState<PuissanceFiscale[]>([]);
   const [filteredMarques, setFilteredMarques] = useState<MarqueEngin[]>([]);
-  const [filteredPuissances, setFilteredPuissances] = useState<
-    PuissanceFiscale[]
-  >([]);
 
   // États pour le taux
   const [tauxActif, setTauxActif] = useState<Taux | null>(null);
   const [loadingTaux, setLoadingTaux] = useState(false);
 
   // États pour la recherche de plaques
-  const [plaquesSuggestions, setPlaquesSuggestions] = useState<PlaqueResult[]>(
-    []
-  );
+  const [plaquesSuggestions, setPlaquesSuggestions] = useState<PlaqueResult[]>([]);
   const [showPlaquesSuggestions, setShowPlaquesSuggestions] = useState(false);
   const [isSearchingPlaques, setIsSearchingPlaques] = useState(false);
-  const [plaqueDisponible, setPlaqueDisponible] = useState<boolean | null>(
-    null
-  );
+  const [plaqueDisponible, setPlaqueDisponible] = useState<boolean | null>(null);
 
-  // États de chargement
+  // États pour la recherche de modèles
+  const [modelesSuggestions, setModelesSuggestions] = useState<any[]>([]);
+  const [showModelesSuggestions, setShowModelesSuggestions] = useState(false);
+  const [isSearchingModeles, setIsSearchingModeles] = useState(false);
+  const [selectedMarqueId, setSelectedMarqueId] = useState<number | null>(null);
+
+  // États pour la recherche de puissances
+  const [puissancesSuggestions, setPuissancesSuggestions] = useState<any[]>([]);
+  const [showPuissancesSuggestions, setShowPuissancesSuggestions] = useState(false);
+  const [isSearchingPuissances, setIsSearchingPuissances] = useState(false);
+
   const [loading, setLoading] = useState({
     typeEngins: false,
     energies: false,
     couleurs: false,
     usages: false,
     marques: false,
-    modeles: false,
     puissances: false,
   });
 
@@ -600,6 +607,10 @@ export default function ClientSimpleForm({
   const [successData, setSuccessData] = useState<any>(null);
   const [printData, setPrintData] = useState<any>(null);
   const [serieItemId, setSerieItemId] = useState<number | null>(null);
+
+  const telephoneTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const modeleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const puissanceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calcul des montants avec le taux
   const montantDollars = utilisateur?.formule || "32";
@@ -619,56 +630,42 @@ export default function ClientSimpleForm({
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // Charger le taux actif en premier
         setLoadingTaux(true);
         const tauxResponse = await getTauxActif();
         if (tauxResponse.status === "success" && tauxResponse.data) {
           setTauxActif(tauxResponse.data);
         }
 
-        // Charger les types d'engins
         setLoading((prev) => ({ ...prev, typeEngins: true }));
         const typeEnginsResponse = await getTypeEnginsActifs();
         if (typeEnginsResponse.status === "success") {
           setTypeEngins(typeEnginsResponse.data || []);
         }
 
-        // Charger les énergies
         setLoading((prev) => ({ ...prev, energies: true }));
         const energiesResponse = await getEnergies();
         if (energiesResponse.status === "success") {
           setEnergies(energiesResponse.data || []);
         }
 
-        // Charger les couleurs
         setLoading((prev) => ({ ...prev, couleurs: true }));
         const couleursResponse = await getCouleurs();
         if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
 
-        // Charger les usages
         setLoading((prev) => ({ ...prev, usages: true }));
         const usagesResponse = await getUsages();
         if (usagesResponse.status === "success") {
           setUsages(usagesResponse.data || []);
         }
 
-        // Charger toutes les marques
         setLoading((prev) => ({ ...prev, marques: true }));
         const marquesResponse = await getMarquesEngins();
         if (marquesResponse.status === "success") {
           setMarques(marquesResponse.data || []);
         }
 
-        // Charger tous les modèles
-        setLoading((prev) => ({ ...prev, modeles: true }));
-        const modelesResponse = await getModelesEngins();
-        if (modelesResponse.status === "success") {
-          setModeles(modelesResponse.data || []);
-        }
-
-        // Charger toutes les puissances fiscales
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
         if (puissancesResponse.status === "success") {
@@ -683,7 +680,6 @@ export default function ClientSimpleForm({
           couleurs: false,
           usages: false,
           marques: false,
-          modeles: false,
           puissances: false,
         });
         setLoadingTaux(false);
@@ -693,57 +689,33 @@ export default function ClientSimpleForm({
     loadInitialData();
   }, []);
 
-  // Organiser les marques avec leurs modèles
-  useEffect(() => {
-    if (marques.length > 0 && modeles.length > 0) {
-      const marquesAvecModeles = marques
-        .filter((marque) => marque.actif)
-        .map((marque) => ({
-          marque,
-          modeles: modeles.filter(
-            (modele) => modele.marque_engin_id === marque.id && modele.actif
-          ),
-        }))
-        .filter((item) => item.modeles.length > 0); // Ne garder que les marques qui ont des modèles
-
-      setMarquesAvecModeles(marquesAvecModeles);
-    }
-  }, [marques, modeles]);
-
-  // Filtrer les marques et puissances quand le type d'engin change
+  // Filtrer les marques quand le type d'engin change
   useEffect(() => {
     if (formData.typeEngin) {
-      // Filtrer les marques par libellé du type d'engin
       const marquesFiltrees = marques.filter(
         (marque) =>
           marque.type_engin_libelle === formData.typeEngin && marque.actif
       );
       setFilteredMarques(marquesFiltrees);
 
-      // Filtrer les puissances fiscales par libellé du type d'engin
-      const puissancesFiltrees = puissancesFiscales.filter(
-        (puissance) => puissance.type_engin_libelle === formData.typeEngin
-      );
-      setFilteredPuissances(puissancesFiltrees);
-
-      // Réinitialiser les sélections dépendantes
       setFormData((prev) => ({
         ...prev,
         marque: "",
         modele: "",
         puissanceFiscal: "",
       }));
+      setSelectedMarqueId(null);
     } else {
       setFilteredMarques([]);
-      setFilteredPuissances([]);
       setFormData((prev) => ({
         ...prev,
         marque: "",
         modele: "",
         puissanceFiscal: "",
       }));
+      setSelectedMarqueId(null);
     }
-  }, [formData.typeEngin, marques, puissancesFiscales]);
+  }, [formData.typeEngin, marques]);
 
   // Réinitialiser l'année de circulation si l'année de fabrication change
   useEffect(() => {
@@ -771,9 +743,8 @@ export default function ClientSimpleForm({
             setPlaquesSuggestions(response.data || []);
             setShowPlaquesSuggestions(true);
 
-            // Vérifier si la plaque exacte est disponible
             const plaqueExacte = response.data?.find(
-              (plaque) => plaque.numero_plaque === formData.numeroPlaque
+              (plaque: PlaqueResult) => plaque.numero_plaque === formData.numeroPlaque
             );
             setPlaqueDisponible(
               plaqueExacte ? plaqueExacte.statut === "0" : false
@@ -795,6 +766,125 @@ export default function ClientSimpleForm({
     return () => clearTimeout(timeoutId);
   }, [formData.numeroPlaque, utilisateur]);
 
+  // Recherche automatique du particulier quand le téléphone change
+  useEffect(() => {
+    if (telephoneTimerRef.current) {
+      clearTimeout(telephoneTimerRef.current);
+    }
+
+    if (formData.telephone.length >= 8) {
+      telephoneTimerRef.current = setTimeout(async () => {
+        try {
+          const response = await verifierParticulierParTelephone(formData.telephone);
+          if (response.status === "success" && response.data) {
+            // Vérifier si data est un objet (particulier) et non un tableau
+            const particulier = response.data;
+            if (particulier && typeof particulier === 'object' && !Array.isArray(particulier)) {
+              setFormData(prev => ({
+                ...prev,
+                nom: (particulier as any).nom || prev.nom,
+                prenom: (particulier as any).prenom || prev.prenom,
+                email: (particulier as any).email || prev.email,
+                adresse: (particulier as any).adresse || prev.adresse,
+                nif: (particulier as any).nif || prev.nif,
+                reduction_type: (particulier as any).reduction_type || prev.reduction_type,
+                reduction_valeur: (particulier as any).reduction_valeur?.toString() || prev.reduction_valeur,
+              }));
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche du particulier:", error);
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (telephoneTimerRef.current) {
+        clearTimeout(telephoneTimerRef.current);
+      }
+    };
+  }, [formData.telephone]);
+
+  // Recherche automatique des modèles quand le modèle change
+  useEffect(() => {
+    if (modeleTimerRef.current) {
+      clearTimeout(modeleTimerRef.current);
+    }
+
+    if (formData.modele.length >= 2 && selectedMarqueId) {
+      modeleTimerRef.current = setTimeout(async () => {
+        setIsSearchingModeles(true);
+        try {
+          const response = await rechercherModeles(selectedMarqueId, formData.modele);
+          if (response.status === "success") {
+            // Vérifier que data est un tableau
+            const data = response.data;
+            if (Array.isArray(data)) {
+              setModelesSuggestions(data);
+            } else {
+              setModelesSuggestions([]);
+            }
+            setShowModelesSuggestions(true);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des modèles:", error);
+          setModelesSuggestions([]);
+        } finally {
+          setIsSearchingModeles(false);
+        }
+      }, 300);
+    } else {
+      setModelesSuggestions([]);
+      setShowModelesSuggestions(false);
+    }
+
+    return () => {
+      if (modeleTimerRef.current) {
+        clearTimeout(modeleTimerRef.current);
+      }
+    };
+  }, [formData.modele, selectedMarqueId]);
+
+  // Recherche automatique des puissances quand la puissance change
+  useEffect(() => {
+    if (puissanceTimerRef.current) {
+      clearTimeout(puissanceTimerRef.current);
+    }
+
+    if (formData.puissanceFiscal.length >= 1 && formData.typeEngin) {
+      puissanceTimerRef.current = setTimeout(async () => {
+        setIsSearchingPuissances(true);
+        try {
+          const response = await rechercherPuissances(formData.typeEngin, formData.puissanceFiscal);
+          if (response.status === "success") {
+            // Vérifier que data est un tableau
+            const data = response.data;
+            if (Array.isArray(data)) {
+              setPuissancesSuggestions(data);
+            } else {
+              setPuissancesSuggestions([]);
+            }
+            setShowPuissancesSuggestions(true);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des puissances:", error);
+          setPuissancesSuggestions([]);
+        } finally {
+          setIsSearchingPuissances(false);
+        }
+      }, 300);
+    } else {
+      setPuissancesSuggestions([]);
+      setShowPuissancesSuggestions(false);
+    }
+
+    return () => {
+      if (puissanceTimerRef.current) {
+        clearTimeout(puissanceTimerRef.current);
+      }
+    };
+  }, [formData.puissanceFiscal, formData.typeEngin]);
+
   // Récupérer automatiquement une plaque disponible au chargement
   useEffect(() => {
     const getPlaqueAutomatique = async () => {
@@ -804,13 +894,13 @@ export default function ClientSimpleForm({
           if (
             response.status === "success" &&
             response.data &&
-            response.data.numeroPlaque
+            (response.data as any).numeroPlaque
           ) {
             setFormData((prev) => ({
               ...prev,
-              numeroPlaque: response.data!.numeroPlaque,
+              numeroPlaque: (response.data as any).numeroPlaque,
             }));
-            setSerieItemId(response.data.serie_item_id || null);
+            setSerieItemId((response.data as any).serie_item_id || null);
             setPlaqueDisponible(true);
           }
         } catch (error) {
@@ -828,7 +918,7 @@ export default function ClientSimpleForm({
   const genererNIF = () => {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substr(2, 9).toUpperCase();
-    return `NIF_${timestamp}_${random}`;
+    return ``;
   };
 
   const resetForm = () => {
@@ -851,12 +941,17 @@ export default function ClientSimpleForm({
       numeroChassis: "",
       numeroMoteur: "",
       numeroPlaque: "",
+      reduction_type: '',
+      reduction_valeur: "",
     });
     setErrors({});
     setPlaqueDisponible(null);
     setSerieItemId(null);
     setShowPrint(false);
     setShowSuccess(false);
+    setSelectedMarqueId(null);
+    setModelesSuggestions([]);
+    setPuissancesSuggestions([]);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -867,10 +962,14 @@ export default function ClientSimpleForm({
 
     // Réinitialiser le modèle si la marque change
     if (field === "marque") {
+      const marqueTrouvee = marques.find(m => m.libelle === value);
+      setSelectedMarqueId(marqueTrouvee?.id || null);
       setFormData((prev) => ({
         ...prev,
         modele: "",
       }));
+      setModelesSuggestions([]);
+      setShowModelesSuggestions(false);
     }
 
     if (errors[field]) {
@@ -890,6 +989,16 @@ export default function ClientSimpleForm({
       setPlaqueDisponible(false);
     }
     setShowPlaquesSuggestions(false);
+  };
+
+  const handleModeleSelect = (modele: any) => {
+    setFormData((prev) => ({ ...prev, modele: modele.libelle }));
+    setShowModelesSuggestions(false);
+  };
+
+  const handlePuissanceSelect = (puissance: any) => {
+    setFormData((prev) => ({ ...prev, puissanceFiscal: puissance.libelle }));
+    setShowPuissancesSuggestions(false);
   };
 
   const validateForm = (): boolean => {
@@ -930,6 +1039,17 @@ export default function ClientSimpleForm({
       }
     }
 
+    // Validation de la réduction
+    if (formData.reduction_type && formData.reduction_valeur) {
+      const valeur = parseFloat(formData.reduction_valeur);
+      if (isNaN(valeur) || valeur < 0) {
+        newErrors.reduction_valeur = "La valeur de réduction doit être un nombre positif";
+      }
+      if (formData.reduction_type === 'pourcentage' && valeur > 100) {
+        newErrors.reduction_valeur = "Le pourcentage ne peut pas dépasser 100%";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -941,7 +1061,6 @@ export default function ClientSimpleForm({
       return;
     }
 
-    // Vérifier que la plaque est disponible
     if (plaqueDisponible === false) {
       alert(
         "La plaque sélectionnée n'est pas disponible. Veuillez choisir une autre plaque."
@@ -952,8 +1071,7 @@ export default function ClientSimpleForm({
     setIsSubmitting(true);
 
     try {
-      // Générer le NIF automatiquement
-      const nif = genererNIF();
+      const nif = formData.nif || genererNIF();
       setFormData((prev) => ({ ...prev, nif }));
 
       setShowConfirmation(true);
@@ -979,13 +1097,15 @@ export default function ClientSimpleForm({
     setIsSubmitting(true);
 
     try {
-      // Préparer les données pour l'API
       const particulierData: ParticulierData = {
         nom: formData.nom,
         prenom: formData.prenom,
         telephone: formData.telephone,
         email: formData.email,
         adresse: formData.adresse,
+        nif: formData.nif,
+        reduction_type: formData.reduction_type || undefined,
+        reduction_valeur: formData.reduction_valeur ? parseFloat(formData.reduction_valeur) : undefined,
       };
 
       const enginData: EnginData = {
@@ -1002,13 +1122,11 @@ export default function ClientSimpleForm({
         numeroMoteur: formData.numeroMoteur,
       };
 
-      // Inclure le serie_item_id dans les données pour le backend
       const dataWithSerieItem = {
         ...paiementData,
         serie_item_id: serieItemId,
       };
 
-      // Soumettre l'immatriculation
       const response = await soumettreImmatriculation(
         impotId,
         particulierData,
@@ -1018,7 +1136,6 @@ export default function ClientSimpleForm({
       );
 
       if (response.status === "success" && response.data) {
-        // Préparer les données complètes pour l'impression
         const completeData = {
           ...response.data,
           nif: formData.nif,
@@ -1038,7 +1155,9 @@ export default function ClientSimpleForm({
           adresse: formData.adresse,
           telephone: formData.telephone,
           montant_francs: montantEnFrancs,
-          paiement_id: response.data.paiement_id.toString(),
+          paiement_id: (response.data as any).paiement_id.toString(),
+          reduction_type: formData.reduction_type,
+          reduction_valeur: formData.reduction_valeur,
         };
 
         setSuccessData(completeData);
@@ -1083,17 +1202,6 @@ export default function ClientSimpleForm({
     return anneeOptions.filter((year) => parseInt(year) >= anneeFab);
   };
 
-  // Obtenir les modèles pour la marque sélectionnée
-  const getModelesPourMarque = () => {
-    if (!formData.marque) return [];
-
-    const marqueTrouvee = marquesAvecModeles.find(
-      (item) => item.marque.libelle === formData.marque
-    );
-
-    return marqueTrouvee ? marqueTrouvee.modeles : [];
-  };
-
   const isSubmitDisabled = isSubmitting || plaqueDisponible === false;
 
   return (
@@ -1116,6 +1224,32 @@ export default function ClientSimpleForm({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Téléphone en premier */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Numéro de téléphone <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                value={formData.telephone}
+                onChange={(e) => handleInputChange("telephone", e.target.value)}
+                placeholder="Ex: +243 00 00 00 000"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                  errors.telephone
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-gray-200 focus:border-blue-500"
+                }`}
+              />
+              {errors.telephone && (
+                <p className="text-red-600 text-sm mt-2 font-medium">
+                  {errors.telephone}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Les informations seront automatiquement remplies si le client existe déjà
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Nom <span className="text-red-500">*</span>
@@ -1156,28 +1290,6 @@ export default function ClientSimpleForm({
               {errors.prenom && (
                 <p className="text-red-600 text-sm mt-2 font-medium">
                   {errors.prenom}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Numéro de téléphone <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={formData.telephone}
-                onChange={(e) => handleInputChange("telephone", e.target.value)}
-                placeholder="Ex: +243 00 00 00 000"
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                  errors.telephone
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-blue-500"
-                }`}
-              />
-              {errors.telephone && (
-                <p className="text-red-600 text-sm mt-2 font-medium">
-                  {errors.telephone}
                 </p>
               )}
             </div>
@@ -1226,21 +1338,68 @@ export default function ClientSimpleForm({
               )}
             </div>
 
+            {/* Champ Réduction */}
+            <div className="md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
+                    Type de réduction
+                  </label>
+                  <select
+                    value={formData.reduction_type}
+                    onChange={(e) => handleInputChange("reduction_type", e.target.value as any)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  >
+                    <option value="">Aucune réduction</option>
+                    <option value="pourcentage">Pourcentage</option>
+                    <option value="montant_fixe">Montant fixe</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
+                    Valeur de réduction
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    min="0"
+                    max={formData.reduction_type === 'pourcentage' ? '100' : undefined}
+                    value={formData.reduction_valeur}
+                    onChange={(e) => handleInputChange("reduction_valeur", e.target.value)}
+                    placeholder={formData.reduction_type === 'pourcentage' ? 'Ex: 10.5000' : 'Ex: 5.0000'}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                      errors.reduction_valeur
+                        ? "border-red-300 focus:border-red-500"
+                        : "border-gray-200 focus:border-blue-500"
+                    }`}
+                    disabled={!formData.reduction_type}
+                  />
+                  {errors.reduction_valeur && (
+                    <p className="text-red-600 text-sm mt-2 font-medium">
+                      {errors.reduction_valeur}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.reduction_type === 'pourcentage' 
+                      ? 'Maximum 4 chiffres après la virgule (ex: 15.7500)' 
+                      : 'Montant fixe en dollars (ex: 5.0000)'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Numéro d'Identification Fiscale (NIF)
               </label>
               <input
                 type="text"
-                value={
-                  formData.nif || "Généré automatiquement après validation"
-                }
+                value={formData.nif || "Généré automatiquement après validation"}
                 readOnly
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
               />
               <p className="text-sm text-gray-500 mt-2">
-                Le NIF sera généré automatiquement lors de la validation du
-                formulaire
+                Le NIF sera généré automatiquement lors de la validation du formulaire
               </p>
             </div>
           </div>
@@ -1301,7 +1460,7 @@ export default function ClientSimpleForm({
               )}
             </div>
 
-            {/* Marque et Modèle */}
+            {/* Marque */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Marque <span className="text-red-500">*</span>
@@ -1322,26 +1481,11 @@ export default function ClientSimpleForm({
                       ? "Sélectionnez d'abord le type d'engin"
                       : "Sélectionner la marque"}
                   </option>
-                  {marquesAvecModeles
-                    .filter(
-                      (item) =>
-                        item.marque.type_engin_libelle === formData.typeEngin
-                    )
-                    .map((item) => (
-                      <optgroup
-                        key={item.marque.id}
-                        label={item.marque.libelle}
-                      >
-                        {item.modeles.map((modele) => (
-                          <option
-                            key={modele.id}
-                            value={`${item.marque.libelle}|${modele.libelle}`}
-                          >
-                            {modele.libelle}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ))}
+                  {filteredMarques.map((marque) => (
+                    <option key={marque.id} value={marque.libelle}>
+                      {marque.libelle}
+                    </option>
+                  ))}
                 </select>
                 {loading.marques && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -1354,17 +1498,110 @@ export default function ClientSimpleForm({
                   {errors.marque}
                 </p>
               )}
-              {formData.typeEngin &&
-                marquesAvecModeles.filter(
-                  (item) =>
-                    item.marque.type_engin_libelle === formData.typeEngin
-                ).length === 0 &&
-                !loading.marques && (
-                  <p className="text-amber-600 text-sm mt-2">
-                    Aucune marque avec modèles disponible pour ce type d'engin
-                  </p>
-                )}
+              {formData.typeEngin && filteredMarques.length === 0 && !loading.marques && (
+                <p className="text-amber-600 text-sm mt-2">
+                  Aucune marque disponible pour ce type d'engin
+                </p>
+              )}
             </div>
+
+            {/* Modèle (auto-complétion) */}
+            {formData.marque && (
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Modèle
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.modele}
+                    onChange={(e) => handleInputChange("modele", e.target.value)}
+                    placeholder="Saisissez le modèle (auto-complétion)"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {isSearchingModeles ? (
+                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                    ) : (
+                      <Search className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Suggestions de modèles */}
+                {showModelesSuggestions && modelesSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {modelesSuggestions.map((modele) => (
+                      <div
+                        key={modele.id}
+                        onClick={() => handleModeleSelect(modele)}
+                        className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                      >
+                        <div className="font-medium">{modele.libelle}</div>
+                        {modele.description && (
+                          <p className="text-xs text-gray-500 mt-1 truncate">{modele.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {showModelesSuggestions && modelesSuggestions.length === 0 && formData.modele.length >= 2 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
+                    Aucun modèle trouvé. Le modèle sera créé automatiquement lors de la soumission.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Puissance fiscale (auto-complétion) */}
+            {formData.typeEngin && (
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Puissance fiscale
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.puissanceFiscal}
+                    onChange={(e) => handleInputChange("puissanceFiscal", e.target.value)}
+                    placeholder="Ex: 8CV, 10CV (auto-complétion)"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {isSearchingPuissances ? (
+                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                    ) : (
+                      <Search className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Suggestions de puissances */}
+                {showPuissancesSuggestions && puissancesSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {puissancesSuggestions.map((puissance) => (
+                      <div
+                        key={puissance.id}
+                        onClick={() => handlePuissanceSelect(puissance)}
+                        className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                      >
+                        <div className="font-medium">{puissance.libelle}</div>
+                        <div className="text-xs text-gray-500">
+                          {puissance.valeur} CV - {puissance.type_engin_libelle}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {showPuissancesSuggestions && puissancesSuggestions.length === 0 && formData.puissanceFiscal.length >= 1 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
+                    Aucune puissance trouvée. La puissance sera créée automatiquement lors de la soumission.
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Numéro de plaque */}
             <div className="relative">
@@ -1398,7 +1635,6 @@ export default function ClientSimpleForm({
                 </div>
               </div>
 
-              {/* Indicateur de disponibilité */}
               {formData.numeroPlaque && plaqueDisponible !== null && (
                 <p
                   className={`text-sm mt-2 font-medium ${
@@ -1417,7 +1653,6 @@ export default function ClientSimpleForm({
                 </p>
               )}
 
-              {/* Suggestions de plaques */}
               {showPlaquesSuggestions && plaquesSuggestions.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                   {plaquesSuggestions.map((plaque) => (
@@ -1574,46 +1809,6 @@ export default function ClientSimpleForm({
               </div>
             </div>
 
-            {/* Puissance Fiscal */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Puissance Fiscal
-              </label>
-              <div className="relative">
-                <select
-                  value={formData.puissanceFiscal}
-                  onChange={(e) =>
-                    handleInputChange("puissanceFiscal", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  disabled={loading.puissances || !formData.typeEngin}
-                >
-                  <option value="">
-                    {!formData.typeEngin
-                      ? "Sélectionnez d'abord le type d'engin"
-                      : "Sélectionner la puissance"}
-                  </option>
-                  {filteredPuissances.map((puissance) => (
-                    <option key={puissance.id} value={puissance.libelle}>
-                      {puissance.libelle} ({puissance.valeur} CV)
-                    </option>
-                  ))}
-                </select>
-                {loading.puissances && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader className="w-4 h-4 animate-spin text-gray-400" />
-                  </div>
-                )}
-              </div>
-              {formData.typeEngin &&
-                filteredPuissances.length === 0 &&
-                !loading.puissances && (
-                  <p className="text-amber-600 text-sm mt-2">
-                    Aucune puissance disponible pour ce type d'engin
-                  </p>
-                )}
-            </div>
-
             {/* Usage */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -1705,6 +1900,13 @@ export default function ClientSimpleForm({
               {tauxActif && (
                 <div className="text-sm text-blue-500 mt-2">
                   Taux: 1$ = {tauxActif.valeur.toLocaleString("fr-FR")} CDF
+                </div>
+              )}
+              {formData.reduction_type && formData.reduction_valeur && (
+                <div className="text-sm text-green-600 mt-2 font-medium">
+                  Réduction appliquée: {formData.reduction_type === 'pourcentage' 
+                    ? `${formData.reduction_valeur}%` 
+                    : `${formData.reduction_valeur} $`}
                 </div>
               )}
             </div>

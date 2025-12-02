@@ -210,7 +210,7 @@ export default function ReproductionPrint({
                   <tr style="position: relative; top: 8px;">
                     <th></th>
                     <td style="position: relative; top: 8px;text-transform: uppercase;">${
-                      data.nif || ""
+                      data.nif || "-"
                     }</td>
                   </tr>
                   <tr>

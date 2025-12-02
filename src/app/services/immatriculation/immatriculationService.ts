@@ -8,6 +8,9 @@ export interface ParticulierData {
   telephone: string;
   email?: string;
   adresse: string;
+  nif?: string;
+  reduction_type?: 'pourcentage' | 'montant_fixe';
+  reduction_valeur?: number;
 }
 
 export interface EnginData {
@@ -30,7 +33,7 @@ export interface PaiementData {
   numeroTransaction?: string;
   numeroCheque?: string;
   banque?: string;
-  serie_item_id?: number | null; // Accepter null
+  serie_item_id?: number | null;
 }
 
 export interface ImmatriculationResponse {
@@ -43,7 +46,7 @@ export interface ImmatriculationResponse {
     engin: any;
     paiement: any;
     facture?: any;
-    paiement_id: string; // MAINTENANT DISPONIBLE
+    paiement_id: string;
     reduction_appliquee?: {
       type: string;
       valeur: number;
@@ -57,6 +60,124 @@ export interface ImmatriculationResponse {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
+
+/**
+ * Vérifie si un particulier existe par son numéro de téléphone
+ */
+export const verifierParticulierParTelephone = async (
+  telephone: string
+): Promise<ImmatriculationResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("telephone", telephone);
+
+    const response = await fetch(
+      `${API_BASE_URL}/immatriculation/verifier_particulier.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la vérification du particulier",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Verifier particulier error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification du particulier",
+    };
+  }
+};
+
+/**
+ * Recherche des modèles par marque et terme
+ */
+export const rechercherModeles = async (
+  marqueId: number,
+  searchTerm: string
+): Promise<ImmatriculationResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("marque_id", marqueId.toString());
+    formData.append("search_term", searchTerm);
+
+    const response = await fetch(
+      `${API_BASE_URL}/marques-engins/rechercher_modeles.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des modèles",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Rechercher modeles error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des modèles",
+    };
+  }
+};
+
+/**
+ * Recherche des puissances fiscales par terme
+ */
+export const rechercherPuissances = async (
+  typeEngin: string,
+  searchTerm: string
+): Promise<ImmatriculationResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("type_engin", typeEngin);
+    formData.append("search_term", searchTerm);
+
+    const response = await fetch(
+      `${API_BASE_URL}/puissances-fiscales/rechercher_puissances.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des puissances",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Rechercher puissances error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des puissances",
+    };
+  }
+};
 
 /**
  * Soumet une demande d'immatriculation complète
@@ -82,10 +203,18 @@ export const soumettreImmatriculation = async (
     formData.append("telephone", particulierData.telephone);
     formData.append("email", particulierData.email || "");
     formData.append("adresse", particulierData.adresse);
+    formData.append("nif", particulierData.nif || "");
+    
+    // Données de réduction
+    if (particulierData.reduction_type && particulierData.reduction_valeur) {
+      formData.append("reduction_type", particulierData.reduction_type);
+      formData.append("reduction_valeur", particulierData.reduction_valeur.toString());
+    }
 
     // Données de l'engin
     formData.append("type_engin", enginData.typeEngin);
     formData.append("marque", enginData.marque);
+    formData.append("modele", enginData.modele);
     formData.append("energie", enginData.energie);
     formData.append("annee_fabrication", enginData.anneeFabrication);
     formData.append("annee_circulation", enginData.anneeCirculation);

@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Save, User, Car, Calculator, X, Search } from "lucide-react";
+import { Save, User, Car, Calculator, X, Search, Percent, DollarSign } from "lucide-react";
 import {
   soumettreCommandePlaques,
   verifierStockDisponible,
   rechercherPlaquesDisponibles,
   verifierSequencePlaques,
+  rechercherAssujettiParTelephone, // Nouvelle méthode à créer
 } from "@/services/client-simple/clientSimpleService";
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import FactureA4 from "./FactureA4";
@@ -18,6 +19,9 @@ interface FormData {
   adresse: string;
   nombrePlaques: string;
   numeroPlaqueDebut: string;
+  reductionType: "pourcentage" | "montant_fixe" | "";
+  reductionValeur: string;
+  nif: string;
 }
 
 interface Utilisateur {
@@ -67,6 +71,18 @@ interface FactureData {
   reduction_type?: string;
   reduction_valeur?: number;
   montant_francs?: string;
+  nif?: string;
+}
+
+interface AssujettiInfo {
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  adresse: string;
+  nif: string;
+  reduction_type: "pourcentage" | "montant_fixe" | null;
+  reduction_valeur: number;
 }
 
 export default function ClientSimpleForm({
@@ -81,6 +97,9 @@ export default function ClientSimpleForm({
     adresse: "",
     nombrePlaques: "1",
     numeroPlaqueDebut: "",
+    reductionType: "",
+    reductionValeur: "",
+    nif: "",
   });
 
   // État pour le taux
@@ -104,21 +123,39 @@ export default function ClientSimpleForm({
   const [sequenceValide, setSequenceValide] = useState(false);
   const [messageSequence, setMessageSequence] = useState("");
   const [sequencePlaques, setSequencePlaques] = useState<string[]>([]);
+  const [rechercheAssujettiEnCours, setRechercheAssujettiEnCours] = useState(false);
   const rechercheTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rechercheAssujettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculs avec taux
   const montantUnitaire = utilisateur?.formule
     ? parseFloat(utilisateur.formule)
     : 32;
   const nombrePlaques = parseInt(formData.nombrePlaques) || 1;
-  const montantTotal = montantUnitaire * nombrePlaques;
+  
+  // Calcul de la réduction
+  const reductionValeur = parseFloat(formData.reductionValeur) || 0;
+  let montantInitial = montantUnitaire * nombrePlaques;
+  let montantReduit = montantInitial;
+  let reductionMontant = 0;
+
+  if (formData.reductionType === "pourcentage" && reductionValeur > 0) {
+    reductionMontant = (montantInitial * reductionValeur) / 100;
+    montantReduit = montantInitial - reductionMontant;
+  } else if (formData.reductionType === "montant_fixe" && reductionValeur > 0) {
+    reductionMontant = reductionValeur * nombrePlaques;
+    montantReduit = Math.max(0, montantInitial - reductionMontant);
+  }
   
   // Calcul des montants en francs
   const montantFrancs = tauxActif 
-    ? (montantTotal * tauxActif.valeur).toLocaleString('fr-FR')
+    ? (montantReduit * tauxActif.valeur).toLocaleString('fr-FR')
+    : "Calcul en cours...";
+  const montantInitialFrancs = tauxActif 
+    ? (montantInitial * tauxActif.valeur).toLocaleString('fr-FR')
     : "Calcul en cours...";
 
-  const montantAPayer = `${montantTotal} $`;
+  const montantAPayer = `${montantReduit.toFixed(2)} $`;
   const montantEnFrancs = `${montantFrancs} CDF`;
   const formuleCalcul = utilisateur?.formule
     ? `Montant = ${utilisateur.formule} × ${nombrePlaques} plaque(s)`
@@ -198,6 +235,46 @@ export default function ClientSimpleForm({
     }
   }, [formData.numeroPlaqueDebut, formData.nombrePlaques]);
 
+  // Recherche de l'assujetti par téléphone
+  useEffect(() => {
+    if (rechercheAssujettiTimeoutRef.current) {
+      clearTimeout(rechercheAssujettiTimeoutRef.current);
+    }
+
+    if (formData.telephone.length >= 8) {
+      setRechercheAssujettiEnCours(true);
+      rechercheAssujettiTimeoutRef.current = setTimeout(async () => {
+        try {
+          const result = await rechercherAssujettiParTelephone(formData.telephone, utilisateur);
+          
+          if (result.status === "success" && result.data?.assujetti) {
+            const assujetti = result.data.assujetti;
+            setFormData(prev => ({
+              ...prev,
+              nom: assujetti.nom || "",
+              prenom: assujetti.prenom || "",
+              email: assujetti.email || "",
+              adresse: assujetti.rue || "",
+              nif: assujetti.nif || "",
+              reductionType: assujetti.reduction_type || "",
+              reductionValeur: assujetti.reduction_valeur?.toString() || "",
+            }));
+          }
+        } catch (error) {
+          console.error("Erreur recherche assujetti:", error);
+        } finally {
+          setRechercheAssujettiEnCours(false);
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (rechercheAssujettiTimeoutRef.current) {
+        clearTimeout(rechercheAssujettiTimeoutRef.current);
+      }
+    };
+  }, [formData.telephone, utilisateur]);
+
   const verifierSequenceDisponible = async () => {
     if (!formData.numeroPlaqueDebut || !nombrePlaques) return;
 
@@ -263,6 +340,17 @@ export default function ClientSimpleForm({
       newErrors.nombrePlaques = "Le nombre de plaques doit être au moins 1";
     }
 
+    // Validation de la réduction
+    if (formData.reductionType && formData.reductionValeur) {
+      const valeur = parseFloat(formData.reductionValeur);
+      if (isNaN(valeur) || valeur < 0) {
+        newErrors.reductionValeur = "Valeur de réduction invalide";
+      }
+      if (formData.reductionType === "pourcentage" && valeur > 100) {
+        newErrors.reductionValeur = "Le pourcentage ne peut dépasser 100%";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0 && sequenceValide;
   };
@@ -305,6 +393,14 @@ export default function ClientSimpleForm({
     setIsSubmitting(true);
 
     try {
+      // Préparer les données de réduction
+      const reductionData = formData.reductionType && formData.reductionValeur
+        ? {
+            reduction_type: formData.reductionType,
+            reduction_valeur: parseFloat(formData.reductionValeur),
+          }
+        : {};
+
       const result = await soumettreCommandePlaques(
         impotId,
         {
@@ -313,6 +409,8 @@ export default function ClientSimpleForm({
           telephone: formData.telephone,
           email: formData.email,
           adresse: formData.adresse,
+          nif: formData.nif,
+          ...reductionData, // Inclure les données de réduction
         },
         {
           nombrePlaques: nombrePlaques,
@@ -332,8 +430,8 @@ export default function ClientSimpleForm({
           telephone: formData.telephone,
           email: formData.email,
           adresse: formData.adresse,
-          montant: result.data?.reduction_appliquee?.montant_final || montantTotal,
-          montant_initial: montantTotal,
+          montant: montantReduit,
+          montant_initial: montantInitial,
           mode_paiement: paiementData.modePaiement,
           operateur: paiementData.operateur || "",
           numero_transaction: paiementData.numeroTransaction || "",
@@ -342,9 +440,10 @@ export default function ClientSimpleForm({
           site_nom: utilisateur.site_nom,
           caissier: utilisateur.nom_complet,
           numeros_plaques: result.data?.numeroPlaques || [],
-          reduction_type: result.data?.reduction_appliquee?.type,
-          reduction_valeur: result.data?.reduction_appliquee?.valeur,
+          reduction_type: formData.reductionType || undefined,
+          reduction_valeur: reductionValeur || undefined,
           montant_francs: montantEnFrancs,
+          nif: formData.nif || undefined,
         };
 
         setFactureData(facture);
@@ -372,6 +471,9 @@ export default function ClientSimpleForm({
       adresse: "",
       nombrePlaques: "1",
       numeroPlaqueDebut: "",
+      reductionType: "",
+      reductionValeur: "",
+      nif: "",
     });
     setSequenceValide(false);
     setMessageSequence("");
@@ -398,6 +500,35 @@ export default function ClientSimpleForm({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* TÉLÉPHONE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Numéro de téléphone <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={formData.telephone}
+                  onChange={(e) => handleInputChange("telephone", e.target.value)}
+                  placeholder="Entrez votre numéro de téléphone"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.telephone ? "border-red-300" : "border-gray-300"
+                  }`}
+                />
+                {rechercheAssujettiEnCours && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              {errors.telephone && (
+                <p className="text-red-600 text-sm mt-1">{errors.telephone}</p>
+              )}
+              <p className="text-gray-500 text-xs mt-1">
+                Saisir pour rechercher automatiquement les informations
+              </p>
+            </div>
+
             {/* NOM */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -436,25 +567,6 @@ export default function ClientSimpleForm({
               )}
             </div>
 
-            {/* TÉLÉPHONE */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Numéro de téléphone <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={formData.telephone}
-                onChange={(e) => handleInputChange("telephone", e.target.value)}
-                placeholder="Entrez votre numéro de téléphone"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.telephone ? "border-red-300" : "border-gray-300"
-                }`}
-              />
-              {errors.telephone && (
-                <p className="text-red-600 text-sm mt-1">{errors.telephone}</p>
-              )}
-            </div>
-
             {/* EMAIL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -475,7 +587,7 @@ export default function ClientSimpleForm({
             </div>
 
             {/* ADRESSE */}
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Adresse physique <span className="text-red-500">*</span>
               </label>
@@ -492,10 +604,114 @@ export default function ClientSimpleForm({
                 <p className="text-red-600 text-sm mt-1">{errors.adresse}</p>
               )}
             </div>
+
+            {/* NIF */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                NIF
+              </label>
+              <input
+                type="text"
+                value={formData.nif}
+                onChange={(e) => handleInputChange("nif", e.target.value)}
+                placeholder="NIF de l'assujetti"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.nif ? "border-red-300" : "border-gray-300"
+                }`}
+              />
+              {errors.nif && (
+                <p className="text-red-600 text-sm mt-1">{errors.nif}</p>
+              )}
+            </div>
+
+            {/* RÉDUCTION - TYPE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type de réduction
+              </label>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange("reductionType", "pourcentage")}
+                  className={`flex-1 px-4 py-2 border rounded-lg flex items-center justify-center space-x-2 ${
+                    formData.reductionType === "pourcentage"
+                      ? "bg-blue-100 border-blue-500 text-blue-700"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <Percent className="w-4 h-4" />
+                  <span>Pourcentage</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange("reductionType", "montant_fixe")}
+                  className={`flex-1 px-4 py-2 border rounded-lg flex items-center justify-center space-x-2 ${
+                    formData.reductionType === "montant_fixe"
+                      ? "bg-green-100 border-green-500 text-green-700"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span>Montant fixe</span>
+                </button>
+              </div>
+            </div>
+
+            {/* RÉDUCTION - VALEUR */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Valeur de réduction {formData.reductionType === "pourcentage" ? "(%)" : "($)"}
+              </label>
+              <input
+                type="number"
+                step={formData.reductionType === "pourcentage" ? "0.0001" : "0.01"}
+                min="0"
+                max={formData.reductionType === "pourcentage" ? "100" : undefined}
+                value={formData.reductionValeur}
+                onChange={(e) => handleInputChange("reductionValeur", e.target.value)}
+                placeholder={formData.reductionType === "pourcentage" ? "Ex: 10.0000" : "Ex: 5.00"}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.reductionValeur ? "border-red-300" : "border-gray-300"
+                }`}
+                disabled={!formData.reductionType}
+              />
+              {errors.reductionValeur && (
+                <p className="text-red-600 text-sm mt-1">{errors.reductionValeur}</p>
+              )}
+              {formData.reductionType && (
+                <p className="text-gray-500 text-xs mt-1">
+                  {formData.reductionType === "pourcentage" 
+                    ? "4 chiffres après la virgule maximum" 
+                    : "Montant fixe par plaque"}
+                </p>
+              )}
+            </div>
           </div>
+
+          {/* Aperçu de la réduction */}
+          {formData.reductionType && formData.reductionValeur && reductionMontant > 0 && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="font-medium text-blue-800">Réduction appliquée:</span>
+                  <span className="ml-2 text-blue-600">
+                    {formData.reductionType === "pourcentage" 
+                      ? `${reductionValeur}%` 
+                      : `${reductionValeur}$ par plaque`}
+                  </span>
+                </div>
+                <div className="text-lg font-bold text-blue-800">
+                  -{reductionMontant.toFixed(2)} $
+                </div>
+              </div>
+              <div className="mt-1 text-sm text-blue-600">
+                Montant initial: {montantInitial.toFixed(2)} $ → Montant final: {montantReduit.toFixed(2)} $
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* SECTION PLAQUES */}
+        {/* SECTION PLAQUES (inchangée) */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-3 mb-6">
             <div className="bg-green-100 p-2 rounded-lg">
@@ -635,34 +851,51 @@ export default function ClientSimpleForm({
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
-            <div>
-              <div className="text-sm text-blue-600 font-medium">
-                Montant à payer
-              </div>
-              <div className="text-2xl font-bold text-blue-800">
-                {montantAPayer}
-              </div>
-              <div className="text-lg font-semibold text-blue-700 mt-2">
-                {montantEnFrancs}
-              </div>
-              {tauxActif && (
-                <div className="text-sm text-blue-500 mt-2">
-                  Taux: 1$ = {tauxActif.valeur.toLocaleString('fr-FR')} CDF
+          <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="text-sm text-blue-600 font-medium mb-2">
+                  Détails du calcul
                 </div>
-              )}
-              <div className="text-xs text-blue-500 mt-1">{formuleCalcul}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-blue-600 font-medium">
-                Délai d'accord
-              </div>
-              <div className="text-xl font-bold text-green-600">Immédiat</div>
-              {utilisateur && (
-                <div className="text-sm text-blue-500 mt-2">
-                  Site: {utilisateur.site_nom}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Montant initial:</span>
+                    <span className="font-medium">{montantInitial.toFixed(2)} $</span>
+                  </div>
+                  {reductionMontant > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-700">Réduction:</span>
+                      <span className="font-medium text-red-600">-{reductionMontant.toFixed(2)} $</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-bold text-blue-800 border-t pt-2">
+                    <span>Montant final:</span>
+                    <span>{montantAPayer}</span>
+                  </div>
                 </div>
-              )}
+                {tauxActif && (
+                  <div className="text-sm text-blue-500 mt-4">
+                    Taux: 1$ = {tauxActif.valeur.toLocaleString('fr-FR')} CDF
+                  </div>
+                )}
+                <div className="text-xs text-blue-500 mt-1">{formuleCalcul}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-blue-600 font-medium">
+                  Montant en Francs
+                </div>
+                <div className="text-2xl font-bold text-blue-800 mt-2">
+                  {montantEnFrancs}
+                </div>
+                <div className="text-sm text-gray-600 mt-4">
+                  Délai d'accord: <span className="font-bold text-green-600">Immédiat</span>
+                </div>
+                {utilisateur && (
+                  <div className="text-sm text-blue-500 mt-2">
+                    Site: {utilisateur.site_nom}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -722,6 +955,9 @@ export default function ClientSimpleForm({
                     <strong>Téléphone:</strong> {formData.telephone}
                   </div>
                   <div>
+                    <strong>NIF:</strong> {formData.nif || 'Non renseigné'}
+                  </div>
+                  <div>
                     <strong>Plaque de début:</strong> {formData.numeroPlaqueDebut}
                   </div>
                   <div>
@@ -730,6 +966,11 @@ export default function ClientSimpleForm({
                   <div>
                     <strong>Séquence:</strong> {sequencePlaques.join(', ')}
                   </div>
+                  {reductionMontant > 0 && (
+                    <div>
+                      <strong>Réduction:</strong> -{reductionMontant.toFixed(2)} $
+                    </div>
+                  )}
                   <div>
                     <strong>Montant total:</strong> {montantAPayer}
                   </div>
@@ -787,7 +1028,7 @@ export default function ClientSimpleForm({
   );
 }
 
-// Composant Modal de Paiement avec taux
+// Composant Modal de Paiement (inchangé)
 interface ModalPaiementProps {
   montant: string;
   montantEnFrancs: string;

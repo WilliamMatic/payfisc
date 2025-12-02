@@ -20,7 +20,9 @@ interface PrintData {
   puissance_fiscal: string;
   energie: string;
   paiement_id?: string;
+  modele?: string; // ← Ajouter cette ligne
 }
+
 
 interface ImmatriculationPrintProps {
   data: PrintData;
@@ -232,7 +234,7 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                 <tbody>
                   <tr style="position: relative; top: -11px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.marque}</td>
+                    <td style="text-transform: uppercase;">${data.modele ? `${data.marque} ${data.modele}` : data.marque}</td>
                   </tr>
                   <tr style="position: relative; top: -17px;">
                     <th></th>

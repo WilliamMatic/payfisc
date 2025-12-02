@@ -22,6 +22,7 @@ interface FactureData {
   reduction_type?: string;
   reduction_valeur?: number;
   montant_francs?: string;
+  nif?: string;
 }
 
 interface FactureA4Props {
@@ -63,7 +64,7 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
   const reductionMontant = factureData.reduction_type && factureData.reduction_valeur 
     ? factureData.reduction_type === 'pourcentage' 
       ? (factureData.montant_initial * factureData.reduction_valeur) / 100
-      : factureData.reduction_valeur
+      : factureData.reduction_valeur * factureData.nombre_plaques // MODIFICATION: Multiplier par quantité
     : 0;
 
   // Récupérer le premier et dernier numéro de plaque
@@ -122,6 +123,7 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
               <div className="space-y-1 text-xs">
                 <div><strong>Nom:</strong> {factureData.nom}</div>
                 <div><strong>Prénom:</strong> {factureData.prenom}</div>
+                <div><strong>NIF:</strong> {factureData.nif || 'Non renseigné'}</div>
                 <div><strong>Téléphone:</strong> {factureData.telephone}</div>
                 <div><strong>Email:</strong> {factureData.email || 'Non renseigné'}</div>
                 <div><strong>Adresse:</strong> {factureData.adresse}</div>
@@ -137,6 +139,13 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
                 {factureData.operateur && <div><strong>Opérateur:</strong> {factureData.operateur.toUpperCase()}</div>}
                 {factureData.numero_transaction && <div><strong>N° Transaction:</strong> {factureData.numero_transaction}</div>}
                 <div><strong>Caissier:</strong> {factureData.caissier}</div>
+                {factureData.reduction_type && factureData.reduction_valeur && (
+                  <div>
+                    <strong>Réduction:</strong> {factureData.reduction_type === 'pourcentage' 
+                      ? `${factureData.reduction_valeur}%` 
+                      : `${factureData.reduction_valeur}$ par plaque`}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -167,7 +176,9 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
                 {reductionMontant > 0 && (
                   <tr>
                     <td className="border border-gray-300 p-1" colSpan={3}>
-                      Réduction ({factureData.reduction_type === 'pourcentage' ? `${factureData.reduction_valeur}%` : 'Montant fixe'})
+                      Réduction ({factureData.reduction_type === 'pourcentage' 
+                        ? `${factureData.reduction_valeur}%` 
+                        : `${factureData.reduction_valeur}$ par plaque × ${factureData.nombre_plaques}`})
                     </td>
                     <td className="border border-gray-300 p-1 text-right text-red-600">
                       -{reductionMontant.toFixed(2)} $
@@ -222,18 +233,6 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
                 </>
               )}
             </div>
-
-            {/* Liste complète en petit pour référence */}
-            {/* {factureData.nombre_plaques > 2 && (
-              <div className="mt-3 p-2 bg-gray-50 rounded border border-gray-200">
-                <div className="text-xs text-gray-500 text-center mb-1">
-                  Séquence complète ({factureData.nombre_plaques} plaques):
-                </div>
-                <div className="text-xs text-gray-600 text-center font-mono">
-                  {factureData.numeros_plaques.join(' → ')}
-                </div>
-              </div>
-            )} */}
           </div>
 
           {/* Informations supplémentaires */}
@@ -244,6 +243,13 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
               <li>Conservez ce document pour toute réclamation</li>
               <li>Les plaques sont attribuées de manière séquentielle</li>
               <li>Validité immédiate après paiement</li>
+              {factureData.reduction_type && factureData.reduction_valeur && (
+                <li>
+                  Réduction appliquée: {factureData.reduction_type === 'pourcentage' 
+                    ? `${factureData.reduction_valeur}%` 
+                    : `${factureData.reduction_valeur}$ par plaque`}
+                </li>
+              )}
             </ul>
           </div>
 
@@ -262,7 +268,7 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
                 <p className="font-semibold">Signature du client</p>
                 <div className="mt-8 border-t border-gray-400 w-32 ml-auto"></div>
                 <p className="text-xs mt-1">{factureData.prenom} {factureData.nom}</p>
-                <p className="text-xs text-gray-500">{factureData.telephone}</p>
+                <p className="text-xs text-gray-500">NIF: {factureData.nif || 'Non renseigné'}</p>
               </div>
             </div>
             
