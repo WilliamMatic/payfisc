@@ -135,7 +135,7 @@ export default function ClientSimpleForm({
   
   // Calcul de la réduction
   const reductionValeur = parseFloat(formData.reductionValeur) || 0;
-  let montantInitial = montantUnitaire * nombrePlaques;
+  const montantInitial = montantUnitaire * nombrePlaques;
   let montantReduit = montantInitial;
   let reductionMontant = 0;
 
