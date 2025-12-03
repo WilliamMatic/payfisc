@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from "react";
 import { QRCodeCanvas } from 'qrcode.react';
 import { formatPlaque } from '../../../utils/formatPlaque';
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PrintData {
   nom: string;
@@ -30,6 +31,7 @@ interface CarteRosePrintProps {
 }
 
 export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrintProps) {
+  const { utilisateur } = useAuth();
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -158,7 +160,7 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
               
               .signature-box { 
                 width: 100%; 
-                border-top: 0.15mm dashed rgba(0,0,0,0.6); 
+                border-top: 0.15mm dashed rgba(255,255,255,0.0); 
                 padding-top: 1mm; 
                 font-size: 2mm; 
                 text-align: center; 
@@ -216,7 +218,7 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
-                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${formatPlaque(data.numero_plaque)}</td>
+                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>

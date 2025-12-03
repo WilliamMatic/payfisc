@@ -136,7 +136,7 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
               
               .signature-box { 
                 width: 100%; 
-                border-top: 0.15mm dashed rgba(0,0,0,0.6); 
+                border-top: 0.15mm dashed rgba(255,255,255,0.0); 
                 padding-top: 1mm; 
                 font-size: 2mm; 
                 text-align: center; 

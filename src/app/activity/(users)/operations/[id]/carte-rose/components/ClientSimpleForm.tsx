@@ -213,11 +213,16 @@ export default function ClientSimpleForm({
   const [printData, setPrintData] = useState<any>(null);
 
   // États pour l'auto-complétion
-  const [suggestionsModeles, setSuggestionsModeles] = useState<Suggestion[]>([]);
-  const [suggestionsPuissances, setSuggestionsPuissances] = useState<Suggestion[]>([]);
+  const [suggestionsModeles, setSuggestionsModeles] = useState<Suggestion[]>(
+    []
+  );
+  const [suggestionsPuissances, setSuggestionsPuissances] = useState<
+    Suggestion[]
+  >([]);
   const [showSuggestionsModeles, setShowSuggestionsModeles] = useState(false);
-  const [showSuggestionsPuissances, setShowSuggestionsPuissances] = useState(false);
-  
+  const [showSuggestionsPuissances, setShowSuggestionsPuissances] =
+    useState(false);
+
   // Références pour les timeouts
   const rechercheModeleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -345,21 +350,21 @@ export default function ClientSimpleForm({
   // Vérification du téléphone en temps réel
   const handleTelephoneChange = async (telephone: string) => {
     setFormData((prev) => ({ ...prev, telephoneAssujetti: telephone }));
-    
+
     if (verificationTelephoneTimeoutRef.current) {
       clearTimeout(verificationTelephoneTimeoutRef.current);
     }
-    
+
     if (telephone.length >= 8) {
       verificationTelephoneTimeoutRef.current = setTimeout(async () => {
         setLoading((prev) => ({ ...prev, verificationTelephone: true }));
-        
+
         try {
           const result = await verifierTelephoneExistant(telephone);
-          
+
           if (result.status === "success" && result.data?.particulier) {
             const particulier = result.data.particulier;
-            
+
             // Pré-remplir les champs avec les informations du particulier
             setFormData((prev) => ({
               ...prev,
@@ -371,9 +376,11 @@ export default function ClientSimpleForm({
               province: particulier.province || "",
               nif: particulier.nif || "",
             }));
-            
+
             // Afficher un message de succès
-            setMessageErreur("✅ Informations du particulier chargées avec succès");
+            setMessageErreur(
+              "✅ Informations du particulier chargées avec succès"
+            );
             setTimeout(() => setMessageErreur(""), 3000);
           } else {
             // Réinitialiser les champs si aucun particulier trouvé
@@ -402,25 +409,28 @@ export default function ClientSimpleForm({
     if (!formData.marqueId || formData.marqueId === "") {
       return;
     }
-    
+
     if (rechercheModeleTimeoutRef.current) {
       clearTimeout(rechercheModeleTimeoutRef.current);
     }
-    
+
     if (searchTerm.length >= 2) {
       rechercheModeleTimeoutRef.current = setTimeout(async () => {
         setLoading((prev) => ({ ...prev, rechercheModeles: true }));
-        
+
         try {
-          const result = await rechercherModeles(parseInt(formData.marqueId), searchTerm);
-          
+          const result = await rechercherModeles(
+            parseInt(formData.marqueId),
+            searchTerm
+          );
+
           if (result.status === "success" && result.data) {
             const suggestions = result.data.map((modele: any) => ({
               id: modele.id,
               libelle: modele.libelle,
               description: modele.description,
             }));
-            
+
             setSuggestionsModeles(suggestions);
             setShowSuggestionsModeles(true);
           } else {
@@ -455,12 +465,15 @@ export default function ClientSimpleForm({
     if (!formData.modele || !formData.marqueId || formData.marqueId === "") {
       return;
     }
-    
+
     try {
       setLoading((prev) => ({ ...prev, rechercheModeles: true }));
-      
-      const result = await creerModele(formData.modele, parseInt(formData.marqueId));
-      
+
+      const result = await creerModele(
+        formData.modele,
+        parseInt(formData.marqueId)
+      );
+
       if (result.status === "success" && result.data) {
         // Mettre à jour les suggestions avec le nouveau modèle
         const newModele = {
@@ -468,14 +481,14 @@ export default function ClientSimpleForm({
           libelle: formData.modele,
           description: "Nouveau modèle créé",
         };
-        
+
         setFormData((prev) => ({
           ...prev,
           modeleId: newModele.id.toString(),
         }));
-        
+
         setSuggestionsModeles([newModele, ...suggestionsModeles]);
-        
+
         setMessageErreur("✅ Modèle créé avec succès");
         setTimeout(() => setMessageErreur(""), 3000);
       }
@@ -493,18 +506,21 @@ export default function ClientSimpleForm({
     if (!formData.typeEngin) {
       return;
     }
-    
+
     if (recherchePuissanceTimeoutRef.current) {
       clearTimeout(recherchePuissanceTimeoutRef.current);
     }
-    
+
     if (searchTerm.length >= 1) {
       recherchePuissanceTimeoutRef.current = setTimeout(async () => {
         setLoading((prev) => ({ ...prev, recherchePuissances: true }));
-        
+
         try {
-          const result = await rechercherPuissancesFiscales(formData.typeEngin, searchTerm);
-          
+          const result = await rechercherPuissancesFiscales(
+            formData.typeEngin,
+            searchTerm
+          );
+
           if (result.status === "success" && result.data) {
             const suggestions = result.data.map((puissance: any) => ({
               id: puissance.id,
@@ -512,7 +528,7 @@ export default function ClientSimpleForm({
               valeur: puissance.valeur,
               description: puissance.description,
             }));
-            
+
             setSuggestionsPuissances(suggestions);
             setShowSuggestionsPuissances(true);
           } else {
@@ -547,27 +563,29 @@ export default function ClientSimpleForm({
     if (!formData.puissanceFiscal || !formData.typeEngin) {
       return;
     }
-    
+
     // Extraire la valeur numérique de la puissance
     const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
     const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
-    
+
     if (valeur === 0) {
-      setMessageErreur("❌ Veuillez spécifier une valeur numérique pour la puissance");
+      setMessageErreur(
+        "❌ Veuillez spécifier une valeur numérique pour la puissance"
+      );
       setTimeout(() => setMessageErreur(""), 3000);
       return;
     }
-    
+
     try {
       setLoading((prev) => ({ ...prev, recherchePuissances: true }));
-      
+
       const result = await creerPuissanceFiscale(
         formData.puissanceFiscal,
         valeur,
         formData.typeEngin,
         `Puissance ${formData.puissanceFiscal}`
       );
-      
+
       if (result.status === "success" && result.data) {
         // Mettre à jour les suggestions avec la nouvelle puissance
         const newPuissance = {
@@ -576,9 +594,9 @@ export default function ClientSimpleForm({
           valeur: valeur,
           description: "Nouvelle puissance créée",
         };
-        
+
         setSuggestionsPuissances([newPuissance, ...suggestionsPuissances]);
-        
+
         setMessageErreur("✅ Puissance fiscale créée avec succès");
         setTimeout(() => setMessageErreur(""), 3000);
       }
@@ -600,16 +618,12 @@ export default function ClientSimpleForm({
     return anneeOptions.filter((year) => parseInt(year) >= anneeFab);
   };
 
-  // ÉTAPE 1: Vérification du téléphone et plaque
+  // Dans la fonction handleVerification
   const handleVerification = async () => {
-    if (!formData.telephone.trim() || !formData.numeroPlaque.trim()) {
+    // Vérifier seulement la plaque (le téléphone devient facultatif)
+    if (!formData.numeroPlaque.trim()) {
       setErrors({
-        telephone: !formData.telephone.trim()
-          ? "Le téléphone est obligatoire"
-          : undefined,
-        numeroPlaque: !formData.numeroPlaque.trim()
-          ? "Le numéro de plaque est obligatoire"
-          : undefined,
+        numeroPlaque: "Le numéro de plaque est obligatoire",
       });
       return;
     }
@@ -619,8 +633,8 @@ export default function ClientSimpleForm({
 
     try {
       const verificationData: VerificationData = {
-        telephone: formData.telephone,
-        numeroPlaque: formData.numeroPlaque,
+        telephone: formData.telephone.trim() || "", // Téléphone vide si non renseigné
+        numeroPlaque: formData.numeroPlaque.trim(),
       };
 
       const result: CarteRoseResponse = await verifierPlaqueTelephone(
@@ -628,16 +642,54 @@ export default function ClientSimpleForm({
       );
 
       if (result.status === "success" && result.data) {
-        // Cas 1: Vérification réussie - particulier existant
+        // Cas 1: Vérification réussie
         setParticulierInfo(result.data.particulier || null);
         setPlaqueInfo(result.data.plaque || null);
-        setShowModalVerification(true);
+
+        // Si téléphone fourni et particulier trouvé
+        if (formData.telephone.trim() && result.data.particulier) {
+          setShowModalVerification(true);
+        } else {
+          // Si pas de téléphone ou pas de particulier trouvé, passer directement au formulaire
+          setEtapeActuelle("formulaire");
+
+          // Si un particulier a été trouvé (avec téléphone vide dans la requête),
+          // pré-remplir les champs
+          if (result.data.particulier) {
+            const particulier = result.data.particulier;
+            setFormData((prev) => ({
+              ...prev,
+              nom: "",
+              prenom: "",
+              email: "",
+              adresse: "",
+              ville: "",
+              province: "",
+              nif: "",
+              telephoneAssujetti: "",
+            }));
+
+            setMessageErreur("✅ Plaque vérifiée avec succès");
+            setTimeout(() => setMessageErreur(""), 3000);
+          } else {
+            setMessageErreur(
+              "✅ Plaque vérifiée. Veuillez compléter les informations."
+            );
+            setTimeout(() => setMessageErreur(""), 3000);
+          }
+        }
       } else if (result.type === "carte_existante" && result.data) {
         // Cas 2: Carte rose déjà délivrée
         setShowModalCarteExistante(true);
       } else {
         // Cas 3: Aucun enregistrement trouvé
-        setMessageErreur(result.message || "Aucun enregistrement trouvé.");
+        // Même si la vérification échoue, on peut passer au formulaire
+        // car l'utilisateur peut vouloir créer un nouvel enregistrement
+        // setEtapeActuelle("formulaire");
+        setMessageErreur(
+          "⚠️ Aucun enregistrement trouvé. Vous pouvez créer une nouvelle carte rose."
+        );
+        setTimeout(() => setMessageErreur(""), 5000);
       }
     } catch (error) {
       console.error("Erreur lors de la vérification:", error);
@@ -722,17 +774,24 @@ export default function ClientSimpleForm({
     try {
       // Vérifier et créer le modèle si nécessaire
       if (formData.modele && formData.marqueId && !formData.modeleId) {
-        const modeleResult = await creerModele(formData.modele, parseInt(formData.marqueId));
+        const modeleResult = await creerModele(
+          formData.modele,
+          parseInt(formData.marqueId)
+        );
         if (modeleResult.status === "success" && modeleResult.data?.[0]?.id) {
           formData.modeleId = modeleResult.data[0].id.toString();
         }
       }
 
       // Vérifier et créer la puissance fiscale si nécessaire
-      if (formData.puissanceFiscal && formData.typeEngin && !formData.puissanceFiscalValeur) {
+      if (
+        formData.puissanceFiscal &&
+        formData.typeEngin &&
+        !formData.puissanceFiscalValeur
+      ) {
         const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
         const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
-        
+
         if (valeur > 0) {
           const puissanceResult = await creerPuissanceFiscale(
             formData.puissanceFiscal,
@@ -876,33 +935,31 @@ export default function ClientSimpleForm({
             Étape 1: Vérification Téléphone & Plaque
           </h2>
           <p className="text-gray-600 text-sm">
-            Renseignez le téléphone du particulier et le numéro de plaque
-            attribué
+            Renseignez le numéro de plaque (le téléphone est facultatif)
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
-        {/* TÉLÉPHONE PARTICULIER */}
+        {/* TÉLÉPHONE PARTICULIER - FACULTATIF */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Téléphone Particulier <span className="text-red-500">*</span>
+            Téléphone Particulier (Facultatif)
           </label>
           <input
             type="tel"
             value={formData.telephone}
             onChange={(e) => handleInputChange("telephone", e.target.value)}
             placeholder="Ex: +243 81 234 5678"
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.telephone ? "border-red-300" : "border-gray-300"
-            }`}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {errors.telephone && (
-            <p className="text-red-600 text-sm mt-1">{errors.telephone}</p>
-          )}
+          <p className="text-gray-500 text-xs mt-1">
+            Facultatif - Permet de pré-remplir les informations si le
+            particulier existe déjà
+          </p>
         </div>
 
-        {/* NUMÉRO PLAQUE */}
+        {/* NUMÉRO PLAQUE - OBLIGATOIRE */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Numéro de Plaque <span className="text-red-500">*</span>
@@ -919,12 +976,50 @@ export default function ClientSimpleForm({
           {errors.numeroPlaque && (
             <p className="text-red-600 text-sm mt-1">{errors.numeroPlaque}</p>
           )}
+          <p className="text-gray-500 text-xs mt-1">
+            Obligatoire - Le système vérifie si la plaque est disponible
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+        <div className="flex items-start">
+          <div className="bg-blue-100 p-1 rounded-full mr-3 mt-0.5">
+            <CheckCircle className="w-4 h-4 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-blue-700 text-sm font-medium mb-1">
+              Comment ça marche :
+            </p>
+            <ul className="text-blue-600 text-xs list-disc pl-4 space-y-1">
+              <li>
+                Si vous saisissez un téléphone existant, le système pré-remplit
+                automatiquement le formulaire
+              </li>
+              <li>
+                Si vous ne saisissez pas de téléphone, vous pourrez compléter
+                toutes les informations manuellement
+              </li>
+              <li>
+                Dans tous les cas, le système vérifie que la plaque est
+                disponible
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
       {messageErreur && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700 text-sm">{messageErreur}</p>
+        <div
+          className={`mt-4 p-3 rounded-lg border ${
+            messageErreur.includes("✅")
+              ? "bg-green-50 border-green-200 text-green-700"
+              : messageErreur.includes("⚠️")
+              ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+              : "bg-red-50 border-red-200 text-red-700"
+          }`}
+        >
+          <p className="text-sm">{messageErreur}</p>
         </div>
       )}
 
@@ -943,7 +1038,7 @@ export default function ClientSimpleForm({
           ) : (
             <>
               <CheckCircle className="w-4 h-4" />
-              <span>Vérifier et Continuer</span>
+              <span>Vérifier la plaque et Continuer</span>
             </>
           )}
         </button>
@@ -1020,7 +1115,9 @@ export default function ClientSimpleForm({
                 onBlur={() => setMessageErreur("")}
                 placeholder="Entrez votre numéro de téléphone"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.telephoneAssujetti ? "border-red-300" : "border-gray-300"
+                  errors.telephoneAssujetti
+                    ? "border-red-300"
+                    : "border-gray-300"
                 }`}
               />
               {loading.verificationTelephone && (
@@ -1226,8 +1323,10 @@ export default function ClientSimpleForm({
               <select
                 value={formData.marqueId}
                 onChange={(e) => {
-                  const selectedMarque = marques.find(m => m.id.toString() === e.target.value);
-                  setFormData(prev => ({
+                  const selectedMarque = marques.find(
+                    (m) => m.id.toString() === e.target.value
+                  );
+                  setFormData((prev) => ({
                     ...prev,
                     marque: selectedMarque?.libelle || "",
                     marqueId: e.target.value,
@@ -1244,7 +1343,11 @@ export default function ClientSimpleForm({
                     : "Sélectionner la marque"}
                 </option>
                 {marques
-                  .filter(marque => marque.type_engin_libelle === formData.typeEngin && marque.actif)
+                  .filter(
+                    (marque) =>
+                      marque.type_engin_libelle === formData.typeEngin &&
+                      marque.actif
+                  )
                   .map((marque) => (
                     <option key={marque.id} value={marque.id}>
                       {marque.libelle}
@@ -1305,7 +1408,7 @@ export default function ClientSimpleForm({
             {errors.modele && (
               <p className="text-red-600 text-sm mt-1">{errors.modele}</p>
             )}
-            
+
             {/* Suggestions de modèles */}
             {showSuggestionsModeles && suggestionsModeles.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
@@ -1317,16 +1420,19 @@ export default function ClientSimpleForm({
                   >
                     <div className="font-medium">{suggestion.libelle}</div>
                     {suggestion.description && (
-                      <div className="text-xs text-gray-500">{suggestion.description}</div>
+                      <div className="text-xs text-gray-500">
+                        {suggestion.description}
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
             )}
-            
+
             {formData.marqueId && !formData.modeleId && (
               <p className="text-amber-600 text-xs mt-1">
-                Saisissez le modèle. S'il n'existe pas, cliquez sur <Plus className="w-3 h-3 inline" /> pour le créer.
+                Saisissez le modèle. S'il n'existe pas, cliquez sur{" "}
+                <Plus className="w-3 h-3 inline" /> pour le créer.
               </p>
             )}
           </div>
@@ -1482,7 +1588,7 @@ export default function ClientSimpleForm({
                 </button>
               )}
             </div>
-            
+
             {/* Suggestions de puissances */}
             {showSuggestionsPuissances && suggestionsPuissances.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
@@ -1494,19 +1600,24 @@ export default function ClientSimpleForm({
                   >
                     <div className="font-medium">{suggestion.libelle}</div>
                     {suggestion.valeur && (
-                      <div className="text-xs text-gray-500">{suggestion.valeur} CV</div>
+                      <div className="text-xs text-gray-500">
+                        {suggestion.valeur} CV
+                      </div>
                     )}
                     {suggestion.description && (
-                      <div className="text-xs text-gray-500">{suggestion.description}</div>
+                      <div className="text-xs text-gray-500">
+                        {suggestion.description}
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
             )}
-            
+
             {formData.typeEngin && (
               <p className="text-blue-600 text-xs mt-1">
-                Saisissez la puissance (ex: 10 CV). Système intelligent de recherche.
+                Saisissez la puissance (ex: 10 CV). Système intelligent de
+                recherche.
               </p>
             )}
           </div>
@@ -1574,11 +1685,13 @@ export default function ClientSimpleForm({
 
       {/* MESSAGE D'ERREUR GLOBAL */}
       {messageErreur && (
-        <div className={`p-3 rounded-lg border ${
-          messageErreur.includes("✅") 
-            ? "bg-green-50 border-green-200 text-green-700" 
-            : "bg-red-50 border-red-200 text-red-700"
-        }`}>
+        <div
+          className={`p-3 rounded-lg border ${
+            messageErreur.includes("✅")
+              ? "bg-green-50 border-green-200 text-green-700"
+              : "bg-red-50 border-red-200 text-red-700"
+          }`}
+        >
           <p className="text-sm">{messageErreur}</p>
         </div>
       )}
@@ -1809,15 +1922,11 @@ export default function ClientSimpleForm({
                     </div>
                     <div>
                       <span className="text-blue-600">Marque:</span>
-                      <div className="font-medium">
-                        {formData.marque}
-                      </div>
+                      <div className="font-medium">{formData.marque}</div>
                     </div>
                     <div>
                       <span className="text-blue-600">Modèle:</span>
-                      <div className="font-medium">
-                        {formData.modele}
-                      </div>
+                      <div className="font-medium">{formData.modele}</div>
                     </div>
                     <div>
                       <span className="text-blue-600">Puissance:</span>

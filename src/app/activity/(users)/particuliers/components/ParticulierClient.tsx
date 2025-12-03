@@ -1,4 +1,3 @@
-// src/app/system/(admin)/particuliers/components/ParticulierClient.tsx
 "use client";
 import { useState, useEffect } from "react";
 import {
@@ -11,7 +10,6 @@ import ParticuliersHeader from "./ParticulierHeader";
 import ParticuliersTable from "./ParticulierTable";
 import ParticuliersModals from "./ParticulierModals";
 import AlertMessage from "./AlertMessage";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface ParticuliersClientProps {
   initialParticuliers: ParticulierType[];
@@ -51,20 +49,41 @@ export default function ParticuliersClient({
     nif: "",
     situation_familiale: "",
     dependants: 0,
+    reduction_type: null as "pourcentage" | "montant_fixe" | null,
+    reduction_valeur: 0,
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { agent, utilisateur, userType } = useAuth();
-
   const provinces = [
-    "Kinshasa",
-    "Bas-Congo",
-    "Katanga",
-    "Kasaï",
-    "Orientale",
+    "Bas-Uele",
     "Équateur",
+    "Haut-Katanga",
+    "Haut-Lomami",
+    "Haut-Uele",
+    "Ituri",
+    "Kasaï",
+    "Kasaï Central",
+    "Kasaï Oriental",
+    "Kinshasa",
+    "Kongo Central",
+    "Kwango",
+    "Kwilu",
+    "Lomami",
+    "Lualaba",
+    "Mai-Ndombe",
+    "Maniema",
+    "Mongala",
+    "Nord-Kivu",
+    "Nord-Ubangi",
+    "Sankuru",
+    "Sud-Kivu",
+    "Sud-Ubangi",
+    "Tanganyika",
+    "Tshopo",
+    "Tshuapa",
   ];
+
   const situationsFamiliales = [
     "Célibataire",
     "Marié(e)",
@@ -171,6 +190,8 @@ export default function ParticuliersClient({
           nif: details.nif || "",
           situation_familiale: details.situation_familiale || "",
           dependants: details.dependants || 0,
+          reduction_type: details.reduction_type || null,
+          reduction_valeur: details.reduction_valeur || 0,
         });
         setShowEditModal(true);
       } else {
@@ -211,12 +232,11 @@ export default function ParticuliersClient({
     }
   };
 
-  // Validation du formulaire - MODIFIÉ POUR LES NOUVEAUX CHAMPS OBLIGATOIRES
+  // Validation du formulaire - CORRIGÉ : seulement nom, prénom, téléphone, rue obligatoires
   const isFormValid = (): boolean => {
     return !!(
       formData.nom.trim() &&
       formData.prenom.trim() &&
-      formData.nif.trim() &&
       formData.telephone.trim() &&
       formData.rue.trim()
     );
@@ -262,6 +282,8 @@ export default function ParticuliersClient({
             nif: "",
             situation_familiale: "",
             dependants: 0,
+            reduction_type: null,
+            reduction_valeur: 0,
           });
           setShowAddModal(true);
         }}
@@ -307,6 +329,8 @@ export default function ParticuliersClient({
             nif: "",
             situation_familiale: "",
             dependants: 0,
+            reduction_type: null,
+            reduction_valeur: 0,
           });
         }}
         onDeleteClose={() => {
@@ -323,42 +347,35 @@ export default function ParticuliersClient({
         }}
         onFormDataChange={setFormData}
         onAddParticulier={async () => {
-          // MODIFICATION DU MESSAGE D'ERREUR
+          // CORRECTION : Message d'erreur mis à jour
           if (!isFormValid()) {
-            setError(
-              "Les champs nom, prénom, NIF, téléphone et rue sont obligatoires"
-            );
+            setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
             return;
           }
 
           setProcessing(true);
           try {
-            const utilisateurId =
-              userType === "utilisateur" ? utilisateur?.id : undefined;
-            const siteCode =
-              userType === "utilisateur" ? utilisateur?.site_code : undefined;
-
             const { addParticulier } = await import(
               "@/services/particuliers/particulierService"
             );
             const result = await addParticulier({
               nom: formData.nom,
               prenom: formData.prenom,
-              date_naissance: formData.date_naissance,
-              lieu_naissance: formData.lieu_naissance,
-              sexe: formData.sexe,
+              date_naissance: formData.date_naissance || undefined,
+              lieu_naissance: formData.lieu_naissance || undefined,
+              sexe: formData.sexe || undefined,
               rue: formData.rue,
-              ville: formData.ville,
-              code_postal: formData.code_postal,
-              province: formData.province,
-              id_national: formData.id_national,
+              ville: formData.ville || undefined,
+              code_postal: formData.code_postal || undefined,
+              province: formData.province || undefined,
+              id_national: formData.id_national || undefined,
               telephone: formData.telephone,
-              email: formData.email,
-              nif: formData.nif,
-              situation_familiale: formData.situation_familiale,
+              email: formData.email || undefined,
+              nif: formData.nif || undefined,
+              situation_familiale: formData.situation_familiale || undefined,
               dependants: formData.dependants,
-              utilisateur: utilisateurId,
-              site: siteCode,
+              reduction_type: formData.reduction_type || undefined,
+              reduction_valeur: formData.reduction_valeur,
             });
 
             if (result.status === "success") {
@@ -379,11 +396,9 @@ export default function ParticuliersClient({
           }
         }}
         onEditParticulier={async () => {
-          // MODIFICATION DU MESSAGE D'ERREUR
+          // CORRECTION : Message d'erreur mis à jour
           if (!selectedParticulier || !isFormValid()) {
-            setError(
-              "Les champs nom, prénom, NIF, téléphone et rue sont obligatoires"
-            );
+            setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
             return;
           }
 
@@ -408,6 +423,8 @@ export default function ParticuliersClient({
               nif: formData.nif,
               situation_familiale: formData.situation_familiale,
               dependants: formData.dependants,
+              reduction_type: formData.reduction_type,
+              reduction_valeur: formData.reduction_valeur,
             });
 
             if (result.status === "success") {
@@ -418,8 +435,7 @@ export default function ParticuliersClient({
               await loadParticuliers();
             } else {
               setError(
-                result.message ||
-                  "Erreur lors de la modification du particulier"
+                result.message || "Erreur lors de la modification du particulier"
               );
             }
           } catch (err) {
@@ -476,8 +492,7 @@ export default function ParticuliersClient({
               await loadParticuliers();
             } else {
               setError(
-                result.message ||
-                  "Erreur lors du changement de statut du particulier"
+                result.message || "Erreur lors du changement de statut du particulier"
               );
             }
           } catch (err) {

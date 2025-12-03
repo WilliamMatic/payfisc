@@ -54,24 +54,36 @@ export default function Sidebar({
 
   const menuItems: MenuEntry[] = [
     { icon: "🖥️", label: "Bienvenue", href: "/activity/speed" },
+
     {
       category: "Contribuables",
       items: [
         { icon: "👤", label: "Assujettis", href: "/activity/particuliers" },
-        // { icon: "🏢", label: "Entreprises", href: "/activity/entreprises" },
       ],
     },
+
     {
       category: "Opérations",
       items: [
         // { icon: "💳", label: "Mouvement", href: "/activity/paiement" },
         // { icon: "📑", label: "Déclaration", href: "/activity/declaration" },
+        { icon: "🔢", label: "Séries de plaques", href: "/activity/series" },
         {
-          icon: "🔢",
-          label: "Séries Plaques",
-          href: "/activity/series",
+          icon: "⚙️",
+          label: "Opérations diverses",
+          href: "/activity/operations",
         },
-        { icon: "⚙️", label: "Opérations", href: "/activity/operations" },
+      ],
+    },
+
+    {
+      category: "Impressions",
+      items: [
+        {
+          icon: "🖨️",
+          label: "Réimpression des cartes",
+          href: "/activity/reimpression",
+        },
       ],
     },
   ];

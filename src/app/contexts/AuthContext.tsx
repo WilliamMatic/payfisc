@@ -32,6 +32,7 @@ interface UtilisateurSession {
   formule?: string;
   privileges?: any;
   privileges_include?: any;
+  province_code?: any;
 }
 
 interface AuthContextType {

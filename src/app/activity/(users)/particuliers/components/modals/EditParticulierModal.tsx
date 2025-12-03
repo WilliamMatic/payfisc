@@ -1,13 +1,27 @@
-import { Edit, X, Save, Loader2 } from 'lucide-react';
+// src/app/system/(admin)/particuliers/components/modals/EditParticulierModal.tsx
+import { Edit, X, Save, Loader2, Percent, DollarSign } from 'lucide-react';
 import { Particulier as ParticulierType } from '@/services/particuliers/particulierService';
 
 interface EditParticulierModalProps {
   particulier: ParticulierType;
   formData: {
-    nom: string; prenom: string; date_naissance: string; lieu_naissance: string; sexe: string;
-    rue: string; ville: string; code_postal: string; province: string;
-    id_national: string; telephone: string; email: string;
-    nif: string; situation_familiale: string; dependants: number;
+    nom: string; 
+    prenom: string; 
+    date_naissance: string; 
+    lieu_naissance: string; 
+    sexe: string;
+    rue: string; 
+    ville: string; 
+    code_postal: string; 
+    province: string;
+    id_national: string; 
+    telephone: string; 
+    email: string;
+    nif: string; 
+    situation_familiale: string; 
+    dependants: number;
+    reduction_type: 'pourcentage' | 'montant_fixe' | null;
+    reduction_valeur: number;
   };
   processing: boolean;
   provinces: string[];
@@ -37,6 +51,14 @@ export default function EditParticulierModal({
     });
   };
 
+  const handleReductionTypeChange = (type: 'pourcentage' | 'montant_fixe' | null) => {
+    onFormDataChange({
+      ...formData,
+      reduction_type: type,
+      reduction_valeur: type ? formData.reduction_valeur : 0
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4">
       <div 
@@ -63,7 +85,7 @@ export default function EditParticulierModal({
         </div>
         
         <div className="p-5">
-          {/* SECTION CHAMPS OBLIGATOIRES */}
+          {/* SECTION CHAMPS OBLIGATOIRES - CORRIGÉ */}
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
               Informations obligatoires
@@ -95,21 +117,6 @@ export default function EditParticulierModal({
                   onChange={(e) => handleInputChange('prenom', e.target.value)}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
                   placeholder="Ex: Jean"
-                  disabled={processing}
-                />
-              </div>
-              
-              {/* NIF */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  NIF <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.nif}
-                  onChange={(e) => handleInputChange('nif', e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                  placeholder="Ex: A-1234567-X"
                   disabled={processing}
                 />
               </div>
@@ -146,10 +153,139 @@ export default function EditParticulierModal({
             </div>
           </div>
 
-          {/* SECTION CHAMPS FACULTATIFS */}
-          <div>
+          {/* SECTION INFORMATIONS FISCALES - NIF FACULTATIF */}
+          <div className="mb-6">
             <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
-              Informations complémentaires
+              Informations fiscales
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* NIF - FACULTATIF */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  NIF
+                </label>
+                <input
+                  type="text"
+                  value={formData.nif}
+                  onChange={(e) => handleInputChange('nif', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: A-1234567-X"
+                  disabled={processing}
+                />
+              </div>
+              
+              {/* ID National */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ID National
+                </label>
+                <input
+                  type="text"
+                  value={formData.id_national}
+                  onChange={(e) => handleInputChange('id_national', e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                  placeholder="Ex: 01-2345-67890"
+                  disabled={processing}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION RÉDUCTION */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Réduction
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Type de réduction */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type de réduction
+                </label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reduction-none-edit"
+                      name="reduction_type_edit"
+                      checked={!formData.reduction_type}
+                      onChange={() => handleReductionTypeChange(null)}
+                      className="text-[#153258] focus:ring-[#153258]"
+                      disabled={processing}
+                    />
+                    <label htmlFor="reduction-none-edit" className="text-sm text-gray-700">
+                      Aucune réduction
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reduction-pourcentage-edit"
+                      name="reduction_type_edit"
+                      checked={formData.reduction_type === 'pourcentage'}
+                      onChange={() => handleReductionTypeChange('pourcentage')}
+                      className="text-[#153258] focus:ring-[#153258]"
+                      disabled={processing}
+                    />
+                    <label htmlFor="reduction-pourcentage-edit" className="flex items-center text-sm text-gray-700">
+                      <Percent className="w-4 h-4 mr-1" />
+                      Pourcentage
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reduction-montant_fixe-edit"
+                      name="reduction_type_edit"
+                      checked={formData.reduction_type === 'montant_fixe'}
+                      onChange={() => handleReductionTypeChange('montant_fixe')}
+                      className="text-[#153258] focus:ring-[#153258]"
+                      disabled={processing}
+                    />
+                    <label htmlFor="reduction-montant_fixe-edit" className="flex items-center text-sm text-gray-700">
+                      <DollarSign className="w-4 h-4 mr-1" />
+                      Montant fixe
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Valeur de réduction */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Valeur de réduction
+                  {formData.reduction_type && <span className="text-red-500"> *</span>}
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    value={formData.reduction_valeur}
+                    onChange={(e) => handleInputChange('reduction_valeur', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
+                    min="0"
+                    step={formData.reduction_type === 'pourcentage' ? "0.1" : "1"}
+                    max={formData.reduction_type === 'pourcentage' ? "100" : undefined}
+                    disabled={!formData.reduction_type || processing}
+                    placeholder={formData.reduction_type === 'pourcentage' ? "Ex: 10" : "Ex: 5000"}
+                  />
+                  {formData.reduction_type === 'pourcentage' && (
+                    <span className="ml-2 text-gray-500">%</span>
+                  )}
+                  {formData.reduction_type === 'montant_fixe' && (
+                    <span className="ml-2 text-gray-500">$</span>
+                  )}
+                </div>
+                {formData.reduction_type === 'pourcentage' && formData.reduction_valeur > 100 && (
+                  <p className="text-red-500 text-xs mt-1">Le pourcentage ne peut pas dépasser 100%</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION INFORMATIONS PERSONNELLES */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Informations personnelles
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Date de naissance */}
@@ -212,22 +348,15 @@ export default function EditParticulierModal({
                   disabled={processing}
                 />
               </div>
-              
-              {/* ID National */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ID National
-                </label>
-                <input
-                  type="text"
-                  value={formData.id_national}
-                  onChange={(e) => handleInputChange('id_national', e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors"
-                  placeholder="Ex: 01-2345-67890"
-                  disabled={processing}
-                />
-              </div>
-              
+            </div>
+          </div>
+
+          {/* SECTION SITUATION FAMILIALE */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Situation familiale
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Situation familiale */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -260,7 +389,15 @@ export default function EditParticulierModal({
                   disabled={processing}
                 />
               </div>
-              
+            </div>
+          </div>
+
+          {/* SECTION ADRESSE */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+              Adresse
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Ville */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -292,7 +429,7 @@ export default function EditParticulierModal({
               </div>
               
               {/* Province */}
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Province
                 </label>

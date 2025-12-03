@@ -1,219 +1,178 @@
-import { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { getProvinces, Province } from '@/services/plaques/plaqueService';
+import { X } from 'lucide-react';
+import { Province } from '@/services/plaques/plaqueServiceSite';
 
 interface AddSerieModalProps {
   formData: {
     nom_serie: string;
-    description: string;
     province_id: string;
-    debut_numeros: string;
-    fin_numeros: string;
+    debut_numeros: number;
+    fin_numeros: number;
+    description: string;
   };
+  provinces: Province[];
   processing: boolean;
-  utilisateur: any;
   onClose: () => void;
-  onFormDataChange: (data: {
-    nom_serie: string;
-    description: string;
-    province_id: string;
-    debut_numeros: string;
-    fin_numeros: string;
-  }) => void;
+  onFormDataChange: (data: any) => void;
   onAddSerie: () => Promise<void>;
 }
 
 export default function AddSerieModal({
   formData,
+  provinces,
   processing,
-  utilisateur,
   onClose,
   onFormDataChange,
   onAddSerie
 }: AddSerieModalProps) {
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [loadingProvinces, setLoadingProvinces] = useState(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAddSerie();
+  };
 
-  useEffect(() => {
-    const loadProvinces = async () => {
-      try {
-        const result = await getProvinces();
-        if (result.status === 'success') {
-          setProvinces(result.data || []);
-        }
-      } catch (error) {
-        console.error('Erreur chargement provinces:', error);
-      } finally {
-        setLoadingProvinces(false);
-      }
-    };
-
-    loadProvinces();
-  }, []);
-
-  const handleInputChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | number) => {
     onFormDataChange({
       ...formData,
       [field]: value
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAddSerie();
-  };
-
-  // Déterminer la province par défaut (celle de l'utilisateur)
-  useEffect(() => {
-    if (utilisateur && provinces.length > 0) {
-      // Ici vous devriez avoir la province_id de l'utilisateur
-      // Pour l'instant, on prend la première province disponible
-      const provinceUtilisateur = provinces[0];
-      if (provinceUtilisateur && !formData.province_id) {
-        handleInputChange('province_id', provinceUtilisateur.id.toString());
-      }
-    }
-  }, [utilisateur, provinces]);
+  const totalNumeros = formData.fin_numeros - formData.debut_numeros + 1;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-gray-100">
-        {/* En-tête */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-xl font-bold text-gray-900">Nouvelle Série</h3>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">Nouvelle Série</h2>
+            <p className="text-gray-500 text-sm mt-1">Ajouter une nouvelle série de plaques</p>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             disabled={processing}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Nom de la série */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Nom de la série <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.nom_serie}
-              onChange={(e) => handleInputChange('nom_serie', e.target.value.toUpperCase())}
-              placeholder="Ex: AB"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              maxLength={2}
-              pattern="[A-Z]{2}"
-              title="2 lettres majuscules"
-              required
-              disabled={processing}
-            />
-            <p className="text-gray-500 text-xs mt-2">2 lettres majuscules uniquement</p>
-          </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Série et Province */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nom de la série <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.nom_serie}
+                onChange={(e) => handleChange('nom_serie', e.target.value.toUpperCase())}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
+                placeholder="Ex: AB"
+                maxLength={2}
+                required
+                disabled={processing}
+              />
+              <p className="text-xs text-gray-500 mt-1">2 lettres majuscules uniquement</p>
+            </div>
 
-          {/* Province */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Province <span className="text-red-500">*</span>
-            </label>
-            {loadingProvinces ? (
-              <div className="flex items-center space-x-2 text-gray-500">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Chargement des provinces...</span>
-              </div>
-            ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Province <span className="text-red-500">*</span>
+              </label>
               <select
                 value={formData.province_id}
-                onChange={(e) => handleInputChange('province_id', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                onChange={(e) => handleChange('province_id', e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
                 required
                 disabled={processing}
               >
-                <option value="">Sélectionner une province</option>
+                <option value="">Sélectionnez une province</option>
                 {provinces.map((province) => (
                   <option key={province.id} value={province.id}>
                     {province.nom} ({province.code})
                   </option>
                 ))}
               </select>
-            )}
+            </div>
           </div>
 
-          {/* Plage de numéros */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Début <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                value={formData.debut_numeros}
-                onChange={(e) => handleInputChange('debut_numeros', e.target.value)}
-                placeholder="1"
-                min="1"
-                max="999"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                required
-                disabled={processing}
-              />
+          {/* Plage Numérique */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Plage Numérique <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Début</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="998"
+                  value={formData.debut_numeros}
+                  onChange={(e) => handleChange('debut_numeros', parseInt(e.target.value) || 1)}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
+                  required
+                  disabled={processing}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Fin</label>
+                <input
+                  type="number"
+                  min="2"
+                  max="999"
+                  value={formData.fin_numeros}
+                  onChange={(e) => handleChange('fin_numeros', parseInt(e.target.value) || 999)}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
+                  required
+                  disabled={processing}
+                />
+              </div>
+              <div className="flex items-center">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center w-full">
+                  <div className="text-sm text-gray-600">Total</div>
+                  <div className="text-lg font-semibold text-gray-800">{totalNumeros} numéros</div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Fin <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                value={formData.fin_numeros}
-                onChange={(e) => handleInputChange('fin_numeros', e.target.value)}
-                placeholder="999"
-                min="1"
-                max="999"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                required
-                disabled={processing}
-              />
-            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Plage valide: 1-999. Exemple: 1-999 créera 999 numéros
+            </p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Description optionnelle de la série..."
+              onChange={(e) => handleChange('description', e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] resize-none"
+              placeholder="Description optionnelle de la série..."
               disabled={processing}
             />
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
+              className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={processing}
             >
               Annuler
             </button>
             <button
               type="submit"
-              disabled={processing || !formData.nom_serie || !formData.province_id || !formData.debut_numeros || !formData.fin_numeros}
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              disabled={processing || !formData.nom_serie || !formData.province_id}
+              className="px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {processing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Création...
-                </>
-              ) : (
-                'Créer la série'
-              )}
+              {processing ? 'Création...' : 'Créer la Série'}
             </button>
           </div>
         </form>

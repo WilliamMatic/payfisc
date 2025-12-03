@@ -15,8 +15,8 @@ export default function ParticuliersHeader({ searchTerm, onSearchChange, onSearc
           <User className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">Contribuables assujettis</h2>
-          <p className="text-sm text-gray-500">Gérez les assujettis contribuables</p>
+          <h2 className="text-xl font-semibold text-gray-800">Contribuables</h2>
+          <p className="text-sm text-gray-500">Gérez les assujettis</p>
         </div>
       </div>
       
@@ -33,13 +33,13 @@ export default function ParticuliersHeader({ searchTerm, onSearchChange, onSearc
           />
         </div>
         
-        {/* <button
+        <button
           onClick={onAddClick}
           className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-[#153258] to-[#23A974] text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105 shadow-sm"
         >
           <Plus className="w-4 h-4" />
           <span className="font-medium text-sm">Ajouter</span>
-        </button> */}
+        </button>
       </div>
     </div>
   );

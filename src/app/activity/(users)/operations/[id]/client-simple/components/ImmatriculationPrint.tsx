@@ -1,7 +1,8 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { QRCodeCanvas } from 'qrcode.react';
-import { formatPlaque } from '../../../utils/formatPlaque';
+import { QRCodeCanvas } from "qrcode.react";
+import { formatPlaque } from "../../../utils/formatPlaque";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PrintData {
   nom: string;
@@ -23,22 +24,27 @@ interface PrintData {
   modele?: string; // ← Ajouter cette ligne
 }
 
-
 interface ImmatriculationPrintProps {
   data: PrintData;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ImmatriculationPrint({ data, isOpen, onClose }: ImmatriculationPrintProps) {
+export default function ImmatriculationPrint({
+  data,
+  isOpen,
+  onClose,
+}: ImmatriculationPrintProps) {
+  const { utilisateur } = useAuth();
+
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
   // Fonction pour formater la date actuelle
   const getCurrentDate = () => {
     const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -46,21 +52,23 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
   // Fonction pour générer le code DGRKA
   const generateDGRKACode = () => {
     const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
-    const paiementId = data.paiement_id || '000000';
-    
+    const paiementId = data.paiement_id || "000000";
+
     return `DGRK/${month}/${year}/${paiementId}`;
   };
 
   const handlePrint = () => {
     if (printRef.current) {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open("", "_blank");
       if (!printWindow) return;
 
       // Récupérer le QR Code SVG
-      const qrElement = document.querySelector('.qr-code-canvas canvas');
-      const qrDataUrl = qrElement ? (qrElement as HTMLCanvasElement).toDataURL() : '';
+      const qrElement = document.querySelector(".qr-code-canvas canvas");
+      const qrDataUrl = qrElement
+        ? (qrElement as HTMLCanvasElement).toDataURL()
+        : "";
 
       const printContent = `
         <!DOCTYPE html>
@@ -159,7 +167,7 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
               
               .signature-box { 
                 width: 100%; 
-                border-top: 0.15mm dashed rgba(0,0,0,0.6); 
+                border-top: 0.15mm dashed rgba(255,255,255,0.0); 
                 padding-top: 1mm; 
                 font-size: 2mm; 
                 text-align: center; 
@@ -201,29 +209,37 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 3px;text-transform: uppercase;">${data.nom} ${data.prenom}</td>
+                    <td style="position: relative; top: 3px;text-transform: uppercase;">${
+                      data.nom
+                    } ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 4px;text-transform: uppercase;">${data.adresse}</td>
+                    <td style="position: relative; top: 4px;text-transform: uppercase;">${
+                      data.adresse
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td style="position: relative; top: 8px;text-transform: uppercase;">${data.nif || ''}</td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;">${
+                      data.nif || ""
+                    }</td>
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
-                    <td style="position: relative; top: 24px;text-transform: uppercase;">${data.annee_circulation}</td>
+                    <td style="position: relative; top: 24px;text-transform: uppercase;">${
+                      data.annee_circulation
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
-                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${formatPlaque(data.numero_plaque)}</td>
+                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>
               
               <div class="qr">
-                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ''}
+                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
                 <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span>
               </div>
             </div>
@@ -234,7 +250,11 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                 <tbody>
                   <tr style="position: relative; top: -11px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.modele ? `${data.marque} ${data.modele}` : data.marque}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.modele
+                        ? `${data.marque} ${data.modele}`
+                        : data.marque
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -17px;">
                     <th></th>
@@ -242,23 +262,33 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                   </tr>
                   <tr style="position: relative; top: -23px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.numero_chassis || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_chassis || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -29px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.numero_moteur || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_moteur || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -33px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.annee_fabrication || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.annee_fabrication || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -38px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.couleur || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.couleur || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -43px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.puissance_fiscal || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.puissance_fiscal || "-"
+                    }</td>
                   </tr>
                 </tbody>
               </table>
@@ -291,19 +321,19 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -340,11 +370,16 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
               <strong>Instructions d'impression recto-verso :</strong>
             </p>
             <ul className="text-blue-700 text-sm mt-2 ml-4 list-disc space-y-1">
-              <li>Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression</li>
+              <li>
+                Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression
+              </li>
               <li>Le recto s'imprimera sur la page 1</li>
               <li>Retournez la feuille et réinsérez-la dans l'imprimante</li>
               <li>Le verso s'imprimera sur la page 2 (au dos du recto)</li>
-              <li>Cliquez sur la carte ci-dessous pour prévisualiser le recto et le verso</li>
+              <li>
+                Cliquez sur la carte ci-dessous pour prévisualiser le recto et
+                le verso
+              </li>
             </ul>
           </div>
         </div>
@@ -352,9 +387,12 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
           {/* Zone d'impression cachée pour le QR Code */}
-          <div className="qr-code-canvas" style={{ position: 'absolute', left: '-9999px' }}>
-            <QRCodeCanvas 
-              value={data.numero_plaque} 
+          <div
+            className="qr-code-canvas"
+            style={{ position: "absolute", left: "-9999px" }}
+          >
+            <QRCodeCanvas
+              value={data.numero_plaque}
               size={128}
               level="H"
               bgColor="#FFFFFF"
@@ -506,11 +544,11 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
             </style>
 
             <div className="stage">
-              <div 
-                className={`card ${isFlipped ? 'flipped' : ''}`} 
+              <div
+                className={`card ${isFlipped ? "flipped" : ""}`}
                 onClick={toggleFlip}
-                role="button" 
-                aria-label="Carte 86 par 54 millimètres recto verso" 
+                role="button"
+                aria-label="Carte 86 par 54 millimètres recto verso"
                 tabIndex={0}
               >
                 <div className="hint">Cliquez pour retourner la carte</div>
@@ -518,14 +556,14 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                 <div className="flip">
                   {/* RECTO */}
                   <div className="face front" aria-hidden={isFlipped}>
-                    <div className="dgrka-code">
-                      {generateDGRKACode()}
-                    </div>
+                    <div className="dgrka-code">{generateDGRKACode()}</div>
                     <table>
                       <tbody>
                         <tr>
                           <th>Nom / Raison sociale</th>
-                          <td>{data.nom} {data.prenom}</td>
+                          <td>
+                            {data.nom} {data.prenom}
+                          </td>
                         </tr>
                         <tr>
                           <th>Adresse physique</th>
@@ -533,7 +571,7 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                         </tr>
                         <tr>
                           <th>NIF</th>
-                          <td>{data.nif || ''}</td>
+                          <td>{data.nif || ""}</td>
                         </tr>
                         <tr>
                           <th>Année de mise en circulation</th>
@@ -550,14 +588,21 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
 
                     {/* QR Code */}
                     <div className="qr" aria-hidden={isFlipped} title="QR code">
-                      <QRCodeCanvas 
-                        value={data.numero_plaque} 
+                      <QRCodeCanvas
+                        value={data.numero_plaque}
                         size={40}
                         level="H"
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                       />
-                      <span style={{position: 'absolute', bottom: '-4mm', fontSize: '1.6mm', fontWeight: 'bold'}}>
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "-4mm",
+                          fontSize: "1.6mm",
+                          fontWeight: "bold",
+                        }}
+                      >
                         {getCurrentDate()}
                       </span>
                     </div>
@@ -569,7 +614,9 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                       <tbody>
                         <tr>
                           <th>Marque et type</th>
-                          <td>{data.marque} - {data.type_engin}</td>
+                          <td>
+                            {data.marque} - {data.type_engin}
+                          </td>
                         </tr>
                         <tr>
                           <th>Usage</th>
@@ -577,23 +624,23 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
                         </tr>
                         <tr>
                           <th>N. chassis</th>
-                          <td>{data.numero_chassis || '-'}</td>
+                          <td>{data.numero_chassis || "-"}</td>
                         </tr>
                         <tr>
                           <th>N. moteur</th>
-                          <td>{data.numero_moteur || '-'}</td>
+                          <td>{data.numero_moteur || "-"}</td>
                         </tr>
                         <tr>
                           <th>Année de fabrication</th>
-                          <td>{data.annee_fabrication || '-'}</td>
+                          <td>{data.annee_fabrication || "-"}</td>
                         </tr>
                         <tr>
                           <th>Couleur</th>
-                          <td>{data.couleur || '-'}</td>
+                          <td>{data.couleur || "-"}</td>
                         </tr>
                         <tr>
                           <th>Puissance fiscal</th>
-                          <td>{data.puissance_fiscal || '-'}</td>
+                          <td>{data.puissance_fiscal || "-"}</td>
                         </tr>
                       </tbody>
                     </table>
