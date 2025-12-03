@@ -322,19 +322,17 @@ function PrintModal({
           </tr>
           <tr style="position: relative; top: 8px;">
             <th></th>
-            <td style="position: relative; top: 8px;text-transform: uppercase;">${
-              carte.nif_proprietaire || ""
-            }</td>
+            <td style="position: relative; top: 8px;text-transform: uppercase;"></td>
           </tr>
           <tr>
             <th style="position: relative; top: 9px;"></th>
-            <td style="position: relative; top: 24px;text-transform: uppercase;">${
+            <td style="position: relative; top: 18px;text-transform: uppercase;">${
               carte.annee_mise_circulation
             }</td>
           </tr>
           <tr style="position: relative; top: 23px;">
             <th></th>
-            <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(carte.numero_plaque) || ""}</td>
+            <td style="position: relative; top: 8px;text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(carte.numero_plaque) || ""}</td>
           </tr>
         </tbody>
       </table>

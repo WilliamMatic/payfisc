@@ -121,6 +121,32 @@ export default function Sidebar({
         // { icon: "🧾", label: "Paiement", href: "/system/paiement" }
       ],
     },
+
+    {
+      category: "Suppressions",
+      items: [
+        {
+          icon: "❌",
+          label: "Suppression Vente Simple",
+          href: "/system/suppression-vente-simple",
+        },
+        {
+          icon: "🗑️",
+          label: "Suppression Délivrance",
+          href: "/system/suppression-delivrance",
+        },
+        {
+          icon: "⚠️",
+          label: "Suppression Vente Grossiste",
+          href: "/system/suppression-vente-grossiste",
+        },
+        {
+          icon: "♻️",
+          label: "Suppression Reproduction",
+          href: "/system/suppression-reproduction",
+        },
+      ],
+    },
   ];
 
   const isActive = (href: string) => pathname === href;
