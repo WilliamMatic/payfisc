@@ -34,7 +34,22 @@ export interface ApiResponse {
   data?: any;
 }
 
-// URL de base de l'API (à définir dans les variables d'environnement)
+// Interface pour la pagination
+export interface PaginationResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: {
+    particuliers: Particulier[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  };
+}
+
+// URL de base de l'API
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls/particuliers";
@@ -67,12 +82,15 @@ export const cleanParticulierData = (data: any): Particulier => {
 };
 
 /**
- * Récupère la liste de tous les particuliers
+ * Récupère la liste des particuliers avec pagination (10 derniers par défaut)
  */
-export const getParticuliers = async (): Promise<ApiResponse> => {
+export const getParticuliers = async (
+  page: number = 1,
+  limit: number = 10
+): Promise<PaginationResponse> => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/particuliers/lister_particuliers.php`,
+      `${API_BASE_URL}/particuliers/lister_particuliers.php?page=${page}&limit=${limit}`,
       {
         method: "GET",
         credentials: "include",
@@ -92,13 +110,21 @@ export const getParticuliers = async (): Promise<ApiResponse> => {
     }
 
     // Nettoyer les données
-    const cleanedData = Array.isArray(data.data)
-      ? data.data.map((item: any) => cleanParticulierData(item))
+    const cleanedData = Array.isArray(data.data?.particuliers)
+      ? data.data.particuliers.map((item: any) => cleanParticulierData(item))
       : [];
 
     return {
       status: "success",
-      data: cleanedData,
+      data: {
+        particuliers: cleanedData,
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 1
+        }
+      },
     };
   } catch (error) {
     console.error("Get particuliers error:", error);
@@ -183,7 +209,7 @@ export const addParticulier = async (particulierData: {
     formData.append("telephone", particulierData.telephone);
     formData.append("rue", particulierData.rue);
 
-    // Ajout des champs optionnels - CORRIGÉ : tous les champs non obligatoires
+    // Ajout des champs optionnels
     if (particulierData.nif) formData.append("nif", particulierData.nif);
     if (particulierData.date_naissance) formData.append("date_naissance", particulierData.date_naissance);
     if (particulierData.lieu_naissance) formData.append("lieu_naissance", particulierData.lieu_naissance);
@@ -273,7 +299,7 @@ export const updateParticulier = async (
     formData.append("telephone", particulierData.telephone);
     formData.append("rue", particulierData.rue);
 
-    // Ajout des champs optionnels - CORRIGÉ : tous les champs non obligatoires
+    // Ajout des champs optionnels
     if (particulierData.nif !== undefined) formData.append("nif", particulierData.nif || '');
     if (particulierData.date_naissance !== undefined) formData.append("date_naissance", particulierData.date_naissance || '');
     if (particulierData.lieu_naissance !== undefined) formData.append("lieu_naissance", particulierData.lieu_naissance || '');
@@ -397,22 +423,27 @@ export const toggleParticulierStatus = async (
 };
 
 /**
- * Recherche des particuliers
+ * Recherche des particuliers dans la base de données
  */
 export const searchParticuliers = async (
-  searchTerm: string
-): Promise<ApiResponse> => {
+  searchTerm: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<PaginationResponse> => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/particuliers/rechercher_particuliers.php?search=${encodeURIComponent(
-        searchTerm
-      )}`,
+      `${API_BASE_URL}/particuliers/rechercher_particuliers.php`,
       {
-        method: "GET",
+        method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          search: searchTerm,
+          page: page,
+          limit: limit,
+        }),
       }
     );
 
@@ -425,9 +456,22 @@ export const searchParticuliers = async (
       };
     }
 
+    // Nettoyer les données
+    const cleanedData = Array.isArray(data.data?.particuliers)
+      ? data.data.particuliers.map((item: any) => cleanParticulierData(item))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: {
+        particuliers: cleanedData,
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 1
+        }
+      },
     };
   } catch (error) {
     console.error("Search particuliers error:", error);

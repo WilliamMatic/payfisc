@@ -347,7 +347,7 @@ export default function ClientSimpleForm({
     }
   };
 
-  // Vérification du téléphone en temps réel
+  // Vérification du téléphone en temps réel (UNIQUEMENT si le téléphone n'est pas vide et différent de "-")
   const handleTelephoneChange = async (telephone: string) => {
     setFormData((prev) => ({ ...prev, telephoneAssujetti: telephone }));
 
@@ -355,12 +355,14 @@ export default function ClientSimpleForm({
       clearTimeout(verificationTelephoneTimeoutRef.current);
     }
 
-    if (telephone.length >= 8) {
+    // Vérifier si le téléphone n'est pas vide et différent de "-"
+    const telephoneNettoye = telephone.trim();
+    if (telephoneNettoye.length >= 8 && telephoneNettoye !== "-") {
       verificationTelephoneTimeoutRef.current = setTimeout(async () => {
         setLoading((prev) => ({ ...prev, verificationTelephone: true }));
 
         try {
-          const result = await verifierTelephoneExistant(telephone);
+          const result = await verifierTelephoneExistant(telephoneNettoye);
 
           if (result.status === "success" && result.data?.particulier) {
             const particulier = result.data.particulier;
@@ -683,9 +685,7 @@ export default function ClientSimpleForm({
         setShowModalCarteExistante(true);
       } else {
         // Cas 3: Aucun enregistrement trouvé
-        // Même si la vérification échoue, on peut passer au formulaire
-        // car l'utilisateur peut vouloir créer un nouvel enregistrement
-        // setEtapeActuelle("formulaire");
+        setEtapeActuelle("formulaire");
         setMessageErreur(
           "⚠️ Aucun enregistrement trouvé. Vous pouvez créer une nouvelle carte rose."
         );
@@ -714,14 +714,12 @@ export default function ClientSimpleForm({
     setMessageErreur("");
   };
 
-  // ÉTAPE 2: Validation du formulaire
+  // ÉTAPE 2: Validation du formulaire - TÉLÉPHONE NON OBLIGATOIRE
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
     if (!formData.nom.trim()) newErrors.nom = "Le nom est obligatoire";
     if (!formData.prenom.trim()) newErrors.prenom = "Le prénom est obligatoire";
-    if (!formData.telephoneAssujetti.trim())
-      newErrors.telephoneAssujetti = "Le téléphone est obligatoire";
     if (!formData.adresse.trim())
       newErrors.adresse = "L'adresse est obligatoire";
     if (!formData.typeEngin)
@@ -729,12 +727,18 @@ export default function ClientSimpleForm({
     if (!formData.marque) newErrors.marque = "La marque est obligatoire";
     if (!formData.modele) newErrors.modele = "Le modèle est obligatoire";
 
-    const phoneRegex = /^[0-9+\-\s()]{8,}$/;
+    // Vérification facultative du téléphone (seulement s'il est fourni)
     if (
       formData.telephoneAssujetti &&
-      !phoneRegex.test(formData.telephoneAssujetti.replace(/\s/g, ""))
+      formData.telephoneAssujetti.trim() !== ""
     ) {
-      newErrors.telephoneAssujetti = "Format de téléphone invalide";
+      const phoneRegex = /^[0-9+\-\s()]{8,}$/;
+      const telephoneNettoye = formData.telephoneAssujetti.replace(/\s/g, "");
+
+      // Si le téléphone n'est pas juste un tiret
+      if (telephoneNettoye !== "-" && !phoneRegex.test(telephoneNettoye)) {
+        newErrors.telephoneAssujetti = "Format de téléphone invalide";
+      }
     }
 
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
@@ -807,7 +811,11 @@ export default function ClientSimpleForm({
       const particulierData: ParticulierData = {
         nom: formData.nom,
         prenom: formData.prenom,
-        telephone: formData.telephoneAssujetti,
+        telephone:
+          formData.telephoneAssujetti.trim() !== "" &&
+          formData.telephoneAssujetti !== "-"
+            ? formData.telephoneAssujetti
+            : "", // Si vide ou "-", envoyer chaîne vide
         email: formData.email,
         adresse: formData.adresse,
         ville: formData.ville,
@@ -1063,7 +1071,7 @@ export default function ClientSimpleForm({
           <div>
             <span className="text-gray-500">Téléphone vérifié:</span>
             <div className="text-gray-700 font-medium">
-              {formData.telephone}
+              {formData.telephone || "Non fourni"}
             </div>
           </div>
           <div>
@@ -1102,40 +1110,6 @@ export default function ClientSimpleForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* TÉLÉPHONE - PLACÉ EN PREMIER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Numéro de téléphone <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="tel"
-                value={formData.telephoneAssujetti}
-                onChange={(e) => handleTelephoneChange(e.target.value)}
-                onBlur={() => setMessageErreur("")}
-                placeholder="Entrez votre numéro de téléphone"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.telephoneAssujetti
-                    ? "border-red-300"
-                    : "border-gray-300"
-                }`}
-              />
-              {loading.verificationTelephone && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-            {errors.telephoneAssujetti && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.telephoneAssujetti}
-              </p>
-            )}
-            <p className="text-blue-600 text-xs mt-1">
-              Le système vérifie automatiquement si ce téléphone existe déjà
-            </p>
-          </div>
-
           {/* NOM */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1172,6 +1146,41 @@ export default function ClientSimpleForm({
             {errors.prenom && (
               <p className="text-red-600 text-sm mt-1">{errors.prenom}</p>
             )}
+          </div>
+
+          {/* TÉLÉPHONE - FACULTATIF */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de téléphone
+            </label>
+            <div className="relative">
+              <input
+                type="tel"
+                value={formData.telephoneAssujetti}
+                onChange={(e) => handleTelephoneChange(e.target.value)}
+                onBlur={() => setMessageErreur("")}
+                placeholder="Ex: +243 81 234 5678 (Facultatif)"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.telephoneAssujetti
+                    ? "border-red-300"
+                    : "border-gray-300"
+                }`}
+              />
+              {loading.verificationTelephone && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            {errors.telephoneAssujetti && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.telephoneAssujetti}
+              </p>
+            )}
+            <p className="text-blue-600 text-xs mt-1">
+              Facultatif - Le système vérifie automatiquement si ce téléphone
+              existe déjà
+            </p>
           </div>
 
           {/* EMAIL */}
@@ -1937,7 +1946,7 @@ export default function ClientSimpleForm({
                     <div>
                       <span className="text-blue-600">Téléphone:</span>
                       <div className="font-medium">
-                        {formData.telephoneAssujetti}
+                        {formData.telephoneAssujetti || "Non fourni"}
                       </div>
                     </div>
                   </div>

@@ -63,7 +63,7 @@ export interface CarteRoseResponse {
     nif?: string;
     particulier_existant?: boolean;
     paiement_id?: string;
-  };
+  } | null; // Ajout de | null ici
 }
 
 export interface RechercheModeleResponse {
@@ -75,7 +75,7 @@ export interface RechercheModeleResponse {
     description: string;
     marque_engin_id: number;
     marque_libelle: string;
-  }>;
+  }> | null;
 }
 
 export interface RecherchePuissanceResponse {
@@ -87,7 +87,7 @@ export interface RecherchePuissanceResponse {
     valeur: number;
     description: string;
     type_engin_libelle: string;
-  }>;
+  }> | null;
 }
 
 const API_BASE_URL =
@@ -134,12 +134,21 @@ export const verifierPlaqueTelephone = async (
 };
 
 /**
- * Vérifie si un téléphone existe déjà
+ * Vérifie si un téléphone existe déjà (uniquement si le téléphone n'est pas vide et différent de "-")
  */
 export const verifierTelephoneExistant = async (
   telephone: string
 ): Promise<CarteRoseResponse> => {
   try {
+    // Ne pas vérifier si le téléphone est vide ou juste un tiret
+    if (!telephone || telephone.trim() === "" || telephone.trim() === "-") {
+      return {
+        status: "success",
+        message: "Téléphone vide ou '-', pas de vérification nécessaire",
+        data: null // Maintenant c'est accepté car data peut être null
+      };
+    }
+
     const formData = new FormData();
     formData.append("telephone", telephone);
 
@@ -361,7 +370,8 @@ export const soumettreCarteRose = async (
     // Données du particulier
     formData.append("nom", particulierData.nom);
     formData.append("prenom", particulierData.prenom);
-    formData.append("telephone", particulierData.telephone);
+    // Téléphone peut être vide
+    formData.append("telephone", particulierData.telephone || "");
     formData.append("email", particulierData.email || "");
     formData.append("adresse", particulierData.adresse);
     formData.append("ville", particulierData.ville || "");

@@ -5,7 +5,7 @@
 export interface ParticulierData {
   nom: string;
   prenom: string;
-  telephone: string;
+  telephone?: string; // Changé de string à string? (optionnel)
   email?: string;
   adresse: string;
   nif?: string;
@@ -34,6 +34,25 @@ export interface PaiementData {
   numeroCheque?: string;
   banque?: string;
   serie_item_id?: number | null;
+}
+
+// Interface pour la réponse de vérification de particulier
+export interface VerifierParticulierResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: {
+    id?: number;
+    nom?: string;
+    prenom?: string;
+    telephone?: string;
+    email?: string;
+    adresse?: string;
+    nif?: string;
+    reduction_type?: string;
+    reduction_valeur?: number;
+    reduction_montant_max?: number;
+    date_creation?: string;
+  } | null;
 }
 
 export interface ImmatriculationResponse {
@@ -65,9 +84,18 @@ const API_BASE_URL =
  * Vérifie si un particulier existe par son numéro de téléphone
  */
 export const verifierParticulierParTelephone = async (
-  telephone: string
-): Promise<ImmatriculationResponse> => {
+  telephone?: string // Changé pour accepter undefined
+): Promise<VerifierParticulierResponse> => {
   try {
+    // Si le téléphone est vide, null, undefined ou juste un tiret, on ne procède pas à la vérification
+    if (!telephone || telephone.trim() === '' || telephone.trim() === '-') {
+      return {
+        status: "success",
+        message: "Téléphone non renseigné ou invalide, vérification ignorée",
+        data: null
+      };
+    }
+
     const formData = new FormData();
     formData.append("telephone", telephone);
 
@@ -86,6 +114,7 @@ export const verifierParticulierParTelephone = async (
       return {
         status: "error",
         message: data.message || "Échec de la vérification du particulier",
+        data: null
       };
     }
 
@@ -95,6 +124,7 @@ export const verifierParticulierParTelephone = async (
     return {
       status: "error",
       message: "Erreur réseau lors de la vérification du particulier",
+      data: null
     };
   }
 };
@@ -197,10 +227,10 @@ export const soumettreImmatriculation = async (
     formData.append("utilisateur_id", utilisateur.id.toString());
     formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    // Données du particulier
+    // Données du particulier (téléphone peut être vide ou "-")
     formData.append("nom", particulierData.nom);
     formData.append("prenom", particulierData.prenom);
-    formData.append("telephone", particulierData.telephone);
+    formData.append("telephone", particulierData.telephone || "-"); // Utiliser "-" si vide
     formData.append("email", particulierData.email || "");
     formData.append("adresse", particulierData.adresse);
     formData.append("nif", particulierData.nif || "");

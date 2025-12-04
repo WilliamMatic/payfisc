@@ -121,6 +121,13 @@ export default function ParticuliersTable({
                       >
                         <Edit className="w-4 h-4" />
                       </button>
+                      <button
+                        onClick={() => onDelete(particulier)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>

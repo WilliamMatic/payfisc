@@ -210,15 +210,27 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td style="position: relative; top: 8px;text-transform: uppercase;">${data.nif || '-'}</td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;"></td>
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
-                    <td style="position: relative; top: 24px;text-transform: uppercase;">${data.annee_circulation}</td>
+                    <td style="position: relative; top: ${
+                      data.adresse &&
+                      data.adresse.length > 33
+                        ? "13px"
+                        : "24px"
+                    };text-transform: uppercase;">${data.annee_circulation}</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
-                    <td style="position: relative; top: 14px;text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(data.numero_plaque) || ""}</td>
+                    <td style="position: relative; top: ${
+                      data.adresse &&
+                      data.adresse.length> 33
+                        ? "2px" 
+                        : "14px"
+                    };text-transform: uppercase;" class="plaque-number">${
+                  utilisateur?.province_code || ""
+                } ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>

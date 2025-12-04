@@ -1,18 +1,28 @@
-import { getSeries, Serie } from '@/services/plaques/plaqueService';
+// src/app/system/(admin)/plaques/page.tsx
+import { getSeries, Serie, PaginationResponse } from '@/services/plaques/plaqueService';
 import PlaqueClient from './components/PlaqueClient';
 
 export default async function PlaquesPage() {
   try {
-    const seriesResult = await getSeries();
+    // Récupère les 5 derniers enregistrements par défaut
+    const seriesResult: PaginationResponse = await getSeries(1, 5);
 
     // Vérification et nettoyage des données des séries
-    const series: Serie[] =
-      seriesResult.status === 'success'
-        ? (seriesResult.data || []).filter(
-            (serie: Serie | null | undefined): serie is Serie =>
-              serie !== null && serie !== undefined
-          )
-        : [];
+    let series: Serie[] = [];
+    let pagination = {
+      total: 0,
+      page: 1,
+      limit: 5,
+      totalPages: 1
+    };
+
+    if (seriesResult.status === 'success' && seriesResult.data) {
+      series = (seriesResult.data.series || []).filter(
+        (serie: Serie | null | undefined): serie is Serie =>
+          serie !== null && serie !== undefined
+      );
+      pagination = seriesResult.data.pagination || pagination;
+    }
 
     // Gestion des erreurs
     const error: string | null =
@@ -24,6 +34,7 @@ export default async function PlaquesPage() {
       <PlaqueClient 
         initialSeries={series}
         initialError={error}
+        initialPagination={pagination}
       />
     );
   } catch (error) {
@@ -32,6 +43,12 @@ export default async function PlaquesPage() {
       <PlaqueClient 
         initialSeries={[]}
         initialError="Erreur lors du chargement des données"
+        initialPagination={{
+          total: 0,
+          page: 1,
+          limit: 5,
+          totalPages: 1
+        }}
       />
     );
   }

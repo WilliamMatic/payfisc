@@ -68,6 +68,21 @@ export interface RapportSeries {
   }>;
 }
 
+// Interfaces pour la pagination
+export interface PaginationResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: {
+    series: Serie[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  };
+}
+
 // Interface pour les réponses de l'API
 export interface ApiResponse {
   status: "success" | "error";
@@ -81,17 +96,23 @@ const API_BASE_URL =
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
 /**
- * Récupère la liste de toutes les séries
+ * Récupère la liste des séries avec pagination (5 derniers par défaut)
  */
-export const getSeries = async (): Promise<ApiResponse> => {
+export const getSeries = async (
+  page: number = 1,
+  limit: number = 5
+): Promise<PaginationResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/plaques/lister_series.php`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/plaques/lister_series.php?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const data = await response.json();
 
@@ -104,7 +125,15 @@ export const getSeries = async (): Promise<ApiResponse> => {
 
     return {
       status: "success",
-      data: data.data,
+      data: {
+        series: data.data?.series || [],
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 5,
+          totalPages: 1,
+        },
+      },
     };
   } catch (error) {
     console.error("Get series error:", error);
@@ -120,13 +149,16 @@ export const getSeries = async (): Promise<ApiResponse> => {
  */
 export const getProvinces = async (): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/plaques/lister_provinces.php`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/plaques/lister_provinces.php`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const data = await response.json();
 
@@ -355,22 +387,27 @@ export const toggleSerieStatus = async (
 };
 
 /**
- * Recherche des séries par terme
+ * Recherche des séries dans la base de données avec pagination
  */
 export const searchSeries = async (
-  searchTerm: string
-): Promise<ApiResponse> => {
+  searchTerm: string,
+  page: number = 1,
+  limit: number = 5
+): Promise<PaginationResponse> => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/plaques/rechercher_series.php?search=${encodeURIComponent(
-        searchTerm
-      )}`,
+      `${API_BASE_URL}/plaques/rechercher_series.php`,
       {
-        method: "GET",
+        method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          search: searchTerm,
+          page: page,
+          limit: limit,
+        }),
       }
     );
 
@@ -385,7 +422,15 @@ export const searchSeries = async (
 
     return {
       status: "success",
-      data: data.data,
+      data: {
+        series: data.data?.series || [],
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 5,
+          totalPages: 1,
+        },
+      },
     };
   } catch (error) {
     console.error("Search series error:", error);
@@ -408,7 +453,7 @@ export const genererRapportSeries = async (params: {
     const queryParams = new URLSearchParams({
       date_debut: params.date_debut,
       date_fin: params.date_fin,
-      ...(params.province_id && { province_id: params.province_id.toString() })
+      ...(params.province_id && { province_id: params.province_id.toString() }),
     });
 
     const response = await fetch(

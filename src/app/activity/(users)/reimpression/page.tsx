@@ -310,29 +310,39 @@ function PrintModal({
         <tbody>
           <tr>
             <th></th>
-            <td style="position: relative; top: 3px;text-transform: uppercase;">${
+            <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${
               carte.nom_proprietaire
             }</td>
           </tr>
           <tr>
             <th></th>
-            <td style="position: relative; top: 4px;text-transform: uppercase;">${
+            <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${
               carte.adresse_proprietaire || ""
             }</td>
           </tr>
           <tr style="position: relative; top: 8px;">
             <th></th>
-            <td style="position: relative; top: 8px;text-transform: uppercase;"></td>
+            <td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td>
           </tr>
           <tr>
             <th style="position: relative; top: 9px;"></th>
-            <td style="position: relative; top: 18px;text-transform: uppercase;">${
-              carte.annee_mise_circulation
-            }</td>
+            <td style="position: relative; top: ${
+              carte.adresse_proprietaire &&
+              carte.adresse_proprietaire.length > 33
+                ? "13px"
+                : "24px"
+            };text-transform: uppercase;">${carte.annee_mise_circulation}</td>
           </tr>
           <tr style="position: relative; top: 23px;">
             <th></th>
-            <td style="position: relative; top: 8px;text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(carte.numero_plaque) || ""}</td>
+            <td style="position: relative; top: ${
+              carte.adresse_proprietaire &&
+              carte.adresse_proprietaire.length > 33
+                ? "2px"
+                : "14px"
+            };text-transform: uppercase;" class="plaque-number">${
+          utilisateur?.province_code || ""
+        } ${formatPlaque(carte.numero_plaque) || ""}</td>
           </tr>
         </tbody>
       </table>
@@ -477,7 +487,7 @@ function PrintModal({
               Réimpression de la Carte Rose
             </h3>
             <div className="flex space-x-3">
-              {carte.status === 0 && (
+              {/* {carte.status === 0 && (
                 <button
                   onClick={handlePrint}
                   disabled={isPrinting}
@@ -495,7 +505,24 @@ function PrintModal({
                     </>
                   )}
                 </button>
-              )}
+              )} */}
+              <button
+                onClick={handlePrint}
+                disabled={isPrinting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+              >
+                {isPrinting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Impression...</span>
+                  </>
+                ) : (
+                  <>
+                    <Printer className="w-4 h-4" />
+                    <span>Imprimer</span>
+                  </>
+                )}
+              </button>
               <button
                 onClick={onClose}
                 className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
@@ -838,7 +865,6 @@ function PrintModal({
 
 // Composant principal
 export default function CartesReprintScreen() {
-
   const { utilisateur } = useAuth();
 
   const [cartes, setCartes] = useState<CarteReprint[]>([]);

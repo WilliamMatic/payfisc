@@ -51,7 +51,7 @@ import ImmatriculationPrint from "./ImmatriculationPrint";
 interface FormData {
   nom: string;
   prenom: string;
-  telephone: string;
+  telephone: string; // Reste string mais peut être vide
   email: string;
   adresse: string;
   nif: string;
@@ -322,7 +322,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   <div>
                     <span className="text-gray-500 text-xs">Téléphone:</span>
                     <p className="font-semibold text-gray-800">
-                      {formData.telephone}
+                      {formData.telephone || "Non renseigné"}
                     </p>
                   </div>
                   {formData.reduction_type && (
@@ -772,12 +772,12 @@ export default function ClientSimpleForm({
       clearTimeout(telephoneTimerRef.current);
     }
 
-    if (formData.telephone.length >= 8) {
+    // Seulement vérifier si le téléphone est renseigné et valide
+    if (formData.telephone && formData.telephone.trim() !== '' && formData.telephone.trim() !== '-') {
       telephoneTimerRef.current = setTimeout(async () => {
         try {
-          const response = await verifierParticulierParTelephone(formData.telephone);
+          const response = await verifierParticulierParTelephone(formData.telephone.trim());
           if (response.status === "success" && response.data) {
-            // Vérifier si data est un objet (particulier) et non un tableau
             const particulier = response.data;
             if (particulier && typeof particulier === 'object' && !Array.isArray(particulier)) {
               setFormData(prev => ({
@@ -817,7 +817,6 @@ export default function ClientSimpleForm({
         try {
           const response = await rechercherModeles(selectedMarqueId, formData.modele);
           if (response.status === "success") {
-            // Vérifier que data est un tableau
             const data = response.data;
             if (Array.isArray(data)) {
               setModelesSuggestions(data);
@@ -857,7 +856,6 @@ export default function ClientSimpleForm({
         try {
           const response = await rechercherPuissances(formData.typeEngin, formData.puissanceFiscal);
           if (response.status === "success") {
-            // Vérifier que data est un tableau
             const data = response.data;
             if (Array.isArray(data)) {
               setPuissancesSuggestions(data);
@@ -1006,8 +1004,6 @@ export default function ClientSimpleForm({
 
     if (!formData.nom.trim()) newErrors.nom = "Le nom est obligatoire";
     if (!formData.prenom.trim()) newErrors.prenom = "Le prénom est obligatoire";
-    if (!formData.telephone.trim())
-      newErrors.telephone = "Le téléphone est obligatoire";
     if (!formData.adresse.trim())
       newErrors.adresse = "L'adresse est obligatoire";
     if (!formData.typeEngin)
@@ -1016,12 +1012,13 @@ export default function ClientSimpleForm({
     if (!formData.numeroPlaque.trim())
       newErrors.numeroPlaque = "Le numéro de plaque est obligatoire";
 
-    const phoneRegex = /^[0-9+\-\s()]{8,}$/;
-    if (
-      formData.telephone &&
-      !phoneRegex.test(formData.telephone.replace(/\s/g, ""))
-    ) {
-      newErrors.telephone = "Format de téléphone invalide";
+    // Le téléphone n'est plus obligatoire, donc pas de validation
+    // Seulement validation du format si le téléphone est renseigné
+    if (formData.telephone && formData.telephone.trim() !== '' && formData.telephone.trim() !== '-') {
+      const phoneRegex = /^[0-9+\-\s()]{8,}$/;
+      if (!phoneRegex.test(formData.telephone.replace(/\s/g, ""))) {
+        newErrors.telephone = "Format de téléphone invalide";
+      }
     }
 
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
@@ -1100,7 +1097,7 @@ export default function ClientSimpleForm({
       const particulierData: ParticulierData = {
         nom: formData.nom,
         prenom: formData.prenom,
-        telephone: formData.telephone,
+        telephone: formData.telephone || '-', // Utiliser '-' si vide
         email: formData.email,
         adresse: formData.adresse,
         nif: formData.nif,
@@ -1153,7 +1150,7 @@ export default function ClientSimpleForm({
           nom: formData.nom,
           prenom: formData.prenom,
           adresse: formData.adresse,
-          telephone: formData.telephone,
+          telephone: formData.telephone || '-',
           montant_francs: montantEnFrancs,
           paiement_id: (response.data as any).paiement_id.toString(),
           reduction_type: formData.reduction_type,
@@ -1218,38 +1215,13 @@ export default function ClientSimpleForm({
                 Informations de l'Assujetti
               </h2>
               <p className="text-gray-600">
-                Renseignez les informations personnelles du propriétaire
+                Renseignez les informations personnelles du propriétaire (le téléphone n'est plus obligatoire)
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Téléphone en premier */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Numéro de téléphone <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={formData.telephone}
-                onChange={(e) => handleInputChange("telephone", e.target.value)}
-                placeholder="Ex: +243 00 00 00 000"
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                  errors.telephone
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-blue-500"
-                }`}
-              />
-              {errors.telephone && (
-                <p className="text-red-600 text-sm mt-2 font-medium">
-                  {errors.telephone}
-                </p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Les informations seront automatiquement remplies si le client existe déjà
-              </p>
-            </div>
-
+            {/* Nom */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Nom <span className="text-red-500">*</span>
@@ -1292,6 +1264,32 @@ export default function ClientSimpleForm({
                   {errors.prenom}
                 </p>
               )}
+            </div>
+
+            {/* Téléphone (plus obligatoire) */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Numéro de téléphone
+              </label>
+              <input
+                type="tel"
+                value={formData.telephone}
+                onChange={(e) => handleInputChange("telephone", e.target.value)}
+                placeholder="Ex: +243 00 00 00 000 (facultatif)"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                  errors.telephone
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-gray-200 focus:border-blue-500"
+                }`}
+              />
+              {errors.telephone && (
+                <p className="text-red-600 text-sm mt-2 font-medium">
+                  {errors.telephone}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Facultatif. Les informations seront automatiquement remplies si le client existe déjà
+              </p>
             </div>
 
             <div>

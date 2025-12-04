@@ -1,3 +1,4 @@
+// src/app/system/(admin)/particuliers/components/ParticulierClient.tsx
 "use client";
 import { useState, useEffect } from "react";
 import {
@@ -5,20 +6,29 @@ import {
   getParticuliers,
   searchParticuliers,
   getParticulierDetails,
+  PaginationResponse
 } from "@/services/particuliers/particulierService";
 import ParticuliersHeader from "./ParticulierHeader";
 import ParticuliersTable from "./ParticulierTable";
 import ParticuliersModals from "./ParticulierModals";
 import AlertMessage from "./AlertMessage";
+import Pagination from "./Pagination";
 
 interface ParticuliersClientProps {
   initialParticuliers: ParticulierType[];
   initialError: string | null;
+  initialPagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export default function ParticuliersClient({
   initialParticuliers,
   initialError,
+  initialPagination
 }: ParticuliersClientProps) {
   const [particuliers, setParticuliers] = useState<ParticulierType[]>(
     initialParticuliers || []
@@ -54,6 +64,13 @@ export default function ParticuliersClient({
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // États de pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialPagination.totalPages);
+  const [totalItems, setTotalItems] = useState(initialPagination.total);
+  const [isSearching, setIsSearching] = useState(false);
+  const itemsPerPage = 10;
 
   const provinces = [
     "Bas-Uele",
@@ -91,15 +108,20 @@ export default function ParticuliersClient({
     "Veuf/Veuve",
   ];
 
-  // Fonction pour recharger les particuliers
-  const loadParticuliers = async () => {
+  // Fonction pour recharger les particuliers avec pagination
+  const loadParticuliers = async (page: number = 1) => {
     try {
       setLoading(true);
-      const result = await getParticuliers();
+      setError(null);
+      setIsSearching(false);
+      
+      const result = await getParticuliers(page, itemsPerPage);
 
-      if (result.status === "success") {
-        setParticuliers(result.data || []);
-        setError(null);
+      if (result.status === "success" && result.data) {
+        setParticuliers(result.data.particuliers || []);
+        setCurrentPage(result.data.pagination.page);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
       } else {
         setError(
           result.message || "Erreur lors du chargement des particuliers"
@@ -128,41 +150,57 @@ export default function ParticuliersClient({
     }
   };
 
-  // Fonction de recherche
-  const handleSearch = async () => {
+  // Fonction de recherche dans la base de données
+  const handleSearch = async (page: number = 1) => {
     if (!searchTerm.trim()) {
-      await loadParticuliers();
+      // Si la recherche est vide, on recharge les particuliers normaux
+      await loadParticuliers(1);
       return;
     }
 
     try {
       setLoading(true);
-      const result = await searchParticuliers(searchTerm);
+      setError(null);
+      setIsSearching(true);
+      
+      const result = await searchParticuliers(searchTerm, page, itemsPerPage);
 
-      if (result.status === "success") {
-        setParticuliers(result.data || []);
-        setError(null);
+      if (result.status === "success" && result.data) {
+        setParticuliers(result.data.particuliers || []);
+        setCurrentPage(result.data.pagination.page);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
       } else {
         setError(
           result.message || "Erreur lors de la recherche des particuliers"
         );
+        setParticuliers([]);
       }
     } catch (err) {
       setError("Erreur de connexion au serveur");
+      setParticuliers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtrage local des particuliers
-  const filteredParticuliers = particuliers.filter(
-    (particulier) =>
-      particulier &&
-      (particulier.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        particulier.prenom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        particulier.nif?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        particulier.telephone?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Gestion du changement de page
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    
+    if (isSearching && searchTerm.trim()) {
+      handleSearch(page);
+    } else {
+      loadParticuliers(page);
+    }
+  };
+
+  // Effet pour charger les particuliers au montage
+  useEffect(() => {
+    if (initialParticuliers.length === 0) {
+      loadParticuliers(1);
+    }
+  }, []);
 
   const openEditModal = async (particulier: ParticulierType) => {
     try {
@@ -232,7 +270,7 @@ export default function ParticuliersClient({
     }
   };
 
-  // Validation du formulaire - CORRIGÉ : seulement nom, prénom, téléphone, rue obligatoires
+  // Validation du formulaire
   const isFormValid = (): boolean => {
     return !!(
       formData.nom.trim() &&
@@ -257,14 +295,33 @@ export default function ParticuliersClient({
     }
   }, [successMessage]);
 
+  // Gestion de la touche Entrée pour la recherche
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && searchTerm.trim()) {
+        handleSearch(1);
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, [searchTerm]);
+
   return (
     <div className="h-full flex flex-col">
       <AlertMessage error={error} successMessage={successMessage} />
 
       <ParticuliersHeader
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onSearch={handleSearch}
+        onSearchChange={(value) => {
+          setSearchTerm(value);
+          if (!value.trim()) {
+            // Si l'utilisateur efface la recherche, recharger les données normales
+            loadParticuliers(1);
+            setIsSearching(false);
+          }
+        }}
+        onSearch={() => handleSearch(1)}
         onAddClick={() => {
           setFormData({
             nom: "",
@@ -289,14 +346,31 @@ export default function ParticuliersClient({
         }}
       />
 
-      <ParticuliersTable
-        particuliers={filteredParticuliers}
-        loading={loading}
-        onEdit={openEditModal}
-        onDelete={openDeleteModal}
-        onToggleStatus={openStatusModal}
-        onView={openViewModal}
-      />
+      <div className="flex-1 overflow-hidden">
+        <ParticuliersTable
+          particuliers={particuliers}
+          loading={loading}
+          onEdit={openEditModal}
+          onDelete={openDeleteModal}
+          onToggleStatus={openStatusModal}
+          onView={openViewModal}
+        />
+      </div>
+
+      {/* Pagination */}
+      {particuliers.length > 0 && (
+        <div className="mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            isSearching={isSearching}
+            searchTerm={searchTerm}
+          />
+        </div>
+      )}
 
       <ParticuliersModals
         showAddModal={showAddModal}
@@ -347,7 +421,6 @@ export default function ParticuliersClient({
         }}
         onFormDataChange={setFormData}
         onAddParticulier={async () => {
-          // CORRECTION : Message d'erreur mis à jour
           if (!isFormValid()) {
             setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
             return;
@@ -383,7 +456,12 @@ export default function ParticuliersClient({
                 result.message || "Particulier ajouté avec succès"
               );
               setShowAddModal(false);
-              await loadParticuliers();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadParticuliers(currentPage);
+              }
             } else {
               setError(
                 result.message || "Erreur lors de l'ajout du particulier"
@@ -396,7 +474,6 @@ export default function ParticuliersClient({
           }
         }}
         onEditParticulier={async () => {
-          // CORRECTION : Message d'erreur mis à jour
           if (!selectedParticulier || !isFormValid()) {
             setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
             return;
@@ -432,7 +509,12 @@ export default function ParticuliersClient({
                 result.message || "Particulier modifié avec succès"
               );
               setShowEditModal(false);
-              await loadParticuliers();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadParticuliers(currentPage);
+              }
             } else {
               setError(
                 result.message || "Erreur lors de la modification du particulier"
@@ -459,7 +541,12 @@ export default function ParticuliersClient({
                 result.message || "Particulier supprimé avec succès"
               );
               setShowDeleteModal(false);
-              await loadParticuliers();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadParticuliers(currentPage);
+              }
             } else {
               setError(
                 result.message || "Erreur lors de la suppression du particulier"
@@ -489,7 +576,12 @@ export default function ParticuliersClient({
                 result.message || "Statut du particulier modifié avec succès"
               );
               setShowStatusModal(false);
-              await loadParticuliers();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadParticuliers(currentPage);
+              }
             } else {
               setError(
                 result.message || "Erreur lors du changement de statut du particulier"

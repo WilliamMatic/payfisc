@@ -1,18 +1,34 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Serie as SerieType, Province, RapportSeries } from '@/services/plaques/plaqueService';
+import { 
+  Serie as SerieType, 
+  Province, 
+  RapportSeries,
+  PaginationResponse 
+} from '@/services/plaques/plaqueService';
 import PlaqueHeader from './PlaqueHeader';
 import PlaqueTable from './PlaqueTable';
 import PlaqueModals from './modals/PlaqueModals';
 import AlertMessage from './AlertMessage';
 import RapportSeriesModal from './RapportSeriesModal';
+import Pagination from './Pagination';
 
 interface PlaqueClientProps {
   initialSeries: SerieType[];
   initialError: string | null;
+  initialPagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
-export default function PlaqueClient({ initialSeries, initialError }: PlaqueClientProps) {
+export default function PlaqueClient({ 
+  initialSeries, 
+  initialError, 
+  initialPagination 
+}: PlaqueClientProps) {
   const [series, setSeries] = useState<SerieType[]>(initialSeries || []);
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,6 +52,13 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [rapportData, setRapportData] = useState<RapportSeries | null>(null);
   const [rapportLoading, setRapportLoading] = useState(false);
+  
+  // États de pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialPagination.totalPages);
+  const [totalItems, setTotalItems] = useState(initialPagination.total);
+  const [isSearching, setIsSearching] = useState(false);
+  const itemsPerPage = 5;
 
   // Charger les provinces au montage
   useEffect(() => {
@@ -55,21 +78,59 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
     loadProvinces();
   }, []);
 
-  // Fonction pour recharger les séries
-  const loadSeries = async () => {
+  // Fonction pour recharger les séries avec pagination
+  const loadSeries = async (page: number = 1) => {
     try {
       setLoading(true);
-      const { getSeries } = await import('@/services/plaques/plaqueService');
-      const result = await getSeries();
+      setError(null);
+      setIsSearching(false);
       
-      if (result.status === 'success') {
-        setSeries(result.data || []);
-        setError(null);
+      const { getSeries } = await import('@/services/plaques/plaqueService');
+      const result = await getSeries(page, itemsPerPage);
+      
+      if (result.status === 'success' && result.data) {
+        setSeries(result.data.series || []);
+        setCurrentPage(result.data.pagination.page);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
       } else {
         setError(result.message || 'Erreur lors du chargement des séries');
       }
     } catch (err) {
       setError('Erreur de connexion au serveur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction de recherche dans la base de données
+  const handleSearch = async (page: number = 1) => {
+    if (!searchTerm.trim()) {
+      // Si la recherche est vide, on recharge les séries normales
+      await loadSeries(1);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      setIsSearching(true);
+      
+      const { searchSeries } = await import('@/services/plaques/plaqueService');
+      const result = await searchSeries(searchTerm, page, itemsPerPage);
+      
+      if (result.status === 'success' && result.data) {
+        setSeries(result.data.series || []);
+        setCurrentPage(result.data.pagination.page);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
+      } else {
+        setError(result.message || 'Erreur lors de la recherche des séries');
+        setSeries([]);
+      }
+    } catch (err) {
+      setError('Erreur de connexion au serveur');
+      setSeries([]);
     } finally {
       setLoading(false);
     }
@@ -95,14 +156,23 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
     }
   };
 
-  // Filtrage local des séries
-  const filteredSeries = series.filter(serie =>
-    serie && (
-      serie.nom_serie.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (serie.description && serie.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      serie.province_nom.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  // Gestion du changement de page
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    
+    if (isSearching && searchTerm.trim()) {
+      handleSearch(page);
+    } else {
+      loadSeries(page);
+    }
+  };
+
+  // Effet pour charger les séries au montage
+  useEffect(() => {
+    if (initialSeries.length === 0) {
+      loadSeries(1);
+    }
+  }, []);
 
   const openEditModal = (serie: SerieType) => {
     setSelectedSerie(serie);
@@ -146,25 +216,61 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
     }
   }, [successMessage]);
 
+  // Gestion de la touche Entrée pour la recherche
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && searchTerm.trim()) {
+        handleSearch(1);
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, [searchTerm]);
+
   return (
     <div className="h-full flex flex-col">
       <AlertMessage error={error} successMessage={successMessage} />
       
       <PlaqueHeader 
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(value) => {
+          setSearchTerm(value);
+          if (!value.trim()) {
+            // Si l'utilisateur efface la recherche, recharger les données normales
+            loadSeries(1);
+            setIsSearching(false);
+          }
+        }}
         onAddClick={() => setShowAddModal(true)}
         onRapportClick={() => setShowRapportModal(true)}
       />
 
-      <PlaqueTable
-        series={filteredSeries}
-        loading={loading}
-        onEdit={openEditModal}
-        onDelete={openDeleteModal}
-        onToggleStatus={openStatusModal}
-        onViewItems={openItemsModal}
-      />
+      <div className="flex-1 overflow-hidden">
+        <PlaqueTable
+          series={series}
+          loading={loading}
+          onEdit={openEditModal}
+          onDelete={openDeleteModal}
+          onToggleStatus={openStatusModal}
+          onViewItems={openItemsModal}
+        />
+      </div>
+
+      {/* Pagination */}
+      {series.length > 0 && (
+        <div className="mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            isSearching={isSearching}
+            searchTerm={searchTerm}
+          />
+        </div>
+      )}
 
       <PlaqueModals
         showAddModal={showAddModal}
@@ -253,7 +359,12 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
               });
               setShowAddModal(false);
               
-              await loadSeries();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadSeries(currentPage);
+              }
             } else {
               setError(result.message || 'Erreur lors de l\'ajout de la série');
             }
@@ -300,7 +411,12 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
                 description: ''
               });
               
-              await loadSeries();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadSeries(currentPage);
+              }
             } else {
               setError(result.message || 'Erreur lors de la modification de la série');
             }
@@ -323,7 +439,12 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
               setShowDeleteModal(false);
               setSelectedSerie(null);
               
-              await loadSeries();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadSeries(currentPage);
+              }
             } else {
               setError(result.message || 'Erreur lors de la suppression de la série');
             }
@@ -346,7 +467,12 @@ export default function PlaqueClient({ initialSeries, initialError }: PlaqueClie
               setShowStatusModal(false);
               setSelectedSerie(null);
               
-              await loadSeries();
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadSeries(currentPage);
+              }
             } else {
               setError(result.message || 'Erreur lors du changement de statut de la série');
             }
