@@ -50,8 +50,8 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const paiementId = data.paiement_id || '000000';
-    
-    return `DGRK/${month}/${year}/${paiementId}`;
+    const element = utilisateur?.site_code || "Carte"
+    return `${element}/${month}/${year}/${paiementId}`;
   };
 
   const handlePrint = () => {

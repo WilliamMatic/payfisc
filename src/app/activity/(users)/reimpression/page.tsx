@@ -150,7 +150,8 @@ function PrintModal({
     const year = now.getFullYear();
     const paiementId = carte.id_primaire.toString();
 
-    return `DGRK/${month}/${year}/${carte.id}`;
+    const element = utilisateur?.site_code || "Carte";
+    return `${element}/${month}/${year}/${carte.id}`;
   };
 
   const handlePrint = async () => {

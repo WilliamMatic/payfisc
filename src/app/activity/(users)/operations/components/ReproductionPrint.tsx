@@ -46,7 +46,8 @@ export default function ReproductionPrint({
     const now = new Date();
     const mois = (now.getMonth() + 1).toString().padStart(2, "0");
     const annee = now.getFullYear().toString();
-    return `DGRK/${mois}/${annee}/${data.paiement_id}`;
+    const element = utilisateur?.site_code || "Carte"
+    return `${element}/${mois}/${annee}/${data.paiement_id}`;
   };
 
   const handlePrint = () => {

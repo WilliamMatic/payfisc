@@ -56,7 +56,9 @@ export default function ImmatriculationPrint({
     const year = now.getFullYear();
     const paiementId = data.paiement_id || "000000";
 
-    return `DGRK/${month}/${year}/${paiementId}`;
+    const element = utilisateur?.site_code || "Carte"
+
+    return `${element}/${month}/${year}/${paiementId}`;
   };
 
   const handlePrint = () => {

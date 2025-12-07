@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { formatPlaque } from '../../utils/formatPlaque';
+import { formatPlaque } from "../../utils/formatPlaque";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface PrintData {
@@ -46,7 +46,9 @@ export default function RefactorPrint({
     const now = new Date();
     const mois = (now.getMonth() + 1).toString().padStart(2, "0");
     const annee = now.getFullYear().toString();
-    return `DGRK/${mois}/${annee}/${data.id}`;
+
+    const element = utilisateur?.site_code || "Carte";
+    return `${element}/${mois}/${annee}/${data.id}`;
   };
 
   const handlePrint = () => {
@@ -216,22 +218,16 @@ export default function RefactorPrint({
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
                     <td style="position: relative; top: ${
-                      data.adresse &&
-                      data.adresse.length > 33
-                        ? "13px"
-                        : "24px"
+                      data.adresse && data.adresse.length > 33 ? "13px" : "24px"
                     };text-transform: uppercase;">${data.annee_circulation}</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
                     <td style="position: relative; top: ${
-                      data.adresse &&
-                      data.adresse.length> 33
-                        ? "2px" 
-                        : "14px"
+                      data.adresse && data.adresse.length > 33 ? "2px" : "14px"
                     };text-transform: uppercase;" class="plaque-number">${
-                  utilisateur?.province_code || ""
-                } ${formatPlaque(data.numero_plaque) || ""}</td>
+        utilisateur?.province_code || ""
+      } ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>
