@@ -3,13 +3,16 @@ import ImpotServicesClient from '../components/ImpotServicesClient';
 import ReproductionServicesClient from '../components/ReproductionServicesClient';
 
 interface ImpotPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ImpotPage({ params }: ImpotPageProps) {
   try {
+    // Await params avant de l'utiliser
+    const resolvedParams = await params;
+    
     const impotsResult = await getImpots();
     
     if (impotsResult.status === 'error') {
@@ -17,9 +20,7 @@ export default async function ImpotPage({ params }: ImpotPageProps) {
     }
 
     const impots: Impot[] = impotsResult.data || [];
-    const impot = impots.find(i => i.id === parseInt(params.id));
-
-    console.log('Loaded impot:', impot);
+    const impot = impots.find(i => i.id === parseInt(resolvedParams.id));
 
     if (!impot) {
       return (
@@ -33,7 +34,7 @@ export default async function ImpotPage({ params }: ImpotPageProps) {
     }
 
     // Si l'ID de l'impôt est 12, retourner ReproductionServicesClient
-    if (parseInt(params.id) === 12) {
+    if (parseInt(resolvedParams.id) === 12) {
       return <ReproductionServicesClient impot={impot} />;
     }
 
