@@ -38,17 +38,19 @@ export interface RefactorResponse {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:80/SOCOFIAPP/Impot/backend/calls/refactor";
+  "http://localhost/SOCOFIAPP/Impot/backend/calls";
 
 /**
  * Vérifie un ID DGRK et récupère les données associées
  */
 export const verifierIdDGRK = async (
-  idDGRK: string
+  idDGRK: string,
+  site_nom: string
 ): Promise<RefactorResponse> => {
   try {
     const formData = new FormData();
     formData.append("id_dgrk", idDGRK);
+    formData.append("site_nom", site_nom);
 
     const response = await fetch(`${API_BASE_URL}/refactor/verifier_dgrk.php`, {
       method: "POST",

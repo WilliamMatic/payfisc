@@ -522,12 +522,12 @@ export default function ReproductionServicesClient({
   }, [formData.typeEngin, puissancesFiscales]);
 
   // Récupération des données depuis la base DGI - CORRIGÉ
-  const recupererDonneesPlaque = async (plaque: string) => {
+  const recupererDonneesPlaque = async (plaque: string, user: string) => {
     setIsLoading(true);
     setErreurVerification("");
 
     try {
-      const result = await verifierPlaque(plaque);
+      const result = await verifierPlaque(plaque, user);
 
       if (result.status === "error") {
         setErreurVerification(
@@ -577,7 +577,7 @@ export default function ReproductionServicesClient({
       return;
     }
 
-    recupererDonneesPlaque(numeroPlaque);
+    recupererDonneesPlaque(numeroPlaque, utilisateur ? utilisateur.site_nom.toString() : "");
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {

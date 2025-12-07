@@ -28,7 +28,7 @@ export interface DonneesPlaque {
 }
 
 export interface PaiementReproductionData {
-  modePaiement: 'mobile_money' | 'cheque' | 'banque' | 'espece';
+  modePaiement: "mobile_money" | "cheque" | "banque" | "espece";
   operateur?: string;
   numeroTransaction?: string;
   numeroCheque?: string;
@@ -37,43 +37,52 @@ export interface PaiementReproductionData {
 }
 
 export interface ReproductionResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message?: string;
   data?: any;
 }
 
 // URL de base de l'API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls/reproduction';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:80/SOCOFIAPP/Impot/backend/calls/reproduction";
 
 /**
  * Vérifie une plaque et récupère les données associées
  */
-export const verifierPlaque = async (numeroPlaque: string): Promise<ReproductionResponse> => {
+export const verifierPlaque = async (
+  numeroPlaque: string,
+  site_nom: string
+): Promise<ReproductionResponse> => {
   try {
     const formData = new FormData();
-    formData.append('numero_plaque', numeroPlaque);
+    formData.append("numero_plaque", numeroPlaque);
+    formData.append("site_nom", site_nom);
 
-    const response = await fetch(`${API_BASE_URL}/reproduction/verifier_plaque.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/reproduction/verifier_plaque.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Plaque non trouvée',
+        status: "error",
+        message: data.message || "Plaque non trouvée",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Verifier plaque error:', error);
+    console.error("Verifier plaque error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la vérification de la plaque',
+      status: "error",
+      message: "Erreur réseau lors de la vérification de la plaque",
     };
   }
 };
@@ -89,42 +98,46 @@ export const traiterReproduction = async (
 ): Promise<ReproductionResponse> => {
   try {
     const formData = new FormData();
-    
-    // Données de base
-    formData.append('impot_id', impotId);
-    formData.append('numero_plaque', numeroPlaque);
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
-    
-    // Données de paiement
-    formData.append('mode_paiement', paiementData.modePaiement);
-    formData.append('operateur', paiementData.operateur || '');
-    formData.append('numero_transaction', paiementData.numeroTransaction || '');
-    formData.append('numero_cheque', paiementData.numeroCheque || '');
-    formData.append('banque', paiementData.banque || '');
-    formData.append('code_promo', paiementData.codePromo || '');
 
-    const response = await fetch(`${API_BASE_URL}/reproduction/traiter_reproduction.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    // Données de base
+    formData.append("impot_id", impotId);
+    formData.append("numero_plaque", numeroPlaque);
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
+    formData.append("site_nom", utilisateur.site_nom?.toString() || "");
+
+    // Données de paiement
+    formData.append("mode_paiement", paiementData.modePaiement);
+    formData.append("operateur", paiementData.operateur || "");
+    formData.append("numero_transaction", paiementData.numeroTransaction || "");
+    formData.append("numero_cheque", paiementData.numeroCheque || "");
+    formData.append("banque", paiementData.banque || "");
+    formData.append("code_promo", paiementData.codePromo || "");
+
+    const response = await fetch(
+      `${API_BASE_URL}/reproduction/traiter_reproduction.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec du traitement de la reproduction',
+        status: "error",
+        message: data.message || "Échec du traitement de la reproduction",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Traiter reproduction error:', error);
+    console.error("Traiter reproduction error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors du traitement de la reproduction',
+      status: "error",
+      message: "Erreur réseau lors du traitement de la reproduction",
     };
   }
 };

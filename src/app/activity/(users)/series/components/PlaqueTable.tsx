@@ -126,31 +126,6 @@ export default function PlaqueTable({
                         >
                           <List className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => onToggleStatus(serie)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            serie.actif 
-                              ? 'text-gray-500 hover:bg-gray-100' 
-                              : 'text-green-600 hover:bg-green-50'
-                          }`}
-                          title={serie.actif ? 'Désactiver' : 'Activer'}
-                        >
-                          {serie.actif ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => onEdit(serie)}
-                          className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                          title="Modifier"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => onDelete(serie)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </td>
                   </tr>

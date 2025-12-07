@@ -10,6 +10,8 @@ import {
   X,
   Loader,
   Search,
+  Plus,
+  Trash2
 } from "lucide-react";
 import {
   soumettreImmatriculation,
@@ -18,6 +20,9 @@ import {
   verifierParticulierParTelephone,
   rechercherModeles,
   rechercherPuissances,
+  annulerImmatriculation,
+  rechercherCouleur,
+  ajouterCouleur,
   type ParticulierData,
   type EnginData,
   type PaiementData,
@@ -51,7 +56,7 @@ import ImmatriculationPrint from "./ImmatriculationPrint";
 interface FormData {
   nom: string;
   prenom: string;
-  telephone: string; // Reste string mais peut être vide
+  telephone: string;
   email: string;
   adresse: string;
   nif: string;
@@ -67,7 +72,7 @@ interface FormData {
   numeroChassis: string;
   numeroMoteur: string;
   numeroPlaque: string;
-  reduction_type: 'pourcentage' | 'montant_fixe' | '';
+  reduction_type: "pourcentage" | "montant_fixe" | "";
   reduction_valeur: string;
 }
 
@@ -112,6 +117,15 @@ interface SuccessModalProps {
   onClose: () => void;
   onPrint: () => void;
   data: any;
+}
+
+interface AnnulationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (raison: string) => void;
+  isLoading: boolean;
+  numeroPlaque: string;
+  paiementId: number;
 }
 
 const PaiementModal: React.FC<PaiementModalProps> = ({
@@ -329,7 +343,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <div>
                       <span className="text-gray-500 text-xs">Réduction:</span>
                       <p className="font-semibold text-gray-800">
-                        {formData.reduction_type === 'pourcentage' 
+                        {formData.reduction_type === "pourcentage"
                           ? `${formData.reduction_valeur}%`
                           : `${formData.reduction_valeur} $`}
                       </p>
@@ -473,6 +487,8 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   onPrint,
   data,
 }) => {
+  const [showAnnulation, setShowAnnulation] = useState(false);
+
   if (!isOpen) return null;
 
   return (
@@ -523,8 +539,95 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
             >
               Imprimer la Carte Rose
             </button>
+            {/* <button
+              onClick={() => setShowAnnulation(true)}
+              className="px-4 py-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all font-semibold"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button> */}
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const AnnulationModal: React.FC<AnnulationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+  numeroPlaque,
+  paiementId,
+}) => {
+  const [raison, setRaison] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onConfirm(raison);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-900">Annuler l'Immatriculation</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+            disabled={isLoading}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
+          <div className="text-red-600 font-semibold mb-2">⚠️ Attention !</div>
+          <p className="text-red-700 text-sm">
+            Cette action est irréversible. Elle supprimera toutes les traces de cette immatriculation :
+          </p>
+          <ul className="text-red-600 text-sm mt-2 space-y-1">
+            <li>• Données de paiement (ID: {paiementId})</li>
+            <li>• Informations de l'engin</li>
+            <li>• Données dans la table carte_reprint</li>
+            <li>• Plaque {numeroPlaque} sera remise disponible</li>
+          </ul>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Raison de l'annulation *
+            </label>
+            <textarea
+              value={raison}
+              onChange={(e) => setRaison(e.target.value)}
+              placeholder="Veuillez spécifier la raison de l'annulation..."
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all min-h-[100px]"
+              required
+            />
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
+              disabled={isLoading}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !raison.trim()}
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 font-semibold disabled:opacity-50"
+            >
+              {isLoading ? "Traitement..." : "Confirmer l'annulation"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -553,7 +656,7 @@ export default function ClientSimpleForm({
     numeroChassis: "",
     numeroMoteur: "",
     numeroPlaque: "",
-    reduction_type: '',
+    reduction_type: "",
     reduction_valeur: "",
   });
 
@@ -565,18 +668,33 @@ export default function ClientSimpleForm({
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
   const [usages, setUsages] = useState<UsageEngin[]>([]);
   const [marques, setMarques] = useState<MarqueEngin[]>([]);
-  const [puissancesFiscales, setPuissancesFiscales] = useState<PuissanceFiscale[]>([]);
+  const [puissancesFiscales, setPuissancesFiscales] = useState<
+    PuissanceFiscale[]
+  >([]);
   const [filteredMarques, setFilteredMarques] = useState<MarqueEngin[]>([]);
+
+  // États pour les suggestions de couleurs
+  const [couleursSuggestions, setCouleursSuggestions] = useState<EnginCouleur[]>([]);
+  const [showCouleursSuggestions, setShowCouleursSuggestions] = useState(false);
+  const [isSearchingCouleurs, setIsSearchingCouleurs] = useState(false);
+  const [couleurInputMode, setCouleurInputMode] = useState<'select' | 'input'>('select');
+  const [nouvelleCouleurNom, setNouvelleCouleurNom] = useState("");
+  const [nouvelleCouleurCode, setNouvelleCouleurCode] = useState("#000000");
+  const [isAddingCouleur, setIsAddingCouleur] = useState(false);
 
   // États pour le taux
   const [tauxActif, setTauxActif] = useState<Taux | null>(null);
   const [loadingTaux, setLoadingTaux] = useState(false);
 
   // États pour la recherche de plaques
-  const [plaquesSuggestions, setPlaquesSuggestions] = useState<PlaqueResult[]>([]);
+  const [plaquesSuggestions, setPlaquesSuggestions] = useState<PlaqueResult[]>(
+    []
+  );
   const [showPlaquesSuggestions, setShowPlaquesSuggestions] = useState(false);
   const [isSearchingPlaques, setIsSearchingPlaques] = useState(false);
-  const [plaqueDisponible, setPlaqueDisponible] = useState<boolean | null>(null);
+  const [plaqueDisponible, setPlaqueDisponible] = useState<boolean | null>(
+    null
+  );
 
   // États pour la recherche de modèles
   const [modelesSuggestions, setModelesSuggestions] = useState<any[]>([]);
@@ -586,7 +704,8 @@ export default function ClientSimpleForm({
 
   // États pour la recherche de puissances
   const [puissancesSuggestions, setPuissancesSuggestions] = useState<any[]>([]);
-  const [showPuissancesSuggestions, setShowPuissancesSuggestions] = useState(false);
+  const [showPuissancesSuggestions, setShowPuissancesSuggestions] =
+    useState(false);
   const [isSearchingPuissances, setIsSearchingPuissances] = useState(false);
 
   const [loading, setLoading] = useState({
@@ -603,6 +722,7 @@ export default function ClientSimpleForm({
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPaiement, setShowPaiement] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showAnnulation, setShowAnnulation] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
   const [printData, setPrintData] = useState<any>(null);
@@ -611,6 +731,7 @@ export default function ClientSimpleForm({
   const telephoneTimerRef = useRef<NodeJS.Timeout | null>(null);
   const modeleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const puissanceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calcul des montants avec le taux
   const montantDollars = utilisateur?.formule || "32";
@@ -744,7 +865,8 @@ export default function ClientSimpleForm({
             setShowPlaquesSuggestions(true);
 
             const plaqueExacte = response.data?.find(
-              (plaque: PlaqueResult) => plaque.numero_plaque === formData.numeroPlaque
+              (plaque: PlaqueResult) =>
+                plaque.numero_plaque === formData.numeroPlaque
             );
             setPlaqueDisponible(
               plaqueExacte ? plaqueExacte.statut === "0" : false
@@ -772,23 +894,35 @@ export default function ClientSimpleForm({
       clearTimeout(telephoneTimerRef.current);
     }
 
-    // Seulement vérifier si le téléphone est renseigné et valide
-    if (formData.telephone && formData.telephone.trim() !== '' && formData.telephone.trim() !== '-') {
+    if (
+      formData.telephone &&
+      formData.telephone.trim() !== "" &&
+      formData.telephone.trim() !== "-"
+    ) {
       telephoneTimerRef.current = setTimeout(async () => {
         try {
-          const response = await verifierParticulierParTelephone(formData.telephone.trim());
+          const response = await verifierParticulierParTelephone(
+            formData.telephone.trim()
+          );
           if (response.status === "success" && response.data) {
             const particulier = response.data;
-            if (particulier && typeof particulier === 'object' && !Array.isArray(particulier)) {
-              setFormData(prev => ({
+            if (
+              particulier &&
+              typeof particulier === "object" &&
+              !Array.isArray(particulier)
+            ) {
+              setFormData((prev) => ({
                 ...prev,
                 nom: (particulier as any).nom || prev.nom,
                 prenom: (particulier as any).prenom || prev.prenom,
                 email: (particulier as any).email || prev.email,
                 adresse: (particulier as any).adresse || prev.adresse,
                 nif: (particulier as any).nif || prev.nif,
-                reduction_type: (particulier as any).reduction_type || prev.reduction_type,
-                reduction_valeur: (particulier as any).reduction_valeur?.toString() || prev.reduction_valeur,
+                reduction_type:
+                  (particulier as any).reduction_type || prev.reduction_type,
+                reduction_valeur:
+                  (particulier as any).reduction_valeur?.toString() ||
+                  prev.reduction_valeur,
               }));
             }
           }
@@ -815,7 +949,10 @@ export default function ClientSimpleForm({
       modeleTimerRef.current = setTimeout(async () => {
         setIsSearchingModeles(true);
         try {
-          const response = await rechercherModeles(selectedMarqueId, formData.modele);
+          const response = await rechercherModeles(
+            selectedMarqueId,
+            formData.modele
+          );
           if (response.status === "success") {
             const data = response.data;
             if (Array.isArray(data)) {
@@ -854,7 +991,10 @@ export default function ClientSimpleForm({
       puissanceTimerRef.current = setTimeout(async () => {
         setIsSearchingPuissances(true);
         try {
-          const response = await rechercherPuissances(formData.typeEngin, formData.puissanceFiscal);
+          const response = await rechercherPuissances(
+            formData.typeEngin,
+            formData.puissanceFiscal
+          );
           if (response.status === "success") {
             const data = response.data;
             if (Array.isArray(data)) {
@@ -882,6 +1022,40 @@ export default function ClientSimpleForm({
       }
     };
   }, [formData.puissanceFiscal, formData.typeEngin]);
+
+  // Recherche automatique des couleurs
+  useEffect(() => {
+    if (couleurTimerRef.current) {
+      clearTimeout(couleurTimerRef.current);
+    }
+
+    if (formData.couleur.length >= 2 && couleurInputMode === 'input') {
+      couleurTimerRef.current = setTimeout(async () => {
+        setIsSearchingCouleurs(true);
+        try {
+          const response = await rechercherCouleur(formData.couleur);
+          if (response.status === "success") {
+            setCouleursSuggestions(response.data || []);
+            setShowCouleursSuggestions(true);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des couleurs:", error);
+          setCouleursSuggestions([]);
+        } finally {
+          setIsSearchingCouleurs(false);
+        }
+      }, 300);
+    } else {
+      setCouleursSuggestions([]);
+      setShowCouleursSuggestions(false);
+    }
+
+    return () => {
+      if (couleurTimerRef.current) {
+        clearTimeout(couleurTimerRef.current);
+      }
+    };
+  }, [formData.couleur, couleurInputMode]);
 
   // Récupérer automatiquement une plaque disponible au chargement
   useEffect(() => {
@@ -939,7 +1113,7 @@ export default function ClientSimpleForm({
       numeroChassis: "",
       numeroMoteur: "",
       numeroPlaque: "",
-      reduction_type: '',
+      reduction_type: "",
       reduction_valeur: "",
     });
     setErrors({});
@@ -947,9 +1121,13 @@ export default function ClientSimpleForm({
     setSerieItemId(null);
     setShowPrint(false);
     setShowSuccess(false);
+    setShowAnnulation(false);
     setSelectedMarqueId(null);
     setModelesSuggestions([]);
     setPuissancesSuggestions([]);
+    setCouleurInputMode('select');
+    setNouvelleCouleurNom("");
+    setNouvelleCouleurCode("#000000");
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -958,9 +1136,8 @@ export default function ClientSimpleForm({
       [field]: value,
     }));
 
-    // Réinitialiser le modèle si la marque change
     if (field === "marque") {
-      const marqueTrouvee = marques.find(m => m.libelle === value);
+      const marqueTrouvee = marques.find((m) => m.libelle === value);
       setSelectedMarqueId(marqueTrouvee?.id || null);
       setFormData((prev) => ({
         ...prev,
@@ -968,6 +1145,14 @@ export default function ClientSimpleForm({
       }));
       setModelesSuggestions([]);
       setShowModelesSuggestions(false);
+    }
+
+    if (field === "couleur" && value && couleurInputMode === 'input') {
+      // Vérifier si la couleur existe déjà dans la liste
+      const couleurExistante = couleurs.find(c => c.nom.toLowerCase() === value.toLowerCase());
+      if (!couleurExistante && value.length >= 2) {
+        setNouvelleCouleurNom(value);
+      }
     }
 
     if (errors[field]) {
@@ -999,6 +1184,47 @@ export default function ClientSimpleForm({
     setShowPuissancesSuggestions(false);
   };
 
+  const handleCouleurSelect = (couleur: EnginCouleur) => {
+    setFormData((prev) => ({ ...prev, couleur: couleur.nom }));
+    setShowCouleursSuggestions(false);
+    setCouleurInputMode('select');
+  };
+
+  const handleAjouterCouleur = async () => {
+    if (!nouvelleCouleurNom.trim()) {
+      alert("Veuillez saisir un nom pour la couleur");
+      return;
+    }
+
+    setIsAddingCouleur(true);
+    try {
+      const response = await ajouterCouleur(nouvelleCouleurNom, nouvelleCouleurCode);
+      if (response.status === "success") {
+        // Recharger la liste des couleurs
+        const couleursResponse = await getCouleurs();
+        if (couleursResponse.status === "success") {
+          setCouleurs(couleursResponse.data || []);
+        }
+        
+        // Sélectionner la nouvelle couleur
+        setFormData((prev) => ({ ...prev, couleur: nouvelleCouleurNom }));
+        setCouleurInputMode('select');
+        setNouvelleCouleurNom("");
+        setNouvelleCouleurCode("#000000");
+        setShowCouleursSuggestions(false);
+        
+        alert("Couleur ajoutée avec succès !");
+      } else {
+        alert(response.message || "Erreur lors de l'ajout de la couleur");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la couleur:", error);
+      alert("Erreur réseau lors de l'ajout de la couleur");
+    } finally {
+      setIsAddingCouleur(false);
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
@@ -1012,9 +1238,11 @@ export default function ClientSimpleForm({
     if (!formData.numeroPlaque.trim())
       newErrors.numeroPlaque = "Le numéro de plaque est obligatoire";
 
-    // Le téléphone n'est plus obligatoire, donc pas de validation
-    // Seulement validation du format si le téléphone est renseigné
-    if (formData.telephone && formData.telephone.trim() !== '' && formData.telephone.trim() !== '-') {
+    if (
+      formData.telephone &&
+      formData.telephone.trim() !== "" &&
+      formData.telephone.trim() !== "-"
+    ) {
       const phoneRegex = /^[0-9+\-\s()]{8,}$/;
       if (!phoneRegex.test(formData.telephone.replace(/\s/g, ""))) {
         newErrors.telephone = "Format de téléphone invalide";
@@ -1025,7 +1253,6 @@ export default function ClientSimpleForm({
       newErrors.email = "Format d'email invalide";
     }
 
-    // Validation des années
     if (formData.anneeFabrication && formData.anneeCirculation) {
       const anneeFab = parseInt(formData.anneeFabrication);
       const anneeCirc = parseInt(formData.anneeCirculation);
@@ -1036,13 +1263,13 @@ export default function ClientSimpleForm({
       }
     }
 
-    // Validation de la réduction
     if (formData.reduction_type && formData.reduction_valeur) {
       const valeur = parseFloat(formData.reduction_valeur);
       if (isNaN(valeur) || valeur < 0) {
-        newErrors.reduction_valeur = "La valeur de réduction doit être un nombre positif";
+        newErrors.reduction_valeur =
+          "La valeur de réduction doit être un nombre positif";
       }
-      if (formData.reduction_type === 'pourcentage' && valeur > 100) {
+      if (formData.reduction_type === "pourcentage" && valeur > 100) {
         newErrors.reduction_valeur = "Le pourcentage ne peut pas dépasser 100%";
       }
     }
@@ -1097,12 +1324,14 @@ export default function ClientSimpleForm({
       const particulierData: ParticulierData = {
         nom: formData.nom,
         prenom: formData.prenom,
-        telephone: formData.telephone || '-', // Utiliser '-' si vide
+        telephone: formData.telephone || "-",
         email: formData.email,
         adresse: formData.adresse,
         nif: formData.nif,
         reduction_type: formData.reduction_type || undefined,
-        reduction_valeur: formData.reduction_valeur ? parseFloat(formData.reduction_valeur) : undefined,
+        reduction_valeur: formData.reduction_valeur
+          ? parseFloat(formData.reduction_valeur)
+          : undefined,
       };
 
       const enginData: EnginData = {
@@ -1150,7 +1379,7 @@ export default function ClientSimpleForm({
           nom: formData.nom,
           prenom: formData.prenom,
           adresse: formData.adresse,
-          telephone: formData.telephone || '-',
+          telephone: formData.telephone || "-",
           montant_francs: montantEnFrancs,
           paiement_id: (response.data as any).paiement_id.toString(),
           reduction_type: formData.reduction_type,
@@ -1190,7 +1419,36 @@ export default function ClientSimpleForm({
     router.back();
   };
 
-  // Obtenir les années disponibles pour la circulation
+  const handleAnnulation = async (raison: string) => {
+    if (!successData?.paiement_id || !utilisateur?.id) {
+      alert("Données manquantes pour l'annulation");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await annulerImmatriculation(
+        parseInt(successData.paiement_id),
+        utilisateur.id,
+        raison
+      );
+
+      if (response.status === "success") {
+        alert("Immatriculation annulée avec succès !");
+        setShowAnnulation(false);
+        setShowSuccess(false);
+        resetForm();
+      } else {
+        alert(response.message || "Erreur lors de l'annulation");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'annulation:", error);
+      alert("Erreur réseau lors de l'annulation");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getAnneesCirculationDisponibles = () => {
     if (!formData.anneeFabrication) {
       return anneeOptions;
@@ -1215,12 +1473,39 @@ export default function ClientSimpleForm({
                 Informations de l'Assujetti
               </h2>
               <p className="text-gray-600">
-                Renseignez les informations personnelles du propriétaire (le téléphone n'est plus obligatoire)
+                Renseignez les informations personnelles du propriétaire
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Téléphone */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Numéro de téléphone
+              </label>
+              <input
+                type="tel"
+                value={formData.telephone}
+                onChange={(e) => handleInputChange("telephone", e.target.value)}
+                placeholder="Ex: +243 00 00 00 000 (facultatif)"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                  errors.telephone
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-gray-200 focus:border-blue-500"
+                }`}
+              />
+              {errors.telephone && (
+                <p className="text-red-600 text-sm mt-2 font-medium">
+                  {errors.telephone}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Facultatif. Les informations seront automatiquement remplies si
+                le client existe déjà
+              </p>
+            </div>
+
             {/* Nom */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -1264,32 +1549,6 @@ export default function ClientSimpleForm({
                   {errors.prenom}
                 </p>
               )}
-            </div>
-
-            {/* Téléphone (plus obligatoire) */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Numéro de téléphone
-              </label>
-              <input
-                type="tel"
-                value={formData.telephone}
-                onChange={(e) => handleInputChange("telephone", e.target.value)}
-                placeholder="Ex: +243 00 00 00 000 (facultatif)"
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                  errors.telephone
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-blue-500"
-                }`}
-              />
-              {errors.telephone && (
-                <p className="text-red-600 text-sm mt-2 font-medium">
-                  {errors.telephone}
-                </p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Facultatif. Les informations seront automatiquement remplies si le client existe déjà
-              </p>
             </div>
 
             <div>
@@ -1345,7 +1604,9 @@ export default function ClientSimpleForm({
                   </label>
                   <select
                     value={formData.reduction_type}
-                    onChange={(e) => handleInputChange("reduction_type", e.target.value as any)}
+                    onChange={(e) =>
+                      handleInputChange("reduction_type", e.target.value as any)
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   >
                     <option value="">Aucune réduction</option>
@@ -1361,10 +1622,20 @@ export default function ClientSimpleForm({
                     type="number"
                     step="0.0001"
                     min="0"
-                    max={formData.reduction_type === 'pourcentage' ? '100' : undefined}
+                    max={
+                      formData.reduction_type === "pourcentage"
+                        ? "100"
+                        : undefined
+                    }
                     value={formData.reduction_valeur}
-                    onChange={(e) => handleInputChange("reduction_valeur", e.target.value)}
-                    placeholder={formData.reduction_type === 'pourcentage' ? 'Ex: 10.5000' : 'Ex: 5.0000'}
+                    onChange={(e) =>
+                      handleInputChange("reduction_valeur", e.target.value)
+                    }
+                    placeholder={
+                      formData.reduction_type === "pourcentage"
+                        ? "Ex: 10.5000"
+                        : "Ex: 5.0000"
+                    }
                     className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
                       errors.reduction_valeur
                         ? "border-red-300 focus:border-red-500"
@@ -1378,9 +1649,9 @@ export default function ClientSimpleForm({
                     </p>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
-                    {formData.reduction_type === 'pourcentage' 
-                      ? 'Maximum 4 chiffres après la virgule (ex: 15.7500)' 
-                      : 'Montant fixe en dollars (ex: 5.0000)'}
+                    {formData.reduction_type === "pourcentage"
+                      ? "Maximum 4 chiffres après la virgule (ex: 15.7500)"
+                      : "Montant fixe en dollars (ex: 5.0000)"}
                   </p>
                 </div>
               </div>
@@ -1392,12 +1663,15 @@ export default function ClientSimpleForm({
               </label>
               <input
                 type="text"
-                value={formData.nif || "Généré automatiquement après validation"}
+                value={
+                  formData.nif || "Généré automatiquement après validation"
+                }
                 readOnly
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
               />
               <p className="text-sm text-gray-500 mt-2">
-                Le NIF sera généré automatiquement lors de la validation du formulaire
+                Le NIF sera généré automatiquement lors de la validation du
+                formulaire
               </p>
             </div>
           </div>
@@ -1496,14 +1770,16 @@ export default function ClientSimpleForm({
                   {errors.marque}
                 </p>
               )}
-              {formData.typeEngin && filteredMarques.length === 0 && !loading.marques && (
-                <p className="text-amber-600 text-sm mt-2">
-                  Aucune marque disponible pour ce type d'engin
-                </p>
-              )}
+              {formData.typeEngin &&
+                filteredMarques.length === 0 &&
+                !loading.marques && (
+                  <p className="text-amber-600 text-sm mt-2">
+                    Aucune marque disponible pour ce type d'engin
+                  </p>
+                )}
             </div>
 
-            {/* Modèle (auto-complétion) */}
+            {/* Modèle */}
             {formData.marque && (
               <div className="relative">
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -1513,7 +1789,9 @@ export default function ClientSimpleForm({
                   <input
                     type="text"
                     value={formData.modele}
-                    onChange={(e) => handleInputChange("modele", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("modele", e.target.value)
+                    }
                     placeholder="Saisissez le modèle (auto-complétion)"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
                   />
@@ -1526,7 +1804,6 @@ export default function ClientSimpleForm({
                   </div>
                 </div>
 
-                {/* Suggestions de modèles */}
                 {showModelesSuggestions && modelesSuggestions.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                     {modelesSuggestions.map((modele) => (
@@ -1537,22 +1814,27 @@ export default function ClientSimpleForm({
                       >
                         <div className="font-medium">{modele.libelle}</div>
                         {modele.description && (
-                          <p className="text-xs text-gray-500 mt-1 truncate">{modele.description}</p>
+                          <p className="text-xs text-gray-500 mt-1 truncate">
+                            {modele.description}
+                          </p>
                         )}
                       </div>
                     ))}
                   </div>
                 )}
 
-                {showModelesSuggestions && modelesSuggestions.length === 0 && formData.modele.length >= 2 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
-                    Aucun modèle trouvé. Le modèle sera créé automatiquement lors de la soumission.
-                  </div>
-                )}
+                {showModelesSuggestions &&
+                  modelesSuggestions.length === 0 &&
+                  formData.modele.length >= 2 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
+                      Aucun modèle trouvé. Le modèle sera créé automatiquement
+                      lors de la soumission.
+                    </div>
+                  )}
               </div>
             )}
 
-            {/* Puissance fiscale (auto-complétion) */}
+            {/* Puissance fiscale */}
             {formData.typeEngin && (
               <div className="relative">
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -1562,7 +1844,9 @@ export default function ClientSimpleForm({
                   <input
                     type="text"
                     value={formData.puissanceFiscal}
-                    onChange={(e) => handleInputChange("puissanceFiscal", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("puissanceFiscal", e.target.value)
+                    }
                     placeholder="Ex: 8CV, 10CV (auto-complétion)"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
                   />
@@ -1575,29 +1859,33 @@ export default function ClientSimpleForm({
                   </div>
                 </div>
 
-                {/* Suggestions de puissances */}
-                {showPuissancesSuggestions && puissancesSuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                    {puissancesSuggestions.map((puissance) => (
-                      <div
-                        key={puissance.id}
-                        onClick={() => handlePuissanceSelect(puissance)}
-                        className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
-                      >
-                        <div className="font-medium">{puissance.libelle}</div>
-                        <div className="text-xs text-gray-500">
-                          {puissance.valeur} CV - {puissance.type_engin_libelle}
+                {showPuissancesSuggestions &&
+                  puissancesSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {puissancesSuggestions.map((puissance) => (
+                        <div
+                          key={puissance.id}
+                          onClick={() => handlePuissanceSelect(puissance)}
+                          className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                        >
+                          <div className="font-medium">{puissance.libelle}</div>
+                          <div className="text-xs text-gray-500">
+                            {puissance.valeur} CV -{" "}
+                            {puissance.type_engin_libelle}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
 
-                {showPuissancesSuggestions && puissancesSuggestions.length === 0 && formData.puissanceFiscal.length >= 1 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
-                    Aucune puissance trouvée. La puissance sera créée automatiquement lors de la soumission.
-                  </div>
-                )}
+                {showPuissancesSuggestions &&
+                  puissancesSuggestions.length === 0 &&
+                  formData.puissanceFiscal.length >= 1 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
+                      Aucune puissance trouvée. La puissance sera créée
+                      automatiquement lors de la soumission.
+                    </div>
+                  )}
               </div>
             )}
 
@@ -1781,30 +2069,138 @@ export default function ClientSimpleForm({
             </div>
 
             {/* Couleur */}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Couleur
               </label>
-              <div className="relative">
-                <select
-                  value={formData.couleur}
-                  onChange={(e) => handleInputChange("couleur", e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  disabled={loading.couleurs}
+              <div className="flex space-x-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setCouleurInputMode('select')}
+                  className={`px-3 py-1 text-sm rounded-lg transition-all ${
+                    couleurInputMode === 'select'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
-                  <option value="">Sélectionner la couleur</option>
-                  {couleurs.map((couleur) => (
-                    <option key={couleur.id} value={couleur.nom}>
-                      {couleur.nom}
-                    </option>
-                  ))}
-                </select>
-                {loading.couleurs && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader className="w-4 h-4 animate-spin text-gray-400" />
-                  </div>
-                )}
+                  Liste
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCouleurInputMode('input')}
+                  className={`px-3 py-1 text-sm rounded-lg transition-all ${
+                    couleurInputMode === 'input'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Saisir
+                </button>
               </div>
+
+              {couleurInputMode === 'select' ? (
+                <div className="relative">
+                  <select
+                    value={formData.couleur}
+                    onChange={(e) => handleInputChange("couleur", e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    disabled={loading.couleurs}
+                  >
+                    <option value="">Sélectionner la couleur</option>
+                    {couleurs.map((couleur) => (
+                      <option key={couleur.id} value={couleur.nom}>
+                        {couleur.nom}
+                      </option>
+                    ))}
+                  </select>
+                  {loading.couleurs && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.couleur}
+                    onChange={(e) => handleInputChange("couleur", e.target.value)}
+                    placeholder="Saisissez la couleur (auto-complétion)"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {isSearchingCouleurs ? (
+                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                    ) : (
+                      <Search className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+
+                  {showCouleursSuggestions && couleursSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {couleursSuggestions.map((couleur) => (
+                        <div
+                          key={couleur.id}
+                          onClick={() => handleCouleurSelect(couleur)}
+                          className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div 
+                              className="w-6 h-6 rounded-full border border-gray-300"
+                              style={{ backgroundColor: couleur.code_hex }}
+                            />
+                            <div>
+                              <div className="font-medium">{couleur.nom}</div>
+                              <div className="text-xs text-gray-500">{couleur.code_hex}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {showCouleursSuggestions &&
+                    couleursSuggestions.length === 0 &&
+                    formData.couleur.length >= 2 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+                        <div className="text-sm text-gray-600 mb-3">
+                          Cette couleur n'existe pas encore. Voulez-vous l'ajouter ?
+                        </div>
+                        <div className="space-y-3">
+                          <input
+                            type="text"
+                            value={nouvelleCouleurNom}
+                            onChange={(e) => setNouvelleCouleurNom(e.target.value)}
+                            placeholder="Nom de la couleur"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          />
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="color"
+                              value={nouvelleCouleurCode}
+                              onChange={(e) => setNouvelleCouleurCode(e.target.value)}
+                              className="w-10 h-10 cursor-pointer"
+                            />
+                            <span className="text-sm text-gray-600">{nouvelleCouleurCode}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleAjouterCouleur}
+                            disabled={isAddingCouleur || !nouvelleCouleurNom.trim()}
+                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+                          >
+                            {isAddingCouleur ? (
+                              <Loader className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Plus className="w-4 h-4" />
+                            )}
+                            <span>Ajouter cette couleur</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                </div>
+              )}
             </div>
 
             {/* Usage */}
@@ -1902,8 +2298,9 @@ export default function ClientSimpleForm({
               )}
               {formData.reduction_type && formData.reduction_valeur && (
                 <div className="text-sm text-green-600 mt-2 font-medium">
-                  Réduction appliquée: {formData.reduction_type === 'pourcentage' 
-                    ? `${formData.reduction_valeur}%` 
+                  Réduction appliquée:{" "}
+                  {formData.reduction_type === "pourcentage"
+                    ? `${formData.reduction_valeur}%`
                     : `${formData.reduction_valeur} $`}
                 </div>
               )}
@@ -1976,6 +2373,15 @@ export default function ClientSimpleForm({
         onClose={handleSuccessClose}
         onPrint={handlePrint}
         data={successData}
+      />
+
+      <AnnulationModal
+        isOpen={showAnnulation}
+        onClose={() => setShowAnnulation(false)}
+        onConfirm={handleAnnulation}
+        isLoading={isSubmitting}
+        numeroPlaque={successData?.numero_plaque || ""}
+        paiementId={parseInt(successData?.paiement_id) || 0}
       />
 
       <ImmatriculationPrint

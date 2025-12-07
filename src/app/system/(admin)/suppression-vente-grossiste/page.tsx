@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   User,
-  Car,
   Calendar,
   DollarSign,
   Phone,
@@ -15,15 +14,12 @@ import {
   AlertCircle,
   CheckCircle,
   X,
-  Bike,
-  Shield,
   Download,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   BarChart3,
-  Home,
   Users,
   FileText,
   XCircle,
@@ -31,23 +27,32 @@ import {
   CalendarDays,
   Building,
   Loader2,
+  Shield,
+  Car,
+  Tag,
+  Hash,
+  Mail,
+  MapPin,
+  Percent,
+  BadgeDollarSign,
 } from "lucide-react";
 import {
-  getVentesNonGrossistes,
-  getStatsVentes,
-  supprimerVenteNonGrossiste,
-  type VenteNonGrossiste,
-  type Stats,
+  getCommandesPlaques,
+  getStatsCommandes,
+  annulerCommandePlaques,
+  type CommandePlaque,
+  type StatsCommandes,
   type RechercheParams,
   type PaginationResponse,
   getSitesDisponibles,
-  exporterVentesExcel,
-} from "@/services/ventes/ventesService";
+  exporterCommandesExcel,
+  getDetailsCommande,
+} from "@/services/commande/commandesService";
 
 // Types
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
-  vente: VenteNonGrossiste | null;
+  commande: CommandePlaque | null;
   onConfirm: () => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
@@ -55,7 +60,7 @@ interface DeleteConfirmationModalProps {
 
 interface DetailModalProps {
   isOpen: boolean;
-  vente: VenteNonGrossiste | null;
+  commande: CommandePlaque | null;
   onClose: () => void;
 }
 
@@ -100,7 +105,23 @@ interface PaginationState {
 
 // Fonction utilitaire pour formater le montant
 const formatMontant = (montant: number): string => {
-  return `${montant.toFixed(2).replace(".", ",")} $`;
+  return `${montant} $`;
+};
+
+// Fonction utilitaire pour formater la date
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    return dateString;
+  }
 };
 
 // Modal de message
@@ -199,10 +220,10 @@ function MessageModal({ isOpen, type, title, message, onClose }: MessageModalPro
   );
 }
 
-// Modal de confirmation de suppression
+// Modal de confirmation d'annulation
 function DeleteConfirmationModal({
   isOpen,
-  vente,
+  commande,
   onConfirm,
   onCancel,
   isLoading = false,
@@ -225,7 +246,7 @@ function DeleteConfirmationModal({
     };
   }, [isOpen, onCancel]);
 
-  if (!isOpen || !vente) return null;
+  if (!isOpen || !commande) return null;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -234,7 +255,7 @@ function DeleteConfirmationModal({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900 flex items-center">
               <AlertCircle className="w-6 h-6 text-red-600 mr-2" />
-              Confirmer la suppression
+              Confirmer l'annulation
             </h3>
             <button
               onClick={onCancel}
@@ -247,29 +268,33 @@ function DeleteConfirmationModal({
 
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <p className="text-red-700 font-medium">
-              Êtes-vous sûr de vouloir supprimer cette vente ?
+              Êtes-vous sûr de vouloir annuler cette commande ?
             </p>
             <div className="mt-3 space-y-2">
               <p className="text-gray-700">
-                <span className="font-medium">Client:</span> {vente.nom}{" "}
-                {vente.prenom}
+                <span className="font-medium">Client:</span> {commande.nom}{" "}
+                {commande.prenom}
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Plaque:</span>{" "}
+                <span className="font-medium">Téléphone:</span>{" "}
+                {commande.telephone}
+              </p>
+              <p className="text-gray-700">
+                <span className="font-medium">Nombre de plaques:</span>{" "}
                 <span className="font-bold text-red-600">
-                  {vente.numero_plaque}
+                  {commande.nombre_plaques}
                 </span>
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Montant:</span> {formatMontant(parseFloat(vente.montant.toString()))}
+                <span className="font-medium">Montant:</span> {formatMontant(commande.montant)}
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Date:</span> {vente.date_paiement}
+                <span className="font-medium">Date:</span> {formatDate(commande.date_paiement)}
               </p>
             </div>
             <p className="text-red-600 text-sm mt-3">
-              Cette action supprimera toutes les données associées à cette vente
-              : paiement, engin, et entrée dans carte_reprint.
+              Cette action annulera complètement la commande, restaurera les plaques dans le stock,
+              et supprimera tous les enregistrements associés.
             </p>
           </div>
 
@@ -289,12 +314,12 @@ function DeleteConfirmationModal({
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Suppression...
+                  Annulation...
                 </>
               ) : (
                 <>
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Supprimer
+                  Annuler la commande
                 </>
               )}
             </button>
@@ -306,7 +331,32 @@ function DeleteConfirmationModal({
 }
 
 // Modal de détail
-function DetailModal({ isOpen, vente, onClose }: DetailModalProps) {
+function DetailModal({ isOpen, commande, onClose }: DetailModalProps) {
+  const [loadingPlaques, setLoadingPlaques] = useState(false);
+  const [plaquesList, setPlaquesList] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadPlaques = async () => {
+      if (!commande) return;
+      
+      setLoadingPlaques(true);
+      try {
+        const result = await getDetailsCommande(commande.id);
+        if (result.status === "success" && result.data?.plaques_attribuees) {
+          setPlaquesList(result.data.plaques_attribuees);
+        }
+      } catch (error) {
+        console.error("Erreur chargement plaques:", error);
+      } finally {
+        setLoadingPlaques(false);
+      }
+    };
+
+    if (isOpen && commande) {
+      loadPlaques();
+    }
+  }, [isOpen, commande]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -325,20 +375,31 @@ function DetailModal({ isOpen, vente, onClose }: DetailModalProps) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !vente) return null;
+  if (!isOpen || !commande) return null;
+
+  const getReductionText = () => {
+    if (!commande.reduction_type) return "Aucune";
+    
+    if (commande.reduction_type === 'pourcentage') {
+      return `${commande.reduction_valeur}%`;
+    } else if (commande.reduction_type === 'montant_fixe') {
+      return `${formatMontant(commande.reduction_valeur)} par plaque`;
+    }
+    return "Aucune";
+  };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* En-tête */}
         <div className="p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-gray-900">
-                Détails de la vente
+                Détails de la commande
               </h3>
               <p className="text-gray-600 text-sm mt-1">
-                Transaction #{vente.paiement_id}
+                Commande #{commande.id} • {commande.nombre_plaques} plaque(s)
               </p>
             </div>
             <button
@@ -352,7 +413,7 @@ function DetailModal({ isOpen, vente, onClose }: DetailModalProps) {
 
         {/* Contenu */}
         <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Section Client */}
             <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
               <h4 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
@@ -361,179 +422,186 @@ function DetailModal({ isOpen, vente, onClose }: DetailModalProps) {
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">
-                    Nom complet:
-                  </span>
+                  <span className="text-blue-700 font-medium">Nom complet:</span>
                   <span className="text-gray-900 font-bold">
-                    {vente.nom} {vente.prenom}
+                    {commande.nom} {commande.prenom}
                   </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">ID Client:</span>
-                  <span className="text-gray-900">{vente.particulier_id}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700 font-medium">Téléphone:</span>
                   <span className="text-gray-900">
                     <a
-                      href={`tel:${vente.telephone}`}
+                      href={`tel:${commande.telephone}`}
                       className="hover:text-blue-600"
                     >
-                      {vente.telephone}
+                      {commande.telephone}
                     </a>
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700 font-medium">Email:</span>
                   <span className="text-gray-900">
-                    {vente.email || "Non renseigné"}
+                    {commande.email || "Non renseigné"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700 font-medium">Adresse:</span>
                   <span className="text-gray-900">
-                    {vente.adresse || "Non renseignée"}
+                    {commande.adresse || "Non renseignée"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700 font-medium">NIF:</span>
                   <span className="text-gray-900">
-                    {vente.nif || "Non renseigné"}
+                    {commande.nif || "Non renseigné"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">
-                    Nombre d'engins:
-                  </span>
-                  <span className="text-gray-900">
-                    {vente.nb_engins_particulier}
-                  </span>
+                  <span className="text-blue-700 font-medium">ID Client:</span>
+                  <span className="text-gray-900">{commande.particulier_id}</span>
                 </div>
               </div>
             </div>
 
-            {/* Section Véhicule */}
+            {/* Section Commande */}
             <div className="bg-green-50 rounded-xl p-5 border border-green-200">
               <h4 className="text-lg font-bold text-green-800 mb-4 flex items-center">
-                <Bike className="w-5 h-5 mr-2" />
-                Informations du véhicule
+                <DollarSign className="w-5 h-5 mr-2" />
+                Informations de la commande
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">
-                    Numéro de plaque:
-                  </span>
-                  <span className="text-red-600 font-bold text-lg">
-                    {vente.numero_plaque}
-                  </span>
+                  <span className="text-green-700 font-medium">ID Commande:</span>
+                  <span className="text-gray-900 font-bold">#{commande.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Type:</span>
-                  <span className="text-gray-900">{vente.type_engin}</span>
+                  <span className="text-green-700 font-medium">Date paiement:</span>
+                  <span className="text-gray-900">{formatDate(commande.date_paiement)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Marque:</span>
-                  <span className="text-gray-900">{vente.marque}</span>
+                  <span className="text-green-700 font-medium">Nombre plaques:</span>
+                  <span className="text-gray-900 font-bold">{commande.nombre_plaques}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">ID Engin:</span>
-                  <span className="text-gray-900">{vente.engin_id}</span>
+                  <span className="text-green-700 font-medium">Réduction:</span>
+                  <span className="text-gray-900">{getReductionText()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">ID Série:</span>
-                  <span className="text-gray-900">{vente.serie_id}</span>
+                  <span className="text-green-700 font-medium">Mode paiement:</span>
+                  <span className="text-gray-900">{commande.mode_paiement}</span>
+                </div>
+                {commande.operateur && (
+                  <div className="flex justify-between">
+                    <span className="text-green-700 font-medium">Opérateur:</span>
+                    <span className="text-gray-900">{commande.operateur}</span>
+                  </div>
+                )}
+                {commande.numero_transaction && (
+                  <div className="flex justify-between">
+                    <span className="text-green-700 font-medium">N° Transaction:</span>
+                    <span className="text-gray-900">{commande.numero_transaction}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Section Montants */}
+            <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
+              <h4 className="text-lg font-bold text-purple-800 mb-4 flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                Montants
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-purple-700 font-medium">Montant initial:</span>
+                  <span className="text-gray-900">{formatMontant(commande.montant_initial)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">
-                    ID Item Série:
-                  </span>
-                  <span className="text-gray-900">{vente.serie_item_id}</span>
+                  <span className="text-purple-700 font-medium">Montant final:</span>
+                  <span className="text-lg font-bold text-green-600">{formatMontant(commande.montant)}</span>
+                </div>
+                {commande.reduction_type && (
+                  <div className="flex justify-between">
+                    <span className="text-purple-700 font-medium">Économie:</span>
+                    <span className="text-green-600 font-bold">
+                      {formatMontant(commande.montant_initial - commande.montant)}
+                    </span>
+                  </div>
+                )}
+                <div className="pt-3 border-t border-purple-200">
+                  <div className="flex justify-between">
+                    <span className="text-purple-700 font-medium">Prix unitaire:</span>
+                    <span className="text-gray-900">
+                      {formatMontant(commande.montant_initial / commande.nombre_plaques)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Section Transaction */}
-            <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
-              <h4 className="text-lg font-bold text-purple-800 mb-4 flex items-center">
-                <DollarSign className="w-5 h-5 mr-2" />
-                Informations de transaction
+            {/* Section Plaques */}
+            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
+              <h4 className="text-lg font-bold text-amber-800 mb-4 flex items-center">
+                <Car className="w-5 h-5 mr-2" />
+                Plaques attribuées
               </h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Montant:</span>
-                  <span
-                    className={`text-lg font-bold ${
-                      parseFloat(vente.montant.toString()) > 0
-                        ? "text-green-600"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    {formatMontant(parseFloat(vente.montant.toString()))}
-                  </span>
+              {loadingPlaques ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-amber-600 animate-spin" />
+                  <span className="ml-2 text-amber-700">Chargement des plaques...</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Montant initial:
-                  </span>
-                  <span className="text-gray-900">
-                    {vente.montant_initial ? formatMontant(parseFloat(vente.montant_initial.toString())) : formatMontant(parseFloat(vente.montant.toString()))}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Date Paiement:
-                  </span>
-                  <span className="text-gray-900">{vente.date_paiement}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Mode:</span>
-                  <span className="text-gray-900">{vente.mode_paiement}</span>
-                </div>
-                {vente.operateur && (
-                  <div className="flex justify-between">
-                    <span className="text-purple-700 font-medium">
-                      Opérateur:
-                    </span>
-                    <span className="text-gray-900">{vente.operateur}</span>
+              ) : plaquesList.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    {plaquesList.map((plaque, index) => (
+                      <div
+                        key={index}
+                        className="bg-white border border-amber-200 rounded-lg p-3 text-center"
+                      >
+                        <span className="font-bold text-red-600 text-sm">{plaque}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
-                {vente.numero_transaction && (
-                  <div className="flex justify-between">
-                    <span className="text-purple-700 font-medium">
-                      Numéro transaction:
-                    </span>
-                    <span className="text-gray-900">
-                      {vente.numero_transaction}
-                    </span>
+                  <div className="pt-3 border-t border-amber-200">
+                    <p className="text-sm text-amber-700">
+                      {plaquesList.length} plaque(s) attribuée(s)
+                    </p>
                   </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                  <p className="text-amber-700">Aucune plaque trouvée</p>
+                </div>
+              )}
             </div>
 
             {/* Section Site et Agent */}
-            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
-              <h4 className="text-lg font-bold text-amber-800 mb-4 flex items-center">
+            <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-200">
+              <h4 className="text-lg font-bold text-indigo-800 mb-4 flex items-center">
                 <Building className="w-5 h-5 mr-2" />
-                Site et Agent
+                Site et Caissier
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Site:</span>
-                  <span className="text-gray-900">LIMETE (LMT)</span>
+                  <span className="text-indigo-700 font-medium">Site:</span>
+                  <span className="text-gray-900">{commande.site_nom}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Agent:</span>
-                  <span className="text-gray-900">{vente.utilisateur_nom}</span>
+                  <span className="text-indigo-700 font-medium">Caissier:</span>
+                  <span className="text-gray-900">{commande.caissier}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Site ID:</span>
-                  <span className="text-gray-900">{vente.site_id}</span>
+                  <span className="text-indigo-700 font-medium">ID Site:</span>
+                  <span className="text-gray-900">{commande.site_id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">
-                    Créateur ID:
-                  </span>
-                  <span className="text-gray-900">{vente.createur_engin}</span>
+                  <span className="text-indigo-700 font-medium">ID Utilisateur:</span>
+                  <span className="text-gray-900">{commande.utilisateur_id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-indigo-700 font-medium">ID Impôt:</span>
+                  <span className="text-gray-900">{commande.impot_id}</span>
                 </div>
               </div>
             </div>
@@ -678,7 +746,7 @@ function FilterModal({
                     <option value="date_paiement">Date</option>
                     <option value="montant">Montant</option>
                     <option value="nom">Nom</option>
-                    <option value="numero_plaque">Plaque</option>
+                    <option value="nombre_plaques">Nombre plaques</option>
                   </select>
                   <select
                     value={localFilters.order_dir}
@@ -727,9 +795,9 @@ function FilterModal({
 }
 
 // Composant principal
-export default function VentesNonGrossistesScreen() {
+export default function CommandesPlaquesScreen() {
   // États principaux
-  const [ventes, setVentes] = useState<VenteNonGrossiste[]>([]);
+  const [commandes, setCommandes] = useState<CommandePlaque[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     total: 0,
     page: 1,
@@ -737,12 +805,8 @@ export default function VentesNonGrossistesScreen() {
     totalPages: 1,
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedVente, setSelectedVente] = useState<VenteNonGrossiste | null>(
-    null
-  );
-  const [venteToDelete, setVenteToDelete] = useState<VenteNonGrossiste | null>(
-    null
-  );
+  const [selectedCommande, setSelectedCommande] = useState<CommandePlaque | null>(null);
+  const [commandeToDelete, setCommandeToDelete] = useState<CommandePlaque | null>(null);
 
   // États UI
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -761,10 +825,8 @@ export default function VentesNonGrossistesScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [sites, setSites] = useState<Site[]>([
-    { id: 8, nom: "LIMETE", code: "LMT" },
-  ]);
+  const [stats, setStats] = useState<StatsCommandes | null>(null);
+  const [sites, setSites] = useState<Site[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // États filtres
@@ -790,19 +852,17 @@ export default function VentesNonGrossistesScreen() {
         
         if (result.status === "success" && result.data) {
           setSites(result.data);
-        } else {
-          setSites([{ id: 8, nom: "LIMETE", code: "LMT" }]);
         }
       } catch (error) {
-        setSites([{ id: 8, nom: "LIMETE", code: "LMT" }]);
+        console.error("Erreur chargement sites:", error);
       }
     };
 
     loadSites();
   }, []);
 
-  // Charger les ventes
-  const loadVentes = async (page = 1, search = searchTerm) => {
+  // Charger les commandes
+  const loadCommandes = async (page = 1, search = searchTerm) => {
     setIsLoading(true);
     setError(null);
     
@@ -814,28 +874,28 @@ export default function VentesNonGrossistesScreen() {
         ...filters,
       };
 
-      const result = await getVentesNonGrossistes(params);
+      const result = await getCommandesPlaques(params);
 
       if (result.status === "success" && result.data) {
-        const ventesArray = Array.isArray(result.data.ventes) ? result.data.ventes : [];
-        setVentes(ventesArray);
+        const commandesArray = Array.isArray(result.data.commandes) ? result.data.commandes : [];
+        setCommandes(commandesArray);
 
         const paginationData = result.data.pagination || {
-          total: ventesArray.length,
+          total: commandesArray.length,
           page: page,
           limit: pagination.limit,
-          totalPages: Math.max(1, Math.ceil(ventesArray.length / pagination.limit)),
+          totalPages: Math.max(1, Math.ceil(commandesArray.length / pagination.limit)),
         };
 
         setPagination(paginationData);
 
-        if (ventesArray.length === 0) {
-          setError("Aucune vente trouvée avec les critères sélectionnés");
+        if (commandesArray.length === 0) {
+          setError("Aucune commande trouvée avec les critères sélectionnés");
         }
       } else {
         const errorMessage = result.message || "Erreur inconnue lors du chargement";
         setError(errorMessage);
-        setVentes([]);
+        setCommandes([]);
         setPagination({
           total: 0,
           page: 1,
@@ -845,7 +905,7 @@ export default function VentesNonGrossistesScreen() {
       }
     } catch (error) {
       setError("Erreur réseau. Vérifiez votre connexion.");
-      setVentes([]);
+      setCommandes([]);
       setPagination({
         total: 0,
         page: 1,
@@ -870,7 +930,7 @@ export default function VentesNonGrossistesScreen() {
         site_id: filters.site_id,
       };
 
-      const result = await getStatsVentes(params);
+      const result = await getStatsCommandes(params);
 
       if (result.status === "success" && result.data) {
         setStats(result.data);
@@ -884,63 +944,63 @@ export default function VentesNonGrossistesScreen() {
 
   // Chargement initial
   useEffect(() => {
-    loadVentes();
+    loadCommandes();
     loadStats();
   }, []);
 
   // Recharger quand les filtres changent
   useEffect(() => {
-    loadVentes(1);
+    loadCommandes(1);
     loadStats();
   }, [filters]);
 
   // Gérer la recherche
   const handleSearch = useCallback(() => {
-    loadVentes(1, searchTerm);
+    loadCommandes(1, searchTerm);
     loadStats();
   }, [searchTerm]);
 
   // Gérer le changement de page
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= pagination.totalPages) {
-      loadVentes(page);
+      loadCommandes(page);
     }
   };
 
   // Gérer l'ouverture du détail
-  const handleViewDetail = (vente: VenteNonGrossiste) => {
-    setSelectedVente(vente);
+  const handleViewDetail = (commande: CommandePlaque) => {
+    setSelectedCommande(commande);
     setShowDetailModal(true);
   };
 
-  // Gérer la suppression
-  const handleDeleteClick = (vente: VenteNonGrossiste, e: React.MouseEvent) => {
+  // Gérer l'annulation
+  const handleDeleteClick = (commande: CommandePlaque, e: React.MouseEvent) => {
     e.stopPropagation();
-    setVenteToDelete(vente);
+    setCommandeToDelete(commande);
     setShowDeleteModal(true);
   };
 
   const confirmDelete = async () => {
-    if (!venteToDelete) return;
+    if (!commandeToDelete) return;
 
     setIsDeleting(true);
     try {
-      const result = await supprimerVenteNonGrossiste(
-        venteToDelete.paiement_id,
-        1,
-        "Suppression via interface admin"
+      const result = await annulerCommandePlaques(
+        commandeToDelete.id,
+        1, // ID utilisateur - à remplacer par l'ID réel de l'utilisateur connecté
+        "Annulation via interface admin"
       );
 
       if (result.status === "success") {
-        await Promise.all([loadVentes(pagination.page), loadStats()]);
+        await Promise.all([loadCommandes(pagination.page), loadStats()]);
         setShowDeleteModal(false);
-        setVenteToDelete(null);
-        showMessage("success", "Succès", "Vente supprimée avec succès");
+        setCommandeToDelete(null);
+        showMessage("success", "Succès", "Commande annulée avec succès");
       } else {
-        showMessage("error", "Erreur", result.message || "Erreur lors de la suppression");
+        showMessage("error", "Erreur", result.message || "Erreur lors de l'annulation");
       }
     } catch (error) {
-      showMessage("error", "Erreur", "Erreur réseau lors de la suppression");
+      showMessage("error", "Erreur", "Erreur réseau lors de l'annulation");
     } finally {
       setIsDeleting(false);
     }
@@ -952,7 +1012,7 @@ export default function VentesNonGrossistesScreen() {
   };
 
   const handleApplyFilters = () => {
-    loadVentes(1);
+    loadCommandes(1);
     loadStats();
     setShowFilterModal(false);
   };
@@ -967,7 +1027,7 @@ export default function VentesNonGrossistesScreen() {
     };
     setFilters(resetFilters);
     setSearchTerm("");
-    loadVentes(1, "");
+    loadCommandes(1, "");
     loadStats();
     setError(null);
     showMessage("info", "Filtres réinitialisés", "Tous les filtres ont été réinitialisés");
@@ -984,7 +1044,7 @@ export default function VentesNonGrossistesScreen() {
         site_id: filters.site_id,
       };
 
-      const result = await exporterVentesExcel(params);
+      const result = await exporterCommandesExcel(params);
 
       if (result.status === "success" && result.data) {
         const link = document.createElement("a");
@@ -1008,8 +1068,8 @@ export default function VentesNonGrossistesScreen() {
   };
 
   // Formatage
-  const getFullName = (vente: VenteNonGrossiste) => {
-    return `${vente.nom} ${vente.prenom}`;
+  const getFullName = (commande: CommandePlaque) => {
+    return `${commande.nom} ${commande.prenom}`;
   };
 
   // Pagination UI
@@ -1106,10 +1166,10 @@ export default function VentesNonGrossistesScreen() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Ventes Non-Grossistes
+                Commandes de Plaques
               </h1>
               <p className="text-gray-600 mt-2">
-                Gestion des ventes aux particuliers
+                Gestion des commandes de plaques aux clients simples
               </p>
             </div>
             <div className="flex items-center space-x-3">
@@ -1129,7 +1189,7 @@ export default function VentesNonGrossistesScreen() {
               </button>
               <button
                 onClick={() => {
-                  loadVentes(pagination.page);
+                  loadCommandes(pagination.page);
                   loadStats();
                 }}
                 disabled={isLoading}
@@ -1162,7 +1222,7 @@ export default function VentesNonGrossistesScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-blue-700 font-medium">
-                      Total Ventes
+                      Total Commandes
                     </p>
                     <p className="text-2xl font-bold text-blue-800">
                       {stats.total}
@@ -1190,13 +1250,13 @@ export default function VentesNonGrossistesScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-purple-700 font-medium">
-                      Clients Uniques
+                      Plaques Total
                     </p>
                     <p className="text-2xl font-bold text-purple-800">
-                      {stats.clientsUniques}
+                      {stats.plaquesTotal}
                     </p>
                   </div>
-                  <Users className="w-8 h-8 text-purple-600" />
+                  <Car className="w-8 h-8 text-purple-600" />
                 </div>
               </div>
 
@@ -1204,13 +1264,13 @@ export default function VentesNonGrossistesScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-amber-700 font-medium">
-                      Montant Moyen
+                      Clients Uniques
                     </p>
                     <p className="text-2xl font-bold text-amber-800">
-                      {formatMontant(stats.montantMoyen)}
+                      {stats.clientsUniques}
                     </p>
                   </div>
-                  <BarChart3 className="w-8 h-8 text-amber-600" />
+                  <Users className="w-8 h-8 text-amber-600" />
                 </div>
               </div>
             </div>
@@ -1227,7 +1287,7 @@ export default function VentesNonGrossistesScreen() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Rechercher par nom, plaque, téléphone..."
+                placeholder="Rechercher par nom, téléphone, NIF..."
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -1283,21 +1343,21 @@ export default function VentesNonGrossistesScreen() {
           </div>
         </div>
 
-        {/* Liste des ventes */}
+        {/* Liste des commandes */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          {isLoading && ventes.length === 0 ? (
+          {isLoading && commandes.length === 0 ? (
             <div className="p-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
                 <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Chargement des ventes...
+                Chargement des commandes...
               </h3>
               <p className="text-gray-500">
                 Veuillez patienter pendant le chargement des données.
               </p>
             </div>
-          ) : ventes.length > 0 ? (
+          ) : commandes.length > 0 ? (
             <>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -1310,13 +1370,13 @@ export default function VentesNonGrossistesScreen() {
                         Client
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Numéro de plaque
+                        Téléphone
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        N° Plaques
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Montant
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Téléphone
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Site
@@ -1327,15 +1387,15 @@ export default function VentesNonGrossistesScreen() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {ventes.map((vente) => (
+                    {commandes.map((commande) => (
                       <tr
-                        key={vente.paiement_id}
+                        key={commande.id}
                         className="hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => handleViewDetail(vente)}
+                        onClick={() => handleViewDetail(commande)}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {vente.date_paiement}
+                            {formatDate(commande.date_paiement)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -1345,48 +1405,42 @@ export default function VentesNonGrossistesScreen() {
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {getFullName(vente)}
+                                {getFullName(commande)}
                               </div>
                               <div className="text-sm text-gray-500">
-                                ID: {vente.particulier_id}
+                                NIF: {commande.nif || "Non renseigné"}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-50 text-red-700 border border-red-200">
-                            <Bike className="w-4 h-4 mr-2" />
-                            {vente.numero_plaque}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div
-                            className={`text-lg font-bold ${
-                              parseFloat(vente.montant.toString()) > 0
-                                ? "text-green-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            {formatMontant(
-                              parseFloat(vente.montant.toString())
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {vente.mode_paiement}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center text-sm text-gray-900">
                             <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                            {vente.telephone}
+                            {commande.telephone}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-50 text-red-700 border border-red-200">
+                            <Car className="w-4 h-4 mr-2" />
+                            {commande.nombre_plaques} plaque(s)
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-lg font-bold text-green-600">
+                            {formatMontant(commande.montant)}
+                          </div>
+                          {commande.montant_initial > commande.montant && (
+                            <div className="text-xs text-gray-500 line-through">
+                              {formatMontant(commande.montant_initial)}
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            LIMETE (LMT)
+                            {commande.site_nom}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {vente.utilisateur_nom}
+                            {commande.caissier}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -1395,19 +1449,19 @@ export default function VentesNonGrossistesScreen() {
                             onClick={(e) => e.stopPropagation()}
                           >
                             <button
-                              onClick={() => handleViewDetail(vente)}
+                              onClick={() => handleViewDetail(commande)}
                               className="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
                             >
                               <Eye className="w-4 h-4 mr-2" />
                               Détail
                             </button>
                             <button
-                              onClick={(e) => handleDeleteClick(vente, e)}
+                              onClick={(e) => handleDeleteClick(commande, e)}
                               className="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
                               disabled={isDeleting}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Supprimer
+                              Annuler
                             </button>
                           </div>
                         </td>
@@ -1426,7 +1480,7 @@ export default function VentesNonGrossistesScreen() {
                 <Search className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {error ? "Erreur de chargement" : "Aucune vente trouvée"}
+                {error ? "Erreur de chargement" : "Aucune commande trouvée"}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
                 {error || (
@@ -1434,15 +1488,15 @@ export default function VentesNonGrossistesScreen() {
                   filters.date_debut ||
                   filters.date_fin ||
                   filters.site_id > 0
-                    ? "Aucune vente ne correspond à votre recherche. Essayez d'autres critères."
-                    : "Aucune vente non-grossiste n'a été enregistrée."
+                    ? "Aucune commande ne correspond à votre recherche. Essayez d'autres critères."
+                    : "Aucune commande de plaques n'a été enregistrée."
                 )}
               </p>
               {error && (
                 <button
                   onClick={() => {
                     setError(null);
-                    loadVentes();
+                    loadCommandes();
                   }}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
@@ -1457,17 +1511,17 @@ export default function VentesNonGrossistesScreen() {
       {/* Modals */}
       <DetailModal
         isOpen={showDetailModal}
-        vente={selectedVente}
+        commande={selectedCommande}
         onClose={() => setShowDetailModal(false)}
       />
 
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
-        vente={venteToDelete}
+        commande={commandeToDelete}
         onConfirm={confirmDelete}
         onCancel={() => {
           setShowDeleteModal(false);
-          setVenteToDelete(null);
+          setCommandeToDelete(null);
         }}
         isLoading={isDeleting}
       />

@@ -32,14 +32,6 @@ export default function ParticuliersHeader({ searchTerm, onSearchChange, onSearc
             className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] bg-white w-full"
           />
         </div>
-        
-        <button
-          onClick={onAddClick}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-[#153258] to-[#23A974] text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105 shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="font-medium text-sm">Ajouter</span>
-        </button>
       </div>
     </div>
   );

@@ -286,12 +286,12 @@ export default function RefactorServicesClient() {
   }, [formData.typeEngin, puissancesFiscales]);
 
   // Récupération des données depuis la base via ID DGRK
-  const recupererDonneesDGRK = async (idDGRK: string) => {
+  const recupererDonneesDGRK = async (idDGRK: string, user: string) => {
     setIsLoading(true);
     setErreurVerification("");
 
     try {
-      const result = await verifierIdDGRK(idDGRK);
+      const result = await verifierIdDGRK(idDGRK, user);
 
       if (result.status === "error") {
         setErreurVerification(result.message || "Erreur lors de la vérification");
@@ -337,7 +337,7 @@ export default function RefactorServicesClient() {
       return;
     }
 
-    recupererDonneesDGRK(idDGRK);
+    recupererDonneesDGRK(idDGRK, utilisateur ? utilisateur.site_nom.toString() : "");
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {

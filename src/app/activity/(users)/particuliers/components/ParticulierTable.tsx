@@ -103,31 +103,6 @@ export default function ParticuliersTable({
                       >
                         <ExternalLink className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => onToggleStatus(particulier)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          particulier.actif 
-                            ? 'text-red-600 hover:bg-red-50' 
-                            : 'text-green-600 hover:bg-green-50'
-                        }`}
-                        title={particulier.actif ? 'Désactiver' : 'Activer'}
-                      >
-                        {particulier.actif ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                      <button
-                        onClick={() => onEdit(particulier)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Modifier"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onDelete(particulier)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
                   </td>
                 </tr>

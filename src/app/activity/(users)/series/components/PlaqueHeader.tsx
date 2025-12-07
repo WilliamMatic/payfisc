@@ -40,13 +40,13 @@ export default function PlaqueHeader({
         </div>
         
         <div className="flex items-center gap-2">
-          <button
+          {/* <button
             onClick={onRapportClick}
             className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-sm hover:shadow-md"
           >
             <FileText className="w-4 h-4" />
             <span className="font-medium text-sm">Rapport</span>
-          </button>
+          </button> */}
           
           {/* <button
             onClick={onAddClick}

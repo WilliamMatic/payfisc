@@ -131,20 +131,20 @@ export default function Sidebar({
           href: "/system/suppression-vente-simple",
         },
         {
-          icon: "🗑️",
-          label: "Suppression Délivrance",
-          href: "/system/suppression-delivrance",
-        },
-        {
           icon: "⚠️",
           label: "Suppression Vente Grossiste",
           href: "/system/suppression-vente-grossiste",
         },
         {
-          icon: "♻️",
-          label: "Suppression Reproduction",
-          href: "/system/suppression-reproduction",
+          icon: "🗑️",
+          label: "Suppression Délivrance",
+          href: "/system/suppression-delivrance",
         },
+        // {
+        //   icon: "♻️",
+        //   label: "Suppression Reproduction",
+        //   href: "/system/suppression-reproduction",
+        // },
       ],
     },
   ];

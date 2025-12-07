@@ -199,19 +199,19 @@ export default function ReproductionPrint({
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 3px;text-transform: uppercase;">${
+                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${
                       data.nom
                     } ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 4px;text-transform: uppercase;">${
+                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${
                       data.adresse
                     }</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td style="position: relative; top: 8px;text-transform: uppercase;"></td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td>
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>

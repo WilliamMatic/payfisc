@@ -3,6 +3,7 @@
 export interface VerificationData {
   telephone: string;
   numeroPlaque: string;
+  utilisateur: number;
 }
 
 export interface ParticulierData {
@@ -103,6 +104,7 @@ export const verifierPlaqueTelephone = async (
     const formData = new FormData();
     formData.append("telephone", verificationData.telephone);
     formData.append("numero_plaque", verificationData.numeroPlaque);
+    formData.append("user", verificationData.utilisateur.toString());
 
     const response = await fetch(
       `${API_BASE_URL}/carterose/verifier_plaque.php`,

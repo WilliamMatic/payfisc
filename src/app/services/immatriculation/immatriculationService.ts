@@ -5,7 +5,7 @@
 export interface ParticulierData {
   nom: string;
   prenom: string;
-  telephone?: string; // Changé de string à string? (optionnel)
+  telephone?: string;
   email?: string;
   adresse: string;
   nif?: string;
@@ -36,7 +36,6 @@ export interface PaiementData {
   serie_item_id?: number | null;
 }
 
-// Interface pour la réponse de vérification de particulier
 export interface VerifierParticulierResponse {
   status: "success" | "error";
   message?: string;
@@ -76,6 +75,24 @@ export interface ImmatriculationResponse {
   };
 }
 
+export interface CarteReprintData {
+  id_paiement: number;
+  numero_plaque: string;
+  raison?: string;
+}
+
+export interface AnnulerImmatriculationResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: {
+    paiement_id: number;
+    numero_plaque: string;
+    montant_rembourse: number;
+    serie_item_id: number;
+    raison: string;
+  };
+}
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
@@ -84,10 +101,9 @@ const API_BASE_URL =
  * Vérifie si un particulier existe par son numéro de téléphone
  */
 export const verifierParticulierParTelephone = async (
-  telephone?: string // Changé pour accepter undefined
+  telephone?: string
 ): Promise<VerifierParticulierResponse> => {
   try {
-    // Si le téléphone est vide, null, undefined ou juste un tiret, on ne procède pas à la vérification
     if (!telephone || telephone.trim() === '' || telephone.trim() === '-') {
       return {
         status: "success",
@@ -227,10 +243,10 @@ export const soumettreImmatriculation = async (
     formData.append("utilisateur_id", utilisateur.id.toString());
     formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    // Données du particulier (téléphone peut être vide ou "-")
+    // Données du particulier
     formData.append("nom", particulierData.nom);
     formData.append("prenom", particulierData.prenom);
-    formData.append("telephone", particulierData.telephone || "-"); // Utiliser "-" si vide
+    formData.append("telephone", particulierData.telephone || "-");
     formData.append("email", particulierData.email || "");
     formData.append("adresse", particulierData.adresse);
     formData.append("nif", particulierData.nif || "");
@@ -358,8 +374,7 @@ export const verifierNumeroChassis = async (
     if (!response.ok) {
       return {
         status: "error",
-        message:
-          data.message || "Échec de la vérification du numéro de chassis",
+        message: data.message || "Échec de la vérification du numéro de chassis",
       };
     }
 
@@ -369,6 +384,128 @@ export const verifierNumeroChassis = async (
     return {
       status: "error",
       message: "Erreur réseau lors de la vérification du numéro de chassis",
+    };
+  }
+};
+
+/**
+ * Annule complètement une immatriculation
+ */
+export const annulerImmatriculation = async (
+  paiementId: number,
+  utilisateurId: number,
+  raison?: string
+): Promise<AnnulerImmatriculationResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("paiement_id", paiementId.toString());
+    formData.append("utilisateur_id", utilisateurId.toString());
+    if (raison) {
+      formData.append("raison", raison);
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/immatriculation/annuler_immatriculation.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de l'annulation de l'immatriculation",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Annuler immatriculation error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de l'annulation de l'immatriculation",
+    };
+  }
+};
+
+/**
+ * Recherche une couleur par nom
+ */
+export const rechercherCouleur = async (
+  searchTerm: string
+): Promise<any> => {
+  try {
+    const formData = new FormData();
+    formData.append("search_term", searchTerm);
+
+    const response = await fetch(
+      `${API_BASE_URL}/immatriculation/rechercher_couleurs.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des couleurs",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Rechercher couleurs error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des couleurs",
+    };
+  }
+};
+
+/**
+ * Ajoute une nouvelle couleur
+ */
+export const ajouterCouleur = async (
+  nom: string,
+  codeHex: string
+): Promise<any> => {
+  try {
+    const formData = new FormData();
+    formData.append("nom", nom);
+    formData.append("code_hex", codeHex);
+
+    const response = await fetch(
+      `${API_BASE_URL}/immatriculation/ajouter_couleur.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de l'ajout de la couleur",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Ajouter couleur error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de l'ajout de la couleur",
     };
   }
 };

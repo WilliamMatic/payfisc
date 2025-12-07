@@ -12,7 +12,6 @@ export default function ClientSimplePage() {
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [privileges, setPrivileges] = useState<any>(null);
 
-  // Parser les privilèges quand utilisateur change
   useEffect(() => {
     if (utilisateur?.privileges_include) {
       try {
@@ -23,12 +22,10 @@ export default function ClientSimplePage() {
         setPrivileges({});
       }
     } else if (utilisateur) {
-      // Si pas de privilèges dans utilisateur, créer un objet par défaut
       setPrivileges({});
     }
   }, [utilisateur]);
 
-  // Afficher un écran de chargement pendant la vérification d'authentification
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -45,7 +42,6 @@ export default function ClientSimplePage() {
     );
   }
 
-  // Afficher un écran de chargement pendant le parsing des privilèges
   if (!utilisateur || privileges === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -64,7 +60,6 @@ export default function ClientSimplePage() {
     );
   }
 
-  // Vérifier si l'utilisateur a le privilège "simple"
   if (!privileges.simple) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -106,7 +101,6 @@ export default function ClientSimplePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
-        {/* HEADER */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <button
@@ -135,7 +129,6 @@ export default function ClientSimplePage() {
             </div>
           </div>
 
-          {/* DESCRIPTION */}
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-blue-800 text-sm">
               L'immatriculation des plaques consiste à enregistrer officiellement un véhicule auprès des services compétents afin de lui attribuer un numéro unique d'identification. Elle permet de certifier la propriété, faciliter le contrôle routier et assurer la traçabilité du véhicule sur tout le territoire.
@@ -143,7 +136,6 @@ export default function ClientSimplePage() {
           </div>
         </div>
 
-        {/* FORMULAIRE */}
         <ClientSimpleForm impotId={impotId} utilisateur={utilisateur} />
       </div>
     </div>

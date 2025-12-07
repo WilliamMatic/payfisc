@@ -202,15 +202,15 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 3px;text-transform: uppercase;">${data.nom} ${data.prenom}</td>
+                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${data.nom} ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 4px;text-transform: uppercase;">${data.adresse}</td>
+                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${data.adresse}</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td style="position: relative; top: 8px;text-transform: uppercase;"></td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td>
                   </tr>
                   <tr>
                     <th style="position: relative; top: 9px;"></th>

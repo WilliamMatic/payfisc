@@ -12,6 +12,7 @@ import {
   X,
   Search,
   Plus,
+  Loader,
 } from "lucide-react";
 import {
   verifierPlaqueTelephone,
@@ -28,6 +29,7 @@ import {
   type RechercheModeleResponse,
   type RecherchePuissanceResponse,
 } from "@/services/carte-rose/carteRoseService";
+import { rechercherCouleur, ajouterCouleur } from "@/services/immatriculation/immatriculationService";
 import CarteRosePrint from "./CarteRosePrint";
 
 // Import des services pour les données dynamiques
@@ -185,6 +187,15 @@ export default function ClientSimpleForm({
     PuissanceFiscale[]
   >([]);
 
+  // États pour la gestion des couleurs (comme dans le premier screen)
+  const [couleursSuggestions, setCouleursSuggestions] = useState<EnginCouleur[]>([]);
+  const [showCouleursSuggestions, setShowCouleursSuggestions] = useState(false);
+  const [isSearchingCouleurs, setIsSearchingCouleurs] = useState(false);
+  const [couleurInputMode, setCouleurInputMode] = useState<'select' | 'input'>('select');
+  const [nouvelleCouleurNom, setNouvelleCouleurNom] = useState("");
+  const [nouvelleCouleurCode, setNouvelleCouleurCode] = useState("#000000");
+  const [isAddingCouleur, setIsAddingCouleur] = useState(false);
+
   // États de chargement
   const [loading, setLoading] = useState({
     typeEngins: false,
@@ -197,6 +208,8 @@ export default function ClientSimpleForm({
     verificationTelephone: false,
     rechercheModeles: false,
     recherchePuissances: false,
+    rechercheCouleurs: false,
+    ajoutCouleur: false,
   });
 
   const [plaqueInfo, setPlaqueInfo] = useState<PlaqueInfo | null>(null);
@@ -227,6 +240,7 @@ export default function ClientSimpleForm({
   const rechercheModeleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
@@ -292,6 +306,8 @@ export default function ClientSimpleForm({
           verificationTelephone: false,
           rechercheModeles: false,
           recherchePuissances: false,
+          rechercheCouleurs: false,
+          ajoutCouleur: false,
         });
       }
     };
@@ -310,6 +326,42 @@ export default function ClientSimpleForm({
       }
     }
   }, [formData.anneeFabrication]);
+
+  // Recherche automatique des couleurs
+  useEffect(() => {
+    if (couleurTimerRef.current) {
+      clearTimeout(couleurTimerRef.current);
+    }
+
+    if (formData.couleur.length >= 2 && couleurInputMode === 'input') {
+      couleurTimerRef.current = setTimeout(async () => {
+        setIsSearchingCouleurs(true);
+        setLoading(prev => ({ ...prev, rechercheCouleurs: true }));
+        try {
+          const response = await rechercherCouleur(formData.couleur);
+          if (response.status === "success") {
+            setCouleursSuggestions(response.data || []);
+            setShowCouleursSuggestions(true);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des couleurs:", error);
+          setCouleursSuggestions([]);
+        } finally {
+          setIsSearchingCouleurs(false);
+          setLoading(prev => ({ ...prev, rechercheCouleurs: false }));
+        }
+      }, 300);
+    } else {
+      setCouleursSuggestions([]);
+      setShowCouleursSuggestions(false);
+    }
+
+    return () => {
+      if (couleurTimerRef.current) {
+        clearTimeout(couleurTimerRef.current);
+      }
+    };
+  }, [formData.couleur, couleurInputMode]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
@@ -339,11 +391,65 @@ export default function ClientSimpleForm({
       setShowSuggestionsPuissances(false);
     }
 
+    // Vérifier si la couleur existe déjà dans la liste (mode saisie)
+    if (field === "couleur" && value && couleurInputMode === 'input') {
+      const couleurExistante = couleurs.find(c => c.nom.toLowerCase() === value.toLowerCase());
+      if (!couleurExistante && value.length >= 2) {
+        setNouvelleCouleurNom(value);
+      }
+    }
+
     if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
         [field]: undefined,
       }));
+    }
+  };
+
+  // Gestion de la sélection de couleur
+  const handleCouleurSelect = (couleur: EnginCouleur) => {
+    setFormData((prev) => ({ ...prev, couleur: couleur.nom }));
+    setShowCouleursSuggestions(false);
+    setCouleurInputMode('select');
+  };
+
+  // Gestion de l'ajout d'une nouvelle couleur
+  const handleAjouterCouleur = async () => {
+    if (!nouvelleCouleurNom.trim()) {
+      alert("Veuillez saisir un nom pour la couleur");
+      return;
+    }
+
+    setLoading(prev => ({ ...prev, ajoutCouleur: true }));
+    try {
+      const response = await ajouterCouleur(nouvelleCouleurNom, nouvelleCouleurCode);
+      if (response.status === "success") {
+        // Recharger la liste des couleurs
+        const couleursResponse = await getCouleurs();
+        if (couleursResponse.status === "success") {
+          setCouleurs(couleursResponse.data || []);
+        }
+        
+        // Sélectionner la nouvelle couleur
+        setFormData((prev) => ({ ...prev, couleur: nouvelleCouleurNom }));
+        setCouleurInputMode('select');
+        setNouvelleCouleurNom("");
+        setNouvelleCouleurCode("#000000");
+        setShowCouleursSuggestions(false);
+        
+        setMessageErreur("✅ Couleur ajoutée avec succès !");
+        setTimeout(() => setMessageErreur(""), 3000);
+      } else {
+        setMessageErreur(response.message || "Erreur lors de l'ajout de la couleur");
+        setTimeout(() => setMessageErreur(""), 3000);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la couleur:", error);
+      setMessageErreur("Erreur réseau lors de l'ajout de la couleur");
+      setTimeout(() => setMessageErreur(""), 3000);
+    } finally {
+      setLoading(prev => ({ ...prev, ajoutCouleur: false }));
     }
   };
 
@@ -637,7 +743,10 @@ export default function ClientSimpleForm({
       const verificationData: VerificationData = {
         telephone: formData.telephone.trim() || "", // Téléphone vide si non renseigné
         numeroPlaque: formData.numeroPlaque.trim(),
+        utilisateur: utilisateur ? utilisateur.id : 0,
       };
+
+      console.log("Données de vérification envoyées:", verificationData);
 
       const result: CarteRoseResponse = await verifierPlaqueTelephone(
         verificationData
@@ -925,6 +1034,9 @@ export default function ClientSimpleForm({
     setSuggestionsPuissances([]);
     setShowSuggestionsModeles(false);
     setShowSuggestionsPuissances(false);
+    setCouleurInputMode('select');
+    setNouvelleCouleurNom("");
+    setNouvelleCouleurCode("#000000");
   };
 
   const handleRetourFormulaire = () => {
@@ -1054,6 +1166,144 @@ export default function ClientSimpleForm({
     </div>
   );
 
+  // Rendu de l'étape formulaire - SECTION COULEUR MODIFIÉE
+  const renderSectionCouleur = () => (
+    <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Couleur
+      </label>
+      
+      <div className="flex space-x-2 mb-2">
+        <button
+          type="button"
+          onClick={() => setCouleurInputMode('select')}
+          className={`px-3 py-1 text-sm rounded-lg transition-all ${
+            couleurInputMode === 'select'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Liste
+        </button>
+        <button
+          type="button"
+          onClick={() => setCouleurInputMode('input')}
+          className={`px-3 py-1 text-sm rounded-lg transition-all ${
+            couleurInputMode === 'input'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Saisir
+        </button>
+      </div>
+
+      {couleurInputMode === 'select' ? (
+        <div className="relative">
+          <select
+            value={formData.couleur}
+            onChange={(e) => handleInputChange("couleur", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            disabled={loading.couleurs}
+          >
+            <option value="">Sélectionner la couleur</option>
+            {couleurs.map((couleur) => (
+              <option key={couleur.id} value={couleur.nom}>
+                {couleur.nom}
+              </option>
+            ))}
+          </select>
+          {loading.couleurs && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <Loader className="w-4 h-4 animate-spin text-gray-400" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="relative">
+          <input
+            type="text"
+            value={formData.couleur}
+            onChange={(e) => handleInputChange("couleur", e.target.value)}
+            placeholder="Saisissez la couleur (auto-complétion)"
+            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+          />
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            {isSearchingCouleurs ? (
+              <Loader className="w-4 h-4 animate-spin text-gray-400" />
+            ) : (
+              <Search className="w-4 h-4 text-gray-400" />
+            )}
+          </div>
+
+          {showCouleursSuggestions && couleursSuggestions.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {couleursSuggestions.map((couleur) => (
+                <div
+                  key={couleur.id}
+                  onClick={() => handleCouleurSelect(couleur)}
+                  className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: couleur.code_hex }}
+                    />
+                    <div>
+                      <div className="font-medium">{couleur.nom}</div>
+                      <div className="text-xs text-gray-500">{couleur.code_hex}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {showCouleursSuggestions &&
+            couleursSuggestions.length === 0 &&
+            formData.couleur.length >= 2 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3">
+                <div className="text-sm text-gray-600 mb-3">
+                  Cette couleur n'existe pas encore. Voulez-vous l'ajouter ?
+                </div>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={nouvelleCouleurNom}
+                    onChange={(e) => setNouvelleCouleurNom(e.target.value)}
+                    placeholder="Nom de la couleur"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="color"
+                      value={nouvelleCouleurCode}
+                      onChange={(e) => setNouvelleCouleurCode(e.target.value)}
+                      className="w-10 h-10 cursor-pointer"
+                    />
+                    <span className="text-sm text-gray-600">{nouvelleCouleurCode}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAjouterCouleur}
+                    disabled={loading.ajoutCouleur || !nouvelleCouleurNom.trim()}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+                  >
+                    {loading.ajoutCouleur ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    <span>Ajouter cette couleur</span>
+                  </button>
+                </div>
+              </div>
+            )}
+        </div>
+      )}
+    </div>
+  );
+
   // Rendu de l'étape formulaire
   const renderEtapeFormulaire = () => (
     <form onSubmit={handleSubmitForm} className="space-y-8">
@@ -1110,6 +1360,41 @@ export default function ClientSimpleForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* TÉLÉPHONE - FACULTATIF */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de téléphone
+            </label>
+            <div className="relative">
+              <input
+                type="tel"
+                value={formData.telephoneAssujetti}
+                onChange={(e) => handleTelephoneChange(e.target.value)}
+                onBlur={() => setMessageErreur("")}
+                placeholder="Ex: +243 81 234 5678 (Facultatif)"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.telephoneAssujetti
+                    ? "border-red-300"
+                    : "border-gray-300"
+                }`}
+              />
+              {loading.verificationTelephone && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            {errors.telephoneAssujetti && (
+              <p className="text-red-600 text-sm mt-1">
+                {errors.telephoneAssujetti}
+              </p>
+            )}
+            <p className="text-blue-600 text-xs mt-1">
+              Facultatif - Le système vérifie automatiquement si ce téléphone
+              existe déjà
+            </p>
+          </div>
+          
           {/* NOM */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1146,41 +1431,6 @@ export default function ClientSimpleForm({
             {errors.prenom && (
               <p className="text-red-600 text-sm mt-1">{errors.prenom}</p>
             )}
-          </div>
-
-          {/* TÉLÉPHONE - FACULTATIF */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Numéro de téléphone
-            </label>
-            <div className="relative">
-              <input
-                type="tel"
-                value={formData.telephoneAssujetti}
-                onChange={(e) => handleTelephoneChange(e.target.value)}
-                onBlur={() => setMessageErreur("")}
-                placeholder="Ex: +243 81 234 5678 (Facultatif)"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.telephoneAssujetti
-                    ? "border-red-300"
-                    : "border-gray-300"
-                }`}
-              />
-              {loading.verificationTelephone && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-            {errors.telephoneAssujetti && (
-              <p className="text-red-600 text-sm mt-1">
-                {errors.telephoneAssujetti}
-              </p>
-            )}
-            <p className="text-blue-600 text-xs mt-1">
-              Facultatif - Le système vérifie automatiquement si ce téléphone
-              existe déjà
-            </p>
           </div>
 
           {/* EMAIL */}
@@ -1532,32 +1782,8 @@ export default function ClientSimpleForm({
             )}
           </div>
 
-          {/* Couleur */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Couleur
-            </label>
-            <div className="relative">
-              <select
-                value={formData.couleur}
-                onChange={(e) => handleInputChange("couleur", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={loading.couleurs}
-              >
-                <option value="">Sélectionner la couleur</option>
-                {couleurs.map((couleur) => (
-                  <option key={couleur.id} value={couleur.nom}>
-                    {couleur.nom}
-                  </option>
-                ))}
-              </select>
-              {loading.couleurs && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Couleur - MODIFIÉ POUR INCLURE LA GESTION COMPLÈTE */}
+          {renderSectionCouleur()}
 
           {/* Puissance Fiscal - Auto-complétion */}
           <div className="relative">
@@ -1936,6 +2162,10 @@ export default function ClientSimpleForm({
                     <div>
                       <span className="text-blue-600">Modèle:</span>
                       <div className="font-medium">{formData.modele}</div>
+                    </div>
+                    <div>
+                      <span className="text-blue-600">Couleur:</span>
+                      <div className="font-medium">{formData.couleur}</div>
                     </div>
                     <div>
                       <span className="text-blue-600">Puissance:</span>

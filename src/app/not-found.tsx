@@ -46,28 +46,6 @@ export default function NotFound() {
             <code className="text-sm text-gray-700 font-medium">404</code>
           </div>
         </div>
-
-        {/* Actions */}
-        {/* <div className={`flex flex-col sm:flex-row gap-3 justify-center transition-all duration-700 delay-300 ${
-          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}>
-          <button
-            onClick={() => window.history.back()}
-            className="group inline-flex items-center justify-center space-x-2 px-6 py-3 text-gray-700 font-medium rounded-full border border-gray-300 hover:bg-white transition-all duration-200 shadow-sm hover:shadow-md"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Retour</span>
-          </button>
-          
-          <Link
-            href="/"
-            className="group inline-flex items-center justify-center space-x-2 px-6 py-3 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105"
-          >
-            <Home className="w-4 h-4" />
-            <span>Accueil</span>
-            <MoveRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div> */}
       </div>
     </div>
   )
