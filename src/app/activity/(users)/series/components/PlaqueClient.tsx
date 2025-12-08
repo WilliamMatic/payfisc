@@ -1,17 +1,18 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { 
-  Serie as SerieType, 
-  Province, 
+"use client";
+import { useState, useEffect } from "react";
+import {
+  Serie as SerieType,
+  Province,
   RapportSeries,
-  PaginationResponse 
-} from '@/services/plaques/plaqueService';
-import PlaqueHeader from './PlaqueHeader';
-import PlaqueTable from './PlaqueTable';
-import PlaqueModals from './modals/PlaqueModals';
-import AlertMessage from './AlertMessage';
-import RapportSeriesModal from './RapportSeriesModal';
-import Pagination from './Pagination';
+  PaginationResponse,
+} from "@/services/plaques/plaqueService";
+import PlaqueHeader from "./PlaqueHeader";
+import PlaqueTable from "./PlaqueTable";
+import PlaqueModals from "./modals/PlaqueModals";
+import AlertMessage from "./AlertMessage";
+import RapportSeriesModal from "./RapportSeriesModal";
+import Pagination from "./Pagination";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PlaqueClientProps {
   initialSeries: SerieType[];
@@ -24,16 +25,18 @@ interface PlaqueClientProps {
   };
 }
 
-export default function PlaqueClient({ 
-  initialSeries, 
-  initialError, 
-  initialPagination 
+export default function PlaqueClient({
+  initialSeries,
+  initialError,
+  initialPagination,
 }: PlaqueClientProps) {
+  const { utilisateur, isLoading: authLoading } = useAuth();
+
   const [series, setSeries] = useState<SerieType[]>(initialSeries || []);
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -41,18 +44,18 @@ export default function PlaqueClient({
   const [showItemsModal, setShowItemsModal] = useState(false);
   const [showRapportModal, setShowRapportModal] = useState(false);
   const [selectedSerie, setSelectedSerie] = useState<SerieType | null>(null);
-  const [formData, setFormData] = useState({ 
-    nom_serie: '', 
-    province_id: '',
+  const [formData, setFormData] = useState({
+    nom_serie: "",
+    province_id: "",
     debut_numeros: 1,
     fin_numeros: 999,
-    description: ''
+    description: "",
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [rapportData, setRapportData] = useState<RapportSeries | null>(null);
   const [rapportLoading, setRapportLoading] = useState(false);
-  
+
   // États de pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialPagination.totalPages);
@@ -64,14 +67,16 @@ export default function PlaqueClient({
   useEffect(() => {
     const loadProvinces = async () => {
       try {
-        const { getProvinces } = await import('@/services/plaques/plaqueService');
+        const { getProvinces } = await import(
+          "@/services/plaques/plaqueService"
+        );
         const result = await getProvinces();
-        
-        if (result.status === 'success') {
+
+        if (result.status === "success") {
           setProvinces(result.data || []);
         }
       } catch (err) {
-        console.error('Erreur lors du chargement des provinces:', err);
+        console.error("Erreur lors du chargement des provinces:", err);
       }
     };
 
@@ -84,20 +89,22 @@ export default function PlaqueClient({
       setLoading(true);
       setError(null);
       setIsSearching(false);
-      
-      const { getSeries } = await import('@/services/plaques/plaqueService');
+
+      const { getSeries } = await import("@/services/plaques/plaqueService");
+
+      // Passer l'ID utilisateur si disponible
       const result = await getSeries(page, itemsPerPage);
-      
-      if (result.status === 'success' && result.data) {
+
+      if (result.status === "success" && result.data) {
         setSeries(result.data.series || []);
         setCurrentPage(result.data.pagination.page);
         setTotalPages(result.data.pagination.totalPages);
         setTotalItems(result.data.pagination.total);
       } else {
-        setError(result.message || 'Erreur lors du chargement des séries');
+        setError(result.message || "Erreur lors du chargement des séries");
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
@@ -115,21 +122,30 @@ export default function PlaqueClient({
       setLoading(true);
       setError(null);
       setIsSearching(true);
-      
-      const { searchSeries } = await import('@/services/plaques/plaqueService');
-      const result = await searchSeries(searchTerm, page, itemsPerPage);
-      
-      if (result.status === 'success' && result.data) {
+
+      const { searchSeries } = await import("@/services/plaques/plaqueService");
+
+      // Pour searchSeries, vous devrez peut-être aussi modifier l'API
+      // Si elle accepte aussi utilisateur_id
+      const utilisateurId = utilisateur?.id;
+      const result = await searchSeries(
+        searchTerm,
+        page,
+        itemsPerPage,
+        utilisateurId
+      );
+
+      if (result.status === "success" && result.data) {
         setSeries(result.data.series || []);
         setCurrentPage(result.data.pagination.page);
         setTotalPages(result.data.pagination.totalPages);
         setTotalItems(result.data.pagination.total);
       } else {
-        setError(result.message || 'Erreur lors de la recherche des séries');
+        setError(result.message || "Erreur lors de la recherche des séries");
         setSeries([]);
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
       setSeries([]);
     } finally {
       setLoading(false);
@@ -137,20 +153,26 @@ export default function PlaqueClient({
   };
 
   // Générer un rapport
-  const handleGenererRapport = async (params: { date_debut: string; date_fin: string; province_id?: number }) => {
+  const handleGenererRapport = async (params: {
+    date_debut: string;
+    date_fin: string;
+    province_id?: number;
+  }) => {
     try {
       setRapportLoading(true);
-      const { genererRapportSeries } = await import('@/services/plaques/plaqueService');
+      const { genererRapportSeries } = await import(
+        "@/services/plaques/plaqueService"
+      );
       const result = await genererRapportSeries(params);
-      
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
         setRapportData(result.data);
         setError(null);
       } else {
-        setError(result.message || 'Erreur lors de la génération du rapport');
+        setError(result.message || "Erreur lors de la génération du rapport");
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
     } finally {
       setRapportLoading(false);
     }
@@ -159,7 +181,7 @@ export default function PlaqueClient({
   // Gestion du changement de page
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
-    
+
     if (isSearching && searchTerm.trim()) {
       handleSearch(page);
     } else {
@@ -177,11 +199,11 @@ export default function PlaqueClient({
   const openEditModal = (serie: SerieType) => {
     setSelectedSerie(serie);
     setFormData({
-      nom_serie: serie.nom_serie || '',
+      nom_serie: serie.nom_serie || "",
       province_id: serie.province_id.toString(),
       debut_numeros: serie.debut_numeros,
       fin_numeros: serie.fin_numeros,
-      description: serie.description || ''
+      description: serie.description || "",
     });
     setShowEditModal(true);
   };
@@ -219,20 +241,20 @@ export default function PlaqueClient({
   // Gestion de la touche Entrée pour la recherche
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && searchTerm.trim()) {
+      if (e.key === "Enter" && searchTerm.trim()) {
         handleSearch(1);
       }
     };
 
-    window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
+    window.addEventListener("keypress", handleKeyPress);
+    return () => window.removeEventListener("keypress", handleKeyPress);
   }, [searchTerm]);
 
   return (
     <div className="h-full flex flex-col">
       <AlertMessage error={error} successMessage={successMessage} />
-      
-      <PlaqueHeader 
+
+      <PlaqueHeader
         searchTerm={searchTerm}
         onSearchChange={(value) => {
           setSearchTerm(value);
@@ -284,23 +306,23 @@ export default function PlaqueClient({
         processing={processing}
         onAddClose={() => {
           setShowAddModal(false);
-          setFormData({ 
-            nom_serie: '', 
-            province_id: '',
+          setFormData({
+            nom_serie: "",
+            province_id: "",
             debut_numeros: 1,
             fin_numeros: 999,
-            description: ''
+            description: "",
           });
         }}
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedSerie(null);
-          setFormData({ 
-            nom_serie: '', 
-            province_id: '',
+          setFormData({
+            nom_serie: "",
+            province_id: "",
             debut_numeros: 1,
             fin_numeros: 999,
-            description: ''
+            description: "",
           });
         }}
         onDeleteClose={() => {
@@ -318,47 +340,57 @@ export default function PlaqueClient({
         onFormDataChange={setFormData}
         onAddSerie={async () => {
           if (!formData.nom_serie.trim()) {
-            setError('Le nom de la série est obligatoire');
+            setError("Le nom de la série est obligatoire");
             return;
           }
 
           if (!formData.province_id) {
-            setError('La province est obligatoire');
+            setError("La province est obligatoire");
             return;
           }
 
           if (!/^[A-Z]{2}$/.test(formData.nom_serie)) {
-            setError('Le nom de la série doit contenir exactement 2 lettres majuscules');
+            setError(
+              "Le nom de la série doit contenir exactement 2 lettres majuscules"
+            );
             return;
           }
 
-          if (formData.debut_numeros < 1 || formData.fin_numeros > 999 || formData.debut_numeros > formData.fin_numeros) {
-            setError('La plage numérique doit être entre 1 et 999, avec début <= fin');
+          if (
+            formData.debut_numeros < 1 ||
+            formData.fin_numeros > 999 ||
+            formData.debut_numeros > formData.fin_numeros
+          ) {
+            setError(
+              "La plage numérique doit être entre 1 et 999, avec début <= fin"
+            );
             return;
           }
 
           setProcessing(true);
           try {
-            const { addSerie } = await import('@/services/plaques/plaqueService');
+            const { addSerie } = await import(
+              "@/services/plaques/plaqueService"
+            );
             const result = await addSerie({
               nom_serie: formData.nom_serie,
               province_id: parseInt(formData.province_id),
               debut_numeros: formData.debut_numeros,
               fin_numeros: formData.fin_numeros,
-              description: formData.description || undefined
+              description: formData.description || undefined,
             });
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Série ajoutée avec succès');
-              setFormData({ 
-                nom_serie: '', 
-                province_id: '',
+
+            if (result.status === "success") {
+              setSuccessMessage(result.message || "Série ajoutée avec succès");
+              setFormData({
+                nom_serie: "",
+                province_id: "",
                 debut_numeros: 1,
                 fin_numeros: 999,
-                description: ''
+                description: "",
               });
               setShowAddModal(false);
-              
+
               // Recharger la page courante
               if (isSearching && searchTerm.trim()) {
                 await handleSearch(currentPage);
@@ -366,51 +398,55 @@ export default function PlaqueClient({
                 await loadSeries(currentPage);
               }
             } else {
-              setError(result.message || 'Erreur lors de l\'ajout de la série');
+              setError(result.message || "Erreur lors de l'ajout de la série");
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
         }}
         onEditSerie={async () => {
           if (!selectedSerie || !formData.nom_serie.trim()) {
-            setError('Le nom de la série est obligatoire');
+            setError("Le nom de la série est obligatoire");
             return;
           }
 
           if (!formData.province_id) {
-            setError('La province est obligatoire');
+            setError("La province est obligatoire");
             return;
           }
 
           if (!/^[A-Z]{2}$/.test(formData.nom_serie)) {
-            setError('Le nom de la série doit contenir exactement 2 lettres majuscules');
+            setError(
+              "Le nom de la série doit contenir exactement 2 lettres majuscules"
+            );
             return;
           }
 
           setProcessing(true);
           try {
-            const { updateSerie } = await import('@/services/plaques/plaqueService');
+            const { updateSerie } = await import(
+              "@/services/plaques/plaqueService"
+            );
             const result = await updateSerie(selectedSerie.id, {
               nom_serie: formData.nom_serie,
               province_id: parseInt(formData.province_id),
-              description: formData.description || undefined
+              description: formData.description || undefined,
             });
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Série modifiée avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(result.message || "Série modifiée avec succès");
               setShowEditModal(false);
               setSelectedSerie(null);
-              setFormData({ 
-                nom_serie: '', 
-                province_id: '',
+              setFormData({
+                nom_serie: "",
+                province_id: "",
                 debut_numeros: 1,
                 fin_numeros: 999,
-                description: ''
+                description: "",
               });
-              
+
               // Recharger la page courante
               if (isSearching && searchTerm.trim()) {
                 await handleSearch(currentPage);
@@ -418,10 +454,12 @@ export default function PlaqueClient({
                 await loadSeries(currentPage);
               }
             } else {
-              setError(result.message || 'Erreur lors de la modification de la série');
+              setError(
+                result.message || "Erreur lors de la modification de la série"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -431,14 +469,18 @@ export default function PlaqueClient({
 
           setProcessing(true);
           try {
-            const { deleteSerie } = await import('@/services/plaques/plaqueService');
+            const { deleteSerie } = await import(
+              "@/services/plaques/plaqueService"
+            );
             const result = await deleteSerie(selectedSerie.id);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Série supprimée avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Série supprimée avec succès"
+              );
               setShowDeleteModal(false);
               setSelectedSerie(null);
-              
+
               // Recharger la page courante
               if (isSearching && searchTerm.trim()) {
                 await handleSearch(currentPage);
@@ -446,10 +488,12 @@ export default function PlaqueClient({
                 await loadSeries(currentPage);
               }
             } else {
-              setError(result.message || 'Erreur lors de la suppression de la série');
+              setError(
+                result.message || "Erreur lors de la suppression de la série"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -459,14 +503,21 @@ export default function PlaqueClient({
 
           setProcessing(true);
           try {
-            const { toggleSerieStatus } = await import('@/services/plaques/plaqueService');
-            const result = await toggleSerieStatus(selectedSerie.id, !selectedSerie.actif);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Statut de la série modifié avec succès');
+            const { toggleSerieStatus } = await import(
+              "@/services/plaques/plaqueService"
+            );
+            const result = await toggleSerieStatus(
+              selectedSerie.id,
+              !selectedSerie.actif
+            );
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Statut de la série modifié avec succès"
+              );
               setShowStatusModal(false);
               setSelectedSerie(null);
-              
+
               // Recharger la page courante
               if (isSearching && searchTerm.trim()) {
                 await handleSearch(currentPage);
@@ -474,10 +525,13 @@ export default function PlaqueClient({
                 await loadSeries(currentPage);
               }
             } else {
-              setError(result.message || 'Erreur lors du changement de statut de la série');
+              setError(
+                result.message ||
+                  "Erreur lors du changement de statut de la série"
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }

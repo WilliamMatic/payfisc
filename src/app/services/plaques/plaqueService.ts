@@ -97,22 +97,30 @@ const API_BASE_URL =
 
 /**
  * Récupère la liste des séries avec pagination (5 derniers par défaut)
+ * @param page Numéro de page
+ * @param limit Nombre d'éléments par page
+ * @param utilisateurId ID de l'utilisateur (optionnel)
  */
 export const getSeries = async (
   page: number = 1,
-  limit: number = 5
+  limit: number = 5,
+  utilisateurId?: number
 ): Promise<PaginationResponse> => {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/plaques/lister_series.php?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    let url = `${API_BASE_URL}/plaques/lister_series.php?page=${page}&limit=${limit}`;
+
+    // Ajouter l'ID utilisateur si fourni
+    if (utilisateurId !== undefined) {
+      url += `&utilisateur_id=${utilisateurId}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     const data = await response.json();
 
@@ -392,7 +400,8 @@ export const toggleSerieStatus = async (
 export const searchSeries = async (
   searchTerm: string,
   page: number = 1,
-  limit: number = 5
+  limit: number = 5,
+  utilisateurId?: number
 ): Promise<PaginationResponse> => {
   try {
     const response = await fetch(
@@ -407,6 +416,7 @@ export const searchSeries = async (
           search: searchTerm,
           page: page,
           limit: limit,
+          utilisateurId: utilisateurId,
         }),
       }
     );

@@ -292,6 +292,7 @@ export default function RefactorServicesClient() {
 
     try {
       const result = await verifierIdDGRK(idDGRK, user);
+      console.log("Résultat de la vérification DGRK:", result);
 
       if (result.status === "error") {
         setErreurVerification(result.message || "Erreur lors de la vérification");
