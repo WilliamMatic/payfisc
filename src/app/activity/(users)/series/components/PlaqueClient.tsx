@@ -93,7 +93,8 @@ export default function PlaqueClient({
       const { getSeries } = await import("@/services/plaques/plaqueService");
 
       // Passer l'ID utilisateur si disponible
-      const result = await getSeries(page, itemsPerPage);
+      const utilisateurId = utilisateur?.id;
+      const result = await getSeries(page, itemsPerPage, utilisateurId);
 
       if (result.status === "success" && result.data) {
         setSeries(result.data.series || []);
