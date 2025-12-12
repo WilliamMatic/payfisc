@@ -23,6 +23,7 @@ interface PrintData {
   nif: string;
   id: string;
   date_jour: string;
+  paiement_id: string;
 }
 
 interface RefactorPrintProps {
@@ -39,16 +40,23 @@ export default function RefactorPrint({
   const { utilisateur } = useAuth();
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
-
-  // Générer le format DGRK/mois/année/idpaiement
-  const getReferencePaiement = () => {
-    if (!data.id) return "DGRK/--/----/------";
+  // Fonction pour générer le code DGRK
+  const generateDGRKCode = () => {
     const now = new Date();
-    const mois = (now.getMonth() + 1).toString().padStart(2, "0");
-    const annee = now.getFullYear().toString();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const paiementId = data.paiement_id || '000000';
+    const element = utilisateur?.site_code || "Carte"
+    return `${element}/${month}/${year}/${paiementId}`;
+  };
 
-    const element = utilisateur?.site_code || "Carte";
-    return `${element}/${mois}/${annee}/${data.id}`;
+  // Fonction pour formater la date actuelle
+  const getCurrentDate = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const handlePrint = () => {
@@ -195,7 +203,7 @@ export default function RefactorPrint({
             <!-- RECTO (PAGE 1) -->
             <div class="card" style="height: 40mm !important;">
               <div style="position: absolute;top: 0;left: 0;right: 0;display: flex;justify-content: center;align-items: center;">
-                <span style="font-size: .5em;">${getReferencePaiement()}</span>
+                <span style="font-size: .5em;">${generateDGRKCode()}</span>
               </div>
               <table>
                 <tbody>
@@ -235,7 +243,7 @@ export default function RefactorPrint({
               <div class="qr">
                 ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
                 <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${
-                  data.date_jour
+                  getCurrentDate()
                 }</span>
               </div>
             </div>
@@ -552,7 +560,7 @@ export default function RefactorPrint({
                         textAlign: "center",
                       }}
                     >
-                      {getReferencePaiement()}
+                      {generateDGRKCode()}
                     </div>
                     <table>
                       <tbody>

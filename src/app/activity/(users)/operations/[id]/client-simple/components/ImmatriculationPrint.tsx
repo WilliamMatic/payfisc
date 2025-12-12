@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { formatPlaque } from "../../../utils/formatPlaque";
 import { useAuth } from "@/contexts/AuthContext";
+import FicheIdentificationPrint from "./FicheIdentificationPrint";
 
 interface PrintData {
   nom: string;
@@ -21,7 +22,31 @@ interface PrintData {
   puissance_fiscal: string;
   energie: string;
   paiement_id?: string;
-  modele?: string; // ← Ajouter cette ligne
+  modele?: string;
+  telephone?: string;
+  email?: string;
+  date_immatriculation?: string;
+}
+
+interface FicheSupplementaire {
+  sexe: string;
+  date_naissance: string;
+  lieu_naissance: string;
+  adresse_complete: string;
+  types_document: {
+    carte_identite: boolean;
+    passeport: boolean;
+    permis_conduire: boolean;
+    carte_electeur: boolean;
+  };
+  niup_moto: string;
+}
+
+interface ModalSupplementaireProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: FicheSupplementaire) => void;
+  defaultAdresse?: string;
 }
 
 interface ImmatriculationPrintProps {
@@ -30,15 +55,262 @@ interface ImmatriculationPrintProps {
   onClose: () => void;
 }
 
+// Modal pour compléter les informations supplémentaires
+const ModalSupplementaire: React.FC<ModalSupplementaireProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  defaultAdresse = "",
+}) => {
+  const [formData, setFormData] = useState<FicheSupplementaire>({
+    sexe: "",
+    date_naissance: "",
+    lieu_naissance: "",
+    adresse_complete: defaultAdresse,
+    types_document: {
+      carte_identite: false,
+      passeport: false,
+      permis_conduire: false,
+      carte_electeur: false,
+    },
+    niup_moto: "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const toggleDocumentType = (type: keyof typeof formData.types_document) => {
+    setFormData((prev) => ({
+      ...prev,
+      types_document: {
+        ...prev.types_document,
+        [type]: !prev.types_document[type],
+      },
+    }));
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-900">
+            Informations supplémentaires pour la fiche
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Sexe */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Sexe <span className="text-red-500">*</span>
+            </label>
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="sexe"
+                  value="Masculin"
+                  checked={formData.sexe === "Masculin"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, sexe: e.target.value }))
+                  }
+                  className="mr-2"
+                  required
+                />
+                Masculin
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="sexe"
+                  value="Féminin"
+                  checked={formData.sexe === "Féminin"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, sexe: e.target.value }))
+                  }
+                  className="mr-2"
+                />
+                Féminin
+              </label>
+            </div>
+          </div>
+
+          {/* Date de naissance */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Date de naissance <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={formData.date_naissance}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  date_naissance: e.target.value,
+                }))
+              }
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Lieu de naissance */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Lieu de naissance <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.lieu_naissance}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  lieu_naissance: e.target.value,
+                }))
+              }
+              placeholder="Ex: Kinshasa/Gombe"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Adresse complète */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Adresse complète <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={formData.adresse_complete}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  adresse_complete: e.target.value,
+                }))
+              }
+              placeholder="Ex: Avenue de la Justice N°123, Quartier, Commune, Ville"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[80px]"
+              required
+            />
+          </div>
+
+          {/* Type de document d'identité */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Type de document d'identité{" "}
+              <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.carte_identite}
+                  onChange={() => toggleDocumentType("carte_identite")}
+                  className="mr-2"
+                />
+                Carte d'identité
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.passeport}
+                  onChange={() => toggleDocumentType("passeport")}
+                  className="mr-2"
+                />
+                Passeport
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.permis_conduire}
+                  onChange={() => toggleDocumentType("permis_conduire")}
+                  className="mr-2"
+                />
+                Permis de conduire
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.carte_electeur}
+                  onChange={() => toggleDocumentType("carte_electeur")}
+                  className="mr-2"
+                />
+                Carte d'électeur
+              </label>
+            </div>
+          </div>
+
+          {/* NIUP Moto */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              NIUP Moto <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.niup_moto}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, niup_moto: e.target.value }))
+              }
+              placeholder="Ex: CD-KN-2024-123456"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all duration-200 font-semibold"
+            >
+              Continuer vers l'impression
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 export default function ImmatriculationPrint({
   data,
   isOpen,
   onClose,
 }: ImmatriculationPrintProps) {
   const { utilisateur } = useAuth();
-
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showFiche, setShowFiche] = useState(false);
+  const [showModalSupplementaire, setShowModalSupplementaire] = useState(false);
+  const [ficheSupplementaire, setFicheSupplementaire] =
+    useState<FicheSupplementaire | null>(null);
 
   // Fonction pour formater la date actuelle
   const getCurrentDate = () => {
@@ -56,7 +328,7 @@ export default function ImmatriculationPrint({
     const year = now.getFullYear();
     const paiementId = data.paiement_id || "000000";
 
-    const element = utilisateur?.site_code || "Carte"
+    const element = utilisateur?.site_code || "Carte";
 
     return `${element}/${month}/${year}/${paiementId}`;
   };
@@ -229,22 +501,16 @@ export default function ImmatriculationPrint({
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
                     <td style="position: relative; top: ${
-                      data.adresse &&
-                      data.adresse.length > 33
-                        ? "13px"
-                        : "24px"
+                      data.adresse && data.adresse.length > 33 ? "13px" : "24px"
                     };text-transform: uppercase;">${data.annee_circulation}</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
                     <td style="position: relative; top: ${
-                      data.adresse &&
-                      data.adresse.length> 33
-                        ? "2px" 
-                        : "14px"
+                      data.adresse && data.adresse.length > 33 ? "2px" : "14px"
                     };text-transform: uppercase;" class="plaque-number">${
-                  utilisateur?.province_code || ""
-                } ${formatPlaque(data.numero_plaque) || ""}</td>
+        utilisateur?.province_code || ""
+      } ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>
@@ -330,6 +596,27 @@ export default function ImmatriculationPrint({
     setIsFlipped(!isFlipped);
   };
 
+  const handleOpenFiche = () => {
+    // Afficher d'abord le modal supplémentaire
+    setShowModalSupplementaire(true);
+  };
+
+  const handleSubmitSupplementaire = (suppData: FicheSupplementaire) => {
+    setFicheSupplementaire(suppData);
+    setShowModalSupplementaire(false);
+    setShowFiche(true);
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -351,314 +638,330 @@ export default function ImmatriculationPrint({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* En-tête fixe */}
-        <div className="p-6 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-gray-900">
-              Impression de la Carte Rose
-            </h3>
-            <div className="flex space-x-3">
-              <button
-                onClick={handlePrint}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Imprimer
-              </button>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Fermer
-              </button>
+    <>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          {/* En-tête fixe */}
+          <div className="p-6 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-900">
+                Impression de la Carte Rose
+              </h3>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleOpenFiche}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Imprimer la Fiche
+                </button>
+                <button
+                  onClick={handlePrint}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Imprimer
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-blue-800 text-sm">
+                <strong>Instructions d'impression recto-verso :</strong>
+              </p>
+              <ul className="text-blue-700 text-sm mt-2 ml-4 list-disc space-y-1">
+                <li>
+                  Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression
+                </li>
+                <li>Le recto s'imprimera sur la page 1</li>
+                <li>Retournez la feuille et réinsérez-la dans l'imprimante</li>
+                <li>Le verso s'imprimera sur la page 2 (au dos du recto)</li>
+                <li>
+                  Cliquez sur la carte ci-dessous pour prévisualiser le recto et
+                  le verso
+                </li>
+                <li>
+                  Cliquez sur "Imprimer la Fiche" pour générer la fiche
+                  d'identification complète
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* Instructions */}
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-blue-800 text-sm">
-              <strong>Instructions d'impression recto-verso :</strong>
-            </p>
-            <ul className="text-blue-700 text-sm mt-2 ml-4 list-disc space-y-1">
-              <li>
-                Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression
-              </li>
-              <li>Le recto s'imprimera sur la page 1</li>
-              <li>Retournez la feuille et réinsérez-la dans l'imprimante</li>
-              <li>Le verso s'imprimera sur la page 2 (au dos du recto)</li>
-              <li>
-                Cliquez sur la carte ci-dessous pour prévisualiser le recto et
-                le verso
-              </li>
-            </ul>
-          </div>
-        </div>
+          {/* Contenu scrollable */}
+          <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
+            {/* Zone d'impression cachée pour le QR Code */}
+            <div
+              className="qr-code-canvas"
+              style={{ position: "absolute", left: "-9999px" }}
+            >
+              <QRCodeCanvas
+                value={data.numero_plaque}
+                size={128}
+                level="H"
+                bgColor="#FFFFFF"
+                fgColor="#000000"
+              />
+            </div>
 
-        {/* Contenu scrollable */}
-        <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
-          {/* Zone d'impression cachée pour le QR Code */}
-          <div
-            className="qr-code-canvas"
-            style={{ position: "absolute", left: "-9999px" }}
-          >
-            <QRCodeCanvas
-              value={data.numero_plaque}
-              size={128}
-              level="H"
-              bgColor="#FFFFFF"
-              fgColor="#000000"
-            />
-          </div>
+            {/* Prévisualisation interactive */}
+            <div ref={printRef} className="print-area">
+              <style>
+                {`
+                  .stage { 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    padding: 20px; 
+                    box-sizing: border-box; 
+                    background: #fff;
+                    min-height: auto;
+                  }
 
-          {/* Prévisualisation interactive */}
-          <div ref={printRef} className="print-area">
-            <style>
-              {`
-                .stage { 
-                  display: flex; 
-                  align-items: center; 
-                  justify-content: center; 
-                  padding: 20px; 
-                  box-sizing: border-box; 
-                  background: #fff;
-                  min-height: auto;
-                }
+                  .card {
+                    width: 86mm;
+                    height: 54mm;
+                    perspective: 1000mm;
+                    -webkit-perspective: 1000mm;
+                    cursor: pointer;
+                    margin: 0 auto;
+                  }
 
-                .card {
-                  width: 86mm;
-                  height: 54mm;
-                  perspective: 1000mm;
-                  -webkit-perspective: 1000mm;
-                  cursor: pointer;
-                  margin: 0 auto;
-                }
+                  .flip {
+                    width: 100%; 
+                    height: 100%; 
+                    position: relative; 
+                    transform-style: preserve-3d; 
+                    transition: transform 0.8s cubic-bezier(.2,.9,.3,1);
+                  }
 
-                .flip {
-                  width: 100%; 
-                  height: 100%; 
-                  position: relative; 
-                  transform-style: preserve-3d; 
-                  transition: transform 0.8s cubic-bezier(.2,.9,.3,1);
-                }
+                  .card.flipped .flip { 
+                    transform: rotateY(180deg); 
+                  }
 
-                .card.flipped .flip { 
-                  transform: rotateY(180deg); 
-                }
+                  .face {
+                    position: absolute; 
+                    inset: 0; 
+                    backface-visibility: hidden; 
+                    -webkit-backface-visibility: hidden;
+                    box-sizing: border-box; 
+                    border-radius: 1mm; 
+                    overflow: hidden;
+                    border: 0.5mm solid #000; 
+                    background: #fff;
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center;
+                    padding: 2.5mm;
+                    font-family: Arial, sans-serif;
+                  }
 
-                .face {
-                  position: absolute; 
-                  inset: 0; 
-                  backface-visibility: hidden; 
-                  -webkit-backface-visibility: hidden;
-                  box-sizing: border-box; 
-                  border-radius: 1mm; 
-                  overflow: hidden;
-                  border: 0.5mm solid #000; 
-                  background: #fff;
-                  display: flex; 
-                  align-items: center; 
-                  justify-content: center;
-                  padding: 2.5mm;
-                  font-family: Arial, sans-serif;
-                }
+                  .back { 
+                    transform: rotateY(180deg); 
+                  }
 
-                .back { 
-                  transform: rotateY(180deg); 
-                }
+                  table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    font-size: 2.2mm; 
+                  }
+                  
+                  td, th { 
+                    padding: 0.8mm; 
+                    text-align: left; 
+                    vertical-align: middle; 
+                    border-bottom: 0.15mm solid #eee;
+                  }
+                  
+                  th { 
+                    width: 45%; 
+                    font-weight: 700; 
+                    font-size: 2.4mm; 
+                  }
+                  
+                  td { 
+                    width: 55%; 
+                    font-weight: 500; 
+                  }
 
-                table { 
-                  width: 100%; 
-                  border-collapse: collapse; 
-                  font-size: 2.2mm; 
-                }
-                
-                td, th { 
-                  padding: 0.8mm; 
-                  text-align: left; 
-                  vertical-align: middle; 
-                  border-bottom: 0.15mm solid #eee;
-                }
-                
-                th { 
-                  width: 45%; 
-                  font-weight: 700; 
-                  font-size: 2.4mm; 
-                }
-                
-                td { 
-                  width: 55%; 
-                  font-weight: 500; 
-                }
+                  .plaque-number {
+                    font-weight: bold;
+                    font-size: 2.6mm;
+                    color: #dc2626;
+                  }
 
-                .plaque-number {
-                  font-weight: bold;
-                  font-size: 2.6mm;
-                  color: #dc2626;
-                }
+                  .qr { 
+                    position: absolute; 
+                    right: 2mm; 
+                    bottom: 2mm; 
+                    width: 11mm; 
+                    height: 11mm; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center;
+                    border: 0.15mm solid #000;
+                    padding: 0.4mm;
+                    background: white;
+                  }
 
-                .qr { 
-                  position: absolute; 
-                  right: 2mm; 
-                  bottom: 2mm; 
-                  width: 11mm; 
-                  height: 11mm; 
-                  display: flex; 
-                  align-items: center; 
-                  justify-content: center;
-                  border: 0.15mm solid #000;
-                  padding: 0.4mm;
-                  background: white;
-                }
+                  .sig-wrap { 
+                    position: absolute; 
+                    right: 2mm; 
+                    bottom: 2mm; 
+                    width: 25mm; 
+                    height: 9mm; 
+                    display: flex; 
+                    align-items: flex-end; 
+                    justify-content: center; 
+                  }
+                  
+                  .signature-box { 
+                    width: 100%; 
+                    border-top: 0.15mm dashed rgba(0,0,0,0.6); 
+                    padding-top: 1mm; 
+                    font-size: 2mm; 
+                    text-align: center; 
+                  }
 
-                .sig-wrap { 
-                  position: absolute; 
-                  right: 2mm; 
-                  bottom: 2mm; 
-                  width: 25mm; 
-                  height: 9mm; 
-                  display: flex; 
-                  align-items: flex-end; 
-                  justify-content: center; 
-                }
-                
-                .signature-box { 
-                  width: 100%; 
-                  border-top: 0.15mm dashed rgba(0,0,0,0.6); 
-                  padding-top: 1mm; 
-                  font-size: 2mm; 
-                  text-align: center; 
-                }
+                  .hint { 
+                    position: absolute; 
+                    top: 6px; 
+                    left: 8px; 
+                    font-size: 10px; 
+                    color: #222; 
+                    opacity: 0.8; 
+                    z-index: 10;
+                  }
 
-                .hint { 
-                  position: absolute; 
-                  top: 6px; 
-                  left: 8px; 
-                  font-size: 10px; 
-                  color: #222; 
-                  opacity: 0.8; 
-                  z-index: 10;
-                }
+                  .dgrka-code { 
+                    position: absolute; 
+                    top: 2mm; 
+                    left: 0; 
+                    right: 0; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center;
+                    font-size: 1.8mm;
+                    font-weight: bold;
+                  }
+                `}
+              </style>
 
-                .dgrka-code { 
-                  position: absolute; 
-                  top: 2mm; 
-                  left: 0; 
-                  right: 0; 
-                  display: flex; 
-                  justify-content: center; 
-                  align-items: center;
-                  font-size: 1.8mm;
-                  font-weight: bold;
-                }
-              `}
-            </style>
+              <div className="stage">
+                <div
+                  className={`card ${isFlipped ? "flipped" : ""}`}
+                  onClick={toggleFlip}
+                  role="button"
+                  aria-label="Carte 86 par 54 millimètres recto verso"
+                  tabIndex={0}
+                >
+                  <div className="hint">Cliquez pour retourner la carte</div>
 
-            <div className="stage">
-              <div
-                className={`card ${isFlipped ? "flipped" : ""}`}
-                onClick={toggleFlip}
-                role="button"
-                aria-label="Carte 86 par 54 millimètres recto verso"
-                tabIndex={0}
-              >
-                <div className="hint">Cliquez pour retourner la carte</div>
+                  <div className="flip">
+                    {/* RECTO */}
+                    <div className="face front" aria-hidden={isFlipped}>
+                      <div className="dgrka-code">{generateDGRKACode()}</div>
+                      <table>
+                        <tbody>
+                          <tr>
+                            <th>Nom / Raison sociale</th>
+                            <td>
+                              {data.nom} {data.prenom}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th>Adresse physique</th>
+                            <td>{data.adresse}</td>
+                          </tr>
+                          <tr>
+                            <th>NIF</th>
+                            <td>{data.nif || ""}</td>
+                          </tr>
+                          <tr>
+                            <th>Année de mise en circulation</th>
+                            <td>{data.annee_circulation}</td>
+                          </tr>
+                          <tr>
+                            <th>N. Plaque</th>
+                            <td className="plaque-number">
+                              {data.numero_plaque}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
 
-                <div className="flip">
-                  {/* RECTO */}
-                  <div className="face front" aria-hidden={isFlipped}>
-                    <div className="dgrka-code">{generateDGRKACode()}</div>
-                    <table>
-                      <tbody>
-                        <tr>
-                          <th>Nom / Raison sociale</th>
-                          <td>
-                            {data.nom} {data.prenom}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Adresse physique</th>
-                          <td>{data.adresse}</td>
-                        </tr>
-                        <tr>
-                          <th>NIF</th>
-                          <td>{data.nif || ""}</td>
-                        </tr>
-                        <tr>
-                          <th>Année de mise en circulation</th>
-                          <td>{data.annee_circulation}</td>
-                        </tr>
-                        <tr>
-                          <th>N. Plaque</th>
-                          <td className="plaque-number">
-                            {data.numero_plaque}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    {/* QR Code */}
-                    <div className="qr" aria-hidden={isFlipped} title="QR code">
-                      <QRCodeCanvas
-                        value={data.numero_plaque}
-                        size={40}
-                        level="H"
-                        bgColor="#FFFFFF"
-                        fgColor="#000000"
-                      />
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: "-4mm",
-                          fontSize: "1.6mm",
-                          fontWeight: "bold",
-                        }}
+                      {/* QR Code */}
+                      <div
+                        className="qr"
+                        aria-hidden={isFlipped}
+                        title="QR code"
                       >
-                        {getCurrentDate()}
-                      </span>
+                        <QRCodeCanvas
+                          value={data.numero_plaque}
+                          size={40}
+                          level="H"
+                          bgColor="#FFFFFF"
+                          fgColor="#000000"
+                        />
+                        <span
+                          style={{
+                            position: "absolute",
+                            bottom: "-4mm",
+                            fontSize: "1.6mm",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {getCurrentDate()}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* VERSO */}
-                  <div className="face back" aria-hidden={!isFlipped}>
-                    <table>
-                      <tbody>
-                        <tr>
-                          <th>Marque et type</th>
-                          <td>
-                            {data.marque} - {data.type_engin}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Usage</th>
-                          <td>{data.usage}</td>
-                        </tr>
-                        <tr>
-                          <th>N. chassis</th>
-                          <td>{data.numero_chassis || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>N. moteur</th>
-                          <td>{data.numero_moteur || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>Année de fabrication</th>
-                          <td>{data.annee_fabrication || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>Couleur</th>
-                          <td>{data.couleur || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>Puissance fiscal</th>
-                          <td>{data.puissance_fiscal || "-"}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    {/* VERSO */}
+                    <div className="face back" aria-hidden={!isFlipped}>
+                      <table>
+                        <tbody>
+                          <tr>
+                            <th>Marque et type</th>
+                            <td>
+                              {data.marque} - {data.type_engin}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th>Usage</th>
+                            <td>{data.usage}</td>
+                          </tr>
+                          <tr>
+                            <th>N. chassis</th>
+                            <td>{data.numero_chassis || "-"}</td>
+                          </tr>
+                          <tr>
+                            <th>N. moteur</th>
+                            <td>{data.numero_moteur || "-"}</td>
+                          </tr>
+                          <tr>
+                            <th>Année de fabrication</th>
+                            <td>{data.annee_fabrication || "-"}</td>
+                          </tr>
+                          <tr>
+                            <th>Couleur</th>
+                            <td>{data.couleur || "-"}</td>
+                          </tr>
+                          <tr>
+                            <th>Puissance fiscal</th>
+                            <td>{data.puissance_fiscal || "-"}</td>
+                          </tr>
+                        </tbody>
+                      </table>
 
-                    {/* Signature */}
-                    <div className="sig-wrap" aria-hidden={!isFlipped}>
-                      <div className="signature-box">Signature</div>
+                      {/* Signature */}
+                      <div className="sig-wrap" aria-hidden={!isFlipped}>
+                        <div className="signature-box">Signature</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -667,6 +970,25 @@ export default function ImmatriculationPrint({
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal pour compléter les informations supplémentaires */}
+      <ModalSupplementaire
+        isOpen={showModalSupplementaire}
+        onClose={() => setShowModalSupplementaire(false)}
+        onSubmit={handleSubmitSupplementaire}
+        defaultAdresse={data.adresse}
+      />
+
+      {/* Modal pour la fiche d'identification */}
+      <FicheIdentificationPrint
+        data={{
+          ...data,
+          date_immatriculation: new Date().toISOString().split("T")[0],
+        }}
+        supplementaire={ficheSupplementaire || undefined}
+        isOpen={showFiche}
+        onClose={() => setShowFiche(false)}
+      />
+    </>
   );
 }

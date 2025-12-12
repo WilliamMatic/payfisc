@@ -542,7 +542,7 @@ export default function RefactorServicesClient() {
   }
 
   // Vérifier si l'utilisateur a le privilège "reproduction"
-  if (!parsedPrivileges.reproduction) {
+  if (!parsedPrivileges.delivrance) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">

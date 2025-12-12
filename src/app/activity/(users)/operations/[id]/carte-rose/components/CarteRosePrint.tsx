@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { QRCodeCanvas } from 'qrcode.react';
-import { formatPlaque } from '../../../utils/formatPlaque';
+import { QRCodeCanvas } from "qrcode.react";
+import { formatPlaque } from "../../../utils/formatPlaque";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface PrintData {
@@ -12,7 +12,7 @@ interface PrintData {
   numero_plaque: string;
   annee_circulation: string;
   marque: string;
-  modele: string; // AJOUT
+  modele: string;
   type_engin: string;
   usage_engin: string;
   numero_chassis: string;
@@ -21,16 +21,24 @@ interface PrintData {
   couleur: string;
   puissance_fiscal: string;
   energie: string;
-  paiement_id?: string; // AJOUT
+  paiement_id?: string;
+  telephone?: string;
+  email?: string;
 }
 
 interface CarteRosePrintProps {
   data: PrintData;
   isOpen: boolean;
   onClose: () => void;
+  onOpenFiche?: () => void; // AJOUT: Callback pour ouvrir la fiche
 }
 
-export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrintProps) {
+export default function CarteRosePrint({
+  data,
+  isOpen,
+  onClose,
+  onOpenFiche,
+}: CarteRosePrintProps) {
   const { utilisateur } = useAuth();
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -38,8 +46,8 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
   // Fonction pour formater la date actuelle
   const getCurrentDate = () => {
     const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -47,21 +55,23 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
   // Fonction pour générer le code DGRK
   const generateDGRKCode = () => {
     const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
-    const paiementId = data.paiement_id || '000000';
-    const element = utilisateur?.site_code || "Carte"
+    const paiementId = data.paiement_id || "000000";
+    const element = utilisateur?.site_code || "Carte";
     return `${element}/${month}/${year}/${paiementId}`;
   };
 
   const handlePrint = () => {
     if (printRef.current) {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open("", "_blank");
       if (!printWindow) return;
 
       // Récupérer le QR Code SVG
-      const qrElement = document.querySelector('.qr-code-canvas canvas');
-      const qrDataUrl = qrElement ? (qrElement as HTMLCanvasElement).toDataURL() : '';
+      const qrElement = document.querySelector(".qr-code-canvas canvas");
+      const qrDataUrl = qrElement
+        ? (qrElement as HTMLCanvasElement).toDataURL()
+        : "";
 
       const printContent = `
         <!DOCTYPE html>
@@ -202,11 +212,15 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${data.nom} ${data.prenom}</td>
+                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${
+                      data.nom
+                    } ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${data.adresse}</td>
+                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${
+                      data.adresse
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
@@ -215,28 +229,22 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
                     <td style="position: relative; top: ${
-                      data.adresse &&
-                      data.adresse.length > 33
-                        ? "13px"
-                        : "24px"
+                      data.adresse && data.adresse.length > 33 ? "13px" : "24px"
                     };text-transform: uppercase;">${data.annee_circulation}</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
                     <td style="position: relative; top: ${
-                      data.adresse &&
-                      data.adresse.length> 33
-                        ? "2px" 
-                        : "14px"
+                      data.adresse && data.adresse.length > 33 ? "2px" : "14px"
                     };text-transform: uppercase;" class="plaque-number">${
-                  utilisateur?.province_code || ""
-                } ${formatPlaque(data.numero_plaque) || ""}</td>
+        utilisateur?.province_code || ""
+      } ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>
               
               <div class="qr">
-                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ''}
+                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
                 <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span>
               </div>
             </div>
@@ -247,31 +255,45 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                 <tbody>
                   <tr style="position: relative; top: -11px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.marque} ${data.modele ? data.modele : ''}</td>
+                    <td style="text-transform: uppercase;">${data.marque} ${
+        data.modele ? data.modele : ""
+      }</td>
                   </tr>
                   <tr style="position: relative; top: -17px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.usage_engin}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.usage_engin
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -23px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.numero_chassis || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_chassis || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -29px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.numero_moteur || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_moteur || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -33px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.annee_fabrication || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.annee_fabrication || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -38px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.couleur || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.couleur || "-"
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -43px;">
                     <th></th>
-                    <td style="text-transform: uppercase;">${data.puissance_fiscal || '-'}</td>
+                    <td style="text-transform: uppercase;">${
+                      data.puissance_fiscal || "-"
+                    }</td>
                   </tr>
                 </tbody>
               </table>
@@ -302,21 +324,28 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
     setIsFlipped(!isFlipped);
   };
 
+  // AJOUT: Gestion de l'ouverture de la fiche
+  const handleOpenFiche = () => {
+    if (onOpenFiche) {
+      onOpenFiche();
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -332,6 +361,28 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
               Impression de la Carte Rose
             </h3>
             <div className="flex space-x-3">
+              {/* AJOUT: Bouton pour ouvrir la fiche d'identification */}
+              {onOpenFiche && (
+                <button
+                  onClick={handleOpenFiche}
+                  className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center space-x-2"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <span>Imprimer la Fiche</span>
+                </button>
+              )}
               <button
                 onClick={handlePrint}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -353,11 +404,22 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
               <strong>Instructions d'impression recto-verso :</strong>
             </p>
             <ul className="text-blue-700 text-sm mt-2 ml-4 list-disc space-y-1">
-              <li>Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression</li>
+              <li>
+                Cliquez sur "Imprimer" pour ouvrir la fenêtre d'impression
+              </li>
               <li>Le recto s'imprimera sur la page 1</li>
               <li>Retournez la feuille et réinsérez-la dans l'imprimante</li>
               <li>Le verso s'imprimera sur la page 2 (au dos du recto)</li>
-              <li>Cliquez sur la carte ci-dessous pour prévisualiser le recto et le verso</li>
+              <li>
+                Cliquez sur la carte ci-dessous pour prévisualiser le recto et
+                le verso
+              </li>
+              {onOpenFiche && (
+                <li>
+                  Cliquez sur "Imprimer la Fiche" pour générer la fiche
+                  d'identification complète
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -365,9 +427,12 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
           {/* Zone d'impression cachée pour le QR Code */}
-          <div className="qr-code-canvas" style={{ position: 'absolute', left: '-9999px' }}>
-            <QRCodeCanvas 
-              value={data.numero_plaque} 
+          <div
+            className="qr-code-canvas"
+            style={{ position: "absolute", left: "-9999px" }}
+          >
+            <QRCodeCanvas
+              value={data.numero_plaque}
               size={128}
               level="H"
               bgColor="#FFFFFF"
@@ -519,11 +584,11 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
             </style>
 
             <div className="stage">
-              <div 
-                className={`card ${isFlipped ? 'flipped' : ''}`} 
+              <div
+                className={`card ${isFlipped ? "flipped" : ""}`}
                 onClick={toggleFlip}
-                role="button" 
-                aria-label="Carte 86 par 54 millimètres recto verso" 
+                role="button"
+                aria-label="Carte 86 par 54 millimètres recto verso"
                 tabIndex={0}
               >
                 <div className="hint">Cliquez pour retourner la carte</div>
@@ -531,14 +596,14 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                 <div className="flip">
                   {/* RECTO */}
                   <div className="face front" aria-hidden={isFlipped}>
-                    <div className="dgrk-code">
-                      {generateDGRKCode()}
-                    </div>
+                    <div className="dgrk-code">{generateDGRKCode()}</div>
                     <table>
                       <tbody>
                         <tr>
                           <th>Nom / Raison sociale</th>
-                          <td>{data.nom} {data.prenom}</td>
+                          <td>
+                            {data.nom} {data.prenom}
+                          </td>
                         </tr>
                         <tr>
                           <th>Adresse physique</th>
@@ -546,7 +611,7 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                         </tr>
                         <tr>
                           <th>NIF</th>
-                          <td>{data.nif || ''}</td>
+                          <td>{data.nif || ""}</td>
                         </tr>
                         <tr>
                           <th>Année de mise en circulation</th>
@@ -563,14 +628,21 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
 
                     {/* QR Code */}
                     <div className="qr" aria-hidden={isFlipped} title="QR code">
-                      <QRCodeCanvas 
-                        value={data.numero_plaque} 
+                      <QRCodeCanvas
+                        value={data.numero_plaque}
                         size={40}
                         level="H"
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                       />
-                      <span style={{position: 'absolute', bottom: '-4mm', fontSize: '1.6mm', fontWeight: 'bold'}}>
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "-4mm",
+                          fontSize: "1.6mm",
+                          fontWeight: "bold",
+                        }}
+                      >
                         {getCurrentDate()}
                       </span>
                     </div>
@@ -582,7 +654,11 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                       <tbody>
                         <tr>
                           <th>Marque et type</th>
-                          <td>{data.marque} ${data.modele ? ' ' + data.modele : ''} - {data.type_engin}</td>
+                          <td>
+                            {data.marque} $
+                            {data.modele ? " " + data.modele : ""} -{" "}
+                            {data.type_engin}
+                          </td>
                         </tr>
                         <tr>
                           <th>Usage</th>
@@ -590,23 +666,23 @@ export default function CarteRosePrint({ data, isOpen, onClose }: CarteRosePrint
                         </tr>
                         <tr>
                           <th>N. chassis</th>
-                          <td>{data.numero_chassis || '-'}</td>
+                          <td>{data.numero_chassis || "-"}</td>
                         </tr>
                         <tr>
                           <th>N. moteur</th>
-                          <td>{data.numero_moteur || '-'}</td>
+                          <td>{data.numero_moteur || "-"}</td>
                         </tr>
                         <tr>
                           <th>Année de fabrication</th>
-                          <td>{data.annee_fabrication || '-'}</td>
+                          <td>{data.annee_fabrication || "-"}</td>
                         </tr>
                         <tr>
                           <th>Couleur</th>
-                          <td>{data.couleur || '-'}</td>
+                          <td>{data.couleur || "-"}</td>
                         </tr>
                         <tr>
                           <th>Puissance fiscal</th>
-                          <td>{data.puissance_fiscal || '-'}</td>
+                          <td>{data.puissance_fiscal || "-"}</td>
                         </tr>
                       </tbody>
                     </table>

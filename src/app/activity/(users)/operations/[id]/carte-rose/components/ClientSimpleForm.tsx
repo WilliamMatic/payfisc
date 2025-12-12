@@ -13,6 +13,7 @@ import {
   Search,
   Plus,
   Loader,
+  FileText, // AJOUT: Icône pour la fiche
 } from "lucide-react";
 import {
   verifierPlaqueTelephone,
@@ -29,8 +30,12 @@ import {
   type RechercheModeleResponse,
   type RecherchePuissanceResponse,
 } from "@/services/carte-rose/carteRoseService";
-import { rechercherCouleur, ajouterCouleur } from "@/services/immatriculation/immatriculationService";
+import {
+  rechercherCouleur,
+  ajouterCouleur,
+} from "@/services/immatriculation/immatriculationService";
 import CarteRosePrint from "./CarteRosePrint";
+import FicheIdentificationPrint from "./FicheIdentificationPrint"; // AJOUT: Import du nouveau composant
 
 // Import des services pour les données dynamiques
 import {
@@ -96,6 +101,7 @@ interface Utilisateur {
   site_code: string;
   site_id?: number;
   formule?: string;
+  province_code?: string; // AJOUT: Pour la fiche
 }
 
 interface ClientSimpleFormProps {
@@ -136,6 +142,261 @@ interface Suggestion {
   description?: string;
   valeur?: number;
 }
+
+// AJOUT: Interface pour les données de la fiche supplémentaire
+interface FicheSupplementaire {
+  sexe: string;
+  date_naissance: string;
+  lieu_naissance: string;
+  adresse_complete: string;
+  types_document: {
+    carte_identite: boolean;
+    passeport: boolean;
+    permis_conduire: boolean;
+    carte_electeur: boolean;
+  };
+  niup_moto: string;
+}
+
+// AJOUT: Props pour le modal supplémentaire
+interface ModalSupplementaireProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: FicheSupplementaire) => void;
+  defaultAdresse?: string;
+}
+
+// AJOUT: Modal pour compléter les informations supplémentaires
+const ModalSupplementaire: React.FC<ModalSupplementaireProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  defaultAdresse = "",
+}) => {
+  const [formData, setFormData] = useState<FicheSupplementaire>({
+    sexe: "",
+    date_naissance: "",
+    lieu_naissance: "",
+    adresse_complete: defaultAdresse,
+    types_document: {
+      carte_identite: false,
+      passeport: false,
+      permis_conduire: false,
+      carte_electeur: false,
+    },
+    niup_moto: "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const toggleDocumentType = (type: keyof typeof formData.types_document) => {
+    setFormData((prev) => ({
+      ...prev,
+      types_document: {
+        ...prev.types_document,
+        [type]: !prev.types_document[type],
+      },
+    }));
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-900">
+            Informations supplémentaires pour la fiche d'identification
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Sexe */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Sexe <span className="text-red-500">*</span>
+            </label>
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="sexe"
+                  value="Masculin"
+                  checked={formData.sexe === "Masculin"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, sexe: e.target.value }))
+                  }
+                  className="mr-2"
+                  required
+                />
+                Masculin
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="sexe"
+                  value="Féminin"
+                  checked={formData.sexe === "Féminin"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, sexe: e.target.value }))
+                  }
+                  className="mr-2"
+                />
+                Féminin
+              </label>
+            </div>
+          </div>
+
+          {/* Date de naissance */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Date de naissance <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={formData.date_naissance}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  date_naissance: e.target.value,
+                }))
+              }
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Lieu de naissance */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Lieu de naissance <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.lieu_naissance}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  lieu_naissance: e.target.value,
+                }))
+              }
+              placeholder="Ex: Kinshasa/Gombe"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Adresse complète */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Adresse complète <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={formData.adresse_complete}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  adresse_complete: e.target.value,
+                }))
+              }
+              placeholder="Ex: Avenue de la Justice N°123, Quartier, Commune, Ville"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[80px]"
+              required
+            />
+          </div>
+
+          {/* Type de document d'identité */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Type de document d'identité{" "}
+              <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.carte_identite}
+                  onChange={() => toggleDocumentType("carte_identite")}
+                  className="mr-2"
+                />
+                Carte d'identité
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.passeport}
+                  onChange={() => toggleDocumentType("passeport")}
+                  className="mr-2"
+                />
+                Passeport
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.permis_conduire}
+                  onChange={() => toggleDocumentType("permis_conduire")}
+                  className="mr-2"
+                />
+                Permis de conduire
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.types_document.carte_electeur}
+                  onChange={() => toggleDocumentType("carte_electeur")}
+                  className="mr-2"
+                />
+                Carte d'électeur
+              </label>
+            </div>
+          </div>
+
+          {/* NIUP Moto */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              NIUP Moto <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.niup_moto}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, niup_moto: e.target.value }))
+              }
+              placeholder="Ex: CD-KN-2024-123456"
+              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all duration-200 font-semibold"
+            >
+              Générer la fiche
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 export default function ClientSimpleForm({
   impotId,
@@ -187,14 +448,24 @@ export default function ClientSimpleForm({
     PuissanceFiscale[]
   >([]);
 
-  // États pour la gestion des couleurs (comme dans le premier screen)
-  const [couleursSuggestions, setCouleursSuggestions] = useState<EnginCouleur[]>([]);
+  // États pour la gestion des couleurs
+  const [couleursSuggestions, setCouleursSuggestions] = useState<
+    EnginCouleur[]
+  >([]);
   const [showCouleursSuggestions, setShowCouleursSuggestions] = useState(false);
   const [isSearchingCouleurs, setIsSearchingCouleurs] = useState(false);
-  const [couleurInputMode, setCouleurInputMode] = useState<'select' | 'input'>('select');
+  const [couleurInputMode, setCouleurInputMode] = useState<"select" | "input">(
+    "select"
+  );
   const [nouvelleCouleurNom, setNouvelleCouleurNom] = useState("");
   const [nouvelleCouleurCode, setNouvelleCouleurCode] = useState("#000000");
   const [isAddingCouleur, setIsAddingCouleur] = useState(false);
+
+  // AJOUT: États pour la fiche d'identification
+  const [showModalSupplementaire, setShowModalSupplementaire] = useState(false);
+  const [ficheSupplementaire, setFicheSupplementaire] =
+    useState<FicheSupplementaire | null>(null);
+  const [showFicheIdentification, setShowFicheIdentification] = useState(false);
 
   // États de chargement
   const [loading, setLoading] = useState({
@@ -333,10 +604,10 @@ export default function ClientSimpleForm({
       clearTimeout(couleurTimerRef.current);
     }
 
-    if (formData.couleur.length >= 2 && couleurInputMode === 'input') {
+    if (formData.couleur.length >= 2 && couleurInputMode === "input") {
       couleurTimerRef.current = setTimeout(async () => {
         setIsSearchingCouleurs(true);
-        setLoading(prev => ({ ...prev, rechercheCouleurs: true }));
+        setLoading((prev) => ({ ...prev, rechercheCouleurs: true }));
         try {
           const response = await rechercherCouleur(formData.couleur);
           if (response.status === "success") {
@@ -348,7 +619,7 @@ export default function ClientSimpleForm({
           setCouleursSuggestions([]);
         } finally {
           setIsSearchingCouleurs(false);
-          setLoading(prev => ({ ...prev, rechercheCouleurs: false }));
+          setLoading((prev) => ({ ...prev, rechercheCouleurs: false }));
         }
       }, 300);
     } else {
@@ -392,8 +663,10 @@ export default function ClientSimpleForm({
     }
 
     // Vérifier si la couleur existe déjà dans la liste (mode saisie)
-    if (field === "couleur" && value && couleurInputMode === 'input') {
-      const couleurExistante = couleurs.find(c => c.nom.toLowerCase() === value.toLowerCase());
+    if (field === "couleur" && value && couleurInputMode === "input") {
+      const couleurExistante = couleurs.find(
+        (c) => c.nom.toLowerCase() === value.toLowerCase()
+      );
       if (!couleurExistante && value.length >= 2) {
         setNouvelleCouleurNom(value);
       }
@@ -411,7 +684,7 @@ export default function ClientSimpleForm({
   const handleCouleurSelect = (couleur: EnginCouleur) => {
     setFormData((prev) => ({ ...prev, couleur: couleur.nom }));
     setShowCouleursSuggestions(false);
-    setCouleurInputMode('select');
+    setCouleurInputMode("select");
   };
 
   // Gestion de l'ajout d'une nouvelle couleur
@@ -421,27 +694,32 @@ export default function ClientSimpleForm({
       return;
     }
 
-    setLoading(prev => ({ ...prev, ajoutCouleur: true }));
+    setLoading((prev) => ({ ...prev, ajoutCouleur: true }));
     try {
-      const response = await ajouterCouleur(nouvelleCouleurNom, nouvelleCouleurCode);
+      const response = await ajouterCouleur(
+        nouvelleCouleurNom,
+        nouvelleCouleurCode
+      );
       if (response.status === "success") {
         // Recharger la liste des couleurs
         const couleursResponse = await getCouleurs();
         if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
-        
+
         // Sélectionner la nouvelle couleur
         setFormData((prev) => ({ ...prev, couleur: nouvelleCouleurNom }));
-        setCouleurInputMode('select');
+        setCouleurInputMode("select");
         setNouvelleCouleurNom("");
         setNouvelleCouleurCode("#000000");
         setShowCouleursSuggestions(false);
-        
+
         setMessageErreur("✅ Couleur ajoutée avec succès !");
         setTimeout(() => setMessageErreur(""), 3000);
       } else {
-        setMessageErreur(response.message || "Erreur lors de l'ajout de la couleur");
+        setMessageErreur(
+          response.message || "Erreur lors de l'ajout de la couleur"
+        );
         setTimeout(() => setMessageErreur(""), 3000);
       }
     } catch (error) {
@@ -449,11 +727,11 @@ export default function ClientSimpleForm({
       setMessageErreur("Erreur réseau lors de l'ajout de la couleur");
       setTimeout(() => setMessageErreur(""), 3000);
     } finally {
-      setLoading(prev => ({ ...prev, ajoutCouleur: false }));
+      setLoading((prev) => ({ ...prev, ajoutCouleur: false }));
     }
   };
 
-  // Vérification du téléphone en temps réel (UNIQUEMENT si le téléphone n'est pas vide et différent de "-")
+  // Vérification du téléphone en temps réel
   const handleTelephoneChange = async (telephone: string) => {
     setFormData((prev) => ({ ...prev, telephoneAssujetti: telephone }));
 
@@ -461,7 +739,6 @@ export default function ClientSimpleForm({
       clearTimeout(verificationTelephoneTimeoutRef.current);
     }
 
-    // Vérifier si le téléphone n'est pas vide et différent de "-"
     const telephoneNettoye = telephone.trim();
     if (telephoneNettoye.length >= 8 && telephoneNettoye !== "-") {
       verificationTelephoneTimeoutRef.current = setTimeout(async () => {
@@ -485,7 +762,6 @@ export default function ClientSimpleForm({
               nif: particulier.nif || "",
             }));
 
-            // Afficher un message de succès
             setMessageErreur(
               "✅ Informations du particulier chargées avec succès"
             );
@@ -508,7 +784,7 @@ export default function ClientSimpleForm({
         } finally {
           setLoading((prev) => ({ ...prev, verificationTelephone: false }));
         }
-      }, 800); // Délai de 800ms après la dernière frappe
+      }, 800);
     }
   };
 
@@ -583,7 +859,6 @@ export default function ClientSimpleForm({
       );
 
       if (result.status === "success" && result.data) {
-        // Mettre à jour les suggestions avec le nouveau modèle
         const newModele = {
           id: result.data[0]?.id || Date.now(),
           libelle: formData.modele,
@@ -672,7 +947,6 @@ export default function ClientSimpleForm({
       return;
     }
 
-    // Extraire la valeur numérique de la puissance
     const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
     const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
 
@@ -695,7 +969,6 @@ export default function ClientSimpleForm({
       );
 
       if (result.status === "success" && result.data) {
-        // Mettre à jour les suggestions avec la nouvelle puissance
         const newPuissance = {
           id: result.data[0]?.id || Date.now(),
           libelle: formData.puissanceFiscal,
@@ -728,7 +1001,6 @@ export default function ClientSimpleForm({
 
   // Dans la fonction handleVerification
   const handleVerification = async () => {
-    // Vérifier seulement la plaque (le téléphone devient facultatif)
     if (!formData.numeroPlaque.trim()) {
       setErrors({
         numeroPlaque: "Le numéro de plaque est obligatoire",
@@ -741,31 +1013,26 @@ export default function ClientSimpleForm({
 
     try {
       const verificationData: VerificationData = {
-        telephone: formData.telephone.trim() || "", // Téléphone vide si non renseigné
+        telephone: formData.telephone.trim() || "",
         numeroPlaque: formData.numeroPlaque.trim(),
         utilisateur: utilisateur ? utilisateur.id : 0,
       };
-
-      console.log("Données de vérification envoyées:", verificationData);
 
       const result: CarteRoseResponse = await verifierPlaqueTelephone(
         verificationData
       );
 
+      // ANALYSE DES RÉSULTATS
       if (result.status === "success" && result.data) {
-        // Cas 1: Vérification réussie
+        // SUCCÈS : Pas de carte rose existante
         setParticulierInfo(result.data.particulier || null);
         setPlaqueInfo(result.data.plaque || null);
 
-        // Si téléphone fourni et particulier trouvé
         if (formData.telephone.trim() && result.data.particulier) {
           setShowModalVerification(true);
         } else {
-          // Si pas de téléphone ou pas de particulier trouvé, passer directement au formulaire
           setEtapeActuelle("formulaire");
 
-          // Si un particulier a été trouvé (avec téléphone vide dans la requête),
-          // pré-remplir les champs
           if (result.data.particulier) {
             const particulier = result.data.particulier;
             setFormData((prev) => ({
@@ -789,20 +1056,70 @@ export default function ClientSimpleForm({
             setTimeout(() => setMessageErreur(""), 3000);
           }
         }
-      } else if (result.type === "carte_existante" && result.data) {
-        // Cas 2: Carte rose déjà délivrée
-        setShowModalCarteExistante(true);
-      } else {
-        // Cas 3: Aucun enregistrement trouvé
-        setEtapeActuelle("formulaire");
-        setMessageErreur(
-          "⚠️ Aucun enregistrement trouvé. Vous pouvez créer une nouvelle carte rose."
-        );
-        setTimeout(() => setMessageErreur(""), 5000);
+      }
+      // ERREURS BLOQUANTES (on s'arrête là)
+      else if (result.status === "error") {
+        setEtapeActuelle("verification");
+
+        // Gestion des différents types d'erreurs
+        switch (result.type) {
+          // Cas 1 : Carte rose déjà existante
+          case "carte_existante":
+            setShowModalCarteExistante(true);
+            setMessageErreur("");
+            break;
+
+          // Cas 2 : Conflit avec un autre particulier
+          case "conflit_particulier":
+            setMessageErreur(
+              result.message ||
+                "Cette plaque est déjà associée à un autre particulier."
+            );
+            // Optionnel : afficher plus de détails dans un modal
+            // setModalConflitData(result.details);
+            // setShowModalConflit(true);
+            break;
+
+          // Cas 3 : Erreurs système ou validation
+          case "erreur_systeme":
+          case "erreur_inattendue":
+          case "utilisateur_inexistant":
+          case "site_non_affecte":
+          case "site_inexistant":
+          case "province_manquante":
+          case "province_indeterminee":
+            setMessageErreur(
+              result.message || "Erreur système lors de la vérification."
+            );
+            break;
+
+          // Cas 4 : Pas trouvé (non bloquant, on peut continuer)
+          case "non_trouve":
+          case "carte_rose_non_trouvee":
+            setEtapeActuelle("formulaire");
+            setMessageErreur(
+              "⚠️ Aucune carte rose active trouvée. Vous pouvez créer une nouvelle carte."
+            );
+            setTimeout(() => setMessageErreur(""), 5000);
+            break;
+
+          // Erreur par défaut
+          default:
+            setMessageErreur(
+              result.message ||
+                "Erreur lors de la vérification des informations."
+            );
+            break;
+        }
+      }
+      // Cas où result n'a pas de status (format inattendu)
+      else {
+        console.error("Format de réponse inattendu:", result);
+        setMessageErreur("Erreur inattendue du système.");
       }
     } catch (error) {
       console.error("Erreur lors de la vérification:", error);
-      setMessageErreur("Erreur lors de la vérification des informations.");
+      setMessageErreur("Erreur lors de la connexion au serveur.");
     } finally {
       setIsVerifying(false);
     }
@@ -823,7 +1140,7 @@ export default function ClientSimpleForm({
     setMessageErreur("");
   };
 
-  // ÉTAPE 2: Validation du formulaire - TÉLÉPHONE NON OBLIGATOIRE
+  // ÉTAPE 2: Validation du formulaire
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
@@ -836,7 +1153,6 @@ export default function ClientSimpleForm({
     if (!formData.marque) newErrors.marque = "La marque est obligatoire";
     if (!formData.modele) newErrors.modele = "Le modèle est obligatoire";
 
-    // Vérification facultative du téléphone (seulement s'il est fourni)
     if (
       formData.telephoneAssujetti &&
       formData.telephoneAssujetti.trim() !== ""
@@ -844,7 +1160,6 @@ export default function ClientSimpleForm({
       const phoneRegex = /^[0-9+\-\s()]{8,}$/;
       const telephoneNettoye = formData.telephoneAssujetti.replace(/\s/g, "");
 
-      // Si le téléphone n'est pas juste un tiret
       if (telephoneNettoye !== "-" && !phoneRegex.test(telephoneNettoye)) {
         newErrors.telephoneAssujetti = "Format de téléphone invalide";
       }
@@ -854,7 +1169,6 @@ export default function ClientSimpleForm({
       newErrors.email = "Format d'email invalide";
     }
 
-    // Validation des années
     if (formData.anneeFabrication && formData.anneeCirculation) {
       const anneeFab = parseInt(formData.anneeFabrication);
       const anneeCirc = parseInt(formData.anneeCirculation);
@@ -876,8 +1190,19 @@ export default function ClientSimpleForm({
       return;
     }
 
-    // Afficher le modal récapitulatif
     setShowModalRecap(true);
+  };
+
+  // AJOUT: Gestion de la soumission des informations supplémentaires pour la fiche
+  const handleSubmitSupplementaire = (suppData: FicheSupplementaire) => {
+    setFicheSupplementaire(suppData);
+    setShowModalSupplementaire(false);
+    setShowFicheIdentification(true);
+  };
+
+  // AJOUT: Gestion de l'ouverture de la fiche d'identification
+  const handleOpenFicheIdentification = () => {
+    setShowModalSupplementaire(true);
   };
 
   // ÉTAPE 3: Confirmation et soumission finale
@@ -924,7 +1249,7 @@ export default function ClientSimpleForm({
           formData.telephoneAssujetti.trim() !== "" &&
           formData.telephoneAssujetti !== "-"
             ? formData.telephoneAssujetti
-            : "", // Si vide ou "-", envoyer chaîne vide
+            : "",
         email: formData.email,
         adresse: formData.adresse,
         ville: formData.ville,
@@ -976,6 +1301,8 @@ export default function ClientSimpleForm({
           numero_moteur: formData.numeroMoteur,
           numero_plaque: formData.numeroPlaque,
           paiement_id: result.data.paiement_id?.toString() || "000000",
+          email: formData.email,
+          nif: formData.nif,
         };
 
         setPrintData(completeData);
@@ -1034,9 +1361,10 @@ export default function ClientSimpleForm({
     setSuggestionsPuissances([]);
     setShowSuggestionsModeles(false);
     setShowSuggestionsPuissances(false);
-    setCouleurInputMode('select');
+    setCouleurInputMode("select");
     setNouvelleCouleurNom("");
     setNouvelleCouleurCode("#000000");
+    setFicheSupplementaire(null);
   };
 
   const handleRetourFormulaire = () => {
@@ -1172,33 +1500,33 @@ export default function ClientSimpleForm({
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Couleur
       </label>
-      
+
       <div className="flex space-x-2 mb-2">
         <button
           type="button"
-          onClick={() => setCouleurInputMode('select')}
+          onClick={() => setCouleurInputMode("select")}
           className={`px-3 py-1 text-sm rounded-lg transition-all ${
-            couleurInputMode === 'select'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            couleurInputMode === "select"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >
           Liste
         </button>
         <button
           type="button"
-          onClick={() => setCouleurInputMode('input')}
+          onClick={() => setCouleurInputMode("input")}
           className={`px-3 py-1 text-sm rounded-lg transition-all ${
-            couleurInputMode === 'input'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            couleurInputMode === "input"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >
           Saisir
         </button>
       </div>
 
-      {couleurInputMode === 'select' ? (
+      {couleurInputMode === "select" ? (
         <div className="relative">
           <select
             value={formData.couleur}
@@ -1245,13 +1573,15 @@ export default function ClientSimpleForm({
                   className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
                 >
                   <div className="flex items-center space-x-3">
-                    <div 
+                    <div
                       className="w-6 h-6 rounded-full border border-gray-300"
                       style={{ backgroundColor: couleur.code_hex }}
                     />
                     <div>
                       <div className="font-medium">{couleur.nom}</div>
-                      <div className="text-xs text-gray-500">{couleur.code_hex}</div>
+                      <div className="text-xs text-gray-500">
+                        {couleur.code_hex}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1281,12 +1611,16 @@ export default function ClientSimpleForm({
                       onChange={(e) => setNouvelleCouleurCode(e.target.value)}
                       className="w-10 h-10 cursor-pointer"
                     />
-                    <span className="text-sm text-gray-600">{nouvelleCouleurCode}</span>
+                    <span className="text-sm text-gray-600">
+                      {nouvelleCouleurCode}
+                    </span>
                   </div>
                   <button
                     type="button"
                     onClick={handleAjouterCouleur}
-                    disabled={loading.ajoutCouleur || !nouvelleCouleurNom.trim()}
+                    disabled={
+                      loading.ajoutCouleur || !nouvelleCouleurNom.trim()
+                    }
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
                   >
                     {loading.ajoutCouleur ? (
@@ -1394,7 +1728,7 @@ export default function ClientSimpleForm({
               existe déjà
             </p>
           </div>
-          
+
           {/* NOM */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1953,7 +2287,7 @@ export default function ClientSimpleForm({
     </form>
   );
 
-  // Rendu de l'étape prévisualisation
+  // AJOUT: Rendu de l'étape prévisualisation avec bouton pour la fiche
   const renderEtapePrevisualisation = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center space-x-3 mb-6">
@@ -1983,6 +2317,40 @@ export default function ClientSimpleForm({
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-blue-800 mb-3">
+            Options d'impression
+          </h4>
+          <p className="text-blue-700 text-sm mb-4">
+            Choisissez le type de document que vous souhaitez imprimer :
+          </p>
+          <ul className="space-y-2 text-blue-600">
+            <li className="flex items-center">
+              <Printer className="w-4 h-4 mr-2" />
+              <span>Carte rose officielle (format carte)</span>
+            </li>
+            <li className="flex items-center">
+              <FileText className="w-4 h-4 mr-2" />
+              <span>Fiche d'identification complète (format A4)</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <h4 className="font-semibold text-amber-800 mb-3">
+            À propos de la fiche d'identification
+          </h4>
+          <ul className="space-y-2 text-amber-700 text-sm">
+            <li>• Document A4 sécurisé avec QR Code</li>
+            <li>• Validité de 45 jours non renouvelable</li>
+            <li>• Informations complètes du propriétaire</li>
+            <li>• Caractéristiques techniques du véhicule</li>
+            <li>• Tenant lieu de carte rose provisoire</li>
+          </ul>
+        </div>
+      </div>
+
       <div className="flex justify-center space-x-4">
         <button
           onClick={handleRetourFormulaire}
@@ -1990,6 +2358,14 @@ export default function ClientSimpleForm({
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Retour au Formulaire</span>
+        </button>
+
+        <button
+          onClick={handleOpenFicheIdentification}
+          className="flex items-center space-x-2 px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
+        >
+          <FileText className="w-4 h-4" />
+          <span>Générer la Fiche d'Identification</span>
         </button>
 
         <button
@@ -2224,12 +2600,33 @@ export default function ClientSimpleForm({
         </div>
       )}
 
-      {/* COMPOSANT D'IMPRESSION */}
+      {/* MODAL POUR COMPLÉTER LES INFORMATIONS SUPPLÉMENTAIRES */}
+      <ModalSupplementaire
+        isOpen={showModalSupplementaire}
+        onClose={() => setShowModalSupplementaire(false)}
+        onSubmit={handleSubmitSupplementaire}
+        defaultAdresse={formData.adresse}
+      />
+
+      {/* COMPOSANT D'IMPRESSION DE LA CARTE ROSE */}
       {showPrint && printData && (
         <CarteRosePrint
           data={printData}
           isOpen={showPrint}
           onClose={handlePrintClose}
+        />
+      )}
+
+      {/* COMPOSANT D'IMPRESSION DE LA FICHE D'IDENTIFICATION */}
+      {showFicheIdentification && printData && (
+        <FicheIdentificationPrint
+          data={{
+            ...printData,
+            date_immatriculation: new Date().toISOString().split("T")[0],
+          }}
+          supplementaire={ficheSupplementaire || undefined}
+          isOpen={showFicheIdentification}
+          onClose={() => setShowFicheIdentification(false)}
         />
       )}
 
