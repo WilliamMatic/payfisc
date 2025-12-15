@@ -73,9 +73,9 @@ export default function AddSiteModal({
                   onChange={(e) => onFormDataChange({...formData, code: e.target.value.toUpperCase()})}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] transition-colors"
                   placeholder="Ex: SA"
-                  maxLength={3}
+                  maxLength={10}
                 />
-                <p className="text-xs text-gray-500 mt-1">Maximum 3 caractères</p>
+                <p className="text-xs text-gray-500 mt-1">Maximum 10 caractères</p>
               </div>
             </div>
             

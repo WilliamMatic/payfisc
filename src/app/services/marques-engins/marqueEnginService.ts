@@ -73,6 +73,46 @@ export const getMarquesEngins = async (): Promise<ApiResponse> => {
   }
 };
 
+/**
+ * Recherche des marques par type d'engin et terme de recherche
+ */
+export const rechercherMarques = async (
+  typeEngin: string,
+  searchTerm: string
+): Promise<ApiResponse> => {
+  try {
+    const formData = new FormData();
+    formData.append("type_engin", typeEngin);
+    formData.append("search_term", searchTerm);
+
+    const response = await fetch(
+      `${API_BASE_URL}/marques-engins/rechercher__marques.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des marques",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Rechercher marques error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des marques",
+    };
+  }
+};
+
 export const addMarqueEngin = async (marqueData: {
   libelle: string;
   description: string;
@@ -252,7 +292,6 @@ export const getModelesEngins = async (marqueId?: number): Promise<ApiResponse> 
     };
   }
 };
-
 
 export const addModeleEngin = async (modeleData: {
   libelle: string;

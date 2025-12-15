@@ -53,7 +53,7 @@ export default function Sidebar({
   };
 
   const menuItems: MenuEntry[] = [
-    { icon: "🖥️", label: "Bienvenue", href: "/activity/speed" },
+    { icon: "📊", label: "Dashboard", href: "/activity/dashboard" },
 
     {
       category: "Contribuables",

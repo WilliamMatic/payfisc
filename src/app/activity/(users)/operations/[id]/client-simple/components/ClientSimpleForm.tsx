@@ -39,7 +39,7 @@ import {
 } from "@/services/couleurs/couleurService";
 import { getUsages, type UsageEngin } from "@/services/usages/usageService";
 import {
-  getMarquesEngins,
+  rechercherMarques,
   type MarqueEngin,
 } from "@/services/marques-engins/marqueEnginService";
 import {
@@ -667,11 +667,15 @@ export default function ClientSimpleForm({
   const [energies, setEnergies] = useState<Energie[]>([]);
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
   const [usages, setUsages] = useState<UsageEngin[]>([]);
-  const [marques, setMarques] = useState<MarqueEngin[]>([]);
   const [puissancesFiscales, setPuissancesFiscales] = useState<
     PuissanceFiscale[]
   >([]);
-  const [filteredMarques, setFilteredMarques] = useState<MarqueEngin[]>([]);
+
+  // États pour les suggestions de marques
+  const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>([]);
+  const [showMarquesSuggestions, setShowMarquesSuggestions] = useState(false);
+  const [isSearchingMarques, setIsSearchingMarques] = useState(false);
+  const [selectedMarqueId, setSelectedMarqueId] = useState<number | null>(null);
 
   // États pour les suggestions de couleurs
   const [couleursSuggestions, setCouleursSuggestions] = useState<EnginCouleur[]>([]);
@@ -700,7 +704,6 @@ export default function ClientSimpleForm({
   const [modelesSuggestions, setModelesSuggestions] = useState<any[]>([]);
   const [showModelesSuggestions, setShowModelesSuggestions] = useState(false);
   const [isSearchingModeles, setIsSearchingModeles] = useState(false);
-  const [selectedMarqueId, setSelectedMarqueId] = useState<number | null>(null);
 
   // États pour la recherche de puissances
   const [puissancesSuggestions, setPuissancesSuggestions] = useState<any[]>([]);
@@ -713,7 +716,6 @@ export default function ClientSimpleForm({
     energies: false,
     couleurs: false,
     usages: false,
-    marques: false,
     puissances: false,
   });
 
@@ -732,6 +734,7 @@ export default function ClientSimpleForm({
   const modeleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const puissanceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calcul des montants avec le taux
   const montantDollars = utilisateur?.formule || "32";
@@ -744,7 +747,7 @@ export default function ClientSimpleForm({
 
   // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
-    (2025 - i).toString()
+    (2026 - i).toString()
   );
 
   // Chargement des données initiales
@@ -781,12 +784,6 @@ export default function ClientSimpleForm({
           setUsages(usagesResponse.data || []);
         }
 
-        setLoading((prev) => ({ ...prev, marques: true }));
-        const marquesResponse = await getMarquesEngins();
-        if (marquesResponse.status === "success") {
-          setMarques(marquesResponse.data || []);
-        }
-
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
         if (puissancesResponse.status === "success") {
@@ -800,7 +797,6 @@ export default function ClientSimpleForm({
           energies: false,
           couleurs: false,
           usages: false,
-          marques: false,
           puissances: false,
         });
         setLoadingTaux(false);
@@ -809,34 +805,6 @@ export default function ClientSimpleForm({
 
     loadInitialData();
   }, []);
-
-  // Filtrer les marques quand le type d'engin change
-  useEffect(() => {
-    if (formData.typeEngin) {
-      const marquesFiltrees = marques.filter(
-        (marque) =>
-          marque.type_engin_libelle === formData.typeEngin && marque.actif
-      );
-      setFilteredMarques(marquesFiltrees);
-
-      setFormData((prev) => ({
-        ...prev,
-        marque: "",
-        modele: "",
-        puissanceFiscal: "",
-      }));
-      setSelectedMarqueId(null);
-    } else {
-      setFilteredMarques([]);
-      setFormData((prev) => ({
-        ...prev,
-        marque: "",
-        modele: "",
-        puissanceFiscal: "",
-      }));
-      setSelectedMarqueId(null);
-    }
-  }, [formData.typeEngin, marques]);
 
   // Réinitialiser l'année de circulation si l'année de fabrication change
   useEffect(() => {
@@ -938,6 +906,49 @@ export default function ClientSimpleForm({
       }
     };
   }, [formData.telephone]);
+
+  // Recherche automatique des marques quand le champ marque change
+  useEffect(() => {
+    if (marqueTimerRef.current) {
+      clearTimeout(marqueTimerRef.current);
+    }
+
+    if (formData.marque.length >= 2 && formData.typeEngin) {
+      marqueTimerRef.current = setTimeout(async () => {
+        setIsSearchingMarques(true);
+        try {
+          const response = await rechercherMarques(
+            formData.typeEngin,
+            formData.marque
+          );
+          if (response.status === "success") {
+            const data = response.data;
+            if (Array.isArray(data)) {
+              setMarquesSuggestions(data);
+            } else {
+              setMarquesSuggestions([]);
+            }
+            setShowMarquesSuggestions(true);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des marques:", error);
+          setMarquesSuggestions([]);
+        } finally {
+          setIsSearchingMarques(false);
+        }
+      }, 300);
+    } else {
+      setMarquesSuggestions([]);
+      setShowMarquesSuggestions(false);
+      setSelectedMarqueId(null);
+    }
+
+    return () => {
+      if (marqueTimerRef.current) {
+        clearTimeout(marqueTimerRef.current);
+      }
+    };
+  }, [formData.marque, formData.typeEngin]);
 
   // Recherche automatique des modèles quand le modèle change
   useEffect(() => {
@@ -1123,6 +1134,7 @@ export default function ClientSimpleForm({
     setShowSuccess(false);
     setShowAnnulation(false);
     setSelectedMarqueId(null);
+    setMarquesSuggestions([]);
     setModelesSuggestions([]);
     setPuissancesSuggestions([]);
     setCouleurInputMode('select');
@@ -1136,13 +1148,17 @@ export default function ClientSimpleForm({
       [field]: value,
     }));
 
-    if (field === "marque") {
-      const marqueTrouvee = marques.find((m) => m.libelle === value);
-      setSelectedMarqueId(marqueTrouvee?.id || null);
+    if (field === "typeEngin") {
+      // Réinitialiser les champs dépendants quand le type d'engin change
       setFormData((prev) => ({
         ...prev,
+        marque: "",
         modele: "",
+        puissanceFiscal: "",
       }));
+      setSelectedMarqueId(null);
+      setMarquesSuggestions([]);
+      setShowMarquesSuggestions(false);
       setModelesSuggestions([]);
       setShowModelesSuggestions(false);
     }
@@ -1172,6 +1188,17 @@ export default function ClientSimpleForm({
       setPlaqueDisponible(false);
     }
     setShowPlaquesSuggestions(false);
+  };
+
+  const handleMarqueSelect = (marque: MarqueEngin) => {
+    setFormData((prev) => ({ ...prev, marque: marque.libelle }));
+    setSelectedMarqueId(marque.id);
+    setShowMarquesSuggestions(false);
+    
+    // Réinitialiser le modèle quand on change de marque
+    setFormData((prev) => ({ ...prev, modele: "" }));
+    setModelesSuggestions([]);
+    setShowModelesSuggestions(false);
   };
 
   const handleModeleSelect = (modele: any) => {
@@ -1733,54 +1760,74 @@ export default function ClientSimpleForm({
             </div>
 
             {/* Marque */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Marque <span className="text-red-500">*</span>
-              </label>
+            {formData.typeEngin && (
               <div className="relative">
-                <select
-                  value={formData.marque}
-                  onChange={(e) => handleInputChange("marque", e.target.value)}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                    errors.marque
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-gray-200 focus:border-blue-500"
-                  }`}
-                  disabled={loading.marques || !formData.typeEngin}
-                >
-                  <option value="">
-                    {!formData.typeEngin
-                      ? "Sélectionnez d'abord le type d'engin"
-                      : "Sélectionner la marque"}
-                  </option>
-                  {filteredMarques.map((marque) => (
-                    <option key={marque.id} value={marque.libelle}>
-                      {marque.libelle}
-                    </option>
-                  ))}
-                </select>
-                {loading.marques && (
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Marque <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.marque}
+                    onChange={(e) =>
+                      handleInputChange("marque", e.target.value)
+                    }
+                    placeholder="Saisissez la marque (auto-complétion)"
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pr-10 ${
+                      errors.marque
+                        ? "border-red-300 focus:border-red-500"
+                        : "border-gray-200 focus:border-blue-500"
+                    }`}
+                  />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                    {isSearchingMarques ? (
+                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                    ) : (
+                      <Search className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+
+                {showMarquesSuggestions && marquesSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {marquesSuggestions.map((marque) => (
+                      <div
+                        key={marque.id}
+                        onClick={() => handleMarqueSelect(marque)}
+                        className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                      >
+                        <div className="font-medium">{marque.libelle}</div>
+                        {marque.description && (
+                          <p className="text-xs text-gray-500 mt-1 truncate">
+                            {marque.description}
+                          </p>
+                        )}
+                        <div className="text-xs text-gray-500 mt-1">
+                          Type: {marque.type_engin_libelle}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
-              {errors.marque && (
-                <p className="text-red-600 text-sm mt-2 font-medium">
-                  {errors.marque}
-                </p>
-              )}
-              {formData.typeEngin &&
-                filteredMarques.length === 0 &&
-                !loading.marques && (
-                  <p className="text-amber-600 text-sm mt-2">
-                    Aucune marque disponible pour ce type d'engin
+
+                {showMarquesSuggestions &&
+                  marquesSuggestions.length === 0 &&
+                  formData.marque.length >= 2 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
+                      Aucune marque trouvée. La marque sera créée automatiquement
+                      lors de la soumission.
+                    </div>
+                  )}
+                {errors.marque && (
+                  <p className="text-red-600 text-sm mt-2 font-medium">
+                    {errors.marque}
                   </p>
                 )}
-            </div>
+              </div>
+            )}
 
             {/* Modèle */}
-            {formData.marque && (
+            {formData.marque && selectedMarqueId && (
               <div className="relative">
                 <label className="block text-sm font-semibold text-gray-800 mb-2">
                   Modèle

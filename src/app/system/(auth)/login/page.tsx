@@ -27,7 +27,7 @@ export default function Login() {
       if (userType === 'agent') {
         router.push('/system/welcom/');
       } else if (userType === 'utilisateur') {
-        router.push('/activity/speed/');
+        router.push('/activity/dashboard/');
       }
     }
   }, [isAuthenticated, userType, router]);
@@ -45,7 +45,7 @@ export default function Login() {
         if (result.userType === 'agent') {
           router.push('/system/welcom/');
         } else if (result.userType === 'utilisateur') {
-          router.push('/activity/speed/');
+          router.push('/activity/dashboard/');
         }
       } else {
         setError(result.message || 'Identifiants incorrects');

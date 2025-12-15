@@ -33,6 +33,8 @@ interface UtilisateurSession {
   privileges?: any;
   privileges_include?: any;
   province_code?: any;
+  province_id?: any;
+  extension_site?: any;
 }
 
 interface AuthContextType {

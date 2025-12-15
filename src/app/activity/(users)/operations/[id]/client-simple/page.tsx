@@ -11,7 +11,6 @@ export default function ClientSimplePage() {
   const impotId = params.id as string;
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [privileges, setPrivileges] = useState<any>(null);
-  console.log("Privileges utilisateur:", utilisateur);
 
   useEffect(() => {
     if (utilisateur?.privileges_include) {

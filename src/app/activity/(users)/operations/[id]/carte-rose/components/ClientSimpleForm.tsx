@@ -27,8 +27,6 @@ import {
   type ParticulierData,
   type EnginData,
   type CarteRoseResponse,
-  type RechercheModeleResponse,
-  type RecherchePuissanceResponse,
 } from "@/services/carte-rose/carteRoseService";
 import {
   rechercherCouleur,
@@ -49,10 +47,8 @@ import {
 } from "@/services/couleurs/couleurService";
 import { getUsages, type UsageEngin } from "@/services/usages/usageService";
 import {
-  getMarquesEngins,
-  getModelesEngins,
+  rechercherMarques,
   type MarqueEngin,
-  type ModeleEngin,
 } from "@/services/marques-engins/marqueEnginService";
 import {
   getPuissancesFiscalesActives,
@@ -129,18 +125,6 @@ interface ParticulierInfo {
   ville?: string;
   province?: string;
   nif?: string;
-}
-
-interface MarqueAvecModeles {
-  marque: MarqueEngin;
-  modeles: ModeleEngin[];
-}
-
-interface Suggestion {
-  id: number;
-  libelle: string;
-  description?: string;
-  valeur?: number;
 }
 
 // AJOUT: Interface pour les données de la fiche supplémentaire
@@ -436,17 +420,14 @@ export default function ClientSimpleForm({
   const [energies, setEnergies] = useState<Energie[]>([]);
   const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
   const [usages, setUsages] = useState<UsageEngin[]>([]);
-  const [marques, setMarques] = useState<MarqueEngin[]>([]);
-  const [modeles, setModeles] = useState<ModeleEngin[]>([]);
-  const [marquesAvecModeles, setMarquesAvecModeles] = useState<
-    MarqueAvecModeles[]
-  >([]);
   const [puissancesFiscales, setPuissancesFiscales] = useState<
     PuissanceFiscale[]
   >([]);
-  const [filteredPuissances, setFilteredPuissances] = useState<
-    PuissanceFiscale[]
-  >([]);
+  
+  // AJOUT: États pour les suggestions de marques (adapté du premier écran)
+  const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>([]);
+  const [showMarquesSuggestions, setShowMarquesSuggestions] = useState(false);
+  const [isSearchingMarques, setIsSearchingMarques] = useState(false);
 
   // États pour la gestion des couleurs
   const [couleursSuggestions, setCouleursSuggestions] = useState<
@@ -473,14 +454,13 @@ export default function ClientSimpleForm({
     energies: false,
     couleurs: false,
     usages: false,
-    marques: false,
-    modeles: false,
     puissances: false,
     verificationTelephone: false,
     rechercheModeles: false,
     recherchePuissances: false,
     rechercheCouleurs: false,
     ajoutCouleur: false,
+    rechercheMarques: false, // AJOUT: Pour la recherche des marques
   });
 
   const [plaqueInfo, setPlaqueInfo] = useState<PlaqueInfo | null>(null);
@@ -497,12 +477,8 @@ export default function ClientSimpleForm({
   const [printData, setPrintData] = useState<any>(null);
 
   // États pour l'auto-complétion
-  const [suggestionsModeles, setSuggestionsModeles] = useState<Suggestion[]>(
-    []
-  );
-  const [suggestionsPuissances, setSuggestionsPuissances] = useState<
-    Suggestion[]
-  >([]);
+  const [suggestionsModeles, setSuggestionsModeles] = useState<any[]>([]);
+  const [suggestionsPuissances, setSuggestionsPuissances] = useState<any[]>([]);
   const [showSuggestionsModeles, setShowSuggestionsModeles] = useState(false);
   const [showSuggestionsPuissances, setShowSuggestionsPuissances] =
     useState(false);
@@ -512,10 +488,11 @@ export default function ClientSimpleForm({
   const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null); // AJOUT: Pour la recherche des marques
 
   // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
-    (2025 - i).toString()
+    (2026 - i).toString()
   );
 
   // Chargement des données initiales
@@ -550,13 +527,6 @@ export default function ClientSimpleForm({
           setUsages(usagesResponse.data || []);
         }
 
-        // Charger toutes les marques
-        setLoading((prev) => ({ ...prev, marques: true }));
-        const marquesResponse = await getMarquesEngins();
-        if (marquesResponse.status === "success") {
-          setMarques(marquesResponse.data || []);
-        }
-
         // Charger toutes les puissances fiscales
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
@@ -571,14 +541,13 @@ export default function ClientSimpleForm({
           energies: false,
           couleurs: false,
           usages: false,
-          marques: false,
-          modeles: false,
           puissances: false,
           verificationTelephone: false,
           rechercheModeles: false,
           recherchePuissances: false,
           rechercheCouleurs: false,
           ajoutCouleur: false,
+          rechercheMarques: false,
         });
       }
     };
@@ -597,6 +566,53 @@ export default function ClientSimpleForm({
       }
     }
   }, [formData.anneeFabrication]);
+
+  // AJOUT: Recherche automatique des marques (adapté du premier écran)
+  useEffect(() => {
+    if (marqueTimerRef.current) {
+      clearTimeout(marqueTimerRef.current);
+    }
+
+    if (formData.marque.length >= 2 && formData.typeEngin) {
+      marqueTimerRef.current = setTimeout(async () => {
+        setIsSearchingMarques(true);
+        setLoading((prev) => ({ ...prev, rechercheMarques: true }));
+        try {
+          const response = await rechercherMarques(
+            formData.typeEngin,
+            formData.marque
+          );
+          if (response.status === "success") {
+            const data = response.data;
+            if (Array.isArray(data)) {
+              setMarquesSuggestions(data);
+            } else {
+              setMarquesSuggestions([]);
+            }
+            setShowMarquesSuggestions(true);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la recherche des marques:", error);
+          setMarquesSuggestions([]);
+        } finally {
+          setIsSearchingMarques(false);
+          setLoading((prev) => ({ ...prev, rechercheMarques: false }));
+        }
+      }, 300);
+    } else {
+      setMarquesSuggestions([]);
+      setShowMarquesSuggestions(false);
+      if (formData.marqueId) {
+        setFormData((prev) => ({ ...prev, marqueId: "" }));
+      }
+    }
+
+    return () => {
+      if (marqueTimerRef.current) {
+        clearTimeout(marqueTimerRef.current);
+      }
+    };
+  }, [formData.marque, formData.typeEngin]);
 
   // Recherche automatique des couleurs
   useEffect(() => {
@@ -651,13 +667,21 @@ export default function ClientSimpleForm({
       setShowSuggestionsModeles(false);
     }
 
-    // Réinitialiser la puissance si le type d'engin change
+    // Réinitialiser la marque et le modèle si le type d'engin change (adapté du premier écran)
     if (field === "typeEngin") {
       setFormData((prev) => ({
         ...prev,
+        marque: "",
+        marqueId: "",
+        modele: "",
+        modeleId: "",
         puissanceFiscal: "",
         puissanceFiscalValeur: "",
       }));
+      setMarquesSuggestions([]);
+      setShowMarquesSuggestions(false);
+      setSuggestionsModeles([]);
+      setShowSuggestionsModeles(false);
       setSuggestionsPuissances([]);
       setShowSuggestionsPuissances(false);
     }
@@ -678,6 +702,21 @@ export default function ClientSimpleForm({
         [field]: undefined,
       }));
     }
+  };
+
+  // AJOUT: Gestion de la sélection de marque (adapté du premier écran)
+  const handleMarqueSelect = (marque: MarqueEngin) => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      marque: marque.libelle,
+      marqueId: marque.id.toString()
+    }));
+    setShowMarquesSuggestions(false);
+    
+    // Réinitialiser le modèle quand on change de marque
+    setFormData((prev) => ({ ...prev, modele: "", modeleId: "" }));
+    setSuggestionsModeles([]);
+    setShowSuggestionsModeles(false);
   };
 
   // Gestion de la sélection de couleur
@@ -835,7 +874,7 @@ export default function ClientSimpleForm({
   };
 
   // Sélection d'un modèle
-  const handleSelectModele = (modele: Suggestion) => {
+  const handleSelectModele = (modele: any) => {
     setFormData((prev) => ({
       ...prev,
       modele: modele.libelle,
@@ -932,7 +971,7 @@ export default function ClientSimpleForm({
   };
 
   // Sélection d'une puissance fiscale
-  const handleSelectPuissance = (puissance: Suggestion) => {
+  const handleSelectPuissance = (puissance: any) => {
     setFormData((prev) => ({
       ...prev,
       puissanceFiscal: puissance.libelle,
@@ -1075,9 +1114,6 @@ export default function ClientSimpleForm({
               result.message ||
                 "Cette plaque est déjà associée à un autre particulier."
             );
-            // Optionnel : afficher plus de détails dans un modal
-            // setModalConflitData(result.details);
-            // setShowModalConflit(true);
             break;
 
           // Cas 3 : Erreurs système ou validation
@@ -1361,6 +1397,8 @@ export default function ClientSimpleForm({
     setSuggestionsPuissances([]);
     setShowSuggestionsModeles(false);
     setShowSuggestionsPuissances(false);
+    setMarquesSuggestions([]);
+    setShowMarquesSuggestions(false);
     setCouleurInputMode("select");
     setNouvelleCouleurNom("");
     setNouvelleCouleurCode("#000000");
@@ -1494,7 +1532,80 @@ export default function ClientSimpleForm({
     </div>
   );
 
-  // Rendu de l'étape formulaire - SECTION COULEUR MODIFIÉE
+  // AJOUT: Section pour le champ Marque avec auto-complétion
+  const renderSectionMarque = () => (
+    <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Marque <span className="text-red-500">*</span>
+      </label>
+      <div className="relative">
+        <input
+          type="text"
+          value={formData.marque}
+          onChange={(e) => handleInputChange("marque", e.target.value)}
+          placeholder="Saisissez la marque (auto-complétion)"
+          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pr-10 ${
+            errors.marque
+              ? "border-red-300 focus:border-red-500"
+              : "border-gray-300 focus:border-blue-500"
+          }`}
+          disabled={!formData.typeEngin}
+        />
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          {isSearchingMarques ? (
+            <Loader className="w-4 h-4 animate-spin text-gray-400" />
+          ) : (
+            <Search className="w-4 h-4 text-gray-400" />
+          )}
+        </div>
+      </div>
+
+      {showMarquesSuggestions && marquesSuggestions.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {marquesSuggestions.map((marque) => (
+            <div
+              key={marque.id}
+              onClick={() => handleMarqueSelect(marque)}
+              className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+            >
+              <div className="font-medium">{marque.libelle}</div>
+              {marque.description && (
+                <p className="text-xs text-gray-500 mt-1 truncate">
+                  {marque.description}
+                </p>
+              )}
+              <div className="text-xs text-gray-500 mt-1">
+                Type: {marque.type_engin_libelle}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showMarquesSuggestions &&
+        marquesSuggestions.length === 0 &&
+        formData.marque.length >= 2 && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3 text-sm text-gray-600">
+            Aucune marque trouvée. La marque sera créée automatiquement
+            lors de la soumission.
+          </div>
+        )}
+      
+      {errors.marque && (
+        <p className="text-red-600 text-sm mt-1 font-medium">
+          {errors.marque}
+        </p>
+      )}
+      
+      {!formData.typeEngin && (
+        <p className="text-blue-600 text-xs mt-1">
+          Veuillez d'abord sélectionner le type d'engin
+        </p>
+      )}
+    </div>
+  );
+
+  // Section pour le champ Couleur avec auto-complétion
   const renderSectionCouleur = () => (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1907,56 +2018,8 @@ export default function ClientSimpleForm({
             )}
           </div>
 
-          {/* Marque */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Marque <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <select
-                value={formData.marqueId}
-                onChange={(e) => {
-                  const selectedMarque = marques.find(
-                    (m) => m.id.toString() === e.target.value
-                  );
-                  setFormData((prev) => ({
-                    ...prev,
-                    marque: selectedMarque?.libelle || "",
-                    marqueId: e.target.value,
-                  }));
-                }}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.marque ? "border-red-300" : "border-gray-300"
-                }`}
-                disabled={loading.marques || !formData.typeEngin}
-              >
-                <option value="">
-                  {!formData.typeEngin
-                    ? "Sélectionnez d'abord le type d'engin"
-                    : "Sélectionner la marque"}
-                </option>
-                {marques
-                  .filter(
-                    (marque) =>
-                      marque.type_engin_libelle === formData.typeEngin &&
-                      marque.actif
-                  )
-                  .map((marque) => (
-                    <option key={marque.id} value={marque.id}>
-                      {marque.libelle}
-                    </option>
-                  ))}
-              </select>
-              {loading.marques && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-            {errors.marque && (
-              <p className="text-red-600 text-sm mt-1">{errors.marque}</p>
-            )}
-          </div>
+          {/* Marque - AJOUT: Auto-complétion adaptée du premier écran */}
+          {renderSectionMarque()}
 
           {/* Modèle - Auto-complétion */}
           <div className="relative">
@@ -2116,7 +2179,7 @@ export default function ClientSimpleForm({
             )}
           </div>
 
-          {/* Couleur - MODIFIÉ POUR INCLURE LA GESTION COMPLÈTE */}
+          {/* Couleur */}
           {renderSectionCouleur()}
 
           {/* Puissance Fiscal - Auto-complétion */}
