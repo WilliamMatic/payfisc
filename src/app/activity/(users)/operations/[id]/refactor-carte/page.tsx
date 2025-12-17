@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   Hash,
   Lock,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getImpotById } from "@/services/impots/impotService";
@@ -29,21 +29,11 @@ import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import RefactorPrint from "./RefactorPrint";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Import des services pour les données dynamiques
+// Import des services pour les types d'engins seulement
 import {
   getTypeEnginsActifs,
   type TypeEngin,
 } from "@/services/type-engins/typeEnginService";
-import { getEnergies, type Energie } from "@/services/energies/energieService";
-import {
-  getCouleurs,
-  type EnginCouleur,
-} from "@/services/couleurs/couleurService";
-import { getUsages, type UsageEngin } from "@/services/usages/usageService";
-import {
-  getPuissancesFiscalesActives,
-  type PuissanceFiscale,
-} from "@/services/puissances-fiscales/puissanceFiscaleService";
 
 // Interfaces pour les modals
 interface SuccessModalProps {
@@ -126,12 +116,15 @@ export default function RefactorServicesClient() {
   const router = useRouter();
   const params = useParams();
   const [impot, setImpot] = useState<Impot | null>(null);
-  const [etapeActuelle, setEtapeActuelle] = useState<"verification" | "confirmation" | "recapitulatif">("verification");
+  const [etapeActuelle, setEtapeActuelle] = useState<
+    "verification" | "confirmation" | "recapitulatif"
+  >("verification");
   const [idDGRK, setIdDGRK] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
-  const [donneesRefactor, setDonneesRefactor] = useState<DonneesRefactor | null>(null);
+  const [donneesRefactor, setDonneesRefactor] =
+    useState<DonneesRefactor | null>(null);
   const [erreurVerification, setErreurVerification] = useState("");
   const [successData, setSuccessData] = useState<any>(null);
   const [printData, setPrintData] = useState<any>(null);
@@ -140,13 +133,8 @@ export default function RefactorServicesClient() {
   const [tauxActif, setTauxActif] = useState<Taux | null>(null);
   const [loadingTaux, setLoadingTaux] = useState(false);
 
-  // États pour les données dynamiques
+  // États pour les types d'engins seulement
   const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
-  const [energies, setEnergies] = useState<Energie[]>([]);
-  const [couleurs, setCouleurs] = useState<EnginCouleur[]>([]);
-  const [usages, setUsages] = useState<UsageEngin[]>([]);
-  const [puissancesFiscales, setPuissancesFiscales] = useState<PuissanceFiscale[]>([]);
-  const [filteredPuissances, setFilteredPuissances] = useState<PuissanceFiscale[]>([]);
 
   const [formData, setFormData] = useState({
     nom: "",
@@ -171,6 +159,8 @@ export default function RefactorServicesClient() {
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
 
+  console.log("Données Refactor actuelles:", utilisateur);
+
   // Parser les privilèges quand utilisateur change
   useEffect(() => {
     if (utilisateur?.privileges_include) {
@@ -178,7 +168,7 @@ export default function RefactorServicesClient() {
         const parsed = JSON.parse(utilisateur.privileges_include);
         setParsedPrivileges(parsed);
       } catch (error) {
-        console.error('Erreur parsing privileges:', error);
+        console.error("Erreur parsing privileges:", error);
         setParsedPrivileges({});
       }
     } else if (utilisateur) {
@@ -206,9 +196,10 @@ export default function RefactorServicesClient() {
 
   // Calcul des montants avec taux - avec vérification de l'impôt
   const montantDollars = impot ? impot.prix.toString() : "0";
-  const montantFrancs = tauxActif && impot
-    ? (impot.prix * tauxActif.valeur).toLocaleString("fr-FR")
-    : "Calcul en cours...";
+  const montantFrancs =
+    tauxActif && impot
+      ? (impot.prix * tauxActif.valeur).toLocaleString("fr-FR")
+      : "Calcul en cours...";
 
   const prixFormate = `${montantDollars} $`;
   const montantEnFrancs = `${montantFrancs} CDF`;
@@ -232,58 +223,24 @@ export default function RefactorServicesClient() {
     chargerTaux();
   }, []);
 
-  // Chargement des données dynamiques au montage du composant
+  // Chargement des types d'engins seulement
   useEffect(() => {
-    const loadDynamicData = async () => {
+    const loadTypeEngins = async () => {
       try {
-        // Charger les types d'engins
         const typeEnginsResponse = await getTypeEnginsActifs();
         if (typeEnginsResponse.status === "success") {
           setTypeEngins(typeEnginsResponse.data || []);
         }
-
-        // Charger les énergies
-        const energiesResponse = await getEnergies();
-        if (energiesResponse.status === "success") {
-          setEnergies(energiesResponse.data || []);
-        }
-
-        // Charger les couleurs
-        const couleursResponse = await getCouleurs();
-        if (couleursResponse.status === "success") {
-          setCouleurs(couleursResponse.data || []);
-        }
-
-        // Charger les usages
-        const usagesResponse = await getUsages();
-        if (usagesResponse.status === "success") {
-          setUsages(usagesResponse.data || []);
-        }
-
-        // Charger les puissances fiscales
-        const puissancesResponse = await getPuissancesFiscalesActives();
-        if (puissancesResponse.status === "success") {
-          setPuissancesFiscales(puissancesResponse.data || []);
-        }
       } catch (error) {
-        console.error("Erreur lors du chargement des données dynamiques:", error);
+        console.error(
+          "Erreur lors du chargement des types d'engins:",
+          error
+        );
       }
     };
 
-    loadDynamicData();
+    loadTypeEngins();
   }, []);
-
-  // Filtrer les puissances quand le type d'engin change
-  useEffect(() => {
-    if (formData.typeEngin) {
-      const puissancesFiltrees = puissancesFiscales.filter(
-        (puissance) => puissance.type_engin_libelle === formData.typeEngin
-      );
-      setFilteredPuissances(puissancesFiltrees);
-    } else {
-      setFilteredPuissances([]);
-    }
-  }, [formData.typeEngin, puissancesFiscales]);
 
   // Récupération des données depuis la base via ID DGRK
   const recupererDonneesDGRK = async (idDGRK: string, user: string) => {
@@ -291,16 +248,21 @@ export default function RefactorServicesClient() {
     setErreurVerification("");
 
     try {
-      const result = await verifierIdDGRK(idDGRK, user);
-      console.log("Résultat de la vérification DGRK:", result);
+      // Utiliser site_code au lieu de site_nom
+      const result = await verifierIdDGRK(idDGRK, utilisateur?.site_code || "", utilisateur?.extension_site ?? 0);
 
       if (result.status === "error") {
-        setErreurVerification(result.message || "Erreur lors de la vérification");
+        setErreurVerification(
+          result.message || "Erreur lors de la vérification"
+        );
         return;
       }
 
       const donnees = result.data as DonneesRefactor;
       setDonneesRefactor(donnees);
+
+      // Vérifier si la source est externe
+      const source = result.source; // 'locale' ou 'externe'
 
       // Mise à jour du formulaire avec les données récupérées
       setFormData({
@@ -323,10 +285,21 @@ export default function RefactorServicesClient() {
         numeroMoteur: donnees.numero_moteur || "",
       });
 
+      // Stocker aussi la source pour affichage
+      if (result.source) {
+        setDonneesRefactor((prev) =>
+          prev
+            ? { ...prev, source: result.source }
+            : { ...donnees, source: result.source }
+        );
+      }
+
       setEtapeActuelle("confirmation");
     } catch (error) {
       console.error("Erreur lors de la récupération des données:", error);
-      setErreurVerification("Erreur lors de la récupération des informations DGRK.");
+      setErreurVerification(
+        "Erreur lors de la récupération des informations DGRK."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -338,7 +311,10 @@ export default function RefactorServicesClient() {
       return;
     }
 
-    recupererDonneesDGRK(idDGRK, utilisateur ? utilisateur.site_nom.toString() : "");
+    recupererDonneesDGRK(
+      idDGRK,
+      utilisateur ? utilisateur.site_nom.toString() : ""
+    );
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -378,7 +354,9 @@ export default function RefactorServicesClient() {
           email: formData.email,
           adresse: formData.adresse,
           nif: formData.nif,
-        }
+        },
+        donneesRefactor?.source, // Passer la source
+        utilisateur?.site_code // Ajouter le site_code ici
       );
 
       if (result.status === "success") {
@@ -400,8 +378,11 @@ export default function RefactorServicesClient() {
           annee_fabrication: formData.anneeFabrication,
           annee_circulation: formData.anneeCirculation,
           puissance_fiscal: formData.puissanceFiscal,
-          montant: donneesRefactor?.montant?.toString() || "0",
-          date_jour: new Date().toLocaleDateString('fr-FR')
+          montant:
+            donneesRefactor?.source === "externe"
+              ? "0"
+              : donneesRefactor?.montant?.toString() || "0",
+          date_jour: new Date().toLocaleDateString("fr-FR"),
         };
 
         setSuccessData(completeData);
@@ -475,11 +456,6 @@ export default function RefactorServicesClient() {
     });
   };
 
-  // Générer les options d'années
-  const anneeOptions = Array.from({ length: 30 }, (_, i) =>
-    (new Date().getFullYear() - i).toString()
-  );
-
   // Afficher un écran de chargement pendant le chargement de l'impôt
   if (!impot) {
     return (
@@ -531,7 +507,7 @@ export default function RefactorServicesClient() {
             Veuillez vous reconnecter pour accéder à cette page.
           </p>
           <button
-            onClick={() => router.push('/system/login')}
+            onClick={() => router.push("/system/login")}
             className="text-blue-600 hover:text-blue-800 transition-colors"
           >
             Se connecter
@@ -560,15 +536,23 @@ export default function RefactorServicesClient() {
             <div className="text-sm text-gray-500 mb-4">
               <div className="text-left bg-gray-50 p-3 rounded-lg">
                 <div className="font-medium mb-2">Vos privilèges:</div>
-                {Object.entries(parsedPrivileges).map(([key, value]: [string, any]) => (
-                  <div key={key} className="flex items-center gap-2 mb-1">
-                    <span className={`w-2 h-2 rounded-full ${value ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="font-medium">{key}:</span>
-                    <span className={value ? 'text-green-600' : 'text-red-600'}>
-                      {value ? 'Activé' : 'Désactivé'}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(parsedPrivileges).map(
+                  ([key, value]: [string, any]) => (
+                    <div key={key} className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          value ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      ></span>
+                      <span className="font-medium">{key}:</span>
+                      <span
+                        className={value ? "text-green-600" : "text-red-600"}
+                      >
+                        {value ? "Activé" : "Désactivé"}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
             <button
@@ -596,7 +580,8 @@ export default function RefactorServicesClient() {
             Étape 1: Vérification de l'ID DGRK
           </h2>
           <p className="text-gray-600 text-sm">
-            Saisissez l'identifiant DGRK pour récupérer les informations du véhicule à corriger
+            Saisissez l'identifiant DGRK pour récupérer les informations du
+            véhicule à corriger
           </p>
         </div>
       </div>
@@ -617,7 +602,8 @@ export default function RefactorServicesClient() {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
           />
           <p className="text-gray-500 text-sm mt-2">
-            Le système récupérera automatiquement les informations depuis la base DGI
+            Le système récupérera automatiquement les informations depuis la
+            base DGI
           </p>
         </div>
 
@@ -680,12 +666,34 @@ export default function RefactorServicesClient() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-700">
-            Informations Récupérées - ID DGRK: {idDGRK}
+            {donneesRefactor?.source === "externe"
+              ? `Données récupérées depuis base externe - Plaque: ${formData.numeroPlaque}`
+              : `Informations Récupérées - ID DGRK: ${idDGRK}`}
           </h3>
-          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-            ✓ Données DGI
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${
+              donneesRefactor?.source === "externe"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {donneesRefactor?.source === "externe"
+              ? "✓ Données externes"
+              : "✓ Données DGI"}
           </span>
         </div>
+
+        {/* Message d'information pour les données externes */}
+        {donneesRefactor?.source === "externe" && (
+          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700 text-sm">
+              <strong>Note:</strong> Ces données proviennent de la base externe.
+              Un nouvel enregistrement sera créé avec un montant de{" "}
+              <strong>0$</strong>.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Numéro de Plaque:</span>
@@ -700,9 +708,11 @@ export default function RefactorServicesClient() {
             </div>
           </div>
           <div>
-            <span className="text-gray-500">Montant payé:</span>
+            <span className="text-gray-500">Montant:</span>
             <div className="text-gray-700 font-medium">
-              {donneesRefactor?.montant} $
+              {donneesRefactor?.source === "externe"
+                ? "0 $ (Nouvel enregistrement)"
+                : `${donneesRefactor?.montant || 0} $`}
             </div>
           </div>
         </div>
@@ -719,7 +729,9 @@ export default function RefactorServicesClient() {
               Informations de l'Assujetti
             </h2>
             <p className="text-gray-600 text-sm">
-              Corrigez les informations personnelles du propriétaire
+              {donneesRefactor?.source === "externe"
+                ? "Vérifiez et complétez les informations personnelles du propriétaire"
+                : "Corrigez les informations personnelles du propriétaire"}
             </p>
           </div>
         </div>
@@ -821,7 +833,9 @@ export default function RefactorServicesClient() {
               Informations de l'Engin
             </h2>
             <p className="text-gray-600 text-sm">
-              Corrigez les caractéristiques techniques du véhicule
+              {donneesRefactor?.source === "externe"
+                ? "Vérifiez et complétez les caractéristiques techniques du véhicule"
+                : "Corrigez les caractéristiques techniques du véhicule"}
             </p>
           </div>
         </div>
@@ -862,108 +876,84 @@ export default function RefactorServicesClient() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Énergie
             </label>
-            <select
+            <input
+              type="text"
               value={formData.energie}
               onChange={(e) => handleInputChange("energie", e.target.value)}
+              placeholder="Ex: Essence, Diesel, Electrique"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">Sélectionner l'énergie</option>
-              {energies.map((option) => (
-                <option key={option.id} value={option.nom}>
-                  {option.nom}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Année de fabrication
             </label>
-            <select
+            <input
+              type="text"
               value={formData.anneeFabrication}
-              onChange={(e) => handleInputChange("anneeFabrication", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("anneeFabrication", e.target.value)
+              }
+              placeholder="Ex: 2023"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">Sélectionner l'année</option>
-              {anneeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Année de circulation
             </label>
-            <select
+            <input
+              type="text"
               value={formData.anneeCirculation}
-              onChange={(e) => handleInputChange("anneeCirculation", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("anneeCirculation", e.target.value)
+              }
+              placeholder="Ex: 2023"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">Sélectionner l'année</option>
-              {anneeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Couleur
             </label>
-            <select
+            <input
+              type="text"
               value={formData.couleur}
               onChange={(e) => handleInputChange("couleur", e.target.value)}
+              placeholder="Ex: Rouge, Noir, Blanc"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">Sélectionner la couleur</option>
-              {couleurs.map((option) => (
-                <option key={option.id} value={option.nom}>
-                  {option.nom}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Puissance Fiscal
             </label>
-            <select
+            <input
+              type="text"
               value={formData.puissanceFiscal}
-              onChange={(e) => handleInputChange("puissanceFiscal", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("puissanceFiscal", e.target.value)
+              }
+              placeholder="Ex: 10 CV, 15 CV"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">Sélectionner la puissance</option>
-              {filteredPuissances.map((option) => (
-                <option key={option.id} value={option.libelle}>
-                  {option.libelle}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Usage <span className="text-red-500">*</span>
             </label>
-            <select
+            <input
+              type="text"
               value={formData.usage}
               onChange={(e) => handleInputChange("usage", e.target.value)}
+              placeholder="Ex: Personnel, Transport, Commerce"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">Sélectionner l'usage</option>
-              {usages.map((option) => (
-                <option key={option.id} value={option.libelle}>
-                  {option.libelle}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="md:col-span-2">
@@ -973,7 +963,9 @@ export default function RefactorServicesClient() {
             <input
               type="text"
               value={formData.numeroChassis}
-              onChange={(e) => handleInputChange("numeroChassis", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("numeroChassis", e.target.value)
+              }
               placeholder="Entrez le numéro de châssis"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -986,7 +978,9 @@ export default function RefactorServicesClient() {
             <input
               type="text"
               value={formData.numeroMoteur}
-              onChange={(e) => handleInputChange("numeroMoteur", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("numeroMoteur", e.target.value)
+              }
               placeholder="Entrez le numéro de moteur"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -1002,15 +996,23 @@ export default function RefactorServicesClient() {
               Service de Correction
             </h4>
             <div className="text-2xl font-bold text-red-800">
-              Refactorisation des données
+              {donneesRefactor?.source === "externe"
+                ? "Création d'un nouvel enregistrement"
+                : "Refactorisation des données"}
             </div>
             <div className="text-lg font-semibold text-red-700 mt-2">
-              Aucun frais supplémentaire
+              {donneesRefactor?.source === "externe"
+                ? "Montant: 0$ (Nouvelle création)"
+                : "Aucun frais supplémentaire"}
             </div>
           </div>
           <div className="text-right">
             <div className="text-sm text-red-600 font-medium">Statut</div>
-            <div className="text-xl font-bold text-green-600">Correction</div>
+            <div className="text-xl font-bold text-green-600">
+              {donneesRefactor?.source === "externe"
+                ? "Nouvelle création"
+                : "Correction"}
+            </div>
           </div>
         </div>
 
@@ -1032,7 +1034,13 @@ export default function RefactorServicesClient() {
             className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium disabled:opacity-50"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>{isLoading ? "Traitement..." : "Corriger les données"}</span>
+            <span>
+              {isLoading
+                ? "Traitement..."
+                : donneesRefactor?.source === "externe"
+                ? "Créer l'enregistrement"
+                : "Corriger les données"}
+            </span>
           </button>
         </div>
       </div>
@@ -1072,36 +1080,47 @@ export default function RefactorServicesClient() {
           {/* DESCRIPTION */}
           <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
             <p className="text-red-800 text-sm">
-              Ce service permet de corriger les informations mal saisies sur les cartes roses existantes. 
-              Saisissez l'identifiant DGRK pour récupérer automatiquement les informations du véhicule.
+              Ce service permet de corriger les informations mal saisies sur les
+              cartes roses existantes. Saisissez l'identifiant DGRK pour
+              récupérer automatiquement les informations du véhicule.
             </p>
           </div>
 
           {/* INDICATEUR D'ÉTAPE */}
           <div className="mt-6">
             <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {["verification", "confirmation", "recapitulatif"].map((etape, index) => (
-                <div key={etape} className="flex items-center">
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                      etapeActuelle === etape
-                        ? "bg-red-600 text-white"
-                        : index < ["verification", "confirmation", "recapitulatif"].indexOf(etapeActuelle)
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-300 text-gray-600"
-                    }`}
-                  >
-                    {index < ["verification", "confirmation", "recapitulatif"].indexOf(etapeActuelle) ? (
-                      <CheckCircle className="w-4 h-4" />
-                    ) : (
-                      index + 1
+              {["verification", "confirmation", "recapitulatif"].map(
+                (etape, index) => (
+                  <div key={etape} className="flex items-center">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                        etapeActuelle === etape
+                          ? "bg-red-600 text-white"
+                          : index <
+                            [
+                              "verification",
+                              "confirmation",
+                              "recapitulatif",
+                            ].indexOf(etapeActuelle)
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-300 text-gray-600"
+                      }`}
+                    >
+                      {index <
+                      ["verification", "confirmation", "recapitulatif"].indexOf(
+                        etapeActuelle
+                      ) ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : (
+                        index + 1
+                      )}
+                    </div>
+                    {index < 2 && (
+                      <div className="w-16 h-1 bg-gray-300 mx-2"></div>
                     )}
                   </div>
-                  {index < 2 && (
-                    <div className="w-16 h-1 bg-gray-300 mx-2"></div>
-                  )}
-                </div>
-              ))}
+                )
+              )}
             </div>
             <div className="flex justify-between max-w-2xl mx-auto mt-2 text-xs text-gray-600">
               <span>Vérification</span>

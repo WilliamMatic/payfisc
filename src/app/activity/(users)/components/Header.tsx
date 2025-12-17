@@ -115,7 +115,7 @@ export default function Header({
             </div>
 
             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-              {displayInfo.badge}
+              {utilisateur?.site_code}
             </span>
           </div>
         </div>

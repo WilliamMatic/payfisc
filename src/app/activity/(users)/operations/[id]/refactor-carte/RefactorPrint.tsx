@@ -43,18 +43,18 @@ export default function RefactorPrint({
   // Fonction pour générer le code DGRK
   const generateDGRKCode = () => {
     const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
-    const paiementId = data.paiement_id || '000000';
-    const element = utilisateur?.site_code || "Carte"
+    const paiementId = data.paiement_id || data.id;
+    const element = utilisateur?.site_code || "Carte";
     return `${element}/${month}/${year}/${paiementId}`;
   };
 
   // Fonction pour formater la date actuelle
   const getCurrentDate = () => {
     const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -74,7 +74,7 @@ export default function RefactorPrint({
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Refactor - ${data.numero_plaque}</title>
+            <title>Immatriculation - ${data.numero_plaque}</title>
             <style>
               @page { 
                 size: auto; 
@@ -209,20 +209,21 @@ export default function RefactorPrint({
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 3px;text-transform: uppercase;">${
+                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${
                       data.nom
                     } ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 4px;text-transform: uppercase;">${
+                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${
                       data.adresse
                     }</td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
-                    <td style="position: relative; top: 8px;text-transform: uppercase;"></td>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td>
                   </tr>
+
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
                     <td style="position: relative; top: ${
@@ -242,9 +243,7 @@ export default function RefactorPrint({
               
               <div class="qr">
                 ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
-                <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${
-                  getCurrentDate()
-                }</span>
+                <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span>
               </div>
             </div>
 

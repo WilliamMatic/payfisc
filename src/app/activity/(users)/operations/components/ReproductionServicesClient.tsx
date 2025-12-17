@@ -17,19 +17,19 @@ import {
   CheckCircle2,
   Hash,
   Lock,
-  Tag
+  Tag,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Impot } from "@/services/impots/impotService";
 import {
   verifierPlaque,
   traiterReproduction,
-  DonneesPlaque,
-  PaiementReproductionData,
+  type DonneesPlaque,
+  type PaiementReproductionData,
+  type ReproductionResponse,
 } from "@/services/reproduction/reproductionService";
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import ReproductionPrint from "./ReproductionPrint";
-
 import { useAuth } from "@/contexts/AuthContext";
 
 // Import des services pour les données dynamiques
@@ -429,7 +429,7 @@ export default function ReproductionServicesClient({
         const parsed = JSON.parse(utilisateur.privileges_include);
         setParsedPrivileges(parsed);
       } catch (error) {
-        console.error('Erreur parsing privileges:', error);
+        console.error("Erreur parsing privileges:", error);
         setParsedPrivileges({});
       }
     } else if (utilisateur) {
@@ -521,13 +521,20 @@ export default function ReproductionServicesClient({
     }
   }, [formData.typeEngin, puissancesFiscales]);
 
-  // Récupération des données depuis la base DGI - CORRIGÉ
-  const recupererDonneesPlaque = async (plaque: string, user: string) => {
+  // Récupération des données depuis la base DGI OU externe
+  const recupererDonneesPlaque = async (plaque: string) => {
     setIsLoading(true);
     setErreurVerification("");
 
     try {
-      const result = await verifierPlaque(plaque, user);
+      // Utiliser site_code au lieu de site_nom pour la recherche
+      const result = await verifierPlaque(
+        plaque,
+        utilisateur?.site_code || "",
+        utilisateur?.extension_site ?? 0
+      );
+
+      console.log("Résultat de la vérification plaque:", result);
 
       if (result.status === "error") {
         setErreurVerification(
@@ -539,26 +546,38 @@ export default function ReproductionServicesClient({
       const donnees = result.data as DonneesPlaque;
       setDonneesPlaque(donnees);
 
-      // Mise à jour du formulaire avec les données récupérées - CORRIGÉ
+      // Vérifier si la source est externe
+      const source = result.source; // 'locale' ou 'externe'
+
+      // Mise à jour du formulaire avec les données récupérées
       setFormData({
         nom: donnees.nom || "",
         prenom: donnees.prenom || "",
         telephone: donnees.telephone || "",
         email: donnees.email || "",
         adresse: donnees.adresse || "",
-        nif: donnees.nif || "", // Récupération du NIF
+        nif: donnees.nif || "",
         typeEngin: donnees.type_engin || "",
         anneeFabrication: donnees.annee_fabrication || "",
         anneeCirculation: donnees.annee_circulation || "",
         couleur: donnees.couleur || "",
         puissanceFiscal: donnees.puissance_fiscal || "",
         usage: donnees.usage_engin || "",
-        marque: donnees.marque || "", // Marque comme texte
+        marque: donnees.marque || "",
         energie: donnees.energie || "",
         numeroPlaque: donnees.numero_plaque || "",
         numeroChassis: donnees.numero_chassis || "",
         numeroMoteur: donnees.numero_moteur || "",
       });
+
+      // Stocker aussi la source pour affichage
+      if (result.source) {
+        setDonneesPlaque((prev) =>
+          prev
+            ? { ...prev, source: result.source }
+            : { ...donnees, source: result.source }
+        );
+      }
 
       setEtapeActuelle("confirmation");
     } catch (error) {
@@ -577,7 +596,7 @@ export default function ReproductionServicesClient({
       return;
     }
 
-    recupererDonneesPlaque(numeroPlaque, utilisateur ? utilisateur.site_nom.toString() : "");
+    recupererDonneesPlaque(numeroPlaque);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -612,6 +631,7 @@ export default function ReproductionServicesClient({
         impot.id.toString(),
         formData.numeroPlaque,
         paiementReproductionData,
+        donneesPlaque?.source, // Passer la source
         utilisateur
       );
 
@@ -626,7 +646,7 @@ export default function ReproductionServicesClient({
           adresse: formData.adresse,
           nif: formData.nif,
           type_engin: formData.typeEngin,
-          marque: formData.marque, // Marque comme texte
+          marque: formData.marque,
           energie: formData.energie,
           couleur: formData.couleur,
           usage: formData.usage,
@@ -639,7 +659,7 @@ export default function ReproductionServicesClient({
           montant: impot.prix.toString(),
           montant_francs: montantEnFrancs,
           paiement_id: result.data.paiement_id,
-          date_jour: new Date().toLocaleDateString('fr-FR')
+          date_jour: new Date().toLocaleDateString("fr-FR"),
         };
 
         setSuccessData(completeData);
@@ -750,7 +770,7 @@ export default function ReproductionServicesClient({
             Veuillez vous reconnecter pour accéder à cette page.
           </p>
           <button
-            onClick={() => router.push('/system/login')}
+            onClick={() => router.push("/system/login")}
             className="text-blue-600 hover:text-blue-800 transition-colors"
           >
             Se connecter
@@ -779,15 +799,23 @@ export default function ReproductionServicesClient({
             <div className="text-sm text-gray-500 mb-4">
               <div className="text-left bg-gray-50 p-3 rounded-lg">
                 <div className="font-medium mb-2">Vos privilèges:</div>
-                {Object.entries(parsedPrivileges).map(([key, value]: [string, any]) => (
-                  <div key={key} className="flex items-center gap-2 mb-1">
-                    <span className={`w-2 h-2 rounded-full ${value ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="font-medium">{key}:</span>
-                    <span className={value ? 'text-green-600' : 'text-red-600'}>
-                      {value ? 'Activé' : 'Désactivé'}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(parsedPrivileges).map(
+                  ([key, value]: [string, any]) => (
+                    <div key={key} className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          value ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      ></span>
+                      <span className="font-medium">{key}:</span>
+                      <span
+                        className={value ? "text-green-600" : "text-red-600"}
+                      >
+                        {value ? "Activé" : "Désactivé"}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
             <button
@@ -838,7 +866,7 @@ export default function ReproductionServicesClient({
           />
           <p className="text-gray-500 text-sm mt-2">
             Le système récupérera automatiquement les informations depuis la
-            base DGI
+            base DGI ou externe
           </p>
         </div>
 
@@ -906,12 +934,34 @@ export default function ReproductionServicesClient({
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-700">
-            Informations Récupérées
+            {donneesPlaque?.source === "externe"
+              ? `Données récupérées depuis base externe - Plaque: ${formData.numeroPlaque}`
+              : `Informations Récupérées - Plaque: ${formData.numeroPlaque}`}
           </h3>
-          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-            ✓ Données DGI
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${
+              donneesPlaque?.source === "externe"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {donneesPlaque?.source === "externe"
+              ? "✓ Données externes"
+              : "✓ Données DGI"}
           </span>
         </div>
+
+        {/* Message d'information pour les données externes */}
+        {donneesPlaque?.source === "externe" && (
+          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700 text-sm">
+              <strong>Note:</strong> Ces données proviennent de la base externe.
+              Un nouvel enregistrement sera créé avec un montant de{" "}
+              <strong>10$</strong>.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
             <span className="text-gray-500">Numéro de Plaque:</span>
@@ -926,9 +976,11 @@ export default function ReproductionServicesClient({
             </div>
           </div>
           <div>
-            <span className="text-gray-500">Téléphone:</span>
+            <span className="text-gray-500">Montant:</span>
             <div className="text-gray-700 font-medium">
-              {formData.telephone}
+              {donneesPlaque?.source === "externe"
+                ? "10 $ (Nouvel enregistrement)"
+                : `${impot.prix} $`}
             </div>
           </div>
         </div>
@@ -945,7 +997,9 @@ export default function ReproductionServicesClient({
               Informations de l'Assujetti
             </h2>
             <p className="text-gray-600 text-sm">
-              Renseignez les informations personnelles du propriétaire
+              {donneesPlaque?.source === "externe"
+                ? "Vérifiez et complétez les informations personnelles du propriétaire"
+                : "Corrigez les informations personnelles du propriétaire"}
             </p>
           </div>
         </div>
@@ -959,7 +1013,7 @@ export default function ReproductionServicesClient({
               type="text"
               value={formData.nom}
               onChange={(e) => handleInputChange("nom", e.target.value)}
-              placeholder="Entrez votre nom"
+              placeholder="Entrez le nom"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -972,7 +1026,7 @@ export default function ReproductionServicesClient({
               type="text"
               value={formData.prenom}
               onChange={(e) => handleInputChange("prenom", e.target.value)}
-              placeholder="Entrez votre prénom"
+              placeholder="Entrez le prénom"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1011,7 +1065,7 @@ export default function ReproductionServicesClient({
               type="text"
               value={formData.adresse}
               onChange={(e) => handleInputChange("adresse", e.target.value)}
-              placeholder="Entrez votre adresse complète"
+              placeholder="Entrez l'adresse complète"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1025,18 +1079,13 @@ export default function ReproductionServicesClient({
                 type="text"
                 value={formData.nif}
                 onChange={(e) => handleInputChange("nif", e.target.value)}
-                placeholder="Généré automatiquement après validation"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-                readOnly
+                placeholder="NIF"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <div className="bg-blue-100 p-2 rounded-lg">
                 <Hash className="w-5 h-5 text-blue-600" />
               </div>
             </div>
-            <p className="text-gray-500 text-sm mt-2">
-              Le NIF sera généré automatiquement lors de la validation du
-              formulaire
-            </p>
           </div>
         </div>
       </div>
@@ -1052,7 +1101,9 @@ export default function ReproductionServicesClient({
               Informations de l'Engin
             </h2>
             <p className="text-gray-600 text-sm">
-              Renseignez les caractéristiques techniques du véhicule
+              {donneesPlaque?.source === "externe"
+                ? "Vérifiez et complétez les caractéristiques techniques du véhicule"
+                : "Corrigez les caractéristiques techniques du véhicule"}
             </p>
           </div>
         </div>
@@ -1093,114 +1144,84 @@ export default function ReproductionServicesClient({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Énergie
             </label>
-            <select
+            <input
+              type="text"
               value={formData.energie}
               onChange={(e) => handleInputChange("energie", e.target.value)}
+              placeholder="Entrez le type d'énergie"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner l'énergie</option>
-              {energies.map((option) => (
-                <option key={option.id} value={option.nom}>
-                  {option.nom}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Année de fabrication
             </label>
-            <select
+            <input
+              type="text"
               value={formData.anneeFabrication}
               onChange={(e) =>
                 handleInputChange("anneeFabrication", e.target.value)
               }
+              placeholder="Ex: 2020"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner l'année</option>
-              {anneeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Année de circulation
             </label>
-            <select
+            <input
+              type="text"
               value={formData.anneeCirculation}
               onChange={(e) =>
                 handleInputChange("anneeCirculation", e.target.value)
               }
+              placeholder="Ex: 2021"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner l'année</option>
-              {anneeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Couleur
             </label>
-            <select
+            <input
+              type="text"
               value={formData.couleur}
               onChange={(e) => handleInputChange("couleur", e.target.value)}
+              placeholder="Ex: Rouge"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner la couleur</option>
-              {couleurs.map((option) => (
-                <option key={option.id} value={option.nom}>
-                  {option.nom}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Puissance Fiscal
             </label>
-            <select
+            <input
+              type="text"
               value={formData.puissanceFiscal}
               onChange={(e) =>
                 handleInputChange("puissanceFiscal", e.target.value)
               }
+              placeholder="Ex: 10 CV"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner la puissance</option>
-              {filteredPuissances.map((option) => (
-                <option key={option.id} value={option.libelle}>
-                  {option.libelle}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Usage <span className="text-red-500">*</span>
             </label>
-            <select
+            <input
+              type="text"
               value={formData.usage}
               onChange={(e) => handleInputChange("usage", e.target.value)}
+              placeholder="Ex: Transport de personnes"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Sélectionner l'usage</option>
-              {usages.map((option) => (
-                <option key={option.id} value={option.libelle}>
-                  {option.libelle}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="md:col-span-2">
@@ -1239,14 +1260,18 @@ export default function ReproductionServicesClient({
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
           <div>
-            <div className="text-sm text-blue-600 font-medium">
+            <h4 className="font-semibold text-blue-800 text-sm">
               Frais de Reproduction
-            </div>
+            </h4>
             <div className="text-2xl font-bold text-blue-800">
-              {prixFormate}
+              {donneesPlaque?.source === "externe" ? "10 $" : prixFormate}
             </div>
             <div className="text-lg font-semibold text-blue-700 mt-2">
-              {montantEnFrancs}
+              {donneesPlaque?.source === "externe"
+                ? `${(10 * (tauxActif?.valeur || 1)).toLocaleString(
+                    "fr-FR"
+                  )} CDF`
+                : montantEnFrancs}
             </div>
             {tauxActif && (
               <div className="text-sm text-blue-500 mt-2">
@@ -1320,6 +1345,8 @@ export default function ReproductionServicesClient({
               Ce service permet de reproduire une carte d'immatriculation perdue
               ou endommagée. Saisissez le numéro de plaque pour récupérer
               automatiquement les informations du véhicule.
+              {donneesPlaque?.source === "externe" &&
+                " (Données provenant de la base externe)"}
             </p>
           </div>
 
@@ -1384,8 +1411,12 @@ export default function ReproductionServicesClient({
           isOpen={showPaiement}
           onClose={() => setShowPaiement(false)}
           onPaiement={traiterPaiement}
-          montant={prixFormate}
-          montantEnFrancs={montantEnFrancs}
+          montant={donneesPlaque?.source === "externe" ? "10 $" : prixFormate}
+          montantEnFrancs={
+            donneesPlaque?.source === "externe"
+              ? `${(10 * (tauxActif?.valeur || 1)).toLocaleString("fr-FR")} CDF`
+              : montantEnFrancs
+          }
           isLoading={isPaiementProcessing}
         />
 

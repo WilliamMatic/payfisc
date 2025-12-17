@@ -14,7 +14,7 @@ import {
   loginAgent,
   logoutAgent,
   checkSession,
-  checkAnySession
+  checkAnySession,
 } from "@/services/auth/authService";
 import {
   loginUtilisateur,
@@ -29,12 +29,12 @@ interface UtilisateurSession {
   adresse: string;
   site_nom: string;
   site_code: string;
+  extension_site?: any;
   formule?: string;
   privileges?: any;
   privileges_include?: any;
   province_code?: any;
   province_id?: any;
-  extension_site?: any;
 }
 
 interface AuthContextType {
