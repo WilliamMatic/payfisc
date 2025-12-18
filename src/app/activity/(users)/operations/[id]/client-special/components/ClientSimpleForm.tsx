@@ -1,6 +1,15 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Save, User, Car, Calculator, X, Search, Percent, DollarSign } from "lucide-react";
+import {
+  Save,
+  User,
+  Car,
+  Calculator,
+  X,
+  Search,
+  Percent,
+  DollarSign,
+} from "lucide-react";
 import {
   soumettreCommandePlaques,
   verifierStockDisponible,
@@ -22,6 +31,7 @@ interface FormData {
   reductionType: "pourcentage" | "montant_fixe" | "";
   reductionValeur: string;
   nif: string;
+  dateMouvement: string;
 }
 
 interface Utilisateur {
@@ -72,6 +82,7 @@ interface FactureData {
   reduction_valeur?: number;
   montant_francs?: string;
   nif?: string;
+  date_mouvement?: string;
 }
 
 interface AssujettiInfo {
@@ -100,6 +111,7 @@ export default function ClientSimpleForm({
     reductionType: "",
     reductionValeur: "",
     nif: "",
+    dateMouvement: new Date().toISOString().split("T")[0],
   });
 
   // État pour le taux
@@ -115,15 +127,18 @@ export default function ClientSimpleForm({
   const [paiementData, setPaiementData] = useState<PaiementData>({
     modePaiement: "mobile_money",
   });
-  
+
   // États pour la recherche de plaques
-  const [suggestionsPlaques, setSuggestionsPlaques] = useState<PlaqueSuggestion[]>([]);
+  const [suggestionsPlaques, setSuggestionsPlaques] = useState<
+    PlaqueSuggestion[]
+  >([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [rechercheEnCours, setRechercheEnCours] = useState(false);
   const [sequenceValide, setSequenceValide] = useState(false);
   const [messageSequence, setMessageSequence] = useState("");
   const [sequencePlaques, setSequencePlaques] = useState<string[]>([]);
-  const [rechercheAssujettiEnCours, setRechercheAssujettiEnCours] = useState(false);
+  const [rechercheAssujettiEnCours, setRechercheAssujettiEnCours] =
+    useState(false);
   const rechercheTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const rechercheAssujettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -132,7 +147,7 @@ export default function ClientSimpleForm({
     ? parseFloat(utilisateur.formule)
     : 32;
   const nombrePlaques = parseInt(formData.nombrePlaques) || 1;
-  
+
   // Calcul de la réduction
   const reductionValeur = parseFloat(formData.reductionValeur) || 0;
   const montantInitial = montantUnitaire * nombrePlaques;
@@ -146,13 +161,13 @@ export default function ClientSimpleForm({
     reductionMontant = reductionValeur * nombrePlaques;
     montantReduit = Math.max(0, montantInitial - reductionMontant);
   }
-  
+
   // Calcul des montants en francs
-  const montantFrancs = tauxActif 
-    ? (montantReduit * tauxActif.valeur).toLocaleString('fr-FR')
+  const montantFrancs = tauxActif
+    ? (montantReduit * tauxActif.valeur).toLocaleString("fr-FR")
     : "Calcul en cours...";
-  const montantInitialFrancs = tauxActif 
-    ? (montantInitial * tauxActif.valeur).toLocaleString('fr-FR')
+  const montantInitialFrancs = tauxActif
+    ? (montantInitial * tauxActif.valeur).toLocaleString("fr-FR")
     : "Calcul en cours...";
 
   const montantAPayer = `${montantReduit.toFixed(2)} $`;
@@ -194,7 +209,7 @@ export default function ClientSimpleForm({
             formData.numeroPlaqueDebut,
             utilisateur
           );
-          
+
           if (result.status === "success" && result.data?.suggestions) {
             setSuggestionsPlaques(result.data.suggestions);
             setShowSuggestions(true);
@@ -245,11 +260,14 @@ export default function ClientSimpleForm({
       setRechercheAssujettiEnCours(true);
       rechercheAssujettiTimeoutRef.current = setTimeout(async () => {
         try {
-          const result = await rechercherAssujettiParTelephone(formData.telephone, utilisateur);
-          
+          const result = await rechercherAssujettiParTelephone(
+            formData.telephone,
+            utilisateur
+          );
+
           if (result.status === "success" && result.data?.assujetti) {
             const assujetti = result.data.assujetti;
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               nom: assujetti.nom || "",
               prenom: assujetti.prenom || "",
@@ -287,7 +305,9 @@ export default function ClientSimpleForm({
 
       if (result.status === "success" && result.data?.sequence_valide) {
         setSequenceValide(true);
-        setMessageSequence(`Séquence valide: ${result.data.sequence_plaques?.join(', ')}`);
+        setMessageSequence(
+          `Séquence valide: ${result.data.sequence_plaques?.join(", ")}`
+        );
         setSequencePlaques(result.data.sequence_plaques || []);
       } else {
         setSequenceValide(false);
@@ -316,9 +336,9 @@ export default function ClientSimpleForm({
   };
 
   const selectPlaque = (plaque: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      numeroPlaqueDebut: plaque
+      numeroPlaqueDebut: plaque,
     }));
     setShowSuggestions(false);
   };
@@ -333,7 +353,8 @@ export default function ClientSimpleForm({
     if (!formData.adresse.trim())
       newErrors.adresse = "L'adresse est obligatoire";
     if (!formData.numeroPlaqueDebut.trim())
-      newErrors.numeroPlaqueDebut = "Le numéro de plaque de début est obligatoire";
+      newErrors.numeroPlaqueDebut =
+        "Le numéro de plaque de début est obligatoire";
 
     const nbPlaques = parseInt(formData.nombrePlaques);
     if (isNaN(nbPlaques) || nbPlaques < 1) {
@@ -348,6 +369,17 @@ export default function ClientSimpleForm({
       }
       if (formData.reductionType === "pourcentage" && valeur > 100) {
         newErrors.reductionValeur = "Le pourcentage ne peut dépasser 100%";
+      }
+    }
+
+    // Validation de la date de mouvement
+    if (!formData.dateMouvement.trim()) {
+      newErrors.dateMouvement = "La date du mouvement est obligatoire";
+    } else {
+      const dateMvt = new Date(formData.dateMouvement);
+      const today = new Date();
+      if (dateMvt > today) {
+        newErrors.dateMouvement = "La date ne peut être dans le futur";
       }
     }
 
@@ -366,7 +398,10 @@ export default function ClientSimpleForm({
     }
 
     // Vérifier le stock avant de continuer
-    const stockResult = await verifierStockDisponible(nombrePlaques, utilisateur);
+    const stockResult = await verifierStockDisponible(
+      nombrePlaques,
+      utilisateur
+    );
     if (stockResult.status === "error" || !stockResult.data?.suffisant) {
       alert(
         `Stock insuffisant! Disponible: ${
@@ -394,12 +429,13 @@ export default function ClientSimpleForm({
 
     try {
       // Préparer les données de réduction
-      const reductionData = formData.reductionType && formData.reductionValeur
-        ? {
-            reduction_type: formData.reductionType,
-            reduction_valeur: parseFloat(formData.reductionValeur),
-          }
-        : {};
+      const reductionData =
+        formData.reductionType && formData.reductionValeur
+          ? {
+              reduction_type: formData.reductionType,
+              reduction_valeur: parseFloat(formData.reductionValeur),
+            }
+          : {};
 
       const result = await soumettreCommandePlaques(
         impotId,
@@ -410,7 +446,8 @@ export default function ClientSimpleForm({
           email: formData.email,
           adresse: formData.adresse,
           nif: formData.nif,
-          ...reductionData, // Inclure les données de réduction
+          ...reductionData,
+          date_mouvement: formData.dateMouvement, // Ajouter la date
         },
         {
           nombrePlaques: nombrePlaques,
@@ -435,7 +472,10 @@ export default function ClientSimpleForm({
           mode_paiement: paiementData.modePaiement,
           operateur: paiementData.operateur || "",
           numero_transaction: paiementData.numeroTransaction || "",
-          date_paiement: new Date().toISOString(),
+          date_paiement:
+            formData.dateMouvement +
+            " " +
+            new Date().toTimeString().split(" ")[0], // Utiliser la date mouvement
           nombre_plaques: nombrePlaques,
           site_nom: utilisateur.site_nom,
           caissier: utilisateur.nom_complet,
@@ -444,6 +484,7 @@ export default function ClientSimpleForm({
           reduction_valeur: reductionValeur || undefined,
           montant_francs: montantEnFrancs,
           nif: formData.nif || undefined,
+          date_mouvement: formData.dateMouvement,
         };
 
         setFactureData(facture);
@@ -474,6 +515,7 @@ export default function ClientSimpleForm({
       reductionType: "",
       reductionValeur: "",
       nif: "",
+      dateMouvement: new Date().toISOString().split("T")[0],
     });
     setSequenceValide(false);
     setMessageSequence("");
@@ -509,7 +551,9 @@ export default function ClientSimpleForm({
                 <input
                   type="tel"
                   value={formData.telephone}
-                  onChange={(e) => handleInputChange("telephone", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("telephone", e.target.value)
+                  }
                   placeholder="Entrez votre numéro de téléphone"
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.telephone ? "border-red-300" : "border-gray-300"
@@ -624,6 +668,31 @@ export default function ClientSimpleForm({
               )}
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date du mouvement <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={formData.dateMouvement}
+                onChange={(e) =>
+                  handleInputChange("dateMouvement", e.target.value)
+                }
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.dateMouvement ? "border-red-300" : "border-gray-300"
+                }`}
+                max={new Date().toISOString().split("T")[0]} // Pas de date future
+              />
+              {errors.dateMouvement && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.dateMouvement}
+                </p>
+              )}
+              <p className="text-gray-500 text-xs mt-1">
+                Date à laquelle le mouvement doit être enregistré
+              </p>
+            </div>
+
             {/* RÉDUCTION - TYPE */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -632,7 +701,9 @@ export default function ClientSimpleForm({
               <div className="flex space-x-4">
                 <button
                   type="button"
-                  onClick={() => handleInputChange("reductionType", "pourcentage")}
+                  onClick={() =>
+                    handleInputChange("reductionType", "pourcentage")
+                  }
                   className={`flex-1 px-4 py-2 border rounded-lg flex items-center justify-center space-x-2 ${
                     formData.reductionType === "pourcentage"
                       ? "bg-blue-100 border-blue-500 text-blue-700"
@@ -644,7 +715,9 @@ export default function ClientSimpleForm({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleInputChange("reductionType", "montant_fixe")}
+                  onClick={() =>
+                    handleInputChange("reductionType", "montant_fixe")
+                  }
                   className={`flex-1 px-4 py-2 border rounded-lg flex items-center justify-center space-x-2 ${
                     formData.reductionType === "montant_fixe"
                       ? "bg-green-100 border-green-500 text-green-700"
@@ -660,28 +733,41 @@ export default function ClientSimpleForm({
             {/* RÉDUCTION - VALEUR */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Valeur de réduction {formData.reductionType === "pourcentage" ? "(%)" : "($)"}
+                Valeur de réduction{" "}
+                {formData.reductionType === "pourcentage" ? "(%)" : "($)"}
               </label>
               <input
                 type="number"
-                step={formData.reductionType === "pourcentage" ? "0.0001" : "0.01"}
+                step={
+                  formData.reductionType === "pourcentage" ? "0.0001" : "0.01"
+                }
                 min="0"
-                max={formData.reductionType === "pourcentage" ? "100" : undefined}
+                max={
+                  formData.reductionType === "pourcentage" ? "100" : undefined
+                }
                 value={formData.reductionValeur}
-                onChange={(e) => handleInputChange("reductionValeur", e.target.value)}
-                placeholder={formData.reductionType === "pourcentage" ? "Ex: 10.0000" : "Ex: 5.00"}
+                onChange={(e) =>
+                  handleInputChange("reductionValeur", e.target.value)
+                }
+                placeholder={
+                  formData.reductionType === "pourcentage"
+                    ? "Ex: 10.0000"
+                    : "Ex: 5.00"
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.reductionValeur ? "border-red-300" : "border-gray-300"
                 }`}
                 disabled={!formData.reductionType}
               />
               {errors.reductionValeur && (
-                <p className="text-red-600 text-sm mt-1">{errors.reductionValeur}</p>
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.reductionValeur}
+                </p>
               )}
               {formData.reductionType && (
                 <p className="text-gray-500 text-xs mt-1">
-                  {formData.reductionType === "pourcentage" 
-                    ? "4 chiffres après la virgule maximum" 
+                  {formData.reductionType === "pourcentage"
+                    ? "4 chiffres après la virgule maximum"
                     : "Montant fixe par plaque"}
                 </p>
               )}
@@ -689,26 +775,31 @@ export default function ClientSimpleForm({
           </div>
 
           {/* Aperçu de la réduction */}
-          {formData.reductionType && formData.reductionValeur && reductionMontant > 0 && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="font-medium text-blue-800">Réduction appliquée:</span>
-                  <span className="ml-2 text-blue-600">
-                    {formData.reductionType === "pourcentage" 
-                      ? `${reductionValeur}%` 
-                      : `${reductionValeur}$ par plaque`}
-                  </span>
+          {formData.reductionType &&
+            formData.reductionValeur &&
+            reductionMontant > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="font-medium text-blue-800">
+                      Réduction appliquée:
+                    </span>
+                    <span className="ml-2 text-blue-600">
+                      {formData.reductionType === "pourcentage"
+                        ? `${reductionValeur}%`
+                        : `${reductionValeur}$ par plaque`}
+                    </span>
+                  </div>
+                  <div className="text-lg font-bold text-blue-800">
+                    -{reductionMontant.toFixed(2)} $
+                  </div>
                 </div>
-                <div className="text-lg font-bold text-blue-800">
-                  -{reductionMontant.toFixed(2)} $
+                <div className="mt-1 text-sm text-blue-600">
+                  Montant initial: {montantInitial.toFixed(2)} $ → Montant
+                  final: {montantReduit.toFixed(2)} $
                 </div>
               </div>
-              <div className="mt-1 text-sm text-blue-600">
-                Montant initial: {montantInitial.toFixed(2)} $ → Montant final: {montantReduit.toFixed(2)} $
-              </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* SECTION PLAQUES (inchangée) */}
@@ -731,16 +822,21 @@ export default function ClientSimpleForm({
             {/* NUMERO PLAQUE DEBUT */}
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Numéro de plaque de début <span className="text-red-500">*</span>
+                Numéro de plaque de début{" "}
+                <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
                   type="text"
                   value={formData.numeroPlaqueDebut}
-                  onChange={(e) => handleInputChange("numeroPlaqueDebut", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("numeroPlaqueDebut", e.target.value)
+                  }
                   placeholder="Ex: AC12, BD25, etc."
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.numeroPlaqueDebut ? "border-red-300" : "border-gray-300"
+                    errors.numeroPlaqueDebut
+                      ? "border-red-300"
+                      : "border-gray-300"
                   }`}
                 />
                 {rechercheEnCours && (
@@ -750,7 +846,9 @@ export default function ClientSimpleForm({
                 )}
               </div>
               {errors.numeroPlaqueDebut && (
-                <p className="text-red-600 text-sm mt-1">{errors.numeroPlaqueDebut}</p>
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.numeroPlaqueDebut}
+                </p>
               )}
 
               {/* Suggestions de plaques */}
@@ -759,19 +857,27 @@ export default function ClientSimpleForm({
                   {suggestionsPlaques.map((plaque, index) => (
                     <div
                       key={index}
-                      onClick={() => plaque.disponible && selectPlaque(plaque.numero_plaque)}
+                      onClick={() =>
+                        plaque.disponible && selectPlaque(plaque.numero_plaque)
+                      }
                       className={`p-3 cursor-pointer border-b border-gray-100 last:border-b-0 ${
-                        plaque.disponible 
-                          ? "hover:bg-blue-50 text-gray-800" 
+                        plaque.disponible
+                          ? "hover:bg-blue-50 text-gray-800"
                           : "bg-gray-100 text-gray-400 cursor-not-allowed"
                       }`}
                     >
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">{plaque.numero_plaque}</span>
+                        <span className="font-medium">
+                          {plaque.numero_plaque}
+                        </span>
                         {plaque.disponible ? (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Disponible</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            Disponible
+                          </span>
                         ) : (
-                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Occupé</span>
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                            Occupé
+                          </span>
                         )}
                       </div>
                     </div>
@@ -783,7 +889,8 @@ export default function ClientSimpleForm({
             {/* NOMBRE DE PLAQUES */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre de plaques à acheter <span className="text-red-500">*</span>
+                Nombre de plaques à acheter{" "}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -813,14 +920,14 @@ export default function ClientSimpleForm({
             <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
               <div className="flex items-center space-x-2 mb-2">
                 <Search className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">Séquence de plaques:</span>
+                <span className="text-sm font-medium text-gray-700">
+                  Séquence de plaques:
+                </span>
               </div>
               {sequenceValide ? (
                 <div className="text-green-600 text-sm">
                   <div className="font-semibold">✓ Séquence disponible</div>
-                  <div className="mt-1">
-                    {sequencePlaques.join(' → ')}
-                  </div>
+                  <div className="mt-1">{sequencePlaques.join(" → ")}</div>
                 </div>
               ) : messageSequence ? (
                 <div className="text-red-600 text-sm">
@@ -860,12 +967,16 @@ export default function ClientSimpleForm({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-700">Montant initial:</span>
-                    <span className="font-medium">{montantInitial.toFixed(2)} $</span>
+                    <span className="font-medium">
+                      {montantInitial.toFixed(2)} $
+                    </span>
                   </div>
                   {reductionMontant > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-700">Réduction:</span>
-                      <span className="font-medium text-red-600">-{reductionMontant.toFixed(2)} $</span>
+                      <span className="font-medium text-red-600">
+                        -{reductionMontant.toFixed(2)} $
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between text-lg font-bold text-blue-800 border-t pt-2">
@@ -875,10 +986,12 @@ export default function ClientSimpleForm({
                 </div>
                 {tauxActif && (
                   <div className="text-sm text-blue-500 mt-4">
-                    Taux: 1$ = {tauxActif.valeur.toLocaleString('fr-FR')} CDF
+                    Taux: 1$ = {tauxActif.valeur.toLocaleString("fr-FR")} CDF
                   </div>
                 )}
-                <div className="text-xs text-blue-500 mt-1">{formuleCalcul}</div>
+                <div className="text-xs text-blue-500 mt-1">
+                  {formuleCalcul}
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-sm text-blue-600 font-medium">
@@ -888,7 +1001,8 @@ export default function ClientSimpleForm({
                   {montantEnFrancs}
                 </div>
                 <div className="text-sm text-gray-600 mt-4">
-                  Délai d'accord: <span className="font-bold text-green-600">Immédiat</span>
+                  Délai d'accord:{" "}
+                  <span className="font-bold text-green-600">Immédiat</span>
                 </div>
                 {utilisateur && (
                   <div className="text-sm text-blue-500 mt-2">
@@ -955,20 +1069,22 @@ export default function ClientSimpleForm({
                     <strong>Téléphone:</strong> {formData.telephone}
                   </div>
                   <div>
-                    <strong>NIF:</strong> {formData.nif || 'Non renseigné'}
+                    <strong>NIF:</strong> {formData.nif || "Non renseigné"}
                   </div>
                   <div>
-                    <strong>Plaque de début:</strong> {formData.numeroPlaqueDebut}
+                    <strong>Plaque de début:</strong>{" "}
+                    {formData.numeroPlaqueDebut}
                   </div>
                   <div>
                     <strong>Nombre de plaques:</strong> {nombrePlaques}
                   </div>
                   <div>
-                    <strong>Séquence:</strong> {sequencePlaques.join(', ')}
+                    <strong>Séquence:</strong> {sequencePlaques.join(", ")}
                   </div>
                   {reductionMontant > 0 && (
                     <div>
-                      <strong>Réduction:</strong> -{reductionMontant.toFixed(2)} $
+                      <strong>Réduction:</strong> -{reductionMontant.toFixed(2)}{" "}
+                      $
                     </div>
                   )}
                   <div>
@@ -1019,10 +1135,7 @@ export default function ClientSimpleForm({
 
       {/* Modal Facture A4 */}
       {showFacture && factureData && (
-        <FactureA4 
-          factureData={factureData} 
-          onClose={handleCloseFacture} 
-        />
+        <FactureA4 factureData={factureData} onClose={handleCloseFacture} />
       )}
     </>
   );

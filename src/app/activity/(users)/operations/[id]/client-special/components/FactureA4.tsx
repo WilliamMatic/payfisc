@@ -23,6 +23,7 @@ interface FactureData {
   reduction_valeur?: number;
   montant_francs?: string;
   nif?: string;
+  date_mouvement?: string;
 }
 
 interface FactureA4Props {

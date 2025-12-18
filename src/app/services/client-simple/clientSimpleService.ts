@@ -11,6 +11,7 @@ export interface ParticulierData {
   nif?: string;
   reduction_type?: string;
   reduction_valeur?: number;
+  date_mouvement?: string;
 }
 
 export interface CommandeData {
@@ -19,7 +20,7 @@ export interface CommandeData {
 }
 
 export interface PaiementData {
-  modePaiement: 'mobile_money' | 'cheque' | 'banque' | 'espece';
+  modePaiement: "mobile_money" | "cheque" | "banque" | "espece";
   operateur?: string;
   numeroTransaction?: string;
   numeroCheque?: string;
@@ -33,12 +34,12 @@ export interface AssujettiInfo {
   email: string;
   rue: string;
   nif: string;
-  reduction_type: 'pourcentage' | 'montant_fixe' | null;
+  reduction_type: "pourcentage" | "montant_fixe" | null;
   reduction_valeur: number;
 }
 
 export interface ClientSimpleResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message?: string;
   data?: {
     numeroPlaques?: string[];
@@ -68,7 +69,8 @@ export interface ClientSimpleResponse {
   };
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/Impot/backend/calls';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:80/Impot/backend/calls";
 
 /**
  * Recherche un assujetti par numéro de téléphone
@@ -79,31 +81,34 @@ export const rechercherAssujettiParTelephone = async (
 ): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
-    formData.append('telephone', telephone);
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+    formData.append("telephone", telephone);
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    const response = await fetch(`${API_BASE_URL}/client-simple/rechercher_assujetti.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/rechercher_assujetti.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la recherche de l\'assujetti',
+        status: "error",
+        message: data.message || "Échec de la recherche de l'assujetti",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Rechercher assujetti error:', error);
+    console.error("Rechercher assujetti error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la recherche de l\'assujetti',
+      status: "error",
+      message: "Erreur réseau lors de la recherche de l'assujetti",
     };
   }
 };
@@ -120,63 +125,74 @@ export const soumettreCommandePlaques = async (
 ): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
-    
+
     // Données de base
-    formData.append('impot_id', impotId);
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
-    
+    formData.append("impot_id", impotId);
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
+
     // Données du particulier (avec réduction)
-    formData.append('nom', particulierData.nom);
-    formData.append('prenom', particulierData.prenom);
-    formData.append('telephone', particulierData.telephone);
-    formData.append('email', particulierData.email || '');
-    formData.append('adresse', particulierData.adresse);
-    formData.append('nif', particulierData.nif || '');
-    
+    formData.append("nom", particulierData.nom);
+    formData.append("prenom", particulierData.prenom);
+    formData.append("telephone", particulierData.telephone);
+    formData.append("email", particulierData.email || "");
+    formData.append("adresse", particulierData.adresse);
+    formData.append("nif", particulierData.nif || "");
+
+    // Ajouter la date de mouvement si fournie
+    if (particulierData.date_mouvement) {
+      formData.append("date_mouvement", particulierData.date_mouvement);
+    }
+
     // Ajouter les données de réduction si présentes
     if (particulierData.reduction_type) {
-      formData.append('reduction_type', particulierData.reduction_type);
+      formData.append("reduction_type", particulierData.reduction_type);
     }
     if (particulierData.reduction_valeur !== undefined) {
-      formData.append('reduction_valeur', particulierData.reduction_valeur.toString());
+      formData.append(
+        "reduction_valeur",
+        particulierData.reduction_valeur.toString()
+      );
     }
-    
-    // Données de la commande
-    formData.append('nombre_plaques', commandeData.nombrePlaques.toString());
-    if (commandeData.numeroPlaqueDebut) {
-      formData.append('numero_plaque_debut', commandeData.numeroPlaqueDebut);
-    }
-    
-    // Données de paiement
-    formData.append('mode_paiement', paiementData.modePaiement);
-    formData.append('operateur', paiementData.operateur || '');
-    formData.append('numero_transaction', paiementData.numeroTransaction || '');
-    formData.append('numero_cheque', paiementData.numeroCheque || '');
-    formData.append('banque', paiementData.banque || '');
-    formData.append('montant_unitaire', utilisateur.formule || '32');
 
-    const response = await fetch(`${API_BASE_URL}/client-simple/soumettre_commande.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    // Données de la commande
+    formData.append("nombre_plaques", commandeData.nombrePlaques.toString());
+    if (commandeData.numeroPlaqueDebut) {
+      formData.append("numero_plaque_debut", commandeData.numeroPlaqueDebut);
+    }
+
+    // Données de paiement
+    formData.append("mode_paiement", paiementData.modePaiement);
+    formData.append("operateur", paiementData.operateur || "");
+    formData.append("numero_transaction", paiementData.numeroTransaction || "");
+    formData.append("numero_cheque", paiementData.numeroCheque || "");
+    formData.append("banque", paiementData.banque || "");
+    formData.append("montant_unitaire", utilisateur.formule || "32");
+
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/soumettre_commande.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la soumission de la commande',
+        status: "error",
+        message: data.message || "Échec de la soumission de la commande",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Soumettre commande error:', error);
+    console.error("Soumettre commande error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la soumission de la commande',
+      status: "error",
+      message: "Erreur réseau lors de la soumission de la commande",
     };
   }
 };
@@ -184,34 +200,40 @@ export const soumettreCommandePlaques = async (
 /**
  * Vérifie le stock disponible selon la province de l'utilisateur
  */
-export const verifierStockDisponible = async (nombrePlaques: number, utilisateur: any): Promise<ClientSimpleResponse> => {
+export const verifierStockDisponible = async (
+  nombrePlaques: number,
+  utilisateur: any
+): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
-    formData.append('nombre_plaques', nombrePlaques.toString());
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+    formData.append("nombre_plaques", nombrePlaques.toString());
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    const response = await fetch(`${API_BASE_URL}/client-simple/verifier_stock.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/verifier_stock.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la vérification du stock',
+        status: "error",
+        message: data.message || "Échec de la vérification du stock",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Verifier stock error:', error);
+    console.error("Verifier stock error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la vérification du stock',
+      status: "error",
+      message: "Erreur réseau lors de la vérification du stock",
     };
   }
 };
@@ -219,34 +241,40 @@ export const verifierStockDisponible = async (nombrePlaques: number, utilisateur
 /**
  * Recherche des plaques disponibles avec autocomplétion
  */
-export const rechercherPlaquesDisponibles = async (recherche: string, utilisateur: any): Promise<ClientSimpleResponse> => {
+export const rechercherPlaquesDisponibles = async (
+  recherche: string,
+  utilisateur: any
+): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
-    formData.append('recherche', recherche);
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+    formData.append("recherche", recherche);
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    const response = await fetch(`${API_BASE_URL}/client-simple/rechercher_plaques.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/rechercher_plaques.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la recherche des plaques',
+        status: "error",
+        message: data.message || "Échec de la recherche des plaques",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Rechercher plaques error:', error);
+    console.error("Rechercher plaques error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la recherche des plaques',
+      status: "error",
+      message: "Erreur réseau lors de la recherche des plaques",
     };
   }
 };
@@ -254,35 +282,42 @@ export const rechercherPlaquesDisponibles = async (recherche: string, utilisateu
 /**
  * Vérifie si une séquence de plaques est disponible
  */
-export const verifierSequencePlaques = async (plaqueDebut: string, quantite: number, utilisateur: any): Promise<ClientSimpleResponse> => {
+export const verifierSequencePlaques = async (
+  plaqueDebut: string,
+  quantite: number,
+  utilisateur: any
+): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
-    formData.append('plaque_debut', plaqueDebut);
-    formData.append('quantite', quantite.toString());
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+    formData.append("plaque_debut", plaqueDebut);
+    formData.append("quantite", quantite.toString());
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    const response = await fetch(`${API_BASE_URL}/client-simple/verifier_sequence.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/verifier_sequence.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la vérification de la séquence',
+        status: "error",
+        message: data.message || "Échec de la vérification de la séquence",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Verifier sequence error:', error);
+    console.error("Verifier sequence error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la vérification de la séquence',
+      status: "error",
+      message: "Erreur réseau lors de la vérification de la séquence",
     };
   }
 };
@@ -290,34 +325,41 @@ export const verifierSequencePlaques = async (plaqueDebut: string, quantite: num
 /**
  * Récupère les numéros de plaques disponibles selon la province de l'utilisateur
  */
-export const getNumerosPlaquesDisponibles = async (quantite: number, utilisateur: any): Promise<ClientSimpleResponse> => {
+export const getNumerosPlaquesDisponibles = async (
+  quantite: number,
+  utilisateur: any
+): Promise<ClientSimpleResponse> => {
   try {
     const formData = new FormData();
-    formData.append('quantite', quantite.toString());
-    formData.append('utilisateur_id', utilisateur.id.toString());
-    formData.append('site_id', utilisateur.site_id?.toString() || '1');
+    formData.append("quantite", quantite.toString());
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
 
-    const response = await fetch(`${API_BASE_URL}/client-simple/get_numeros_plaques.php`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/get_numeros_plaques.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Échec de la récupération des numéros de plaques',
+        status: "error",
+        message:
+          data.message || "Échec de la récupération des numéros de plaques",
       };
     }
 
     return data;
   } catch (error) {
-    console.error('Get numeros plaques error:', error);
+    console.error("Get numeros plaques error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la récupération des numéros de plaques',
+      status: "error",
+      message: "Erreur réseau lors de la récupération des numéros de plaques",
     };
   }
 };
