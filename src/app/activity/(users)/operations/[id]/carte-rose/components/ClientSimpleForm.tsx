@@ -4,7 +4,6 @@ import {
   Save,
   User,
   Car,
-  Calculator,
   ArrowRight,
   ArrowLeft,
   Printer,
@@ -13,7 +12,10 @@ import {
   Search,
   Plus,
   Loader,
-  FileText, // AJOUT: Icône pour la fiche
+  FileText,
+  AlertCircle,
+  Info,
+  CheckSquare,
 } from "lucide-react";
 import {
   verifierPlaqueTelephone,
@@ -33,7 +35,7 @@ import {
   ajouterCouleur,
 } from "@/services/immatriculation/immatriculationService";
 import CarteRosePrint from "./CarteRosePrint";
-import FicheIdentificationPrint from "./FicheIdentificationPrint"; // AJOUT: Import du nouveau composant
+import FicheIdentificationPrint from "./FicheIdentificationPrint";
 
 // Import des services pour les données dynamiques
 import {
@@ -97,7 +99,7 @@ interface Utilisateur {
   site_code: string;
   site_id?: number;
   formule?: string;
-  province_code?: string; // AJOUT: Pour la fiche
+  province_code?: string;
 }
 
 interface ClientSimpleFormProps {
@@ -127,7 +129,7 @@ interface ParticulierInfo {
   nif?: string;
 }
 
-// AJOUT: Interface pour les données de la fiche supplémentaire
+// Interface pour les données de la fiche supplémentaire
 interface FicheSupplementaire {
   sexe: string;
   date_naissance: string;
@@ -142,7 +144,7 @@ interface FicheSupplementaire {
   niup_moto: string;
 }
 
-// AJOUT: Props pour le modal supplémentaire
+// Props pour le modal supplémentaire
 interface ModalSupplementaireProps {
   isOpen: boolean;
   onClose: () => void;
@@ -150,7 +152,122 @@ interface ModalSupplementaireProps {
   defaultAdresse?: string;
 }
 
-// AJOUT: Modal pour compléter les informations supplémentaires
+// Modal pour les messages (succès/erreur)
+interface MessageModalProps {
+  isOpen: boolean;
+  type: "success" | "error" | "warning" | "info";
+  title: string;
+  message: string;
+  onClose: () => void;
+  onAction?: () => void;
+  actionText?: string;
+  showAction?: boolean;
+}
+
+// Modal principal pour afficher les messages
+const MessageModal: React.FC<MessageModalProps> = ({
+  isOpen,
+  type,
+  title,
+  message,
+  onClose,
+  onAction,
+  actionText = "OK",
+  showAction = true,
+}) => {
+  if (!isOpen) return null;
+
+  const typeConfig = {
+    success: {
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200",
+      textColor: "text-green-800",
+      iconColor: "text-green-600",
+      icon: CheckCircle,
+    },
+    error: {
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
+      textColor: "text-red-800",
+      iconColor: "text-red-600",
+      icon: AlertCircle,
+    },
+    warning: {
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-200",
+      textColor: "text-yellow-800",
+      iconColor: "text-yellow-600",
+      icon: AlertCircle,
+    },
+    info: {
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      textColor: "text-blue-800",
+      iconColor: "text-blue-600",
+      icon: Info,
+    },
+  };
+
+  const config = typeConfig[type];
+  const Icon = config.icon;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
+        <div className="flex items-start space-x-4 mb-6">
+          <div className={`p-2 rounded-full ${config.bgColor}`}>
+            <Icon className={`w-6 h-6 ${config.iconColor}`} />
+          </div>
+          <div className="flex-1">
+            <h3 className={`text-lg font-semibold ${config.textColor} mb-2`}>
+              {title}
+            </h3>
+            <div className={`text-sm ${config.textColor}`}>
+              {message.split("\n").map((line, idx) => (
+                <p key={idx} className="mb-1">
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex justify-end space-x-3">
+          {showAction && onAction && (
+            <button
+              onClick={onAction}
+              className={`px-6 py-2 rounded-lg font-medium ${
+                type === "success"
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : type === "error"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : type === "warning"
+                  ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              } transition-colors`}
+            >
+              {actionText}
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="px-6 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modal pour compléter les informations supplémentaires
 const ModalSupplementaire: React.FC<ModalSupplementaireProps> = ({
   isOpen,
   onClose,
@@ -423,9 +540,9 @@ export default function ClientSimpleForm({
   const [puissancesFiscales, setPuissancesFiscales] = useState<
     PuissanceFiscale[]
   >([]);
-  
-  // AJOUT: États pour les suggestions de marques (adapté du premier écran)
-  const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>([]);
+  const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>(
+    []
+  );
   const [showMarquesSuggestions, setShowMarquesSuggestions] = useState(false);
   const [isSearchingMarques, setIsSearchingMarques] = useState(false);
 
@@ -442,11 +559,28 @@ export default function ClientSimpleForm({
   const [nouvelleCouleurCode, setNouvelleCouleurCode] = useState("#000000");
   const [isAddingCouleur, setIsAddingCouleur] = useState(false);
 
-  // AJOUT: États pour la fiche d'identification
+  // États pour la fiche d'identification
   const [showModalSupplementaire, setShowModalSupplementaire] = useState(false);
   const [ficheSupplementaire, setFicheSupplementaire] =
     useState<FicheSupplementaire | null>(null);
   const [showFicheIdentification, setShowFicheIdentification] = useState(false);
+
+  // État pour le modal de messages
+  const [modalMessage, setModalMessage] = useState<{
+    isOpen: boolean;
+    type: "success" | "error" | "warning" | "info";
+    title: string;
+    message: string;
+    onAction?: () => void;
+    actionText?: string;
+    showAction?: boolean;
+  }>({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: "",
+    showAction: true,
+  });
 
   // États de chargement
   const [loading, setLoading] = useState({
@@ -460,7 +594,7 @@ export default function ClientSimpleForm({
     recherchePuissances: false,
     rechercheCouleurs: false,
     ajoutCouleur: false,
-    rechercheMarques: false, // AJOUT: Pour la recherche des marques
+    rechercheMarques: false,
   });
 
   const [plaqueInfo, setPlaqueInfo] = useState<PlaqueInfo | null>(null);
@@ -472,7 +606,6 @@ export default function ClientSimpleForm({
   const [showModalVerification, setShowModalVerification] = useState(false);
   const [showModalCarteExistante, setShowModalCarteExistante] = useState(false);
   const [showModalRecap, setShowModalRecap] = useState(false);
-  const [messageErreur, setMessageErreur] = useState("");
   const [showPrint, setShowPrint] = useState(false);
   const [printData, setPrintData] = useState<any>(null);
 
@@ -488,7 +621,90 @@ export default function ClientSimpleForm({
   const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null); // AJOUT: Pour la recherche des marques
+  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fonction pour afficher un message modal
+  const showMessage = (
+    type: "success" | "error" | "warning" | "info",
+    title: string,
+    message: string,
+    onAction?: () => void,
+    actionText?: string,
+    showAction?: boolean
+  ) => {
+    setModalMessage({
+      isOpen: true,
+      type,
+      title,
+      message,
+      onAction,
+      actionText,
+      showAction,
+    });
+  };
+
+  // Fonction pour fermer le modal de message
+  const closeMessage = () => {
+    setModalMessage((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  // Fonction pour réinitialiser complètement le formulaire
+  const reinitialiserFormulaire = () => {
+    setFormData({
+      telephone: "",
+      numeroPlaque: "",
+      nom: "",
+      prenom: "",
+      telephoneAssujetti: "",
+      email: "",
+      adresse: "",
+      ville: "",
+      code_postal: "",
+      province: "",
+      nif: "",
+      typeEngin: "",
+      anneeFabrication: "",
+      anneeCirculation: "",
+      couleur: "",
+      puissanceFiscal: "",
+      puissanceFiscalValeur: "",
+      usage: "",
+      marque: "",
+      marqueId: "",
+      modele: "",
+      modeleId: "",
+      energie: "",
+      numeroChassis: "",
+      numeroMoteur: "",
+    });
+    setPlaqueInfo(null);
+    setParticulierInfo(null);
+    setSuggestionsModeles([]);
+    setSuggestionsPuissances([]);
+    setShowSuggestionsModeles(false);
+    setShowSuggestionsPuissances(false);
+    setMarquesSuggestions([]);
+    setShowMarquesSuggestions(false);
+    setCouleurInputMode("select");
+    setNouvelleCouleurNom("");
+    setNouvelleCouleurCode("#000000");
+    setFicheSupplementaire(null);
+    setErrors({});
+  };
+
+  // Bouton "Retour au formulaire"
+  const handleRetourFormulaire = () => {
+    closeMessage();
+    setEtapeActuelle("formulaire");
+    showMessage(
+      "info",
+      "Retour au formulaire",
+      "Vous pouvez maintenant modifier les informations du formulaire.",
+      undefined,
+      "Compris",
+      true
+    );
+  };
 
   // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
@@ -535,6 +751,11 @@ export default function ClientSimpleForm({
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
+        showMessage(
+          "error",
+          "Erreur de chargement",
+          "Impossible de charger les données initiales. Veuillez rafraîchir la page."
+        );
       } finally {
         setLoading({
           typeEngins: false,
@@ -567,7 +788,7 @@ export default function ClientSimpleForm({
     }
   }, [formData.anneeFabrication]);
 
-  // AJOUT: Recherche automatique des marques (adapté du premier écran)
+  // Recherche automatique des marques
   useEffect(() => {
     if (marqueTimerRef.current) {
       clearTimeout(marqueTimerRef.current);
@@ -667,7 +888,7 @@ export default function ClientSimpleForm({
       setShowSuggestionsModeles(false);
     }
 
-    // Réinitialiser la marque et le modèle si le type d'engin change (adapté du premier écran)
+    // Réinitialiser la marque et le modèle si le type d'engin change
     if (field === "typeEngin") {
       setFormData((prev) => ({
         ...prev,
@@ -704,15 +925,15 @@ export default function ClientSimpleForm({
     }
   };
 
-  // AJOUT: Gestion de la sélection de marque (adapté du premier écran)
+  // Gestion de la sélection de marque
   const handleMarqueSelect = (marque: MarqueEngin) => {
-    setFormData((prev) => ({ 
-      ...prev, 
+    setFormData((prev) => ({
+      ...prev,
       marque: marque.libelle,
-      marqueId: marque.id.toString()
+      marqueId: marque.id.toString(),
     }));
     setShowMarquesSuggestions(false);
-    
+
     // Réinitialiser le modèle quand on change de marque
     setFormData((prev) => ({ ...prev, modele: "", modeleId: "" }));
     setSuggestionsModeles([]);
@@ -729,7 +950,11 @@ export default function ClientSimpleForm({
   // Gestion de l'ajout d'une nouvelle couleur
   const handleAjouterCouleur = async () => {
     if (!nouvelleCouleurNom.trim()) {
-      alert("Veuillez saisir un nom pour la couleur");
+      showMessage(
+        "warning",
+        "Couleur manquante",
+        "Veuillez saisir un nom pour la couleur"
+      );
       return;
     }
 
@@ -753,18 +978,25 @@ export default function ClientSimpleForm({
         setNouvelleCouleurCode("#000000");
         setShowCouleursSuggestions(false);
 
-        setMessageErreur("✅ Couleur ajoutée avec succès !");
-        setTimeout(() => setMessageErreur(""), 3000);
+        showMessage(
+          "success",
+          "Couleur ajoutée",
+          "La couleur a été ajoutée avec succès !"
+        );
       } else {
-        setMessageErreur(
+        showMessage(
+          "error",
+          "Erreur d'ajout",
           response.message || "Erreur lors de l'ajout de la couleur"
         );
-        setTimeout(() => setMessageErreur(""), 3000);
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout de la couleur:", error);
-      setMessageErreur("Erreur réseau lors de l'ajout de la couleur");
-      setTimeout(() => setMessageErreur(""), 3000);
+      showMessage(
+        "error",
+        "Erreur réseau",
+        "Erreur réseau lors de l'ajout de la couleur"
+      );
     } finally {
       setLoading((prev) => ({ ...prev, ajoutCouleur: false }));
     }
@@ -801,10 +1033,11 @@ export default function ClientSimpleForm({
               nif: particulier.nif || "",
             }));
 
-            setMessageErreur(
-              "✅ Informations du particulier chargées avec succès"
+            showMessage(
+              "success",
+              "Chargement réussi",
+              "Informations du particulier chargées avec succès"
             );
-            setTimeout(() => setMessageErreur(""), 3000);
           } else {
             // Réinitialiser les champs si aucun particulier trouvé
             setFormData((prev) => ({
@@ -820,6 +1053,11 @@ export default function ClientSimpleForm({
           }
         } catch (error) {
           console.error("Erreur lors de la vérification du téléphone:", error);
+          showMessage(
+            "error",
+            "Erreur de vérification",
+            "Erreur lors de la vérification du téléphone"
+          );
         } finally {
           setLoading((prev) => ({ ...prev, verificationTelephone: false }));
         }
@@ -911,13 +1149,25 @@ export default function ClientSimpleForm({
 
         setSuggestionsModeles([newModele, ...suggestionsModeles]);
 
-        setMessageErreur("✅ Modèle créé avec succès");
-        setTimeout(() => setMessageErreur(""), 3000);
+        showMessage(
+          "success",
+          "Modèle créé",
+          "Le modèle a été créé avec succès"
+        );
+      } else {
+        showMessage(
+          "error",
+          "Erreur de création",
+          result.message || "Erreur lors de la création du modèle"
+        );
       }
     } catch (error) {
       console.error("Erreur lors de la création du modèle:", error);
-      setMessageErreur("❌ Erreur lors de la création du modèle");
-      setTimeout(() => setMessageErreur(""), 3000);
+      showMessage(
+        "error",
+        "Erreur réseau",
+        "Erreur réseau lors de la création du modèle"
+      );
     } finally {
       setLoading((prev) => ({ ...prev, rechercheModeles: false }));
     }
@@ -990,10 +1240,11 @@ export default function ClientSimpleForm({
     const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
 
     if (valeur === 0) {
-      setMessageErreur(
-        "❌ Veuillez spécifier une valeur numérique pour la puissance"
+      showMessage(
+        "warning",
+        "Valeur invalide",
+        "Veuillez spécifier une valeur numérique pour la puissance"
       );
-      setTimeout(() => setMessageErreur(""), 3000);
       return;
     }
 
@@ -1017,13 +1268,25 @@ export default function ClientSimpleForm({
 
         setSuggestionsPuissances([newPuissance, ...suggestionsPuissances]);
 
-        setMessageErreur("✅ Puissance fiscale créée avec succès");
-        setTimeout(() => setMessageErreur(""), 3000);
+        showMessage(
+          "success",
+          "Puissance créée",
+          "La puissance fiscale a été créée avec succès"
+        );
+      } else {
+        showMessage(
+          "error",
+          "Erreur de création",
+          result.message || "Erreur lors de la création de la puissance fiscale"
+        );
       }
     } catch (error) {
       console.error("Erreur lors de la création de la puissance:", error);
-      setMessageErreur("❌ Erreur lors de la création de la puissance fiscale");
-      setTimeout(() => setMessageErreur(""), 3000);
+      showMessage(
+        "error",
+        "Erreur réseau",
+        "Erreur réseau lors de la création de la puissance fiscale"
+      );
     } finally {
       setLoading((prev) => ({ ...prev, recherchePuissances: false }));
     }
@@ -1048,7 +1311,6 @@ export default function ClientSimpleForm({
     }
 
     setIsVerifying(true);
-    setMessageErreur("");
 
     try {
       const verificationData: VerificationData = {
@@ -1086,13 +1348,13 @@ export default function ClientSimpleForm({
               telephoneAssujetti: "",
             }));
 
-            setMessageErreur("✅ Plaque vérifiée avec succès");
-            setTimeout(() => setMessageErreur(""), 3000);
+            showMessage("success", "Vérification réussie", "Plaque vérifiée avec succès");
           } else {
-            setMessageErreur(
-              "✅ Plaque vérifiée. Veuillez compléter les informations."
+            showMessage(
+              "info",
+              "Vérification réussie",
+              "Plaque vérifiée. Veuillez compléter les informations."
             );
-            setTimeout(() => setMessageErreur(""), 3000);
           }
         }
       }
@@ -1105,12 +1367,13 @@ export default function ClientSimpleForm({
           // Cas 1 : Carte rose déjà existante
           case "carte_existante":
             setShowModalCarteExistante(true);
-            setMessageErreur("");
             break;
 
           // Cas 2 : Conflit avec un autre particulier
           case "conflit_particulier":
-            setMessageErreur(
+            showMessage(
+              "error",
+              "Conflit de plaque",
               result.message ||
                 "Cette plaque est déjà associée à un autre particulier."
             );
@@ -1124,7 +1387,9 @@ export default function ClientSimpleForm({
           case "site_inexistant":
           case "province_manquante":
           case "province_indeterminee":
-            setMessageErreur(
+            showMessage(
+              "error",
+              "Erreur système",
               result.message || "Erreur système lors de la vérification."
             );
             break;
@@ -1133,15 +1398,18 @@ export default function ClientSimpleForm({
           case "non_trouve":
           case "carte_rose_non_trouvee":
             setEtapeActuelle("formulaire");
-            setMessageErreur(
-              "⚠️ Aucune carte rose active trouvée. Vous pouvez créer une nouvelle carte."
+            showMessage(
+              "warning",
+              "Aucune carte trouvée",
+              "Aucune carte rose active trouvée. Vous pouvez créer une nouvelle carte."
             );
-            setTimeout(() => setMessageErreur(""), 5000);
             break;
 
           // Erreur par défaut
           default:
-            setMessageErreur(
+            showMessage(
+              "error",
+              "Erreur de vérification",
               result.message ||
                 "Erreur lors de la vérification des informations."
             );
@@ -1151,11 +1419,19 @@ export default function ClientSimpleForm({
       // Cas où result n'a pas de status (format inattendu)
       else {
         console.error("Format de réponse inattendu:", result);
-        setMessageErreur("Erreur inattendue du système.");
+        showMessage(
+          "error",
+          "Erreur inattendue",
+          "Erreur inattendue du système."
+        );
       }
     } catch (error) {
       console.error("Erreur lors de la vérification:", error);
-      setMessageErreur("Erreur lors de la connexion au serveur.");
+      showMessage(
+        "error",
+        "Erreur de connexion",
+        "Erreur lors de la connexion au serveur."
+      );
     } finally {
       setIsVerifying(false);
     }
@@ -1164,6 +1440,11 @@ export default function ClientSimpleForm({
   const passerAuFormulaire = () => {
     setEtapeActuelle("formulaire");
     setShowModalVerification(false);
+    showMessage(
+      "info",
+      "Formulaire ouvert",
+      "Vous pouvez maintenant compléter les informations du formulaire."
+    );
   };
 
   const reinitialiserChampsVerification = () => {
@@ -1173,7 +1454,11 @@ export default function ClientSimpleForm({
       numeroPlaque: "",
     }));
     setShowModalCarteExistante(false);
-    setMessageErreur("");
+    showMessage(
+      "info",
+      "Champs réinitialisés",
+      "Les champs de vérification ont été réinitialisés."
+    );
   };
 
   // ÉTAPE 2: Validation du formulaire
@@ -1216,6 +1501,16 @@ export default function ClientSimpleForm({
     }
 
     setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length > 0) {
+      showMessage(
+        "error",
+        "Erreurs de validation",
+        "Veuillez corriger les erreurs dans le formulaire avant de continuer."
+      );
+      return false;
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -1229,14 +1524,19 @@ export default function ClientSimpleForm({
     setShowModalRecap(true);
   };
 
-  // AJOUT: Gestion de la soumission des informations supplémentaires pour la fiche
+  // Gestion de la soumission des informations supplémentaires pour la fiche
   const handleSubmitSupplementaire = (suppData: FicheSupplementaire) => {
     setFicheSupplementaire(suppData);
     setShowModalSupplementaire(false);
     setShowFicheIdentification(true);
+    showMessage(
+      "success",
+      "Fiche générée",
+      "La fiche d'identification a été générée avec succès."
+    );
   };
 
-  // AJOUT: Gestion de l'ouverture de la fiche d'identification
+  // Gestion de l'ouverture de la fiche d'identification
   const handleOpenFicheIdentification = () => {
     setShowModalSupplementaire(true);
   };
@@ -1344,12 +1644,26 @@ export default function ClientSimpleForm({
         setPrintData(completeData);
         setShowModalRecap(false);
         setEtapeActuelle("previsualisation");
+        
+        showMessage(
+          "success",
+          "Carte rose créée",
+          "La carte rose a été créée avec succès. Vous pouvez maintenant l'imprimer."
+        );
       } else {
-        alert(result.message || "Erreur lors de la soumission");
+        showMessage(
+          "error",
+          "Erreur de soumission",
+          result.message || "Erreur lors de la soumission"
+        );
       }
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
-      alert("Une erreur est survenue lors de la soumission.");
+      showMessage(
+        "error",
+        "Erreur de soumission",
+        "Une erreur est survenue lors de la soumission."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -1358,181 +1672,26 @@ export default function ClientSimpleForm({
   // ÉTAPE 4: Impression
   const handleImprimer = () => {
     setShowPrint(true);
+    showMessage(
+      "info",
+      "Impression",
+      "Préparation de l'impression de la carte rose..."
+    );
   };
 
   const handlePrintClose = () => {
     setShowPrint(false);
     // Réinitialiser complètement et retourner à l'étape 1
-    setFormData({
-      telephone: "",
-      numeroPlaque: "",
-      nom: "",
-      prenom: "",
-      telephoneAssujetti: "",
-      email: "",
-      adresse: "",
-      ville: "",
-      code_postal: "",
-      province: "",
-      nif: "",
-      typeEngin: "",
-      anneeFabrication: "",
-      anneeCirculation: "",
-      couleur: "",
-      puissanceFiscal: "",
-      puissanceFiscalValeur: "",
-      usage: "",
-      marque: "",
-      marqueId: "",
-      modele: "",
-      modeleId: "",
-      energie: "",
-      numeroChassis: "",
-      numeroMoteur: "",
-    });
-    setPlaqueInfo(null);
-    setParticulierInfo(null);
+    reinitialiserFormulaire();
     setEtapeActuelle("verification");
-    setSuggestionsModeles([]);
-    setSuggestionsPuissances([]);
-    setShowSuggestionsModeles(false);
-    setShowSuggestionsPuissances(false);
-    setMarquesSuggestions([]);
-    setShowMarquesSuggestions(false);
-    setCouleurInputMode("select");
-    setNouvelleCouleurNom("");
-    setNouvelleCouleurCode("#000000");
-    setFicheSupplementaire(null);
+    showMessage(
+      "success",
+      "Formulaire réinitialisé",
+      "Le formulaire a été réinitialisé. Vous pouvez créer une nouvelle carte rose."
+    );
   };
 
-  const handleRetourFormulaire = () => {
-    setEtapeActuelle("formulaire");
-  };
-
-  // Rendu de l'étape de vérification
-  const renderEtapeVerification = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-blue-100 p-2 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Étape 1: Vérification Téléphone & Plaque
-          </h2>
-          <p className="text-gray-600 text-sm">
-            Renseignez le numéro de plaque (le téléphone est facultatif)
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
-        {/* TÉLÉPHONE PARTICULIER - FACULTATIF */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Téléphone Particulier (Facultatif)
-          </label>
-          <input
-            type="tel"
-            value={formData.telephone}
-            onChange={(e) => handleInputChange("telephone", e.target.value)}
-            placeholder="Ex: +243 81 234 5678"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <p className="text-gray-500 text-xs mt-1">
-            Facultatif - Permet de pré-remplir les informations si le
-            particulier existe déjà
-          </p>
-        </div>
-
-        {/* NUMÉRO PLAQUE - OBLIGATOIRE */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Numéro de Plaque <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.numeroPlaque}
-            onChange={(e) => handleInputChange("numeroPlaque", e.target.value)}
-            placeholder="Ex: AB-123-CD"
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.numeroPlaque ? "border-red-300" : "border-gray-300"
-            }`}
-          />
-          {errors.numeroPlaque && (
-            <p className="text-red-600 text-sm mt-1">{errors.numeroPlaque}</p>
-          )}
-          <p className="text-gray-500 text-xs mt-1">
-            Obligatoire - Le système vérifie si la plaque est disponible
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-        <div className="flex items-start">
-          <div className="bg-blue-100 p-1 rounded-full mr-3 mt-0.5">
-            <CheckCircle className="w-4 h-4 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-blue-700 text-sm font-medium mb-1">
-              Comment ça marche :
-            </p>
-            <ul className="text-blue-600 text-xs list-disc pl-4 space-y-1">
-              <li>
-                Si vous saisissez un téléphone existant, le système pré-remplit
-                automatiquement le formulaire
-              </li>
-              <li>
-                Si vous ne saisissez pas de téléphone, vous pourrez compléter
-                toutes les informations manuellement
-              </li>
-              <li>
-                Dans tous les cas, le système vérifie que la plaque est
-                disponible
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {messageErreur && (
-        <div
-          className={`mt-4 p-3 rounded-lg border ${
-            messageErreur.includes("✅")
-              ? "bg-green-50 border-green-200 text-green-700"
-              : messageErreur.includes("⚠️")
-              ? "bg-yellow-50 border-yellow-200 text-yellow-700"
-              : "bg-red-50 border-red-200 text-red-700"
-          }`}
-        >
-          <p className="text-sm">{messageErreur}</p>
-        </div>
-      )}
-
-      <div className="flex justify-end mt-8">
-        <button
-          type="button"
-          onClick={handleVerification}
-          disabled={isVerifying}
-          className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-        >
-          {isVerifying ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Vérification...</span>
-            </>
-          ) : (
-            <>
-              <CheckCircle className="w-4 h-4" />
-              <span>Vérifier la plaque et Continuer</span>
-            </>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-
-  // AJOUT: Section pour le champ Marque avec auto-complétion
+  // Section pour le champ Marque avec auto-complétion
   const renderSectionMarque = () => (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1590,13 +1749,11 @@ export default function ClientSimpleForm({
             lors de la soumission.
           </div>
         )}
-      
+
       {errors.marque && (
-        <p className="text-red-600 text-sm mt-1 font-medium">
-          {errors.marque}
-        </p>
+        <p className="text-red-600 text-sm mt-1 font-medium">{errors.marque}</p>
       )}
-      
+
       {!formData.typeEngin && (
         <p className="text-blue-600 text-xs mt-1">
           Veuillez d'abord sélectionner le type d'engin
@@ -1749,6 +1906,115 @@ export default function ClientSimpleForm({
     </div>
   );
 
+  // Rendu de l'étape de vérification
+  const renderEtapeVerification = () => (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center space-x-3 mb-6">
+        <div className="bg-blue-100 p-2 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-blue-600" />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Étape 1: Vérification Téléphone & Plaque
+          </h2>
+          <p className="text-gray-600 text-sm">
+            Renseignez le numéro de plaque (le téléphone est facultatif)
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+        {/* TÉLÉPHONE PARTICULIER - FACULTATIF */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Téléphone Particulier (Facultatif)
+          </label>
+          <input
+            type="tel"
+            value={formData.telephone}
+            onChange={(e) => handleInputChange("telephone", e.target.value)}
+            placeholder="Ex: +243 81 234 5678"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-gray-500 text-xs mt-1">
+            Facultatif - Permet de pré-remplir les informations si le
+            particulier existe déjà
+          </p>
+        </div>
+
+        {/* NUMÉRO PLAQUE - OBLIGATOIRE */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Numéro de Plaque <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={formData.numeroPlaque}
+            onChange={(e) => handleInputChange("numeroPlaque", e.target.value)}
+            placeholder="Ex: AB-123-CD"
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.numeroPlaque ? "border-red-300" : "border-gray-300"
+            }`}
+          />
+          {errors.numeroPlaque && (
+            <p className="text-red-600 text-sm mt-1">{errors.numeroPlaque}</p>
+          )}
+          <p className="text-gray-500 text-xs mt-1">
+            Obligatoire - Le système vérifie si la plaque est disponible
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+        <div className="flex items-start">
+          <div className="bg-blue-100 p-1 rounded-full mr-3 mt-0.5">
+            <CheckCircle className="w-4 h-4 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-blue-700 text-sm font-medium mb-1">
+              Comment ça marche :
+            </p>
+            <ul className="text-blue-600 text-xs list-disc pl-4 space-y-1">
+              <li>
+                Si vous saisissez un téléphone existant, le système pré-remplit
+                automatiquement le formulaire
+              </li>
+              <li>
+                Si vous ne saisissez pas de téléphone, vous pourrez compléter
+                toutes les informations manuellement
+              </li>
+              <li>
+                Dans tous les cas, le système vérifie que la plaque est
+                disponible
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end mt-8">
+        <button
+          type="button"
+          onClick={handleVerification}
+          disabled={isVerifying}
+          className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        >
+          {isVerifying ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Vérification...</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              <span>Vérifier la plaque et Continuer</span>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+
   // Rendu de l'étape formulaire
   const renderEtapeFormulaire = () => (
     <form onSubmit={handleSubmitForm} className="space-y-8">
@@ -1766,7 +2032,7 @@ export default function ClientSimpleForm({
           <div>
             <span className="text-gray-500">Téléphone vérifié:</span>
             <div className="text-gray-700 font-medium">
-              {formData.telephone || "Non fourni"}
+              {particulierInfo?.telephone || "Non fourni"}
             </div>
           </div>
           <div>
@@ -1815,7 +2081,6 @@ export default function ClientSimpleForm({
                 type="tel"
                 value={formData.telephoneAssujetti}
                 onChange={(e) => handleTelephoneChange(e.target.value)}
-                onBlur={() => setMessageErreur("")}
                 placeholder="Ex: +243 81 234 5678 (Facultatif)"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.telephoneAssujetti
@@ -2018,7 +2283,7 @@ export default function ClientSimpleForm({
             )}
           </div>
 
-          {/* Marque - AJOUT: Auto-complétion adaptée du premier écran */}
+          {/* Marque - Auto-complétion */}
           {renderSectionMarque()}
 
           {/* Modèle - Auto-complétion */}
@@ -2315,24 +2580,18 @@ export default function ClientSimpleForm({
         </div>
       </div>
 
-      {/* MESSAGE D'ERREUR GLOBAL */}
-      {messageErreur && (
-        <div
-          className={`p-3 rounded-lg border ${
-            messageErreur.includes("✅")
-              ? "bg-green-50 border-green-200 text-green-700"
-              : "bg-red-50 border-red-200 text-red-700"
-          }`}
-        >
-          <p className="text-sm">{messageErreur}</p>
-        </div>
-      )}
-
       {/* BOUTONS NAVIGATION */}
       <div className="flex items-center justify-between">
         <button
           type="button"
-          onClick={() => setEtapeActuelle("verification")}
+          onClick={() => {
+            setEtapeActuelle("verification");
+            showMessage(
+              "info",
+              "Retour à la vérification",
+              "Vous allez être redirigé vers l'étape de vérification."
+            );
+          }}
           className="flex items-center space-x-2 px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -2350,7 +2609,7 @@ export default function ClientSimpleForm({
     </form>
   );
 
-  // AJOUT: Rendu de l'étape prévisualisation avec bouton pour la fiche
+  // Rendu de l'étape prévisualisation avec bouton pour la fiche
   const renderEtapePrevisualisation = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center space-x-3 mb-6">
@@ -2444,6 +2703,18 @@ export default function ClientSimpleForm({
 
   return (
     <>
+      {/* MODAL DE MESSAGES */}
+      <MessageModal
+        isOpen={modalMessage.isOpen}
+        type={modalMessage.type}
+        title={modalMessage.title}
+        message={modalMessage.message}
+        onClose={closeMessage}
+        onAction={modalMessage.onAction}
+        actionText={modalMessage.actionText}
+        showAction={modalMessage.showAction}
+      />
+
       {/* MODAL VÉRIFICATION RÉUSSIE */}
       {showModalVerification && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
