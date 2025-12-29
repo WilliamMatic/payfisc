@@ -56,7 +56,7 @@ export default function ImpotGrid({ impots, loading }: ImpotGridProps) {
       case 'pourcentage':
         return { text: `${penalites.valeur}% de pénalité`, color: 'text-orange-600' };
       case 'montant_fixe':
-        return { text: `${penalites.valeur} FCFA de pénalité`, color: 'text-red-600' };
+        return { text: `${penalites.valeur} de pénalité`, color: 'text-red-600' };
       default:
         return { text: 'Pénalités spécifiques', color: 'text-yellow-600' };
     }

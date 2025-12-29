@@ -159,8 +159,6 @@ export default function RefactorServicesClient() {
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
 
-  console.log("Données Refactor actuelles:", utilisateur);
-
   // Parser les privilèges quand utilisateur change
   useEffect(() => {
     if (utilisateur?.privileges_include) {

@@ -1,9 +1,10 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, User, Lock } from "lucide-react";
+import { ArrowLeft, User, Lock, FileText } from "lucide-react";
 import ClientSimpleForm from "./components/ClientSimpleForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function ClientSimplePage() {
   const params = useParams();
@@ -19,7 +20,7 @@ export default function ClientSimplePage() {
         const parsed = JSON.parse(utilisateur.privileges_include);
         setParsedPrivileges(parsed);
       } catch (error) {
-        console.error('Erreur parsing privileges:', error);
+        console.error("Erreur parsing privileges:", error);
         setParsedPrivileges({});
       }
     } else if (utilisateur) {
@@ -59,7 +60,7 @@ export default function ClientSimplePage() {
             Veuillez vous reconnecter pour accéder à cette page.
           </p>
           <button
-            onClick={() => router.push('/system/login')}
+            onClick={() => router.push("/system/login")}
             className="text-blue-600 hover:text-blue-800 transition-colors"
           >
             Se connecter
@@ -82,20 +83,29 @@ export default function ClientSimplePage() {
               Accès Refusé
             </h2>
             <p className="text-gray-600 mb-6">
-              Vous n'avez pas les privilèges nécessaires pour accéder à cette fonctionnalité.
+              Vous n'avez pas les privilèges nécessaires pour accéder à cette
+              fonctionnalité.
             </p>
             <div className="text-sm text-gray-500 mb-4">
               <div className="text-left bg-gray-50 p-3 rounded-lg">
                 <div className="font-medium mb-2">Vos privilèges:</div>
-                {Object.entries(parsedPrivileges).map(([key, value]: [string, any]) => (
-                  <div key={key} className="flex items-center gap-2 mb-1">
-                    <span className={`w-2 h-2 rounded-full ${value ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="font-medium">{key}:</span>
-                    <span className={value ? 'text-green-600' : 'text-red-600'}>
-                      {value ? 'Activé' : 'Désactivé'}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(parsedPrivileges).map(
+                  ([key, value]: [string, any]) => (
+                    <div key={key} className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          value ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      ></span>
+                      <span className="font-medium">{key}:</span>
+                      <span
+                        className={value ? "text-green-600" : "text-red-600"}
+                      >
+                        {value ? "Activé" : "Désactivé"}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
             <button
@@ -119,12 +129,50 @@ export default function ClientSimplePage() {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => router.back()}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors group"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span className="text-sm font-medium">Retour aux services</span>
             </button>
-            <div className="text-sm text-gray-500">ID: #{impotId}</div>
+
+            <div className="flex items-center space-x-4">
+              {/* Bouton Rapport avec Link et préchargement */}
+              <Link
+                href={`achats-grossistes/`}
+                prefetch={true} // Précharge la page pour de meilleures performances
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all duration-300 shadow-md hover:shadow-lg text-sm font-medium group relative overflow-hidden"
+              >
+                {/* Effet de fond animé */}
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                {/* Contenu */}
+                <FileText className="w-4 h-4 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="relative z-10">Rapports</span>
+
+                {/* Flèche discrète */}
+                <svg
+                  className="w-3 h-3 relative z-10 opacity-70"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Link>
+
+              {/* Séparateur */}
+              <div className="h-6 w-px bg-gray-300"></div>
+
+              {/* ID */}
+              <div className="text-sm text-gray-500 font-medium">
+                ID: <span className="text-gray-700">#{impotId}</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">

@@ -17,18 +17,18 @@ export default function MouvementsLayoutClient({
   const { isAuthenticated, isLoading, logout, userType } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    // Vérifier si l'utilisateur a accès à cette interface
-    if (!isLoading && isAuthenticated) {
-      // Rediriger l'agent vers l'interface admin s'il est connecté en tant qu'agent
-      if (userType === 'agent') {
-        router.push('/system/admin/dashboard');
-      }
-      // L'utilisateur (utilisateur) peut rester sur cette page
-    } else if (!isLoading && !isAuthenticated) {
-      router.push('/system/login');
-    }
-  }, [isAuthenticated, isLoading, userType, router]);
+  // useEffect(() => {
+  //   // Vérifier si l'utilisateur a accès à cette interface
+  //   if (!isLoading && isAuthenticated) {
+  //     // Rediriger l'agent vers l'interface admin s'il est connecté en tant qu'agent
+  //     if (userType === 'agent') {
+  //       router.push('/system/dashboards');
+  //     }
+  //     // L'utilisateur (utilisateur) peut rester sur cette page
+  //   } else if (!isLoading && !isAuthenticated) {
+  //     router.push('/activity/dashboard');
+  //   }
+  // }, [isAuthenticated, isLoading, userType, router]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
