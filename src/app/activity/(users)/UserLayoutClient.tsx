@@ -1,10 +1,10 @@
 // app/system/mouvements/UserLayoutClient.tsx
-'use client';
-import { useState, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+"use client";
+import { useState, useEffect } from "react";
+import Sidebar from "./components/Sidebar";
+import Header from "./components/Header";
+import { useAuth } from "../../contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function MouvementsLayoutClient({
   children,
@@ -17,18 +17,18 @@ export default function MouvementsLayoutClient({
   const { isAuthenticated, isLoading, logout, userType } = useAuth();
   const router = useRouter();
 
-  // useEffect(() => {
-  //   // Vérifier si l'utilisateur a accès à cette interface
-  //   if (!isLoading && isAuthenticated) {
-  //     // Rediriger l'agent vers l'interface admin s'il est connecté en tant qu'agent
-  //     if (userType === 'agent') {
-  //       router.push('/system/dashboards');
-  //     }
-  //     // L'utilisateur (utilisateur) peut rester sur cette page
-  //   } else if (!isLoading && !isAuthenticated) {
-  //     router.push('/activity/dashboard');
-  //   }
-  // }, [isAuthenticated, isLoading, userType, router]);
+  useEffect(() => {
+    // Vérifier si l'utilisateur a accès à cette interface
+    if (!isLoading && isAuthenticated) {
+      // Rediriger l'agent vers l'interface admin s'il est connecté en tant qu'agent
+      if (userType === "agent") {
+        router.push("/system/login");
+      }
+      // L'utilisateur (utilisateur) peut rester sur cette page
+    } else if (!isLoading && !isAuthenticated) {
+      router.push("/system/login");
+    }
+  }, [isAuthenticated, isLoading, userType, router]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -48,22 +48,26 @@ export default function MouvementsLayoutClient({
     );
   }
 
-  if (!isAuthenticated || userType === 'agent') {
+  if (!isAuthenticated || userType === "agent") {
     return null;
   }
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'dark' : ''}`}>
+    <div
+      className={`min-h-screen transition-all duration-500 ${
+        isDarkMode ? "dark" : ""
+      }`}
+    >
       <div className="flex h-screen">
         {/* Sidebar */}
-        <Sidebar 
+        <Sidebar
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
 
         {/* Overlay pour mobile */}
         {isSidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-20 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
@@ -72,7 +76,7 @@ export default function MouvementsLayoutClient({
         {/* Contenu principal */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Header */}
-          <Header 
+          <Header
             isFullscreen={isFullscreen}
             toggleFullscreen={toggleFullscreen}
             setIsSidebarOpen={setIsSidebarOpen}
@@ -82,9 +86,7 @@ export default function MouvementsLayoutClient({
           {/* Section principale avec défilement */}
           <main className="flex-1 overflow-auto">
             <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 m-6 h-[calc(100%-3rem)]">
-              <div className="p-8 h-full overflow-auto">
-                {children}
-              </div>
+              <div className="p-8 h-full overflow-auto">{children}</div>
             </div>
           </main>
         </div>
