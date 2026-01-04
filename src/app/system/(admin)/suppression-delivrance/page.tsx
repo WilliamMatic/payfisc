@@ -1,3 +1,81 @@
+// import { Suspense } from "react";
+// import { FilterIcon, XCircle, RefreshCw } from "lucide-react";
+// import CarteRoseAnnulationScreenClient from "./components/CarteRoseAnnulationScreenClient";
+// import { 
+//   fetchCartesRoses, 
+//   fetchStats, 
+//   fetchSites, 
+//   fetchTypesVehicules 
+// } from "./actions/carteRoseActions";
+
+// interface PageProps {
+//   searchParams: {
+//     page?: string;
+//     search?: string;
+//     date_debut?: string;
+//     date_fin?: string;
+//     site_id?: string;
+//     type_engin?: string;
+//     order_by?: string;
+//     order_dir?: "ASC" | "DESC";
+//   };
+// }
+
+// export default async function CarteRoseAnnulationPage({ searchParams }: PageProps) {
+//   // Parse les paramètres de recherche
+//   const page = parseInt(searchParams.page || "1");
+//   const limit = 20;
+  
+//   const filters = {
+//     date_debut: searchParams.date_debut || "",
+//     date_fin: searchParams.date_fin || "",
+//     site_id: parseInt(searchParams.site_id || "0"),
+//     type_engin: searchParams.type_engin || "",
+//     order_by: searchParams.order_by || "date_attribution",
+//     order_dir: searchParams.order_dir || "DESC" as "ASC" | "DESC",
+//   };
+
+//   // Charger les données en parallèle
+//   const [cartesRosesData, stats, sites, typesVehicules] = await Promise.all([
+//     fetchCartesRoses({ page, limit, ...filters, search: searchParams.search }),
+//     fetchStats({ ...filters, search: searchParams.search }),
+//     fetchSites(),
+//     fetchTypesVehicules(),
+//   ]);
+
+//   return (
+//     <Suspense fallback={
+//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+//         <div className="max-w-7xl mx-auto">
+//           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
+//             <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
+//               <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+//             </div>
+//             <h3 className="text-lg font-medium text-gray-900 mb-2">
+//               Chargement de la page...
+//             </h3>
+//             <p className="text-gray-500">
+//               Veuillez patienter pendant le chargement des données.
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+//     }>
+//       <CarteRoseAnnulationScreenClient
+//         initialCartesRoses={cartesRosesData.cartesRoses}
+//         initialPagination={cartesRosesData.pagination}
+//         initialStats={stats}
+//         initialSites={sites}
+//         initialTypesVehicules={typesVehicules}
+//         initialFilters={filters}
+//         initialSearchTerm={searchParams.search || ""}
+//       />
+//     </Suspense>
+//   );
+// }
+
+
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

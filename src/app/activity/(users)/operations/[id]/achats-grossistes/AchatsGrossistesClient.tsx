@@ -44,8 +44,10 @@ export default function AchatsGrossistesClient() {
   const [isPending, startTransition] = useTransition();
 
   // Filtres
-  const [dateDebut, setDateDebut] = useState<string>("");
-  const [dateFin, setDateFin] = useState<string>("");
+  const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+  const [dateDebut, setDateDebut] = useState<string>(today);
+  const [dateFin, setDateFin] = useState<string>(today);
   const [recherche, setRecherche] = useState<string>("");
   const [selectedPlaque, setSelectedPlaque] = useState<string>("");
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");

@@ -121,8 +121,6 @@ export const getDashboardData = async (
   }
 ): Promise<{ status: string; message?: string; data?: DashboardData }> => {
   try {
-    console.log("=== DEBUT APPEL API DASHBOARD ===");
-    console.log("Paramètres reçus:", { siteId, filters });
 
     const formData = new FormData();
     formData.append("site_id", siteId.toString());
@@ -136,7 +134,6 @@ export const getDashboardData = async (
     }
 
     const url = `${API_BASE_URL}/dashboards/get_dashboard_data.php`;
-    console.log("URL complète:", url);
 
     const response = await fetch(url, {
       method: "POST",
@@ -146,8 +143,6 @@ export const getDashboardData = async (
         Accept: "application/json",
       },
     });
-
-    console.log("Statut HTTP:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -161,7 +156,6 @@ export const getDashboardData = async (
     }
 
     const responseText = await response.text();
-    console.log("Réponse brute:", responseText);
 
     let data;
     try {
@@ -173,8 +167,7 @@ export const getDashboardData = async (
         message: "Réponse invalide du serveur (JSON malformé)",
       };
     }
-
-    console.log("=== FIN APPEL API DASHBOARD ===");
+    
     return data;
   } catch (error) {
     console.error("Erreur réseau complète:", error);

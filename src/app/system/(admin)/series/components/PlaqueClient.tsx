@@ -246,7 +246,7 @@ export default function PlaqueClient({
         onRapportClick={() => setShowRapportModal(true)}
       />
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto mt-4">
         <PlaqueTable
           series={series}
           loading={loading}

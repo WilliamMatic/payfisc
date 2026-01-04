@@ -1079,7 +1079,12 @@ export default function ClientSimpleForm({
                     <strong>Nombre de plaques:</strong> {nombrePlaques}
                   </div>
                   <div>
-                    <strong>Séquence:</strong> {sequencePlaques.join(", ")}
+                    <strong>Séquence:</strong>{" "}
+                    {sequencePlaques.length > 0
+                      ? `${sequencePlaques[0]} → ${
+                          sequencePlaques[sequencePlaques.length - 1]
+                        }`
+                      : "Aucune séquence"}
                   </div>
                   {reductionMontant > 0 && (
                     <div>

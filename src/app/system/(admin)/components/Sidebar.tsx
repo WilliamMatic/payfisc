@@ -252,12 +252,8 @@ export default function Sidebar({
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Version 1.0.0
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              © 2025 PayFisc
-            </p>
+            <p className="text-xs text-gray-500">Version 1.2</p>
+            <p className="text-xs text-gray-400 mt-1">© 2026 PayFisc</p>
           </div>
         </div>
       </aside>

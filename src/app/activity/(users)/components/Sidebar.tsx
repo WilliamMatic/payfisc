@@ -86,6 +86,20 @@ export default function Sidebar({
         },
       ],
     },
+    {
+      category: "Création de données",
+      items: [
+        { icon: "🏷️", label: "Marques", href: "/activity/marques-engins" },
+        { icon: "⚡", label: "Énergies", href: "/activity/energies" },
+        { icon: "🎨", label: "Couleurs", href: "/activity/couleurs" },
+        {
+          icon: "💪",
+          label: "Puissances Fiscales",
+          href: "/activity/puissances-fiscales",
+        },
+        { icon: "🔄", label: "Usages", href: "/activity/usages" },
+      ],
+    },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -189,8 +203,8 @@ export default function Sidebar({
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 bg-gray-50">
           <div className="text-center">
-            <p className="text-xs text-gray-500">Version 1.0.0</p>
-            <p className="text-xs text-gray-400 mt-1">© 2025 PayFisc</p>
+            <p className="text-xs text-gray-500">Version 1.2</p>
+            <p className="text-xs text-gray-400 mt-1">© 2026 PayFisc</p>
           </div>
         </div>
       </aside>

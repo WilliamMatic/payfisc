@@ -346,7 +346,7 @@ export default function ParticuliersClient({
         }}
       />
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto mt-4">
         <ParticuliersTable
           particuliers={particuliers}
           loading={loading}

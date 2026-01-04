@@ -37,8 +37,8 @@ export interface CarteRose {
 export interface StatsCartesRoses {
   total: number;
   clientsUniques: number;
-  datePremiere?: string;
-  dateDerniere?: string;
+  datePremiere: string;  // Pas de "| undefined"
+  dateDerniere: string;  // Pas de "| undefined"
   typesVehicules: Record<string, number>;
 }
 

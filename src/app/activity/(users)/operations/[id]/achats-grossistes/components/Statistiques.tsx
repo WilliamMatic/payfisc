@@ -52,7 +52,7 @@ export default function Statistiques({
               Montant Total
             </p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
-              {totalMontant.toLocaleString("fr-FR")} $
+              -
             </p>
           </div>
           <div className="p-3 bg-purple-100 rounded-lg">
