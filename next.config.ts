@@ -1,11 +1,14 @@
 import type { NextConfig } from "next";
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // ... autres configurations
-  async redirects() {
-    return [];
-  },
-}
+const nextConfig: NextConfig = {
+  // ✅ Déplacé hors de "experimental"
+  cacheComponents: true, // Active le support de "use cache"
 
-module.exports = nextConfig
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'localhost:80', 'localhost:3001'],
+    },
+  },
+};
+
+export default nextConfig;

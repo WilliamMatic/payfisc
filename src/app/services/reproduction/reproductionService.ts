@@ -1,5 +1,7 @@
+'use server';
+
 /**
- * Service pour la gestion de la reproduction de cartes
+ * Server Actions pour la gestion de la reproduction de cartes (SANS CACHE - temps réel)
  */
 
 // Interfaces pour les données
@@ -50,13 +52,15 @@ const API_BASE_URL =
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
 /**
- * Vérifie une plaque et récupère les données associées (locale OU externe)
+ * 🔄 Vérifie une plaque et récupère les données associées (locale OU externe) (TEMPS RÉEL)
  */
 export const verifierPlaque = async (
   numeroPlaque: string,
   siteCode: string,
   extension?: number | null
 ): Promise<ReproductionResponse & { source?: string }> => {
+  'use server';
+  
   try {
     // D'abord, essayer avec la base locale
     const formData = new FormData();
@@ -72,6 +76,7 @@ export const verifierPlaque = async (
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: 'no-store',
       }
     );
 
@@ -107,7 +112,7 @@ export const verifierPlaque = async (
 };
 
 /**
- * Traite une demande de reproduction de carte
+ * 🔄 Traite une demande de reproduction de carte (TEMPS RÉEL)
  */
 export const traiterReproduction = async (
   impotId: string,
@@ -117,6 +122,8 @@ export const traiterReproduction = async (
   utilisateur?: any,
   extension?: number | null
 ): Promise<ReproductionResponse> => {
+  'use server';
+  
   try {
     const formData = new FormData();
 
@@ -145,6 +152,7 @@ export const traiterReproduction = async (
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: 'no-store',
       }
     );
 
@@ -168,12 +176,14 @@ export const traiterReproduction = async (
 };
 
 /**
- * Vérifie une plaque dans la base externe
+ * 🔄 Vérifie une plaque dans la base externe (TEMPS RÉEL)
  */
 export const verifierPlaqueExterne = async (
   plaque: string,
   extension?: number | null
 ): Promise<ReproductionResponse> => {
+  'use server';
+  
   try {
     const formData = new FormData();
     formData.append("plaque", plaque);
@@ -188,6 +198,7 @@ export const verifierPlaqueExterne = async (
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: 'no-store',
       }
     );
 

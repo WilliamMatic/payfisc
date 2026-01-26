@@ -1,6 +1,7 @@
 import { getImpots, Impot } from '@/services/impots/impotService';
 import ImpotServicesClient from '../components/ImpotServicesClient';
 import ReproductionServicesClient from '../components/ReproductionServicesClient';
+import VignetteServicesClient from '../components/VignetteServicesClient';
 
 interface ImpotPageProps {
   params: Promise<{
@@ -36,6 +37,11 @@ export default async function ImpotPage({ params }: ImpotPageProps) {
     // Si l'ID de l'impôt est 12, retourner ReproductionServicesClient
     if (parseInt(resolvedParams.id) === 12) {
       return <ReproductionServicesClient impot={impot} />;
+    }
+
+    // Si l'ID de l'impôt est 14 (VIGNETTE AUTOMOBILE), retourner VignetteServicesClient
+    if (parseInt(resolvedParams.id) === 14) {
+      return <VignetteServicesClient impot={impot} />;
     }
 
     return <ImpotServicesClient impot={impot} />;

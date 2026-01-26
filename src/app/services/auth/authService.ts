@@ -1,5 +1,7 @@
+'use server';
+
 /**
- * Service d'authentification - Interface avec l'API backend
+ * Server Actions pour l'authentification - Interface avec l'API backend
  */
 
 // Interface pour les données d'un agent connecté
@@ -81,6 +83,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOC
  */
 export const loginAgent = async (email: string, password: string): Promise<LoginResponse> => {
   try {
+    console.log("=== DEBUT AUTHENTIFICATION AGENT ===");
+    console.log("Email:", email);
+    
     const response = await fetch(`${API_BASE_URL}/auth/login.php`, {
       method: 'POST',
       credentials: 'include',
@@ -90,21 +95,35 @@ export const loginAgent = async (email: string, password: string): Promise<Login
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP login agent:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Échec de l\'authentification' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Échec de l\'authentification',
+        message: errorData.message || 'Échec de l\'authentification',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse login agent:", data);
+    console.log("=== FIN AUTHENTIFICATION AGENT ===");
+    
     return data;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login agent error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de l\'authentification',
+      message: `Erreur réseau lors de l'authentification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
@@ -114,6 +133,9 @@ export const loginAgent = async (email: string, password: string): Promise<Login
  */
 export const loginUtilisateur = async (telephone: string, password: string): Promise<LoginResponse> => {
   try {
+    console.log("=== DEBUT AUTHENTIFICATION UTILISATEUR ===");
+    console.log("Téléphone:", telephone);
+    
     const response = await fetch(`${API_BASE_URL}/auth/login_utilisateur.php`, {
       method: 'POST',
       credentials: 'include',
@@ -123,21 +145,35 @@ export const loginUtilisateur = async (telephone: string, password: string): Pro
       body: JSON.stringify({ telephone, password }),
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP login utilisateur:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Échec de l\'authentification' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Échec de l\'authentification',
+        message: errorData.message || 'Échec de l\'authentification',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse login utilisateur:", data);
+    console.log("=== FIN AUTHENTIFICATION UTILISATEUR ===");
+    
     return data;
   } catch (error) {
-    console.error('Login utilisateur error:', error);
+    console.error('Login utilisateur error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de l\'authentification',
+      message: `Erreur réseau lors de l'authentification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
@@ -147,26 +183,42 @@ export const loginUtilisateur = async (telephone: string, password: string): Pro
  */
 export const logoutUser = async (): Promise<{ status: 'success' | 'error'; message?: string }> => {
   try {
+    console.log("=== DEBUT DÉCONNEXION ===");
+    
     const response = await fetch(`${API_BASE_URL}/auth/logout.php`, {
       method: 'POST',
       credentials: 'include',
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP déconnexion:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP déconnexion:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Échec de la déconnexion' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Échec de la déconnexion',
+        message: errorData.message || 'Échec de la déconnexion',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse déconnexion:", data);
+    console.log("=== FIN DÉCONNEXION ===");
+    
     return data;
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Logout error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de la déconnexion',
+      message: `Erreur réseau lors de la déconnexion: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
@@ -176,6 +228,8 @@ export const logoutUser = async (): Promise<{ status: 'success' | 'error'; messa
  */
 export const checkSession = async (): Promise<SessionCheckResponse> => {
   try {
+    console.log("=== DEBUT VÉRIFICATION SESSION ===");
+    
     const response = await fetch(`${API_BASE_URL}/auth/check_session.php`, {
       method: 'GET',
       credentials: 'include',
@@ -184,21 +238,35 @@ export const checkSession = async (): Promise<SessionCheckResponse> => {
       },
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP check session:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP check session:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Session invalide' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Session invalide',
+        message: errorData.message || 'Session invalide',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse check session:", data);
+    console.log("=== FIN VÉRIFICATION SESSION ===");
+    
     return data;
   } catch (error) {
-    console.error('Session check error:', error);
+    console.error('Session check error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de la vérification de session',
+      message: `Erreur réseau lors de la vérification de session: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
@@ -208,6 +276,9 @@ export const checkSession = async (): Promise<SessionCheckResponse> => {
  */
 export const requestPasswordReset = async (identifiant: string): Promise<PasswordResetResponse> => {
   try {
+    console.log("=== DEBUT DEMANDE RÉINITIALISATION ===");
+    console.log("Identifiant:", identifiant);
+    
     const response = await fetch(`${API_BASE_URL}/auth/request_reset.php`, {
       method: 'POST',
       headers: {
@@ -216,26 +287,42 @@ export const requestPasswordReset = async (identifiant: string): Promise<Passwor
       body: JSON.stringify({ identifiant }),
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP demande reset:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP demande reset:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Échec de la demande de réinitialisation' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Échec de la demande de réinitialisation',
+        message: errorData.message || 'Échec de la demande de réinitialisation',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse demande reset:", data);
+    console.log("=== FIN DEMANDE RÉINITIALISATION ===");
+    
     return data;
   } catch (error) {
-    console.error('Password reset request error:', error);
+    console.error('Password reset request error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de la demande de réinitialisation',
+      message: `Erreur réseau lors de la demande de réinitialisation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
 
-// services/auth/authService.ts
+/**
+ * Vérifie toute session active (agent ou utilisateur)
+ */
 export const checkAnySession = async (): Promise<{
   status: 'success' | 'error';
   message?: string;
@@ -247,6 +334,8 @@ export const checkAnySession = async (): Promise<{
   };
 }> => {
   try {
+    console.log("=== DEBUT VÉRIFICATION ANY SESSION ===");
+    
     const response = await fetch(`${API_BASE_URL}/auth/check_any_session.php`, {
       method: "GET",
       credentials: "include",
@@ -255,21 +344,35 @@ export const checkAnySession = async (): Promise<{
       },
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP check any session:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP check any session:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Session invalide' };
+      }
+      
       return {
         status: "error",
-        message: data.message || "Session invalide",
+        message: errorData.message || "Session invalide",
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse check any session:", data);
+    console.log("=== FIN VÉRIFICATION ANY SESSION ===");
+    
     return data;
   } catch (error) {
-    console.error("Session check error:", error);
+    console.error('Session check error complet:', error);
     return {
       status: "error",
-      message: "Erreur réseau lors de la vérification de session",
+      message: `Erreur réseau lors de la vérification de session: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
@@ -279,6 +382,10 @@ export const checkAnySession = async (): Promise<{
  */
 export const verifyResetCode = async (identifiant: string, code: string): Promise<VerifyCodeResponse> => {
   try {
+    console.log("=== DEBUT VÉRIFICATION CODE ===");
+    console.log("Identifiant:", identifiant);
+    console.log("Code:", code);
+    
     const response = await fetch(`${API_BASE_URL}/auth/verify_code.php`, {
       method: 'POST',
       headers: {
@@ -287,21 +394,35 @@ export const verifyResetCode = async (identifiant: string, code: string): Promis
       body: JSON.stringify({ identifiant, code }),
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP vérification code:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP vérification code:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Code invalide' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Code invalide',
+        message: errorData.message || 'Code invalide',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse vérification code:", data);
+    console.log("=== FIN VÉRIFICATION CODE ===");
+    
     return data;
   } catch (error) {
-    console.error('Code verification error:', error);
+    console.error('Code verification error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de la vérification du code',
+      message: `Erreur réseau lors de la vérification du code: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
@@ -316,6 +437,11 @@ export const resetPassword = async (
   newPassword: string
 ): Promise<PasswordResetResponse> => {
   try {
+    console.log("=== DEBUT RÉINITIALISATION MOT DE PASSE ===");
+    console.log("User ID:", userId);
+    console.log("User Type:", userType);
+    console.log("Code:", code);
+    
     const response = await fetch(`${API_BASE_URL}/auth/reset_password.php`, {
       method: 'POST',
       headers: {
@@ -329,50 +455,42 @@ export const resetPassword = async (
       }),
     });
 
-    const data = await response.json();
+    console.log("Statut HTTP reset password:", response.status);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP reset password:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: 'Échec de la réinitialisation' };
+      }
+      
       return {
         status: 'error',
-        message: data.message || 'Échec de la réinitialisation',
+        message: errorData.message || 'Échec de la réinitialisation',
       };
     }
 
+    const data = await response.json();
+    console.log("Réponse reset password:", data);
+    console.log("=== FIN RÉINITIALISATION MOT DE PASSE ===");
+    
     return data;
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error('Password reset error complet:', error);
     return {
       status: 'error',
-      message: 'Erreur réseau lors de la réinitialisation',
+      message: `Erreur réseau lors de la réinitialisation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 };
 
 /**
- * Déconnecte l'agent
+ * Déconnecte l'agent (alias pour logoutUser)
  */
 export const logoutAgent = async (): Promise<{ status: 'success' | 'error'; message?: string }> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/logout.php`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        status: 'error',
-        message: data.message || 'Échec de la déconnexion',
-      };
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Logout error:', error);
-    return {
-      status: 'error',
-      message: 'Erreur réseau lors de la déconnexion',
-    };
-  }
+  return logoutUser();
 };

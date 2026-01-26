@@ -451,7 +451,10 @@ export default function ReproductionServicesClient({
     const chargerTaux = async () => {
       setLoadingTaux(true);
       try {
-        const tauxResponse = await getTauxActif();
+        const tauxResponse = await getTauxActif({
+          province_id: null,
+          impot_id: Number(impot.id),
+        });
         if (tauxResponse.status === "success" && tauxResponse.data) {
           setTauxActif(tauxResponse.data);
         }

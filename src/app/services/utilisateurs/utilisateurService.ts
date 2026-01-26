@@ -1,7 +1,10 @@
-// services/utilisateurs/utilisateurService.ts
+'use server';
+
+import { cacheLife, cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 /**
- * Service pour la gestion des utilisateurs - Interface avec l'API backend
+ * Server Actions pour la gestion des utilisateurs avec Cache Components Next.js 16
  */
 
 // Interface pour les privilèges d'un utilisateur
@@ -11,6 +14,8 @@ export interface Privileges {
   delivrance: boolean;
   plaque: boolean;
   reproduction: boolean;
+  series: boolean;
+  autresTaxes: boolean;
 }
 
 // Interface pour les données d'un utilisateur
@@ -50,13 +55,88 @@ export interface ApiResponse {
   data?: any;
 }
 
+// Interface pour la pagination
+export interface PaginationResponse {
+  status: 'success' | 'error';
+  message?: string;
+  data?: {
+    utilisateurs: Utilisateur[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  };
+}
+
 // URL de base de l'API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls';
 
+// Tags de cache pour invalidation ciblée
+const CACHE_TAGS = {
+  UTILISATEURS_LIST: 'utilisateurs-list',
+  UTILISATEURS_ACTIFS: 'utilisateurs-actifs',
+  UTILISATEUR_DETAILS: (id: number) => `utilisateur-${id}`,
+  UTILISATEURS_SEARCH: 'utilisateurs-search',
+  SITES_LIST: 'sites-list-utilisateurs',
+};
+
 /**
- * Récupère la liste de tous les utilisateurs
+ * Invalide le cache après une mutation avec stale-while-revalidate
  */
-export const getUtilisateurs = async (): Promise<ApiResponse> => {
+async function invalidateUtilisateursCache(utilisateurId?: number) {
+  'use server';
+  
+  revalidateTag(CACHE_TAGS.UTILISATEURS_LIST, "max");
+  revalidateTag(CACHE_TAGS.UTILISATEURS_ACTIFS, "max");
+  revalidateTag(CACHE_TAGS.UTILISATEURS_SEARCH, "max");
+  
+  if (utilisateurId) {
+    revalidateTag(CACHE_TAGS.UTILISATEUR_DETAILS(utilisateurId), "max");
+  }
+}
+
+// Nettoyer les données
+export async function cleanUtilisateurData(data: any): Promise<Utilisateur> {
+  return {
+    id: data.id || 0,
+    nom_complet: data.nom_complet || "",
+    telephone: data.telephone || "",
+    adresse: data.adresse || "",
+    actif: Boolean(data.actif),
+    site_nom: data.site_nom || "",
+    site_code: data.site_code || "",
+    site_affecte_id: data.site_affecte_id || 0,
+    date_creation: data.date_creation || "",
+    privileges: data.privileges || {
+      simple: false,
+      special: false,
+      delivrance: false,
+      plaque: false,
+      reproduction: false,
+      series: false,
+      autresTaxes: false,
+    },
+  };
+}
+
+export async function cleanSiteData(data: any): Promise<Site> {
+  return {
+    id: data.id || 0,
+    nom: data.nom || "",
+    code: data.code || "",
+  };
+}
+
+/**
+ * 💾 Récupère la liste de tous les utilisateurs (AVEC CACHE - 2 heures)
+ */
+export async function getUtilisateurs(): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.UTILISATEURS_LIST);
+
   try {
     const response = await fetch(`${API_BASE_URL}/utilisateurs/lister_utilisateurs.php`, {
       method: 'GET',
@@ -75,9 +155,13 @@ export const getUtilisateurs = async (): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanUtilisateurData(item)))
+      : [];
+
     return {
       status: 'success',
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error('Get utilisateurs error:', error);
@@ -86,12 +170,55 @@ export const getUtilisateurs = async (): Promise<ApiResponse> => {
       message: 'Erreur réseau lors de la récupération des utilisateurs',
     };
   }
-};
+}
 
 /**
- * Ajoute un nouvel utilisateur
+ * 💾 Récupère la liste des utilisateurs actifs (AVEC CACHE - 2 heures)
  */
-export const addUtilisateur = async (utilisateurData: UtilisateurFormData): Promise<ApiResponse> => {
+export async function getUtilisateursActifs(): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.UTILISATEURS_ACTIFS);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/utilisateurs/lister_utilisateurs_actifs.php`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la récupération des utilisateurs actifs',
+      };
+    }
+
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanUtilisateurData(item)))
+      : [];
+
+    return {
+      status: 'success',
+      data: cleanedData,
+    };
+  } catch (error) {
+    console.error('Get utilisateurs actifs error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la récupération des utilisateurs actifs',
+    };
+  }
+}
+
+/**
+ * 🔄 Ajoute un nouvel utilisateur (INVALIDE LE CACHE)
+ */
+export async function addUtilisateur(utilisateurData: UtilisateurFormData): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('nom_complet', utilisateurData.nom_complet);
@@ -115,6 +242,8 @@ export const addUtilisateur = async (utilisateurData: UtilisateurFormData): Prom
       };
     }
 
+    await invalidateUtilisateursCache();
+
     return data;
   } catch (error) {
     console.error('Add utilisateur error:', error);
@@ -123,15 +252,15 @@ export const addUtilisateur = async (utilisateurData: UtilisateurFormData): Prom
       message: 'Erreur réseau lors de l\'ajout de l\'utilisateur',
     };
   }
-};
+}
 
 /**
- * Modifie un utilisateur existant
+ * 🔄 Modifie un utilisateur existant (INVALIDE LE CACHE)
  */
-export const updateUtilisateur = async (
+export async function updateUtilisateur(
   id: number,
   utilisateurData: UtilisateurFormData
-): Promise<ApiResponse> => {
+): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('id', id.toString());
@@ -156,6 +285,8 @@ export const updateUtilisateur = async (
       };
     }
 
+    await invalidateUtilisateursCache(id);
+
     return data;
   } catch (error) {
     console.error('Update utilisateur error:', error);
@@ -164,12 +295,12 @@ export const updateUtilisateur = async (
       message: 'Erreur réseau lors de la modification de l\'utilisateur',
     };
   }
-};
+}
 
 /**
- * Supprime un utilisateur
+ * 🔄 Supprime un utilisateur (INVALIDE LE CACHE)
  */
-export const deleteUtilisateur = async (id: number): Promise<ApiResponse> => {
+export async function deleteUtilisateur(id: number): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('id', id.toString());
@@ -189,6 +320,8 @@ export const deleteUtilisateur = async (id: number): Promise<ApiResponse> => {
       };
     }
 
+    await invalidateUtilisateursCache(id);
+
     return data;
   } catch (error) {
     console.error('Delete utilisateur error:', error);
@@ -197,15 +330,15 @@ export const deleteUtilisateur = async (id: number): Promise<ApiResponse> => {
       message: 'Erreur réseau lors de la suppression de l\'utilisateur',
     };
   }
-};
+}
 
 /**
- * Change le statut d'un utilisateur (actif/inactif)
+ * 🔄 Change le statut d'un utilisateur (actif/inactif) (INVALIDE LE CACHE)
  */
-export const toggleUtilisateurStatus = async (
+export async function toggleUtilisateurStatus(
   id: number,
   actif: boolean
-): Promise<ApiResponse> => {
+): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('id', id.toString());
@@ -226,6 +359,8 @@ export const toggleUtilisateurStatus = async (
       };
     }
 
+    await invalidateUtilisateursCache(id);
+
     return data;
   } catch (error) {
     console.error('Toggle utilisateur status error:', error);
@@ -234,12 +369,16 @@ export const toggleUtilisateurStatus = async (
       message: 'Erreur réseau lors du changement de statut de l\'utilisateur',
     };
   }
-};
+}
 
 /**
- * Recherche des utilisateurs
+ * 💾 Recherche des utilisateurs (AVEC CACHE - 2 heures)
  */
-export const searchUtilisateurs = async (searchTerm: string): Promise<ApiResponse> => {
+export async function searchUtilisateurs(searchTerm: string): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.UTILISATEURS_SEARCH, `search-${searchTerm}`);
+
   try {
     const response = await fetch(
       `${API_BASE_URL}/utilisateurs/rechercher_utilisateurs.php?search=${encodeURIComponent(searchTerm)}`,
@@ -261,9 +400,13 @@ export const searchUtilisateurs = async (searchTerm: string): Promise<ApiRespons
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanUtilisateurData(item)))
+      : [];
+
     return {
       status: 'success',
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error('Search utilisateurs error:', error);
@@ -272,12 +415,16 @@ export const searchUtilisateurs = async (searchTerm: string): Promise<ApiRespons
       message: 'Erreur réseau lors de la recherche des utilisateurs',
     };
   }
-};
+}
 
 /**
- * Récupère la liste des sites actifs
+ * 💾 Récupère la liste des sites actifs (AVEC CACHE - 2 heures)
  */
-export const getSitesActifs = async (): Promise<ApiResponse> => {
+export async function getSitesActifs(): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SITES_LIST);
+
   try {
     const response = await fetch(`${API_BASE_URL}/utilisateurs/lister_sites_actifs.php`, {
       method: 'GET',
@@ -296,9 +443,13 @@ export const getSitesActifs = async (): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanSiteData(item)))
+      : [];
+
     return {
       status: 'success',
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error('Get sites error:', error);
@@ -307,4 +458,240 @@ export const getSitesActifs = async (): Promise<ApiResponse> => {
       message: 'Erreur réseau lors de la récupération des sites',
     };
   }
-};
+}
+
+/**
+ * 🌊 Vérifie si un utilisateur existe déjà par son numéro de téléphone (PAS DE CACHE)
+ */
+export async function checkUtilisateurByTelephone(telephone: string): Promise<ApiResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/utilisateurs/verifier_utilisateur.php?telephone=${encodeURIComponent(telephone)}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la vérification de l\'utilisateur',
+      };
+    }
+
+    return {
+      status: 'success',
+      data: data.data,
+    };
+  } catch (error) {
+    console.error('Check utilisateur by telephone error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la vérification de l\'utilisateur',
+    };
+  }
+}
+
+/**
+ * 💾 Récupère un utilisateur par son ID (AVEC CACHE - 2 heures)
+ */
+export async function getUtilisateurById(id: number): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.UTILISATEUR_DETAILS(id));
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/utilisateurs/get_utilisateur.php?id=${id}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la récupération de l\'utilisateur',
+      };
+    }
+
+    return {
+      status: 'success',
+      data: await cleanUtilisateurData(data.data),
+    };
+  } catch (error) {
+    console.error('Get utilisateur by ID error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la récupération de l\'utilisateur',
+    };
+  }
+}
+
+/**
+ * 💾 Recherche des utilisateurs par site (AVEC CACHE - 2 heures)
+ */
+export async function searchUtilisateursBySite(siteId: number, searchTerm?: string): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.UTILISATEURS_SEARCH, `site-${siteId}-search-${searchTerm || ''}`);
+
+  try {
+    const params = new URLSearchParams({
+      site_id: siteId.toString(),
+    });
+    
+    if (searchTerm) {
+      params.append('search', searchTerm);
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/utilisateurs/rechercher_utilisateurs_par_site.php?${params.toString()}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la recherche des utilisateurs par site',
+      };
+    }
+
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanUtilisateurData(item)))
+      : [];
+
+    return {
+      status: 'success',
+      data: cleanedData,
+    };
+  } catch (error) {
+    console.error('Search utilisateurs by site error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la recherche des utilisateurs par site',
+    };
+  }
+}
+
+/**
+ * 💾 Récupère les utilisateurs avec pagination (AVEC CACHE - 2 heures)
+ */
+export async function getUtilisateursPaginees(page: number = 1, limit: number = 10, searchTerm: string = ''): Promise<PaginationResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.UTILISATEURS_LIST, `page-${page}-search-${searchTerm}`);
+
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    
+    if (searchTerm) {
+      params.append('search', searchTerm);
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/utilisateurs/lister_utilisateurs_paginees.php?${params.toString()}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la récupération des utilisateurs paginés',
+      };
+    }
+
+    const cleanedData = Array.isArray(data.data?.utilisateurs)
+      ? await Promise.all(data.data.utilisateurs.map(async (item: any) => await cleanUtilisateurData(item)))
+      : [];
+
+    return {
+      status: 'success',
+      data: {
+        utilisateurs: cleanedData,
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      },
+    };
+  } catch (error) {
+    console.error('Get utilisateurs paginees error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la récupération des utilisateurs paginés',
+    };
+  }
+}
+
+/**
+ * 🔄 Met à jour les privilèges d'un utilisateur (INVALIDE LE CACHE)
+ */
+export async function updatePrivilegesUtilisateur(
+  id: number,
+  privileges: Privileges
+): Promise<ApiResponse> {
+  try {
+    const formData = new FormData();
+    formData.append('id', id.toString());
+    formData.append('privileges', JSON.stringify(privileges));
+
+    const response = await fetch(`${API_BASE_URL}/utilisateurs/modifier_privileges_utilisateur.php`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la modification des privilèges',
+      };
+    }
+
+    await invalidateUtilisateursCache(id);
+
+    return data;
+  } catch (error) {
+    console.error('Update privileges utilisateur error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la modification des privilèges',
+    };
+  }
+}

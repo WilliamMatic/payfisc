@@ -1,5 +1,10 @@
+'use server';
+
+import { cacheLife, cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
+
 /**
- * Service pour la gestion des ventes non-grossistes
+ * Server Actions pour la gestion des ventes non-grossistes avec Cache Components Next.js 16
  */
 
 export interface VenteNonGrossiste {
@@ -68,15 +73,86 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
+// Tags de cache pour invalidation ciblée
+const CACHE_TAGS = {
+  VENTES_LIST: (paramsHash: string) => `ventes-list-${paramsHash}`,
+  VENTES_STATS: (paramsHash: string) => `ventes-stats-${paramsHash}`,
+  VENTES_EXPORT: (paramsHash: string) => `ventes-export-${paramsHash}`,
+  VENTES_DETAILS: (paiementId: number) => `ventes-details-${paiementId}`,
+  VENTES_MODE_PAIEMENT: (modePaiement: string, paramsHash: string) => 
+    `ventes-mode-${modePaiement}-${paramsHash}`,
+  SITES_LIST: 'sites-ventes-list',
+};
+
 /**
- * Récupère les ventes non-grossistes avec pagination et filtres
+ * Génère un hash des paramètres pour le cache
  */
-export const getVentesNonGrossistes = async (
+function generateParamsHash(params: any): string {
+  const sortedParams = Object.keys(params)
+    .sort()
+    .map(key => `${key}:${params[key]}`)
+    .join('|');
+  return Buffer.from(sortedParams).toString('base64').substring(0, 32);
+}
+
+/**
+ * Invalide le cache après une mutation
+ */
+async function invalidateVentesCache(venteId?: number) {
+  'use server';
+  
+  // Invalider tous les caches de listes de ventes (pattern général)
+  revalidateTag(CACHE_TAGS.VENTES_LIST(''), "max");
+  
+  if (venteId) {
+    revalidateTag(CACHE_TAGS.VENTES_DETAILS(venteId), "max");
+  }
+}
+
+// Nettoyer les données
+export async function cleanVenteData(data: any): Promise<VenteNonGrossiste> {
+  return {
+    paiement_id: data.paiement_id || 0,
+    engin_id: data.engin_id || 0,
+    particulier_id: data.particulier_id || 0,
+    montant: data.montant || 0,
+    serie_item_id: data.serie_item_id || 0,
+    serie_id: data.serie_id || 0,
+    numero_plaque: data.numero_plaque || "",
+    createur_engin: data.createur_engin || 0,
+    site_id: data.site_id || 0,
+    telephone: data.telephone || "",
+    nom: data.nom || "",
+    prenom: data.prenom || "",
+    nb_engins_particulier: data.nb_engins_particulier || 0,
+    date_paiement: data.date_paiement || "",
+    mode_paiement: data.mode_paiement || "",
+    operateur: data.operateur || "",
+    site_nom: data.site_nom || "",
+    utilisateur_nom: data.utilisateur_nom || "",
+    nif: data.nif || "",
+    montant_initial: data.montant_initial || 0,
+    numero_transaction: data.numero_transaction || "",
+    email: data.email || "",
+    adresse: data.adresse || "",
+    type_engin: data.type_engin || "",
+    marque: data.marque || "",
+  };
+}
+
+/**
+ * 💾 Récupère les ventes non-grossistes avec pagination et filtres (AVEC CACHE - 30 minutes)
+ */
+export async function getVentesNonGrossistes(
   params: RechercheParams = {}
-): Promise<{ status: string; message?: string; data?: PaginationResponse }> => {
+): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
+  'use cache';
+  cacheLife('minutes');
+  const paramsHash = generateParamsHash(params);
+  cacheTag(CACHE_TAGS.VENTES_LIST(paramsHash));
+
   try {
-    console.log("=== DEBUT APPEL API VENTES ===");
-    console.log("URL de base:", API_BASE_URL);
+    console.log("=== DEBUT APPEL API VENTES (CACHE) ===");
     console.log("Paramètres reçus:", params);
 
     const formData = new FormData();
@@ -90,12 +166,6 @@ export const getVentesNonGrossistes = async (
     if (params.site_id !== undefined) formData.append("site_id", params.site_id.toString());
     if (params.order_by) formData.append("order_by", params.order_by);
     if (params.order_dir) formData.append("order_dir", params.order_dir);
-
-    // Afficher le contenu du FormData pour debug
-    console.log("FormData content:");
-    for (const [key, value] of (formData as any).entries()) {
-      console.log(`${key}: ${value}`);
-    }
 
     const url = `${API_BASE_URL}/ventes/get_ventes_non_grossistes.php`;
     console.log("URL complète:", url);
@@ -141,7 +211,14 @@ export const getVentesNonGrossistes = async (
       };
     }
 
-    console.log("=== FIN APPEL API VENTES ===");
+    // Nettoyer les données
+    if (data.status === "success" && Array.isArray(data.data?.ventes)) {
+      data.data.ventes = await Promise.all(
+        data.data.ventes.map(async (vente: any) => await cleanVenteData(vente))
+      );
+    }
+
+    console.log("=== FIN APPEL API VENTES (CACHE) ===");
     return data;
 
   } catch (error) {
@@ -154,14 +231,19 @@ export const getVentesNonGrossistes = async (
       message: `Erreur réseau: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
-};
+}
 
 /**
- * Récupère les statistiques des ventes non-grossistes
+ * 💾 Récupère les statistiques des ventes non-grossistes (AVEC CACHE - 30 minutes)
  */
-export const getStatsVentes = async (
+export async function getStatsVentes(
   params?: Omit<RechercheParams, "page" | "limit" | "order_by" | "order_dir">
-): Promise<{ status: string; message?: string; data?: Stats }> => {
+): Promise<{ status: string; message?: string; data?: Stats }> {
+  'use cache';
+  cacheLife('minutes');
+  const paramsHash = generateParamsHash(params || {});
+  cacheTag(CACHE_TAGS.VENTES_STATS(paramsHash));
+
   try {
     const formData = new FormData();
 
@@ -201,16 +283,16 @@ export const getStatsVentes = async (
       message: "Erreur réseau lors de la récupération des statistiques",
     };
   }
-};
+}
 
 /**
- * Supprime une vente non-grossiste
+ * 🔄 Supprime une vente non-grossiste (INVALIDE LE CACHE)
  */
-export const supprimerVenteNonGrossiste = async (
+export async function supprimerVenteNonGrossiste(
   paiementId: number,
   utilisateurId: number,
   raison: string = "Suppression via interface admin"
-): Promise<{ status: string; message?: string; data?: any }> => {
+): Promise<{ status: string; message?: string; data?: any }> {
   try {
     const formData = new FormData();
     formData.append("paiement_id", paiementId.toString());
@@ -236,6 +318,10 @@ export const supprimerVenteNonGrossiste = async (
     }
 
     const data = await response.json();
+
+    // ⚡ Invalider le cache
+    await invalidateVentesCache(paiementId);
+
     return data;
   } catch (error) {
     console.error("Supprimer vente error:", error);
@@ -244,18 +330,23 @@ export const supprimerVenteNonGrossiste = async (
       message: "Erreur réseau lors de la suppression de la vente",
     };
   }
-};
+}
 
 /**
- * Exporte les ventes non-grossistes en Excel
+ * 💾 Exporte les ventes non-grossistes en Excel (AVEC CACHE - 10 minutes)
  */
-export const exporterVentesExcel = async (
+export async function exporterVentesExcel(
   params: RechercheParams = {}
 ): Promise<{
   status: string;
   message?: string;
   data?: { url: string; filename: string };
-}> => {
+}> {
+  'use cache';
+  cacheLife('minutes');
+  const paramsHash = generateParamsHash(params);
+  cacheTag(CACHE_TAGS.VENTES_EXPORT(paramsHash));
+
   try {
     const formData = new FormData();
 
@@ -292,18 +383,22 @@ export const exporterVentesExcel = async (
       message: "Erreur réseau lors de l'exportation Excel",
     };
   }
-};
+}
 
 /**
- * Récupère la liste des sites disponibles
+ * 💾 Récupère la liste des sites disponibles (AVEC CACHE - 1 heure)
  */
-export const getSitesDisponibles = async (): Promise<{
+export async function getSitesDisponibles(): Promise<{
   status: string;
   message?: string;
   data?: { id: number; nom: string; code: string }[];
-}> => {
+}> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SITES_LIST);
+
   try {
-    console.log("=== DEBUT CHARGEMENT SITES ===");
+    console.log("=== DEBUT CHARGEMENT SITES (CACHE) ===");
     const formData = new FormData();
 
     const url = `${API_BASE_URL}/ventes/get_sites.php`;
@@ -345,7 +440,7 @@ export const getSitesDisponibles = async (): Promise<{
       };
     }
 
-    console.log("=== FIN CHARGEMENT SITES ===");
+    console.log("=== FIN CHARGEMENT SITES (CACHE) ===");
     return data;
   } catch (error) {
     console.error("Get sites error complet:", error);
@@ -354,4 +449,119 @@ export const getSitesDisponibles = async (): Promise<{
       message: `Erreur réseau lors de la récupération des sites: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
-};
+}
+
+/**
+ * 💾 Récupère les détails d'une vente spécifique (AVEC CACHE - 1 heure)
+ */
+export async function getDetailsVente(
+  paiementId: number
+): Promise<{ status: string; message?: string; data?: VenteNonGrossiste }> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.VENTES_DETAILS(paiementId));
+
+  try {
+    const formData = new FormData();
+    formData.append("paiement_id", paiementId.toString());
+
+    const response = await fetch(
+      `${API_BASE_URL}/ventes/get_details_vente.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP détails:", response.status, errorText);
+      return {
+        status: "error",
+        message: `Échec de la récupération des détails (${response.status})`,
+      };
+    }
+
+    const data = await response.json();
+    
+    // Nettoyer les données
+    if (data.status === "success" && data.data) {
+      data.data = await cleanVenteData(data.data);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Get details vente error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des détails",
+    };
+  }
+}
+
+/**
+ * 💾 Recherche des ventes par mode de paiement (AVEC CACHE - 30 minutes)
+ */
+export async function searchVentesByModePaiement(
+  modePaiement: string,
+  params?: Omit<RechercheParams, "order_by" | "order_dir">
+): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
+  'use cache';
+  cacheLife('minutes');
+  const paramsHash = generateParamsHash({ modePaiement, ...params });
+  cacheTag(CACHE_TAGS.VENTES_MODE_PAIEMENT(modePaiement, paramsHash));
+
+  try {
+    const formData = new FormData();
+    formData.append("mode_paiement", modePaiement);
+
+    if (params?.page !== undefined) formData.append("page", params.page.toString());
+    if (params?.limit !== undefined) formData.append("limit", params.limit.toString());
+    if (params?.search) formData.append("search", params.search);
+    if (params?.date_debut) formData.append("date_debut", params.date_debut);
+    if (params?.date_fin) formData.append("date_fin", params.date_fin);
+    if (params?.site_id !== undefined) formData.append("site_id", params.site_id.toString());
+
+    const response = await fetch(
+      `${API_BASE_URL}/ventes/rechercher_ventes_par_mode_paiement.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP recherche par mode paiement:", response.status, errorText);
+      return {
+        status: "error",
+        message: `Échec de la recherche par mode de paiement (${response.status})`,
+      };
+    }
+
+    const data = await response.json();
+
+    // Nettoyer les données
+    if (data.status === "success" && Array.isArray(data.data?.ventes)) {
+      data.data.ventes = await Promise.all(
+        data.data.ventes.map(async (vente: any) => await cleanVenteData(vente))
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Search ventes by mode paiement error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche par mode de paiement",
+    };
+  }
+}

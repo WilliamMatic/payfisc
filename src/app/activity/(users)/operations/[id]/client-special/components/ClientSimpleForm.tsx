@@ -181,7 +181,10 @@ export default function ClientSimpleForm({
     const chargerTaux = async () => {
       setLoadingTaux(true);
       try {
-        const tauxResponse = await getTauxActif();
+        const tauxResponse = await getTauxActif({
+          province_id: null,
+          impot_id: Number(impotId),
+        });
         if (tauxResponse.status === "success" && tauxResponse.data) {
           setTauxActif(tauxResponse.data);
         }

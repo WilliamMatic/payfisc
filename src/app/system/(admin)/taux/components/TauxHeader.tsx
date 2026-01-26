@@ -16,6 +16,7 @@ export default function TauxHeader({ searchTerm, onSearchChange, onAddClick }: T
         <div>
           <h2 className="text-xl font-semibold text-gray-800">Taux (CDF)</h2>
           <p className="text-sm text-gray-500">Gérez les taux de change en Francs Congolais</p>
+          <p className="text-xs text-gray-400 mt-1">Support multi-province et multi-impôt</p>
         </div>
       </div>
       

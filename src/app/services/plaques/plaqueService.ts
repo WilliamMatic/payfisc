@@ -1,5 +1,10 @@
+'use server';
+
+import { cacheLife, cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
+
 /**
- * Service pour la gestion des plaques - Interface avec l'API backend
+ * Server Actions pour la gestion des plaques avec Cache Components Next.js 16
  */
 
 // Interfaces pour les données
@@ -95,17 +100,93 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
+// Tags de cache pour invalidation ciblée
+const CACHE_TAGS = {
+  SERIES_LIST: 'series-list',
+  SERIES_ACTIVES: 'series-actives',
+  SERIE_DETAILS: (id: number) => `serie-${id}`,
+  SERIES_SEARCH: 'series-search',
+  SERIES_PAGINES: (page: number, utilisateurId?: number) => `series-page-${page}-user-${utilisateurId || 'all'}`,
+  SERIES_SEARCH_PAGINES: (searchTerm: string, page: number) => `series-search-${searchTerm}-page-${page}`,
+  SERIES_PROVINCE: (provinceId: number, page: number) => `series-province-${provinceId}-page-${page}`,
+  PROVINCES_LIST: 'provinces-list',
+  SERIE_ITEMS: (serieId: number) => `serie-items-${serieId}`,
+  RAPPORT_SERIES: (dateDebut: string, dateFin: string, provinceId?: number) => 
+    `rapport-series-${dateDebut}-${dateFin}-${provinceId || 'all'}`,
+};
+
 /**
- * Récupère la liste des séries avec pagination (5 derniers par défaut)
- * @param page Numéro de page
- * @param limit Nombre d'éléments par page
- * @param utilisateurId ID de l'utilisateur (optionnel)
+ * Invalide le cache après une mutation
  */
-export const getSeries = async (
+async function invalidateSeriesCache(serieId?: number) {
+  'use server';
+  
+  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
+  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
+  revalidateTag(CACHE_TAGS.SERIES_SEARCH, "max");
+  
+  if (serieId) {
+    revalidateTag(CACHE_TAGS.SERIE_DETAILS(serieId), "max");
+    revalidateTag(CACHE_TAGS.SERIE_ITEMS(serieId), "max");
+  }
+  
+  // Invalider tous les rapports de séries
+  revalidateTag(CACHE_TAGS.RAPPORT_SERIES('', '', 0), "max"); // Pattern général
+}
+
+// Nettoyer les données
+export async function cleanSerieData(data: any): Promise<Serie> {
+  return {
+    id: data.id || 0,
+    nom_serie: data.nom_serie || "",
+    description: data.description || null,
+    actif: Boolean(data.actif),
+    total_items: data.total_items || 0,
+    items_disponibles: data.items_disponibles || 0,
+    items_utilises: data.items_utilises || 0,
+    date_creation: data.date_creation || "",
+    date_creation_formatted: data.date_creation_formatted || "",
+    province_id: data.province_id || 0,
+    province_nom: data.province_nom || "",
+    province_code: data.province_code || "",
+    debut_numeros: data.debut_numeros || 0,
+    fin_numeros: data.fin_numeros || 0,
+  };
+}
+
+export async function cleanSerieItemData(data: any): Promise<SerieItem> {
+  return {
+    id: data.id || 0,
+    serie_id: data.serie_id || 0,
+    value: data.value || 0,
+    statut: data.statut || "0",
+    nom_serie: data.nom_serie || "",
+    province_nom: data.province_nom || "",
+    date_creation: data.date_creation || "",
+  };
+}
+
+export async function cleanProvinceData(data: any): Promise<Province> {
+  return {
+    id: data.id || 0,
+    nom: data.nom || "",
+    code: data.code || "",
+    actif: Boolean(data.actif),
+  };
+}
+
+/**
+ * 💾 Récupère la liste des séries avec pagination (5 derniers par défaut) (AVEC CACHE - 2 heures)
+ */
+export async function getSeries(
   page: number = 1,
   limit: number = 5,
   utilisateurId?: number
-): Promise<PaginationResponse> => {
+): Promise<PaginationResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIES_PAGINES(page, utilisateurId));
+
   try {
     let url = `${API_BASE_URL}/plaques/lister_series.php?page=${page}&limit=${limit}`;
 
@@ -131,10 +212,14 @@ export const getSeries = async (
       };
     }
 
+    const cleanedData = Array.isArray(data.data?.series)
+      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      : [];
+
     return {
       status: "success",
       data: {
-        series: data.data?.series || [],
+        series: cleanedData,
         pagination: data.data?.pagination || {
           total: 0,
           page: 1,
@@ -150,12 +235,16 @@ export const getSeries = async (
       message: "Erreur réseau lors de la récupération des séries",
     };
   }
-};
+}
 
 /**
- * Récupère la liste des provinces actives
+ * 💾 Récupère la liste des provinces actives (AVEC CACHE - 2 heures)
  */
-export const getProvinces = async (): Promise<ApiResponse> => {
+export async function getProvinces(): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.PROVINCES_LIST);
+
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/lister_provinces.php`,
@@ -177,9 +266,13 @@ export const getProvinces = async (): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanProvinceData(item)))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error("Get provinces error:", error);
@@ -188,12 +281,16 @@ export const getProvinces = async (): Promise<ApiResponse> => {
       message: "Erreur réseau lors de la récupération des provinces",
     };
   }
-};
+}
 
 /**
- * Récupère les items d'une série spécifique
+ * 💾 Récupère les items d'une série spécifique (AVEC CACHE - 2 heures)
  */
-export const getSerieItems = async (serieId: number): Promise<ApiResponse> => {
+export async function getSerieItems(serieId: number): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIE_ITEMS(serieId));
+
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/lister_items_serie.php?serie_id=${serieId}`,
@@ -215,9 +312,13 @@ export const getSerieItems = async (serieId: number): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanSerieItemData(item)))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error("Get serie items error:", error);
@@ -226,18 +327,18 @@ export const getSerieItems = async (serieId: number): Promise<ApiResponse> => {
       message: "Erreur réseau lors de la récupération des items",
     };
   }
-};
+}
 
 /**
- * Ajoute une nouvelle série
+ * 🔄 Ajoute une nouvelle série (INVALIDE LE CACHE)
  */
-export const addSerie = async (serieData: {
+export async function addSerie(serieData: {
   nom_serie: string;
   province_id: number;
   debut_numeros: number;
   fin_numeros: number;
   description?: string;
-}): Promise<ApiResponse> => {
+}): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append("nom_serie", serieData.nom_serie);
@@ -263,6 +364,9 @@ export const addSerie = async (serieData: {
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateSeriesCache();
+
     return data;
   } catch (error) {
     console.error("Add serie error:", error);
@@ -271,19 +375,19 @@ export const addSerie = async (serieData: {
       message: "Erreur réseau lors de l'ajout de la série",
     };
   }
-};
+}
 
 /**
- * Modifie une série existante
+ * 🔄 Modifie une série existante (INVALIDE LE CACHE)
  */
-export const updateSerie = async (
+export async function updateSerie(
   id: number,
   serieData: {
     nom_serie: string;
     province_id: number;
     description?: string;
   }
-): Promise<ApiResponse> => {
+): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append("id", id.toString());
@@ -308,6 +412,9 @@ export const updateSerie = async (
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateSeriesCache(id);
+
     return data;
   } catch (error) {
     console.error("Update serie error:", error);
@@ -316,12 +423,12 @@ export const updateSerie = async (
       message: "Erreur réseau lors de la modification de la série",
     };
   }
-};
+}
 
 /**
- * Supprime une série
+ * 🔄 Supprime une série (INVALIDE LE CACHE)
  */
-export const deleteSerie = async (id: number): Promise<ApiResponse> => {
+export async function deleteSerie(id: number): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append("id", id.toString());
@@ -344,6 +451,9 @@ export const deleteSerie = async (id: number): Promise<ApiResponse> => {
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateSeriesCache(id);
+
     return data;
   } catch (error) {
     console.error("Delete serie error:", error);
@@ -352,15 +462,15 @@ export const deleteSerie = async (id: number): Promise<ApiResponse> => {
       message: "Erreur réseau lors de la suppression de la série",
     };
   }
-};
+}
 
 /**
- * Change le statut d'une série (actif/inactif)
+ * 🔄 Change le statut d'une série (INVALIDE LE CACHE)
  */
-export const toggleSerieStatus = async (
+export async function toggleSerieStatus(
   id: number,
   actif: boolean
-): Promise<ApiResponse> => {
+): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append("id", id.toString());
@@ -384,6 +494,9 @@ export const toggleSerieStatus = async (
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateSeriesCache(id);
+
     return data;
   } catch (error) {
     console.error("Toggle serie status error:", error);
@@ -392,17 +505,21 @@ export const toggleSerieStatus = async (
       message: "Erreur réseau lors du changement de statut de la série",
     };
   }
-};
+}
 
 /**
- * Recherche des séries dans la base de données avec pagination
+ * 💾 Recherche des séries dans la base de données avec pagination (AVEC CACHE - 2 heures)
  */
-export const searchSeries = async (
+export async function searchSeries(
   searchTerm: string,
   page: number = 1,
   limit: number = 5,
   utilisateurId?: number
-): Promise<PaginationResponse> => {
+): Promise<PaginationResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIES_SEARCH_PAGINES(searchTerm, page));
+
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/rechercher_series.php`,
@@ -430,10 +547,14 @@ export const searchSeries = async (
       };
     }
 
+    const cleanedData = Array.isArray(data.data?.series)
+      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      : [];
+
     return {
       status: "success",
       data: {
-        series: data.data?.series || [],
+        series: cleanedData,
         pagination: data.data?.pagination || {
           total: 0,
           page: 1,
@@ -449,16 +570,20 @@ export const searchSeries = async (
       message: "Erreur réseau lors de la recherche des séries",
     };
   }
-};
+}
 
 /**
- * Génère un rapport des séries
+ * 💾 Génère un rapport des séries (AVEC CACHE - 2 heures)
  */
-export const genererRapportSeries = async (params: {
+export async function genererRapportSeries(params: {
   date_debut: string;
   date_fin: string;
   province_id?: number;
-}): Promise<ApiResponse> => {
+}): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.RAPPORT_SERIES(params.date_debut, params.date_fin, params.province_id));
+
   try {
     const queryParams = new URLSearchParams({
       date_debut: params.date_debut,
@@ -497,4 +622,214 @@ export const genererRapportSeries = async (params: {
       message: "Erreur réseau lors de la génération du rapport",
     };
   }
-};
+}
+
+/**
+ * 💾 Récupère la liste des séries actives (AVEC CACHE - 2 heures)
+ */
+export async function getSeriesActives(
+  page: number = 1,
+  limit: number = 5,
+  utilisateurId?: number
+): Promise<PaginationResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIES_PAGINES(page, utilisateurId), 'actives');
+
+  try {
+    let url = `${API_BASE_URL}/plaques/lister_series_actives.php?page=${page}&limit=${limit}`;
+    if (utilisateurId !== undefined) {
+      url += `&utilisateur_id=${utilisateurId}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la récupération des séries actives",
+      };
+    }
+
+    const cleanedData = Array.isArray(data.data?.series)
+      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      : [];
+
+    return {
+      status: "success",
+      data: {
+        series: cleanedData,
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 5,
+          totalPages: 1,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Get series actives error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des séries actives",
+    };
+  }
+}
+
+/**
+ * 🌊 Vérifie si une série existe déjà par son nom (PAS DE CACHE)
+ */
+export async function checkSerieByNom(nomSerie: string): Promise<ApiResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/plaques/verifier_serie.php?nom_serie=${encodeURIComponent(nomSerie)}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la vérification de la série",
+      };
+    }
+
+    return {
+      status: "success",
+      data: data.data,
+    };
+  } catch (error) {
+    console.error("Check serie by nom error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification de la série",
+    };
+  }
+}
+
+/**
+ * 💾 Récupère une série par son ID (AVEC CACHE - 2 heures)
+ */
+export async function getSerieById(id: number): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIE_DETAILS(id));
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/plaques/get_serie.php?id=${id}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la récupération de la série",
+      };
+    }
+
+    return {
+      status: "success",
+      data: await cleanSerieData(data.data),
+    };
+  } catch (error) {
+    console.error("Get serie by ID error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération de la série",
+    };
+  }
+}
+
+/**
+ * 💾 Recherche des séries par province (AVEC CACHE - 2 heures)
+ */
+export async function searchSeriesByProvince(
+  provinceId: number,
+  page: number = 1,
+  limit: number = 5,
+  searchTerm?: string
+): Promise<PaginationResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIES_PROVINCE(provinceId, page));
+
+  try {
+    const body: any = {
+      province_id: provinceId,
+      page: page,
+      limit: limit,
+    };
+    
+    if (searchTerm) {
+      body.search = searchTerm;
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/plaques/rechercher_series_par_province.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la recherche des séries par province",
+      };
+    }
+
+    const cleanedData = Array.isArray(data.data?.series)
+      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      : [];
+
+    return {
+      status: "success",
+      data: {
+        series: cleanedData,
+        pagination: data.data?.pagination || {
+          total: 0,
+          page: 1,
+          limit: 5,
+          totalPages: 1,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Search series by province error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche des séries par province",
+    };
+  }
+}

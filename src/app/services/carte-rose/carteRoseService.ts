@@ -1,5 +1,12 @@
-// services/carte-rose/carteRoseService.ts
+"use server";
 
+import { revalidateTag } from "next/cache";
+
+/**
+ * Server Actions pour la gestion des cartes roses
+ */
+
+// Interfaces
 export interface VerificationData {
   telephone: string;
   numeroPlaque: string;
@@ -64,7 +71,7 @@ export interface CarteRoseResponse {
     nif?: string;
     particulier_existant?: boolean;
     paiement_id?: string;
-  } | null; // Ajout de | null ici
+  } | null;
 }
 
 export interface RechercheModeleResponse {
@@ -94,12 +101,44 @@ export interface RecherchePuissanceResponse {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:80/Impot/backend/calls";
 
+// Tags de cache pour invalidation
+const CACHE_TAGS = {
+  CARTE_ROSE_SOUMISSION: "carte-rose-soumission",
+  CARTE_ROSE_VERIFICATION: "carte-rose-verification",
+  PARTICULIERS_CARTE_ROSE: "particuliers-carte-rose",
+};
+
+/**
+ * Invalide le cache après une soumission de carte rose réussie
+ */
+/**
+ * Invalide le cache après une soumission de carte rose réussie
+ */
+async function invalidateCarteRoseCache() {
+  "use server";
+
+  // Invalider les caches des anciens services
+  revalidateTag(CACHE_TAGS.CARTE_ROSE_SOUMISSION, "max");
+  revalidateTag(CACHE_TAGS.CARTE_ROSE_VERIFICATION, "max");
+  revalidateTag(CACHE_TAGS.PARTICULIERS_CARTE_ROSE, "max");
+
+  // ⚡ NOUVEAU : Invalider aussi les caches des services de liste et statistiques
+  // Revalider toutes les combinaisons possibles de paramètres pour les listes de cartes roses
+  // Nous invalidons les tags génériques (sans hash) pour forcer le rechargement
+  revalidateTag("cartes-list-", "max");
+  revalidateTag("cartes-stats-", "max");
+
+  // Revalider aussi les tags généraux pour s'assurer que tout est rafraîchi
+  revalidateTag("cartes-recent-", "max");
+  revalidateTag("cartes-plaque-", "max");
+}
+
 /**
  * Vérifie le téléphone et le numéro de plaque
  */
-export const verifierPlaqueTelephone = async (
-  verificationData: VerificationData
-): Promise<CarteRoseResponse> => {
+export async function verifierPlaqueTelephone(
+  verificationData: VerificationData,
+): Promise<CarteRoseResponse> {
   try {
     const formData = new FormData();
     formData.append("telephone", verificationData.telephone);
@@ -112,7 +151,7 @@ export const verifierPlaqueTelephone = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -133,21 +172,21 @@ export const verifierPlaqueTelephone = async (
       message: "Erreur réseau lors de la vérification",
     };
   }
-};
+}
 
 /**
  * Vérifie si un téléphone existe déjà (uniquement si le téléphone n'est pas vide et différent de "-")
  */
-export const verifierTelephoneExistant = async (
-  telephone: string
-): Promise<CarteRoseResponse> => {
+export async function verifierTelephoneExistant(
+  telephone: string,
+): Promise<CarteRoseResponse> {
   try {
     // Ne pas vérifier si le téléphone est vide ou juste un tiret
     if (!telephone || telephone.trim() === "" || telephone.trim() === "-") {
       return {
         status: "success",
         message: "Téléphone vide ou '-', pas de vérification nécessaire",
-        data: null // Maintenant c'est accepté car data peut être null
+        data: null,
       };
     }
 
@@ -160,7 +199,7 @@ export const verifierTelephoneExistant = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -180,15 +219,16 @@ export const verifierTelephoneExistant = async (
       message: "Erreur réseau lors de la vérification du téléphone",
     };
   }
-};
+}
 
 /**
  * Recherche des modèles par marque et terme de recherche
+ * PAS DE CACHE - Recherche en temps réel
  */
-export const rechercherModeles = async (
+export async function rechercherModeles(
   marqueId: number,
-  searchTerm: string
-): Promise<RechercheModeleResponse> => {
+  searchTerm: string,
+): Promise<RechercheModeleResponse> {
   try {
     const formData = new FormData();
     formData.append("marque_id", marqueId.toString());
@@ -200,7 +240,9 @@ export const rechercherModeles = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+        // Pas de cache pour les recherches
+        cache: "no-store",
+      },
     );
 
     const data = await response.json();
@@ -220,16 +262,16 @@ export const rechercherModeles = async (
       message: "Erreur réseau lors de la recherche des modèles",
     };
   }
-};
+}
 
 /**
  * Crée un nouveau modèle
  */
-export const creerModele = async (
+export async function creerModele(
   libelle: string,
   marqueEnginId: number,
-  description: string = ""
-): Promise<RechercheModeleResponse> => {
+  description: string = "",
+): Promise<RechercheModeleResponse> {
   try {
     const formData = new FormData();
     formData.append("libelle", libelle);
@@ -242,7 +284,7 @@ export const creerModele = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -262,15 +304,16 @@ export const creerModele = async (
       message: "Erreur réseau lors de la création du modèle",
     };
   }
-};
+}
 
 /**
  * Recherche des puissances fiscales par type d'engin et terme
+ * PAS DE CACHE - Recherche en temps réel
  */
-export const rechercherPuissancesFiscales = async (
+export async function rechercherPuissancesFiscales(
   typeEnginLibelle: string,
-  searchTerm: string
-): Promise<RecherchePuissanceResponse> => {
+  searchTerm: string,
+): Promise<RecherchePuissanceResponse> {
   try {
     const formData = new FormData();
     formData.append("type_engin_libelle", typeEnginLibelle);
@@ -282,7 +325,9 @@ export const rechercherPuissancesFiscales = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+        // Pas de cache pour les recherches
+        cache: "no-store",
+      },
     );
 
     const data = await response.json();
@@ -302,17 +347,17 @@ export const rechercherPuissancesFiscales = async (
       message: "Erreur réseau lors de la recherche des puissances",
     };
   }
-};
+}
 
 /**
  * Crée une nouvelle puissance fiscale
  */
-export const creerPuissanceFiscale = async (
+export async function creerPuissanceFiscale(
   libelle: string,
   valeur: number,
   typeEnginLibelle: string,
-  description: string = ""
-): Promise<RecherchePuissanceResponse> => {
+  description: string = "",
+): Promise<RecherchePuissanceResponse> {
   try {
     const formData = new FormData();
     formData.append("libelle", libelle);
@@ -326,7 +371,7 @@ export const creerPuissanceFiscale = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -346,12 +391,13 @@ export const creerPuissanceFiscale = async (
       message: "Erreur réseau lors de la création de la puissance",
     };
   }
-};
+}
 
 /**
  * Soumet la carte rose complète
+ * INVALIDE LE CACHE après soumission réussie
  */
-export const soumettreCarteRose = async (
+export async function soumettreCarteRose(
   impotId: string,
   particulierData: ParticulierData,
   enginData: EnginData,
@@ -359,8 +405,8 @@ export const soumettreCarteRose = async (
   serieId: number,
   serieItemId: number,
   plaqueAttribueeId: number | null,
-  utilisateur: any
-): Promise<CarteRoseResponse> => {
+  utilisateur: any,
+): Promise<CarteRoseResponse> {
   try {
     const formData = new FormData();
 
@@ -408,7 +454,7 @@ export const soumettreCarteRose = async (
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -420,6 +466,11 @@ export const soumettreCarteRose = async (
       };
     }
 
+    // ⚡ Invalider les caches après une soumission réussie
+    if (data.status === "success") {
+      await invalidateCarteRoseCache();
+    }
+
     return data;
   } catch (error) {
     console.error("Soumettre carte rose error:", error);
@@ -428,4 +479,4 @@ export const soumettreCarteRose = async (
       message: "Erreur réseau lors de la soumission de la carte rose",
     };
   }
-};
+}

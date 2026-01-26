@@ -60,6 +60,26 @@ export default function DeleteTauxModal({
                 </p>
               )}
             </div>
+            
+            {/* Afficher les attributions si existantes */}
+            {(taux.attributions && taux.attributions.length > 0) && (
+              <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3 mb-3">
+                <p className="text-yellow-800 text-sm font-medium mb-1">
+                  ⚠️ Ce taux a des attributions :
+                </p>
+                <ul className="text-yellow-700 text-xs space-y-1">
+                  {taux.attributions.slice(0, 3).map((att) => (
+                    <li key={att.id}>
+                      • {att.province_nom || 'Toutes provinces'} - {att.impot_nom}
+                    </li>
+                  ))}
+                  {taux.attributions.length > 3 && (
+                    <li>... et {taux.attributions.length - 3} autres</li>
+                  )}
+                </ul>
+              </div>
+            )}
+            
             <p className="text-red-600 text-xs font-medium">
               ⚠️ Cette action ne peut pas être annulée
             </p>

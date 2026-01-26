@@ -1,5 +1,7 @@
+'use server';
+
 /**
- * Service pour la gestion du refactor des cartes
+ * Server Actions pour la gestion du refactor des cartes (SANS CACHE - temps réel)
  */
 
 export interface DonneesRefactor {
@@ -43,13 +45,15 @@ const API_BASE_URL =
   "http://localhost/SOCOFIAPP/Impot/backend/calls";
 
 /**
- * Vérifie un ID DGRK et récupère les données associées
+ * 🔄 Vérifie un ID DGRK et récupère les données associées (TEMPS RÉEL)
  */
 export const verifierIdDGRK = async (
   identifiant: string,
   siteCode: string,
   extension?: number | null
 ): Promise<RefactorResponse & { source?: string }> => {
+  'use server';
+  
   try {
     // D'abord, essayer avec la base locale
     const formData = new FormData();
@@ -64,6 +68,7 @@ export const verifierIdDGRK = async (
       method: "POST",
       credentials: "include",
       body: formData,
+      cache: 'no-store',
     });
 
     const data = await response.json();
@@ -99,7 +104,7 @@ export const verifierIdDGRK = async (
 };
 
 /**
- * Traite une demande de refactor
+ * 🔄 Traite une demande de refactor (TEMPS RÉEL)
  */
 export const traiterRefactor = async (
   idDGRK: string,
@@ -108,6 +113,8 @@ export const traiterRefactor = async (
   source?: "locale" | "externe",
   siteCode?: string // Ajouter le site_code comme paramètre
 ): Promise<RefactorResponse> => {
+  'use server';
+  
   try {
     const bodyData = {
       id_dgrk: idDGRK,
@@ -126,6 +133,7 @@ export const traiterRefactor = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(bodyData),
+        cache: 'no-store',
       }
     );
 
@@ -148,11 +156,15 @@ export const traiterRefactor = async (
   }
 };
 
-// Ajouter une nouvelle fonction pour vérifier dans la base externe
+/**
+ * 🔄 Vérifie dans la base externe (TEMPS RÉEL)
+ */
 export const verifierPlaqueExterne = async (
   plaque: string,
   extension?: number | null // Accepter le même type que verifierIdDGRK
 ): Promise<RefactorResponse> => {
+  'use server';
+  
   try {
     const formData = new FormData();
     formData.append("plaque", plaque);
@@ -172,6 +184,7 @@ export const verifierPlaqueExterne = async (
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: 'no-store',
       }
     );
 

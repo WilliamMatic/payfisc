@@ -18,8 +18,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getImpotById } from "@/services/impots/impotService";
-import { Impot } from "@/services/impots/impotService";
+import { getImpotById, Impot } from "@/services/impots/impotService";
 import {
   verifierIdDGRK,
   traiterRefactor,
@@ -207,7 +206,10 @@ export default function RefactorServicesClient() {
     const chargerTaux = async () => {
       setLoadingTaux(true);
       try {
-        const tauxResponse = await getTauxActif();
+        const tauxResponse = await getTauxActif({
+          province_id: null,
+          impot_id: Number(params.id),
+        });
         if (tauxResponse.status === "success" && tauxResponse.data) {
           setTauxActif(tauxResponse.data);
         }

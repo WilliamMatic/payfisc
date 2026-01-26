@@ -57,6 +57,7 @@ interface DetailModalProps {
   isOpen: boolean;
   vente: VenteNonGrossiste | null;
   onClose: () => void;
+  getSiteName: (siteId: number) => string;
 }
 
 interface FilterModalProps {
@@ -306,7 +307,7 @@ function DeleteConfirmationModal({
 }
 
 // Modal de détail
-function DetailModal({ isOpen, vente, onClose }: DetailModalProps) {
+function DetailModal({ isOpen, vente, onClose, getSiteName }: DetailModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -519,7 +520,7 @@ function DetailModal({ isOpen, vente, onClose }: DetailModalProps) {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-amber-700 font-medium">Site:</span>
-                  <span className="text-gray-900">LIMETE (LMT)</span>
+                  <span className="text-gray-900">{getSiteName(vente.site_id)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700 font-medium">Agent:</span>
@@ -775,6 +776,20 @@ export default function VentesNonGrossistesScreen() {
     order_by: "date_paiement",
     order_dir: "DESC",
   });
+
+  // Fonction pour obtenir le nom du site
+  const getSiteName = useCallback((siteId: number): string => {
+    const site = sites.find(s => s.id === siteId);
+    return site ? `${site.nom} (${site.code})` : `Site ${siteId}`;
+  }, [sites]);
+
+  // Fonction pour mapper les ventes avec les noms de site
+  const ventesWithSiteNames = useMemo(() => {
+    return ventes.map(vente => ({
+      ...vente,
+      site_nom: getSiteName(vente.site_id)
+    }));
+  }, [ventes, sites, getSiteName]);
 
   // Fonction pour afficher les messages
   const showMessage = (type: "success" | "error" | "info" | "warning", title: string, message: string) => {
@@ -1266,9 +1281,7 @@ export default function VentesNonGrossistesScreen() {
                   {filters.site_id > 0 && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
                       <Building className="w-3 h-3 mr-1" />
-                      Site:{" "}
-                      {sites.find((s) => s.id === filters.site_id)?.nom ||
-                        filters.site_id}
+                      Site: {getSiteName(filters.site_id)}
                     </span>
                   )}
                 </>
@@ -1383,7 +1396,7 @@ export default function VentesNonGrossistesScreen() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            LIMETE (LMT)
+                            {getSiteName(vente.site_id)}
                           </div>
                           <div className="text-xs text-gray-500">
                             {vente.utilisateur_nom}
@@ -1459,6 +1472,7 @@ export default function VentesNonGrossistesScreen() {
         isOpen={showDetailModal}
         vente={selectedVente}
         onClose={() => setShowDetailModal(false)}
+        getSiteName={getSiteName}
       />
 
       <DeleteConfirmationModal

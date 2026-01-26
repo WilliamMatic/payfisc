@@ -1,7 +1,10 @@
-// services/type-engins/typeEnginService.ts
+'use server';
+
+import { cacheLife, cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 /**
- * Service pour la gestion des types d'engins - Interface avec l'API backend
+ * Server Actions pour la gestion des types d'engins avec Cache Components Next.js 16
  */
 
 // Interface pour les données d'un type d'engin
@@ -23,10 +26,48 @@ export interface ApiResponse {
 // URL de base de l'API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls';
 
+// Tags de cache pour invalidation ciblée
+const CACHE_TAGS = {
+  TYPE_ENGINS_LIST: 'type-engins-list',
+  TYPE_ENGINS_ACTIFS: 'type-engins-actifs',
+  TYPE_ENGIN_DETAILS: (id: number) => `type-engin-${id}`,
+  TYPE_ENGINS_SEARCH: 'type-engins-search',
+};
+
 /**
- * Récupère la liste de tous les types d'engins
+ * Invalide le cache après une mutation avec stale-while-revalidate
  */
-export const getTypeEngins = async (): Promise<ApiResponse> => {
+async function invalidateTypeEnginsCache(typeEnginId?: number) {
+  'use server';
+  
+  revalidateTag(CACHE_TAGS.TYPE_ENGINS_LIST, "max");
+  revalidateTag(CACHE_TAGS.TYPE_ENGINS_ACTIFS, "max");
+  revalidateTag(CACHE_TAGS.TYPE_ENGINS_SEARCH, "max");
+  
+  if (typeEnginId) {
+    revalidateTag(CACHE_TAGS.TYPE_ENGIN_DETAILS(typeEnginId), "max");
+  }
+}
+
+// Nettoyer les données
+export async function cleanTypeEnginData(data: any): Promise<TypeEngin> {
+  return {
+    id: data.id || 0,
+    libelle: data.libelle || "",
+    description: data.description || "",
+    actif: Boolean(data.actif),
+    date_creation: data.date_creation || "",
+  };
+}
+
+/**
+ * 💾 Récupère la liste de tous les types d'engins (AVEC CACHE - 2 heures)
+ */
+export async function getTypeEngins(): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.TYPE_ENGINS_LIST);
+
   try {
     const response = await fetch(`${API_BASE_URL}/type-engins/lister_type_engins.php`, {
       method: 'GET',
@@ -45,9 +86,13 @@ export const getTypeEngins = async (): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanTypeEnginData(item)))
+      : [];
+
     return {
       status: 'success',
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error('Get type engins error:', error);
@@ -56,12 +101,16 @@ export const getTypeEngins = async (): Promise<ApiResponse> => {
       message: 'Erreur réseau lors de la récupération des types d\'engins',
     };
   }
-};
+}
 
 /**
- * Récupère la liste des types d'engins actifs
+ * 💾 Récupère la liste des types d'engins actifs (AVEC CACHE - 2 heures)
  */
-export const getTypeEnginsActifs = async (): Promise<ApiResponse> => {
+export async function getTypeEnginsActifs(): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.TYPE_ENGINS_ACTIFS);
+
   try {
     const response = await fetch(`${API_BASE_URL}/type-engins/lister_type_engins_actifs.php`, {
       method: 'GET',
@@ -80,9 +129,13 @@ export const getTypeEnginsActifs = async (): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanTypeEnginData(item)))
+      : [];
+
     return {
       status: 'success',
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error('Get type engins actifs error:', error);
@@ -91,15 +144,15 @@ export const getTypeEnginsActifs = async (): Promise<ApiResponse> => {
       message: 'Erreur réseau lors de la récupération des types d\'engins actifs',
     };
   }
-};
+}
 
 /**
- * Ajoute un nouveau type d'engin
+ * 🔄 Ajoute un nouveau type d'engin (INVALIDE LE CACHE)
  */
-export const addTypeEngin = async (typeEnginData: {
+export async function addTypeEngin(typeEnginData: {
   libelle: string;
   description?: string;
-}): Promise<ApiResponse> => {
+}): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('libelle', typeEnginData.libelle);
@@ -122,6 +175,9 @@ export const addTypeEngin = async (typeEnginData: {
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateTypeEnginsCache();
+
     return data;
   } catch (error) {
     console.error('Add type engin error:', error);
@@ -130,18 +186,18 @@ export const addTypeEngin = async (typeEnginData: {
       message: 'Erreur réseau lors de l\'ajout du type d\'engin',
     };
   }
-};
+}
 
 /**
- * Modifie un type d'engin existant
+ * 🔄 Modifie un type d'engin existant (INVALIDE LE CACHE)
  */
-export const updateTypeEngin = async (
+export async function updateTypeEngin(
   id: number,
   typeEnginData: {
     libelle: string;
     description?: string;
   }
-): Promise<ApiResponse> => {
+): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('id', id.toString());
@@ -165,6 +221,9 @@ export const updateTypeEngin = async (
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateTypeEnginsCache(id);
+
     return data;
   } catch (error) {
     console.error('Update type engin error:', error);
@@ -173,12 +232,12 @@ export const updateTypeEngin = async (
       message: 'Erreur réseau lors de la modification du type d\'engin',
     };
   }
-};
+}
 
 /**
- * Supprime un type d'engin
+ * 🔄 Supprime un type d'engin (INVALIDE LE CACHE)
  */
-export const deleteTypeEngin = async (id: number): Promise<ApiResponse> => {
+export async function deleteTypeEngin(id: number): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('id', id.toString());
@@ -198,6 +257,9 @@ export const deleteTypeEngin = async (id: number): Promise<ApiResponse> => {
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateTypeEnginsCache(id);
+
     return data;
   } catch (error) {
     console.error('Delete type engin error:', error);
@@ -206,15 +268,15 @@ export const deleteTypeEngin = async (id: number): Promise<ApiResponse> => {
       message: 'Erreur réseau lors de la suppression du type d\'engin',
     };
   }
-};
+}
 
 /**
- * Change le statut d'un type d'engin (actif/inactif)
+ * 🔄 Change le statut d'un type d'engin (INVALIDE LE CACHE)
  */
-export const toggleTypeEnginStatus = async (
+export async function toggleTypeEnginStatus(
   id: number,
   actif: boolean
-): Promise<ApiResponse> => {
+): Promise<ApiResponse> {
   try {
     const formData = new FormData();
     formData.append('id', id.toString());
@@ -235,6 +297,9 @@ export const toggleTypeEnginStatus = async (
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidateTypeEnginsCache(id);
+
     return data;
   } catch (error) {
     console.error('Toggle type engin status error:', error);
@@ -243,4 +308,130 @@ export const toggleTypeEnginStatus = async (
       message: 'Erreur réseau lors du changement de statut du type d\'engin',
     };
   }
-};
+}
+
+/**
+ * 💾 Recherche des types d'engins par terme (AVEC CACHE - 2 heures)
+ */
+export async function searchTypeEngins(searchTerm: string): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.TYPE_ENGINS_SEARCH, `search-${searchTerm}`);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/type-engins/rechercher_type_engins.php?search=${encodeURIComponent(searchTerm)}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la recherche des types d\'engins',
+      };
+    }
+
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanTypeEnginData(item)))
+      : [];
+
+    return {
+      status: 'success',
+      data: cleanedData,
+    };
+  } catch (error) {
+    console.error('Search type engins error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la recherche des types d\'engins',
+    };
+  }
+}
+
+/**
+ * 🌊 Vérifie si un type d'engin existe déjà par son libellé (PAS DE CACHE)
+ */
+export async function checkTypeEnginExists(libelle: string): Promise<ApiResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/type-engins/verifier_type_engin.php?libelle=${encodeURIComponent(libelle)}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la vérification du type d\'engin',
+      };
+    }
+
+    return {
+      status: 'success',
+      data: data.data,
+    };
+  } catch (error) {
+    console.error('Check type engin exists error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la vérification du type d\'engin',
+    };
+  }
+}
+
+/**
+ * 💾 Récupère un type d'engin par son ID (AVEC CACHE - 2 heures)
+ */
+export async function getTypeEnginById(id: number): Promise<ApiResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.TYPE_ENGIN_DETAILS(id));
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/type-engins/get_type_engin.php?id=${id}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: 'error',
+        message: data.message || 'Échec de la récupération du type d\'engin',
+      };
+    }
+
+    return {
+      status: 'success',
+      data: await cleanTypeEnginData(data.data),
+    };
+  } catch (error) {
+    console.error('Get type engin by ID error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la récupération du type d\'engin',
+    };
+  }
+}

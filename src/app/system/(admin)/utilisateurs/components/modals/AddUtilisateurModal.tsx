@@ -25,7 +25,9 @@ export default function AddUtilisateurModal({
     special: 'Spécial',
     delivrance: 'Délivrance',
     plaque: 'Plaque',
-    reproduction: 'Reproduction'
+    reproduction: 'Reproduction',
+    series: 'Séries',
+    autresTaxes: 'Autres Taxes'
   };
 
   return (

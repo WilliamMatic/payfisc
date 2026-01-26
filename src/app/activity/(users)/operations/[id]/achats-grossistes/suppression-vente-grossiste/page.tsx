@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-
-import { useAuth } from "@/contexts/AuthContext";
-
-import { useRouter } from "next/navigation";
 import {
   Search,
   User,
-  Lock,
+  Calendar,
   DollarSign,
   Phone,
   Trash2,
   Eye,
+  ArrowLeft,
   RefreshCw,
   AlertCircle,
   CheckCircle,
@@ -22,7 +19,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  ArrowLeft,
+  BarChart3,
   Users,
   FileText,
   XCircle,
@@ -51,6 +48,7 @@ import {
   exporterCommandesExcel,
   getDetailsCommande,
 } from "@/services/commande/commandesService";
+import { useRouter } from "next/navigation";
 
 // Types
 interface DeleteConfirmationModalProps {
@@ -553,38 +551,54 @@ function DetailModal({ isOpen, commande, onClose }: DetailModalProps) {
             </div>
 
             {/* Section Montants */}
-            {/* <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
+            <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
               <h4 className="text-lg font-bold text-purple-800 mb-4 flex items-center">
                 <BarChart3 className="w-5 h-5 mr-2" />
                 Montants
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Montant initial:</span>
-                  <span className="text-gray-900">{formatMontant(commande.montant_initial)}</span>
+                  <span className="text-purple-700 font-medium">
+                    Montant initial:
+                  </span>
+                  <span className="text-gray-900">
+                    {formatMontant(commande.montant_initial)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Montant final:</span>
-                  <span className="text-lg font-bold text-green-600">{formatMontant(commande.montant)}</span>
+                  <span className="text-purple-700 font-medium">
+                    Montant final:
+                  </span>
+                  <span className="text-lg font-bold text-green-600">
+                    {formatMontant(commande.montant)}
+                  </span>
                 </div>
                 {commande.reduction_type && (
                   <div className="flex justify-between">
-                    <span className="text-purple-700 font-medium">Économie:</span>
+                    <span className="text-purple-700 font-medium">
+                      Économie:
+                    </span>
                     <span className="text-green-600 font-bold">
-                      {formatMontant(commande.montant_initial - commande.montant)}
+                      {formatMontant(
+                        commande.montant_initial - commande.montant,
+                      )}
                     </span>
                   </div>
                 )}
                 <div className="pt-3 border-t border-purple-200">
                   <div className="flex justify-between">
-                    <span className="text-purple-700 font-medium">Prix unitaire:</span>
+                    <span className="text-purple-700 font-medium">
+                      Prix unitaire:
+                    </span>
                     <span className="text-gray-900">
-                      {formatMontant(commande.montant_initial / commande.nombre_plaques)}
+                      {formatMontant(
+                        commande.montant_initial / commande.nombre_plaques,
+                      )}
                     </span>
                   </div>
                 </div>
               </div>
-            </div> */}
+            </div>
 
             {/* Section Plaques */}
             <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
@@ -779,11 +793,11 @@ function FilterModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="0">Tous les sites</option>
-                  {/* {sites.map((site) => (
+                  {sites.map((site) => (
                     <option key={site.id} value={site.id}>
                       {site.nom} ({site.code})
                     </option>
-                  ))} */}
+                  ))}
                 </select>
               </div>
 
@@ -808,7 +822,7 @@ function FilterModal({
                     onChange={(e) =>
                       handleChange(
                         "order_dir",
-                        e.target.value as "ASC" | "DESC"
+                        e.target.value as "ASC" | "DESC",
                       )
                     }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -852,7 +866,6 @@ function FilterModal({
 // Composant principal
 export default function CommandesPlaquesScreen() {
   const router = useRouter();
-  const { utilisateur, isLoading: authLoading } = useAuth();
   // États principaux
   const [commandes, setCommandes] = useState<CommandePlaque[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -888,8 +901,6 @@ export default function CommandesPlaquesScreen() {
   const [sites, setSites] = useState<Site[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
-
   // États filtres
   const [filters, setFilters] = useState<FilterState>({
     date_debut: "",
@@ -903,26 +914,11 @@ export default function CommandesPlaquesScreen() {
   const showMessage = (
     type: "success" | "error" | "info" | "warning",
     title: string,
-    message: string
+    message: string,
   ) => {
     setMessageModalProps({ type, title, message });
     setShowMessageModal(true);
   };
-
-  // Parser les privilèges quand utilisateur change
-  useEffect(() => {
-    if (utilisateur?.privileges_include) {
-      try {
-        const parsed = JSON.parse(utilisateur.privileges_include);
-        setParsedPrivileges(parsed);
-      } catch (error) {
-        console.error("Erreur parsing privileges:", error);
-        setParsedPrivileges({});
-      }
-    } else if (utilisateur) {
-      setParsedPrivileges({});
-    }
-  }, [utilisateur]);
 
   // Charger les sites
   useEffect(() => {
@@ -968,7 +964,7 @@ export default function CommandesPlaquesScreen() {
           limit: pagination.limit,
           totalPages: Math.max(
             1,
-            Math.ceil(commandesArray.length / pagination.limit)
+            Math.ceil(commandesArray.length / pagination.limit),
           ),
         };
 
@@ -1074,7 +1070,7 @@ export default function CommandesPlaquesScreen() {
       const result = await annulerCommandePlaques(
         commandeToDelete.id,
         1, // ID utilisateur - à remplacer par l'ID réel de l'utilisateur connecté
-        "Annulation via interface admin"
+        "Annulation via interface admin",
       );
 
       if (result.status === "success") {
@@ -1086,7 +1082,7 @@ export default function CommandesPlaquesScreen() {
         showMessage(
           "error",
           "Erreur",
-          result.message || "Erreur lors de l'annulation"
+          result.message || "Erreur lors de l'annulation",
         );
       }
     } catch (error) {
@@ -1123,7 +1119,7 @@ export default function CommandesPlaquesScreen() {
     showMessage(
       "info",
       "Filtres réinitialisés",
-      "Tous les filtres ont été réinitialisés"
+      "Tous les filtres ont été réinitialisés",
     );
   };
 
@@ -1153,13 +1149,13 @@ export default function CommandesPlaquesScreen() {
         showMessage(
           "success",
           "Export réussi",
-          "Export Excel terminé avec succès"
+          "Export Excel terminé avec succès",
         );
       } else {
         showMessage(
           "error",
           "Erreur",
-          result.message || "Erreur lors de l'exportation"
+          result.message || "Erreur lors de l'exportation",
         );
       }
     } catch (error) {
@@ -1237,7 +1233,7 @@ export default function CommandesPlaquesScreen() {
                     {pageNum}
                   </button>
                 );
-              }
+              },
             )}
           </div>
 
@@ -1260,79 +1256,28 @@ export default function CommandesPlaquesScreen() {
     );
   };
 
-  // Vérifier si l'utilisateur a le privilège "special"
-  if (!parsedPrivileges?.special) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-red-600" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Accès Refusé
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Vous n'avez pas les privilèges nécessaires pour accéder à cette
-              fonctionnalité.
-            </p>
-            <div className="text-sm text-gray-500 mb-4">
-              <div className="text-left bg-gray-50 p-3 rounded-lg">
-                <div className="font-medium mb-2">Vos privilèges:</div>
-                {Object.entries(parsedPrivileges || {}).map(
-                  ([key, value]: [string, any]) => (
-                    <div key={key} className="flex items-center gap-2 mb-1">
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          value ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      ></span>
-                      <span className="font-medium">{key}:</span>
-                      <span
-                        className={value ? "text-green-600" : "text-red-600"}
-                      >
-                        {value ? "Activé" : "Désactivé"}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => router.back()}
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Retour</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       {/* En-tête */}
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.back()}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
-                title="Retour"
-              >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              </button>
-              <div>
+            <div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="text-sm font-medium">Retour au service</span>
+                </button>
                 <h1 className="text-3xl font-bold text-gray-900">
                   Commandes de Plaques
                 </h1>
-                <p className="text-gray-600 mt-2">
-                  Gestion des commandes de plaques aux clients grossistes
-                </p>
               </div>
+              <p className="text-gray-600 mt-2">
+                Gestion des commandes de plaques aux clients simples
+              </p>
             </div>
             <div className="flex items-center space-x-3">
               <button
@@ -1400,7 +1345,9 @@ export default function CommandesPlaquesScreen() {
                     <p className="text-sm text-green-700 font-medium">
                       Montant Total
                     </p>
-                    <p className="text-2xl font-bold text-green-800">-</p>
+                    <p className="text-2xl font-bold text-green-800">
+                      {formatMontant(stats.montantTotal)}
+                    </p>
                   </div>
                   <DollarSign className="w-8 h-8 text-green-600" />
                 </div>
@@ -1587,11 +1534,11 @@ export default function CommandesPlaquesScreen() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-lg font-bold text-green-600">
-                            -
+                            {formatMontant(commande.montant)}
                           </div>
                           {commande.montant_initial > commande.montant && (
                             <div className="text-xs text-gray-500 line-through">
-                              -
+                              {formatMontant(commande.montant_initial)}
                             </div>
                           )}
                         </td>

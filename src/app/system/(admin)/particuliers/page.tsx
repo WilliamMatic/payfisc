@@ -6,9 +6,9 @@ import {
 } from '@/services/particuliers/particulierService';
 import ParticuliersClient from './components/ParticulierClient';
 
-// AJOUTER CES DEUX LIGNES - C'EST LA SOLUTION
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// SUPPRIMER TOUTES LES CONFIGURATIONS DE SEGMENT
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
 
 export default async function ParticuliersPage() {
   try {

@@ -1,10 +1,13 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { Site as SiteType, Province as ProvinceType } from '@/services/sites/siteService';
-import SiteHeader from './SiteHeader';
-import SiteTable from './SiteTable';
-import SiteModals from './SiteModals';
-import AlertMessage from './AlertMessage';
+"use client";
+import { useState, useEffect } from "react";
+import {
+  Site as SiteType,
+  Province as ProvinceType,
+} from "@/services/sites/siteService";
+import SiteHeader from "./SiteHeader";
+import SiteTable from "./SiteTable";
+import SiteModals from "./SiteModals";
+import AlertMessage from "./AlertMessage";
 
 interface SiteClientProps {
   initialSites: SiteType[];
@@ -12,23 +15,29 @@ interface SiteClientProps {
   initialError: string | null;
 }
 
-export default function SiteClient({ initialSites, initialProvinces, initialError }: SiteClientProps) {
+export default function SiteClient({
+  initialSites,
+  initialProvinces,
+  initialError,
+}: SiteClientProps) {
   const [sites, setSites] = useState<SiteType[]>(initialSites || []);
-  const [provinces, setProvinces] = useState<ProvinceType[]>(initialProvinces || []);
+  const [provinces, setProvinces] = useState<ProvinceType[]>(
+    initialProvinces || [],
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedSite, setSelectedSite] = useState<SiteType | null>(null);
-  const [formData, setFormData] = useState({ 
-    nom: '', 
-    code: '', 
-    description: '', 
-    formule: '',
-    province_id: 0 
+  const [formData, setFormData] = useState({
+    nom: "",
+    code: "",
+    description: "",
+    formule: "",
+    province_id: 0,
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -37,40 +46,42 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
   const loadSites = async () => {
     try {
       setLoading(true);
-      const { getSites } = await import('@/services/sites/siteService');
+      const { getSites } = await import("@/services/sites/siteService");
       const result = await getSites();
-      
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
         setSites(result.data || []);
         setError(null);
       } else {
-        setError(result.message || 'Erreur lors du chargement des sites');
+        setError(result.message || "Erreur lors du chargement des sites");
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtrage local des sites avec vérification de null/undefined
-  const filteredSites = sites.filter(site =>
-    site && // Vérification que site n'est pas null/undefined
-    (site.nom && site.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.code && site.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.province_nom && site.province_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.description && site.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.formule && site.formule.toLowerCase().includes(searchTerm.toLowerCase()))
+  const term = searchTerm?.toLowerCase() || "";
+
+  const filteredSites = sites.filter(
+    (site) =>
+      site &&
+      (site.nom?.toString().toLowerCase().includes(term) ||
+        site.code?.toString().toLowerCase().includes(term) ||
+        site.province_nom?.toString().toLowerCase().includes(term) ||
+        site.description?.toString().toLowerCase().includes(term) ||
+        site.formule?.toString().toLowerCase().includes(term)),
   );
 
   const openEditModal = (site: SiteType) => {
     setSelectedSite(site);
     setFormData({
-      nom: site.nom || '',
-      code: site.code || '',
-      description: site.description || '',
-      formule: site.formule || '',
-      province_id: site.province_id || 0
+      nom: site.nom || "",
+      code: site.code || "",
+      description: site.description || "",
+      formule: site.formule || "",
+      province_id: site.province_id || 0,
     });
     setShowEditModal(true);
   };
@@ -103,8 +114,8 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
   return (
     <div className="h-full flex flex-col">
       <AlertMessage error={error} successMessage={successMessage} />
-      
-      <SiteHeader 
+
+      <SiteHeader
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onAddClick={() => setShowAddModal(true)}
@@ -131,7 +142,13 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedSite(null);
-          setFormData({ nom: '', code: '', description: '', formule: '', province_id: 0 });
+          setFormData({
+            nom: "",
+            code: "",
+            description: "",
+            formule: "",
+            province_id: 0,
+          });
         }}
         onDeleteClose={() => {
           setShowDeleteModal(false);
@@ -144,55 +161,74 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
         onFormDataChange={setFormData}
         onAddSite={async () => {
           if (!formData.nom || !formData.code || !formData.province_id) {
-            setError('Le nom, le code et la province sont obligatoires');
+            setError("Le nom, le code et la province sont obligatoires");
             return;
           }
 
           setProcessing(true);
           try {
-            const { addSite } = await import('@/services/sites/siteService');
+            const { addSite } = await import("@/services/sites/siteService");
             const result = await addSite(formData);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Site ajouté avec succès');
-              setFormData({ nom: '', code: '', description: '', formule: '', province_id: 0 });
+
+            if (result.status === "success") {
+              setSuccessMessage(result.message || "Site ajouté avec succès");
+              setFormData({
+                nom: "",
+                code: "",
+                description: "",
+                formule: "",
+                province_id: 0,
+              });
               setShowAddModal(false);
-              
+
               // Recharger la liste complète des sites
               await loadSites();
             } else {
-              setError(result.message || 'Erreur lors de l\'ajout du site');
+              setError(result.message || "Erreur lors de l'ajout du site");
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
         }}
         onEditSite={async () => {
-          if (!selectedSite || !formData.nom || !formData.code || !formData.province_id) {
-            setError('Le nom, le code et la province sont obligatoires');
+          if (
+            !selectedSite ||
+            !formData.nom ||
+            !formData.code ||
+            !formData.province_id
+          ) {
+            setError("Le nom, le code et la province sont obligatoires");
             return;
           }
 
           setProcessing(true);
           try {
-            const { updateSite } = await import('@/services/sites/siteService');
+            const { updateSite } = await import("@/services/sites/siteService");
             const result = await updateSite(selectedSite.id, formData);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Site modifié avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(result.message || "Site modifié avec succès");
               setShowEditModal(false);
               setSelectedSite(null);
-              setFormData({ nom: '', code: '', description: '', formule: '', province_id: 0 });
-              
+              setFormData({
+                nom: "",
+                code: "",
+                description: "",
+                formule: "",
+                province_id: 0,
+              });
+
               // Recharger la liste complète des sites
               await loadSites();
             } else {
-              setError(result.message || 'Erreur lors de la modification du site');
+              setError(
+                result.message || "Erreur lors de la modification du site",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -202,21 +238,23 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
 
           setProcessing(true);
           try {
-            const { deleteSite } = await import('@/services/sites/siteService');
+            const { deleteSite } = await import("@/services/sites/siteService");
             const result = await deleteSite(selectedSite.id);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Site supprimé avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(result.message || "Site supprimé avec succès");
               setShowDeleteModal(false);
               setSelectedSite(null);
-              
+
               // Recharger la liste complète des sites
               await loadSites();
             } else {
-              setError(result.message || 'Erreur lors de la suppression du site');
+              setError(
+                result.message || "Erreur lors de la suppression du site",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -226,21 +264,29 @@ export default function SiteClient({ initialSites, initialProvinces, initialErro
 
           setProcessing(true);
           try {
-            const { toggleSiteStatus } = await import('@/services/sites/siteService');
-            const result = await toggleSiteStatus(selectedSite.id, !selectedSite.actif);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Statut du site modifié avec succès');
+            const { toggleSiteStatus } =
+              await import("@/services/sites/siteService");
+            const result = await toggleSiteStatus(
+              selectedSite.id,
+              !selectedSite.actif,
+            );
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Statut du site modifié avec succès",
+              );
               setShowStatusModal(false);
               setSelectedSite(null);
-              
+
               // Recharger la liste complète des sites
               await loadSites();
             } else {
-              setError(result.message || 'Erreur lors du changement de statut du site');
+              setError(
+                result.message || "Erreur lors du changement de statut du site",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }

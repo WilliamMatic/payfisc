@@ -1,8 +1,10 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import DashboardClientContent from "./components/DashboardClientContent";
 
 // Définir le type pour les filtres
 type SaleType = "all" | "retail" | "wholesale" | "reproduction";
+
 export interface FilterState {
   startDate: string;
   endDate: string;
@@ -38,8 +40,11 @@ function UnauthenticatedMessage() {
   );
 }
 
-export default function DashboardPage() {
-  // Ajuster les dates par défaut (aujourd'hui) côté serveur
+export default async function DashboardPage() {
+  // ⚡ Forcer le rendu dynamique avec connection()
+  await connection();
+  
+  // Maintenant on peut utiliser new Date() en toute sécurité
   const today = new Date().toISOString().split("T")[0];
   const defaultFilters: FilterState = {
     startDate: today,

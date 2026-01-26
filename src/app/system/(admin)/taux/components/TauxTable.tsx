@@ -1,12 +1,14 @@
-import { Percent, Loader2, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
-import { Taux as TauxType } from '@/services/taux/tauxService';
+import { Percent, Loader2, Edit, Trash2, Link, Star, X } from 'lucide-react';
+import { Taux as TauxType, AttributionTaux } from '@/services/taux/tauxService';
 
 interface TauxTableProps {
   taux: TauxType[];
   loading: boolean;
   onEdit: (taux: TauxType) => void;
   onDelete: (taux: TauxType) => void;
-  onToggleStatus: (taux: TauxType) => void;
+  onAttribuer: (taux: TauxType) => void;
+  onDefinirDefaut: (taux: TauxType) => void;
+  onRetirerAttribution: (taux: TauxType, attribution: AttributionTaux) => void;
 }
 
 export default function TauxTable({ 
@@ -14,7 +16,9 @@ export default function TauxTable({
   loading, 
   onEdit, 
   onDelete, 
-  onToggleStatus 
+  onAttribuer,
+  onDefinirDefaut,
+  onRetirerAttribution
 }: TauxTableProps) {
   if (loading) {
     return (
@@ -27,6 +31,13 @@ export default function TauxTable({
     );
   }
 
+  const getAttributionText = (attribution: AttributionTaux) => {
+    if (attribution.province_nom) {
+      return `${attribution.province_nom} - ${attribution.impot_nom}`;
+    }
+    return `Toutes provinces - ${attribution.impot_nom}`;
+  };
+
   return (
     <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto h-full">
@@ -36,7 +47,8 @@ export default function TauxTable({
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nom</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Valeur (CDF)</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
-              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Par défaut</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Attributions</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -57,29 +69,71 @@ export default function TauxTable({
                     {taux.description || 'Aucune description'}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                      taux.actif 
-                        ? 'bg-green-50 text-green-700 border border-green-100' 
-                        : 'bg-red-50 text-red-700 border border-red-100'
-                    }`}>
-                      {taux.actif ? 'Actif' : 'Inactif'}
-                    </span>
+                    {taux.est_par_defaut ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">
+                        <Star className="w-3 h-3 mr-1" />
+                        Par défaut
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Non</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="space-y-1">
+                      {/* Attributions actives */}
+                      {taux.attributions && taux.attributions.length > 0 ? (
+                        taux.attributions
+                          .filter(att => att.actif)
+                          .map((attribution) => (
+                            <div key={attribution.id} className="flex items-center justify-between group">
+                              <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                                {getAttributionText(attribution)}
+                                {attribution.actif && (
+                                  <span className="ml-1 text-green-500">✓</span>
+                                )}
+                              </span>
+                              <button
+                                onClick={() => onRetirerAttribution(taux, attribution)}
+                                className="ml-2 p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Retirer l'attribution"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))
+                      ) : (
+                        <span className="text-gray-400 text-xs">Aucune attribution</span>
+                      )}
+                      
+                      {/* Taux par défaut */}
+                      {taux.taux_defaut && taux.taux_defaut.length > 0 && (
+                        <div className="mt-2">
+                          <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded">
+                            <Star className="w-3 h-3 inline mr-1" />
+                            Par défaut pour: {taux.taux_defaut.map(td => td.impot_nom).join(', ')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
                     {taux.date_creation ? new Date(taux.date_creation).toLocaleDateString('fr-FR') : 'N/A'}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <div className="flex items-center justify-center space-x-1">
+                    <div className="flex items-center justify-center space-x-2">
                       <button
-                        onClick={() => onToggleStatus(taux)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          taux.actif 
-                            ? 'text-red-600 hover:bg-red-50' 
-                            : 'text-green-600 hover:bg-green-50'
-                        }`}
-                        title={taux.actif ? 'Désactiver' : 'Activer'}
+                        onClick={() => onAttribuer(taux)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Attribuer à une province/impôt"
                       >
-                        {taux.actif ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        <Link className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDefinirDefaut(taux)}
+                        className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                        title="Définir comme taux par défaut"
+                      >
+                        <Star className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onEdit(taux)}

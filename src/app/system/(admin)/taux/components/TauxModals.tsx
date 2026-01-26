@@ -2,45 +2,66 @@ import Portal from '../../components/Portal';
 import AddTauxModal from './modals/AddTauxModal';
 import EditTauxModal from './modals/EditTauxModal';
 import DeleteTauxModal from './modals/DeleteTauxModal';
-import StatusTauxModal from './modals/StatusTauxModal';
-import { Taux as TauxType } from '@/services/taux/tauxService';
+import AttributionTauxModal from './modals/AttributionTauxModal';
+import DefautTauxModal from './modals/DefautTauxModal';
+import { Taux as TauxType, Impot as ImpotType, Province as ProvinceType } from '@/services/taux/tauxService';
 
 interface TauxModalsProps {
   showAddModal: boolean;
   showEditModal: boolean;
   showDeleteModal: boolean;
-  showStatusModal: boolean;
+  showAttributionModal: boolean;
+  showDefautModal: boolean;
   selectedTaux: TauxType | null;
-  formData: { nom: string; valeur: string; description: string };
+  formData: { nom: string; valeur: string; description: string; est_par_defaut: boolean };
+  attributionFormData: { province_id: string; impot_id: string; actif: boolean };
+  defautFormData: { impot_id: string };
+  impots: ImpotType[];
+  provinces: ProvinceType[];
   processing: boolean;
+  loadingImpotsProvinces: boolean;
   onAddClose: () => void;
   onEditClose: () => void;
   onDeleteClose: () => void;
-  onStatusClose: () => void;
-  onFormDataChange: (data: { nom: string; valeur: string; description: string }) => void;
+  onAttributionClose: () => void;
+  onDefautClose: () => void;
+  onFormDataChange: (data: { nom: string; valeur: string; description: string; est_par_defaut: boolean }) => void;
+  onAttributionFormDataChange: (data: { province_id: string; impot_id: string; actif: boolean }) => void;
+  onDefautFormDataChange: (data: { impot_id: string }) => void;
   onAddTaux: () => Promise<void>;
   onEditTaux: () => Promise<void>;
   onDeleteTaux: () => Promise<void>;
-  onToggleStatus: () => Promise<void>;
+  onAttribuerTaux: () => Promise<void>;
+  onDefinirTauxDefaut: () => Promise<void>;
 }
 
 export default function TauxModals({
   showAddModal,
   showEditModal,
   showDeleteModal,
-  showStatusModal,
+  showAttributionModal,
+  showDefautModal,
   selectedTaux,
   formData,
+  attributionFormData,
+  defautFormData,
+  impots,
+  provinces,
   processing,
+  loadingImpotsProvinces,
   onAddClose,
   onEditClose,
   onDeleteClose,
-  onStatusClose,
+  onAttributionClose,
+  onDefautClose,
   onFormDataChange,
+  onAttributionFormDataChange,
+  onDefautFormDataChange,
   onAddTaux,
   onEditTaux,
   onDeleteTaux,
-  onToggleStatus
+  onAttribuerTaux,
+  onDefinirTauxDefaut
 }: TauxModalsProps) {
   return (
     <>
@@ -80,13 +101,33 @@ export default function TauxModals({
         </Portal>
       )}
 
-      {showStatusModal && selectedTaux && (
+      {showAttributionModal && selectedTaux && (
         <Portal>
-          <StatusTauxModal
+          <AttributionTauxModal
             taux={selectedTaux}
+            formData={attributionFormData}
+            impots={impots}
+            provinces={provinces}
             processing={processing}
-            onClose={onStatusClose}
-            onToggleStatus={onToggleStatus}
+            loadingImpotsProvinces={loadingImpotsProvinces}
+            onClose={onAttributionClose}
+            onFormDataChange={onAttributionFormDataChange}
+            onAttribuerTaux={onAttribuerTaux}
+          />
+        </Portal>
+      )}
+
+      {showDefautModal && selectedTaux && (
+        <Portal>
+          <DefautTauxModal
+            taux={selectedTaux}
+            formData={defautFormData}
+            impots={impots}
+            processing={processing}
+            loadingImpotsProvinces={loadingImpotsProvinces}
+            onClose={onDefautClose}
+            onFormDataChange={onDefautFormDataChange}
+            onDefinirTauxDefaut={onDefinirTauxDefaut}
           />
         </Portal>
       )}

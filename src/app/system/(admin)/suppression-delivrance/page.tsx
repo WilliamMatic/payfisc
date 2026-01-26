@@ -1,11 +1,11 @@
 // import { Suspense } from "react";
 // import { FilterIcon, XCircle, RefreshCw } from "lucide-react";
 // import CarteRoseAnnulationScreenClient from "./components/CarteRoseAnnulationScreenClient";
-// import { 
-//   fetchCartesRoses, 
-//   fetchStats, 
-//   fetchSites, 
-//   fetchTypesVehicules 
+// import {
+//   fetchCartesRoses,
+//   fetchStats,
+//   fetchSites,
+//   fetchTypesVehicules
 // } from "./actions/carteRoseActions";
 
 // interface PageProps {
@@ -25,7 +25,7 @@
 //   // Parse les paramètres de recherche
 //   const page = parseInt(searchParams.page || "1");
 //   const limit = 20;
-  
+
 //   const filters = {
 //     date_debut: searchParams.date_debut || "",
 //     date_fin: searchParams.date_fin || "",
@@ -73,8 +73,6 @@
 //     </Suspense>
 //   );
 // }
-
-
 
 "use client";
 
@@ -196,12 +194,12 @@ interface PaginationState {
 const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   } catch (error) {
     return dateString;
@@ -209,7 +207,13 @@ const formatDate = (dateString: string): string => {
 };
 
 // Modal de message
-function MessageModal({ isOpen, type, title, message, onClose }: MessageModalProps) {
+function MessageModal({
+  isOpen,
+  type,
+  title,
+  message,
+  onClose,
+}: MessageModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -265,7 +269,14 @@ function MessageModal({ isOpen, type, title, message, onClose }: MessageModalPro
     },
   };
 
-  const { icon: Icon, iconColor, bgColor, borderColor, textColor, buttonColor } = typeStyles[type];
+  const {
+    icon: Icon,
+    iconColor,
+    bgColor,
+    borderColor,
+    textColor,
+    buttonColor,
+  } = typeStyles[type];
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
@@ -286,7 +297,9 @@ function MessageModal({ isOpen, type, title, message, onClose }: MessageModalPro
             </button>
           </div>
 
-          <div className={`${bgColor} border ${borderColor} rounded-lg p-4 mb-6`}>
+          <div
+            className={`${bgColor} border ${borderColor} rounded-lg p-4 mb-6`}
+          >
             <p className={textColor}>{message}</p>
           </div>
 
@@ -370,18 +383,22 @@ function DeleteConfirmationModal({
                 </span>
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Véhicule:</span> {carteRose.type_engin} - {carteRose.marque}
+                <span className="font-medium">Véhicule:</span>{" "}
+                {carteRose.type_engin} - {carteRose.marque}
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Chassis:</span> {carteRose.numero_chassis || "Non renseigné"}
+                <span className="font-medium">Chassis:</span>{" "}
+                {carteRose.numero_chassis || "Non renseigné"}
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">Date attribution:</span> {formatDate(carteRose.date_attribution)}
+                <span className="font-medium">Date attribution:</span>{" "}
+                {formatDate(carteRose.date_attribution)}
               </p>
             </div>
             <p className="text-red-600 text-sm mt-3">
-              Cette action annulera complètement la carte rose, restaurera la plaque dans le stock disponible,
-              et supprimera tous les enregistrements associés (véhicule, paiement, carte reprint).
+              Cette action annulera complètement la carte rose, restaurera la
+              plaque dans le stock disponible, et supprimera tous les
+              enregistrements associés (véhicule, paiement, carte reprint).
             </p>
           </div>
 
@@ -450,7 +467,8 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
                 Détails de la carte rose
               </h3>
               <p className="text-gray-600 text-sm mt-1">
-                Paiement #{carteRose.paiement_id} • Plaque {carteRose.numero_plaque}
+                Paiement #{carteRose.paiement_id} • Plaque{" "}
+                {carteRose.numero_plaque}
               </p>
             </div>
             <button
@@ -473,7 +491,9 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">Nom complet:</span>
+                  <span className="text-blue-700 font-medium">
+                    Nom complet:
+                  </span>
                   <span className="text-gray-900 font-bold">
                     {carteRose.nom} {carteRose.prenom}
                   </span>
@@ -503,8 +523,12 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">ID Propriétaire:</span>
-                  <span className="text-gray-900">{carteRose.particulier_id}</span>
+                  <span className="text-blue-700 font-medium">
+                    ID Propriétaire:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.particulier_id}
+                  </span>
                 </div>
               </div>
             </div>
@@ -517,8 +541,12 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Numéro plaque:</span>
-                  <span className="text-gray-900 font-bold">{carteRose.numero_plaque}</span>
+                  <span className="text-green-700 font-medium">
+                    Numéro plaque:
+                  </span>
+                  <span className="text-gray-900 font-bold">
+                    {carteRose.numero_plaque}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-green-700 font-medium">Type:</span>
@@ -530,15 +558,25 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-green-700 font-medium">Énergie:</span>
-                  <span className="text-gray-900">{carteRose.energie || "Non renseignée"}</span>
+                  <span className="text-gray-900">
+                    {carteRose.energie || "Non renseignée"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Année fabrication:</span>
-                  <span className="text-gray-900">{carteRose.annee_fabrication || "Non renseignée"}</span>
+                  <span className="text-green-700 font-medium">
+                    Année fabrication:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.annee_fabrication || "Non renseignée"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Année circulation:</span>
-                  <span className="text-gray-900">{carteRose.annee_circulation || "Non renseignée"}</span>
+                  <span className="text-green-700 font-medium">
+                    Année circulation:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.annee_circulation || "Non renseignée"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -552,23 +590,39 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-purple-700 font-medium">Couleur:</span>
-                  <span className="text-gray-900">{carteRose.couleur || "Non renseignée"}</span>
+                  <span className="text-gray-900">
+                    {carteRose.couleur || "Non renseignée"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Puissance fiscale:</span>
-                  <span className="text-gray-900">{carteRose.puissance_fiscal || "Non renseignée"}</span>
+                  <span className="text-purple-700 font-medium">
+                    Puissance fiscale:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.puissance_fiscal || "Non renseignée"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-purple-700 font-medium">Usage:</span>
-                  <span className="text-gray-900">{carteRose.usage_engin || "Non renseigné"}</span>
+                  <span className="text-gray-900">
+                    {carteRose.usage_engin || "Non renseigné"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Numéro chassis:</span>
-                  <span className="text-gray-900">{carteRose.numero_chassis || "Non renseigné"}</span>
+                  <span className="text-purple-700 font-medium">
+                    Numéro chassis:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.numero_chassis || "Non renseigné"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Numéro moteur:</span>
-                  <span className="text-gray-900">{carteRose.numero_moteur || "Non renseigné"}</span>
+                  <span className="text-purple-700 font-medium">
+                    Numéro moteur:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.numero_moteur || "Non renseigné"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-purple-700 font-medium">ID Engin:</span>
@@ -585,8 +639,12 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Date attribution:</span>
-                  <span className="text-gray-900">{formatDate(carteRose.date_attribution)}</span>
+                  <span className="text-amber-700 font-medium">
+                    Date attribution:
+                  </span>
+                  <span className="text-gray-900">
+                    {formatDate(carteRose.date_attribution)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700 font-medium">Site:</span>
@@ -597,7 +655,9 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
                   <span className="text-gray-900">{carteRose.caissier}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">ID Paiement:</span>
+                  <span className="text-amber-700 font-medium">
+                    ID Paiement:
+                  </span>
                   <span className="text-gray-900">{carteRose.paiement_id}</span>
                 </div>
                 <div className="flex justify-between">
@@ -605,13 +665,21 @@ function DetailModal({ isOpen, carteRose, onClose }: DetailModalProps) {
                   <span className="text-gray-900">{carteRose.impot_id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">ID Plaque attribuée:</span>
-                  <span className="text-gray-900">{carteRose.plaque_attribuee_id || "Non renseigné"}</span>
+                  <span className="text-amber-700 font-medium">
+                    ID Plaque attribuée:
+                  </span>
+                  <span className="text-gray-900">
+                    {carteRose.plaque_attribuee_id || "Non renseigné"}
+                  </span>
                 </div>
                 {carteRose.reprint_id && (
                   <div className="flex justify-between">
-                    <span className="text-amber-700 font-medium">ID Carte reprint:</span>
-                    <span className="text-gray-900">{carteRose.reprint_id}</span>
+                    <span className="text-amber-700 font-medium">
+                      ID Carte reprint:
+                    </span>
+                    <span className="text-gray-900">
+                      {carteRose.reprint_id}
+                    </span>
                   </div>
                 )}
               </div>
@@ -786,7 +854,7 @@ function FilterModal({
                     onChange={(e) =>
                       handleChange(
                         "order_dir",
-                        e.target.value as "ASC" | "DESC"
+                        e.target.value as "ASC" | "DESC",
                       )
                     }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -838,8 +906,12 @@ export default function CarteRoseAnnulationScreen() {
     totalPages: 1,
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCarteRose, setSelectedCarteRose] = useState<CarteRose | null>(null);
-  const [carteRoseToDelete, setCarteRoseToDelete] = useState<CarteRose | null>(null);
+  const [selectedCarteRose, setSelectedCarteRose] = useState<CarteRose | null>(
+    null,
+  );
+  const [carteRoseToDelete, setCarteRoseToDelete] = useState<CarteRose | null>(
+    null,
+  );
 
   // États UI
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -874,7 +946,11 @@ export default function CarteRoseAnnulationScreen() {
   });
 
   // Fonction pour afficher les messages
-  const showMessage = (type: "success" | "error" | "info" | "warning", title: string, message: string) => {
+  const showMessage = (
+    type: "success" | "error" | "info" | "warning",
+    title: string,
+    message: string,
+  ) => {
     setMessageModalProps({ type, title, message });
     setShowMessageModal(true);
   };
@@ -906,7 +982,7 @@ export default function CarteRoseAnnulationScreen() {
   const loadCartesRoses = async (page = 1, search = searchTerm) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const params: RechercheParamsCartesRoses = {
         page,
@@ -918,14 +994,19 @@ export default function CarteRoseAnnulationScreen() {
       const result = await getCartesRoses(params);
 
       if (result.status === "success" && result.data) {
-        const cartesRosesArray = Array.isArray(result.data.cartesRoses) ? result.data.cartesRoses : [];
+        const cartesRosesArray = Array.isArray(result.data.cartesRoses)
+          ? result.data.cartesRoses
+          : [];
         setCartesRoses(cartesRosesArray);
 
         const paginationData = result.data.pagination || {
           total: cartesRosesArray.length,
           page: page,
           limit: pagination.limit,
-          totalPages: Math.max(1, Math.ceil(cartesRosesArray.length / pagination.limit)),
+          totalPages: Math.max(
+            1,
+            Math.ceil(cartesRosesArray.length / pagination.limit),
+          ),
         };
 
         setPagination(paginationData);
@@ -934,7 +1015,8 @@ export default function CarteRoseAnnulationScreen() {
           setError("Aucune carte rose trouvée avec les critères sélectionnés");
         }
       } else {
-        const errorMessage = result.message || "Erreur inconnue lors du chargement";
+        const errorMessage =
+          result.message || "Erreur inconnue lors du chargement";
         setError(errorMessage);
         setCartesRoses([]);
         setPagination({
@@ -1030,7 +1112,7 @@ export default function CarteRoseAnnulationScreen() {
       const result = await annulerCarteRose(
         carteRoseToDelete.paiement_id,
         1, // ID utilisateur - à remplacer par l'ID réel de l'utilisateur connecté
-        "Annulation via interface admin"
+        "Annulation via interface admin",
       );
 
       if (result.status === "success") {
@@ -1039,7 +1121,11 @@ export default function CarteRoseAnnulationScreen() {
         setCarteRoseToDelete(null);
         showMessage("success", "Succès", "Carte rose annulée avec succès");
       } else {
-        showMessage("error", "Erreur", result.message || "Erreur lors de l'annulation");
+        showMessage(
+          "error",
+          "Erreur",
+          result.message || "Erreur lors de l'annulation",
+        );
       }
     } catch (error) {
       showMessage("error", "Erreur", "Erreur réseau lors de l'annulation");
@@ -1073,7 +1159,11 @@ export default function CarteRoseAnnulationScreen() {
     loadCartesRoses(1, "");
     loadStats();
     setError(null);
-    showMessage("info", "Filtres réinitialisés", "Tous les filtres ont été réinitialisés");
+    showMessage(
+      "info",
+      "Filtres réinitialisés",
+      "Tous les filtres ont été réinitialisés",
+    );
   };
 
   // Gérer l'export Excel
@@ -1100,9 +1190,17 @@ export default function CarteRoseAnnulationScreen() {
         link.click();
         document.body.removeChild(link);
 
-        showMessage("success", "Export réussi", "Export Excel terminé avec succès");
+        showMessage(
+          "success",
+          "Export réussi",
+          "Export Excel terminé avec succès",
+        );
       } else {
-        showMessage("error", "Erreur", result.message || "Erreur lors de l'exportation");
+        showMessage(
+          "error",
+          "Erreur",
+          result.message || "Erreur lors de l'exportation",
+        );
       }
     } catch (error) {
       showMessage("error", "Erreur", "Erreur réseau lors de l'exportation");
@@ -1179,7 +1277,7 @@ export default function CarteRoseAnnulationScreen() {
                     {pageNum}
                   </button>
                 );
-              }
+              },
             )}
           </div>
 
@@ -1205,7 +1303,7 @@ export default function CarteRoseAnnulationScreen() {
   // Calculer les statistiques des types de véhicules
   const getTopTypesVehicules = () => {
     if (!stats?.typesVehicules) return [];
-    
+
     return Object.entries(stats.typesVehicules)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
@@ -1307,7 +1405,9 @@ export default function CarteRoseAnnulationScreen() {
                       Première attribution
                     </p>
                     <p className="text-sm font-bold text-purple-800">
-                      {stats.datePremiere ? formatDate(stats.datePremiere) : "N/A"}
+                      {stats.datePremiere
+                        ? formatDate(stats.datePremiere)
+                        : "N/A"}
                     </p>
                   </div>
                   <Calendar className="w-8 h-8 text-purple-600" />
@@ -1321,7 +1421,9 @@ export default function CarteRoseAnnulationScreen() {
                       Dernière attribution
                     </p>
                     <p className="text-sm font-bold text-amber-800">
-                      {stats.dateDerniere ? formatDate(stats.dateDerniere) : "N/A"}
+                      {stats.dateDerniere
+                        ? formatDate(stats.dateDerniere)
+                        : "N/A"}
                     </p>
                   </div>
                   <Calendar className="w-8 h-8 text-amber-600" />
@@ -1331,19 +1433,24 @@ export default function CarteRoseAnnulationScreen() {
           )}
 
           {/* Types de véhicules (top 5) */}
-          {stats?.typesVehicules && Object.keys(stats.typesVehicules).length > 0 && (
-            <div className="mt-6 bg-white rounded-xl p-4 border border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Répartition par type de véhicule</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {getTopTypesVehicules().map(({ type, count }) => (
-                  <div key={type} className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm text-gray-600">{type}</div>
-                    <div className="text-xl font-bold text-gray-900">{count}</div>
-                  </div>
-                ))}
+          {stats?.typesVehicules &&
+            Object.keys(stats.typesVehicules).length > 0 && (
+              <div className="mt-6 bg-white rounded-xl p-4 border border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
+                  Répartition par type de véhicule
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {getTopTypesVehicules().map(({ type, count }) => (
+                    <div key={type} className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm text-gray-600">{type}</div>
+                      <div className="text-xl font-bold text-gray-900">
+                        {count}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Barre de recherche */}
           <div className="mt-6">
@@ -1463,9 +1570,9 @@ export default function CarteRoseAnnulationScreen() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {cartesRoses.map((carteRose) => (
+                    {cartesRoses.map((carteRose, index) => (
                       <tr
-                        key={carteRose.paiement_id}
+                        key={`${carteRose.paiement_id}-${carteRose.engin_id}-${index}`}
                         className="hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => handleViewDetail(carteRose)}
                       >
@@ -1557,15 +1664,14 @@ export default function CarteRoseAnnulationScreen() {
                 {error ? "Erreur de chargement" : "Aucune carte rose trouvée"}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                {error || (
-                  searchTerm ||
+                {error ||
+                  (searchTerm ||
                   filters.date_debut ||
                   filters.date_fin ||
                   filters.site_id > 0 ||
                   filters.type_engin
                     ? "Aucune carte rose ne correspond à votre recherche. Essayez d'autres critères."
-                    : "Aucune carte rose n'a été délivrée."
-                )}
+                    : "Aucune carte rose n'a été délivrée.")}
               </p>
               {error && (
                 <button

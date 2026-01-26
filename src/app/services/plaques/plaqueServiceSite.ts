@@ -1,5 +1,10 @@
+'use server';
+
+import { cacheLife, cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
+
 /**
- * Service pour la gestion des plaques - Interface avec l'API backend
+ * Service pour la gestion des plaques - Interface avec l'API backend avec Cache Components Next.js 16
  */
 
 // Interfaces pour les données
@@ -49,10 +54,83 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
+// Tags de cache pour invalidation ciblée
+const CACHE_TAGS = {
+  SERIES_UTILISATEUR: (utilisateurId: number) => `series-utilisateur-${utilisateurId}`,
+  PROVINCES_LIST: 'provinces-site-list',
+  SERIE_ITEMS_UTILISATEUR: (serieId: number, utilisateurId: number) => 
+    `serie-items-${serieId}-utilisateur-${utilisateurId}`,
+  SERIES_SEARCH_UTILISATEUR: (utilisateurId: number, searchTerm: string) => 
+    `series-search-utilisateur-${utilisateurId}-${searchTerm}`,
+  SERIE_DETAILS_UTILISATEUR: (serieId: number, utilisateurId: number) => 
+    `serie-details-${serieId}-utilisateur-${utilisateurId}`,
+};
+
 /**
- * Récupère la liste des séries selon la province de l'utilisateur
+ * Invalide le cache après une mutation
+ */
+async function invalidateSeriesUtilisateurCache(utilisateurId: number, serieId?: number) {
+  'use server';
+  
+  // Pattern général pour invalider toutes les séries de cet utilisateur
+  revalidateTag(CACHE_TAGS.SERIES_UTILISATEUR(utilisateurId), "max");
+  revalidateTag(CACHE_TAGS.SERIES_SEARCH_UTILISATEUR(utilisateurId, ''), "max");
+  
+  if (serieId) {
+    revalidateTag(CACHE_TAGS.SERIE_ITEMS_UTILISATEUR(serieId, utilisateurId), "max");
+    revalidateTag(CACHE_TAGS.SERIE_DETAILS_UTILISATEUR(serieId, utilisateurId), "max");
+  }
+}
+
+// Nettoyer les données
+export async function cleanSerieData(data: any): Promise<Serie> {
+  return {
+    id: data.id || 0,
+    nom_serie: data.nom_serie || "",
+    description: data.description || null,
+    actif: Boolean(data.actif),
+    total_items: data.total_items || 0,
+    items_disponibles: data.items_disponibles || 0,
+    items_utilises: data.items_utilises || 0,
+    date_creation: data.date_creation || "",
+    date_creation_formatted: data.date_creation_formatted || "",
+    province_id: data.province_id || 0,
+    province_nom: data.province_nom || "",
+    province_code: data.province_code || "",
+    debut_numeros: data.debut_numeros || 0,
+    fin_numeros: data.fin_numeros || 0,
+  };
+}
+
+export async function cleanSerieItemData(data: any): Promise<SerieItem> {
+  return {
+    id: data.id || 0,
+    serie_id: data.serie_id || 0,
+    value: data.value || 0,
+    statut: data.statut || "0",
+    nom_serie: data.nom_serie || "",
+    province_nom: data.province_nom || "",
+    date_creation: data.date_creation || "",
+  };
+}
+
+export async function cleanProvinceData(data: any): Promise<Province> {
+  return {
+    id: data.id || 0,
+    nom: data.nom || "",
+    code: data.code || "",
+    actif: Boolean(data.actif),
+  };
+}
+
+/**
+ * 💾 Récupère la liste des séries selon la province de l'utilisateur (AVEC CACHE - 2 heures)
  */
 export const getSeries = async (utilisateurId: number): Promise<ApiResponse> => {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIES_UTILISATEUR(utilisateurId));
+
   try {
     const formData = new FormData();
     formData.append("utilisateur_id", utilisateurId.toString());
@@ -72,9 +150,13 @@ export const getSeries = async (utilisateurId: number): Promise<ApiResponse> => 
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanSerieData(item)))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error("Get series error:", error);
@@ -86,9 +168,13 @@ export const getSeries = async (utilisateurId: number): Promise<ApiResponse> => 
 };
 
 /**
- * Récupère la liste des provinces actives
+ * 💾 Récupère la liste des provinces actives (AVEC CACHE - 2 heures)
  */
 export const getProvinces = async (): Promise<ApiResponse> => {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.PROVINCES_LIST);
+
   try {
     const response = await fetch(`${API_BASE_URL}/plaques/lister_provinces.php`, {
       method: "GET",
@@ -107,9 +193,13 @@ export const getProvinces = async (): Promise<ApiResponse> => {
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanProvinceData(item)))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error("Get provinces error:", error);
@@ -121,9 +211,13 @@ export const getProvinces = async (): Promise<ApiResponse> => {
 };
 
 /**
- * Récupère les items d'une série spécifique selon la province de l'utilisateur
+ * 💾 Récupère les items d'une série spécifique selon la province de l'utilisateur (AVEC CACHE - 2 heures)
  */
 export const getSerieItems = async (serieId: number, utilisateurId: number): Promise<ApiResponse> => {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIE_ITEMS_UTILISATEUR(serieId, utilisateurId));
+
   try {
     const formData = new FormData();
     formData.append("serie_id", serieId.toString());
@@ -147,9 +241,13 @@ export const getSerieItems = async (serieId: number, utilisateurId: number): Pro
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanSerieItemData(item)))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error("Get serie items error:", error);
@@ -161,7 +259,7 @@ export const getSerieItems = async (serieId: number, utilisateurId: number): Pro
 };
 
 /**
- * Ajoute une nouvelle série
+ * 🔄 Ajoute une nouvelle série (INVALIDE LE CACHE)
  */
 export const addSerie = async (serieData: {
   nom_serie: string;
@@ -196,6 +294,9 @@ export const addSerie = async (serieData: {
       };
     }
 
+    // ⚡ Invalider le cache des séries de cet utilisateur
+    await invalidateSeriesUtilisateurCache(utilisateurId);
+
     return data;
   } catch (error) {
     console.error("Add serie error:", error);
@@ -207,7 +308,7 @@ export const addSerie = async (serieData: {
 };
 
 /**
- * Modifie une série existante
+ * 🔄 Modifie une série existante (INVALIDE LE CACHE)
  */
 export const updateSerie = async (
   id: number,
@@ -243,6 +344,9 @@ export const updateSerie = async (
       };
     }
 
+    // ⚡ Invalider le cache de cette série spécifique
+    await invalidateSeriesUtilisateurCache(utilisateurId, id);
+
     return data;
   } catch (error) {
     console.error("Update serie error:", error);
@@ -254,7 +358,7 @@ export const updateSerie = async (
 };
 
 /**
- * Supprime une série
+ * 🔄 Supprime une série (INVALIDE LE CACHE)
  */
 export const deleteSerie = async (id: number, utilisateurId: number): Promise<ApiResponse> => {
   try {
@@ -280,6 +384,9 @@ export const deleteSerie = async (id: number, utilisateurId: number): Promise<Ap
       };
     }
 
+    // ⚡ Invalider le cache de cette série spécifique
+    await invalidateSeriesUtilisateurCache(utilisateurId, id);
+
     return data;
   } catch (error) {
     console.error("Delete serie error:", error);
@@ -291,7 +398,7 @@ export const deleteSerie = async (id: number, utilisateurId: number): Promise<Ap
 };
 
 /**
- * Change le statut d'une série (actif/inactif)
+ * 🔄 Change le statut d'une série (INVALIDE LE CACHE)
  */
 export const toggleSerieStatus = async (
   id: number,
@@ -322,6 +429,9 @@ export const toggleSerieStatus = async (
       };
     }
 
+    // ⚡ Invalider le cache de cette série spécifique
+    await invalidateSeriesUtilisateurCache(utilisateurId, id);
+
     return data;
   } catch (error) {
     console.error("Toggle serie status error:", error);
@@ -333,12 +443,16 @@ export const toggleSerieStatus = async (
 };
 
 /**
- * Recherche des séries par terme selon la province de l'utilisateur
+ * 💾 Recherche des séries par terme selon la province de l'utilisateur (AVEC CACHE - 2 heures)
  */
 export const searchSeries = async (
   searchTerm: string,
   utilisateurId: number
 ): Promise<ApiResponse> => {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(CACHE_TAGS.SERIES_SEARCH_UTILISATEUR(utilisateurId, searchTerm));
+
   try {
     const formData = new FormData();
     formData.append("search", searchTerm);
@@ -362,9 +476,13 @@ export const searchSeries = async (
       };
     }
 
+    const cleanedData = Array.isArray(data.data)
+      ? await Promise.all(data.data.map(async (item: any) => await cleanSerieData(item)))
+      : [];
+
     return {
       status: "success",
-      data: data.data,
+      data: cleanedData,
     };
   } catch (error) {
     console.error("Search series error:", error);

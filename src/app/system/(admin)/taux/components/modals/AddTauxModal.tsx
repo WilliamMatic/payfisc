@@ -1,10 +1,10 @@
 import { Plus, X, Save, Loader2 } from 'lucide-react';
 
 interface AddTauxModalProps {
-  formData: { nom: string; valeur: string; description: string };
+  formData: { nom: string; valeur: string; description: string; est_par_defaut: boolean };
   processing: boolean;
   onClose: () => void;
-  onFormDataChange: (data: { nom: string; valeur: string; description: string }) => void;
+  onFormDataChange: (data: { nom: string; valeur: string; description: string; est_par_defaut: boolean }) => void;
   onAddTaux: () => Promise<void>;
 }
 
@@ -80,6 +80,19 @@ export default function AddTauxModal({
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#153258]/30 focus:border-[#153258] transition-colors resize-none"
                 placeholder="Description du taux (optionnel)"
               />
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="est_par_defaut"
+                checked={formData.est_par_defaut}
+                onChange={(e) => onFormDataChange({...formData, est_par_defaut: e.target.checked})}
+                className="h-4 w-4 text-[#153258] focus:ring-[#153258] border-gray-300 rounded"
+              />
+              <label htmlFor="est_par_defaut" className="ml-2 block text-sm text-gray-700">
+                Marquer comme taux par défaut
+              </label>
             </div>
           </div>
           

@@ -1,6 +1,6 @@
 // src/app/system/(admin)/particuliers/components/ParticulierClient.tsx
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Particulier as ParticulierType,
   getParticuliers,
@@ -13,7 +13,6 @@ import ParticuliersTable from "./ParticulierTable";
 import ParticuliersModals from "./ParticulierModals";
 import AlertMessage from "./AlertMessage";
 import Pagination from "./Pagination";
-import { useAuth } from "@/contexts/AuthContext"; // Ajouter l'import
 
 interface ParticuliersClientProps {
   initialParticuliers: ParticulierType[];
@@ -31,8 +30,6 @@ export default function ParticuliersClient({
   initialError,
   initialPagination
 }: ParticuliersClientProps) {
-  const { utilisateur } = useAuth(); // Ajouter cette ligne
-  
   const [particuliers, setParticuliers] = useState<ParticulierType[]>(
     initialParticuliers || []
   );
@@ -112,15 +109,13 @@ export default function ParticuliersClient({
   ];
 
   // Fonction pour recharger les particuliers avec pagination
-  const loadParticuliers = useCallback(async (page: number = 1) => {
+  const loadParticuliers = async (page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
       setIsSearching(false);
       
-      // Passer l'utilisateurId ici
-      const utilisateurId = utilisateur?.id;
-      const result = await getParticuliers(page, itemsPerPage, utilisateurId);
+      const result = await getParticuliers(page, itemsPerPage);
 
       if (result.status === "success" && result.data) {
         setParticuliers(result.data.particuliers || []);
@@ -137,7 +132,7 @@ export default function ParticuliersClient({
     } finally {
       setLoading(false);
     }
-  }, [utilisateur, itemsPerPage]); // Ajouter utilisateur dans les dépendances
+  };
 
   // Fonction pour charger les détails complets d'un particulier
   const loadParticulierDetails = async (
@@ -156,7 +151,7 @@ export default function ParticuliersClient({
   };
 
   // Fonction de recherche dans la base de données
-  const handleSearch = useCallback(async (page: number = 1) => {
+  const handleSearch = async (page: number = 1) => {
     if (!searchTerm.trim()) {
       // Si la recherche est vide, on recharge les particuliers normaux
       await loadParticuliers(1);
@@ -168,8 +163,6 @@ export default function ParticuliersClient({
       setError(null);
       setIsSearching(true);
       
-      // Modifier votre service searchParticuliers pour accepter utilisateurId
-      // D'abord, créez une version mise à jour dans votre service
       const result = await searchParticuliers(searchTerm, page, itemsPerPage);
 
       if (result.status === "success" && result.data) {
@@ -189,7 +182,7 @@ export default function ParticuliersClient({
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, itemsPerPage, loadParticuliers]); // Ajouter loadParticuliers dans les dépendances
+  };
 
   // Gestion du changement de page
   const handlePageChange = (page: number) => {
@@ -207,7 +200,7 @@ export default function ParticuliersClient({
     if (initialParticuliers.length === 0) {
       loadParticuliers(1);
     }
-  }, [loadParticuliers, initialParticuliers.length]);
+  }, []);
 
   const openEditModal = async (particulier: ParticulierType) => {
     try {
@@ -312,63 +305,7 @@ export default function ParticuliersClient({
 
     window.addEventListener('keypress', handleKeyPress);
     return () => window.removeEventListener('keypress', handleKeyPress);
-  }, [searchTerm, handleSearch]);
-
-  // Pour l'ajout, vous devrez aussi passer l'utilisateurId
-  const handleAddParticulier = async () => {
-    if (!isFormValid()) {
-      setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
-      return;
-    }
-
-    setProcessing(true);
-    try {
-      const { addParticulier } = await import(
-        "@/services/particuliers/particulierService"
-      );
-      const result = await addParticulier({
-        nom: formData.nom,
-        prenom: formData.prenom,
-        date_naissance: formData.date_naissance || undefined,
-        lieu_naissance: formData.lieu_naissance || undefined,
-        sexe: formData.sexe || undefined,
-        rue: formData.rue,
-        ville: formData.ville || undefined,
-        code_postal: formData.code_postal || undefined,
-        province: formData.province || undefined,
-        id_national: formData.id_national || undefined,
-        telephone: formData.telephone,
-        email: formData.email || undefined,
-        nif: formData.nif || undefined,
-        situation_familiale: formData.situation_familiale || undefined,
-        dependants: formData.dependants,
-        reduction_type: formData.reduction_type || undefined,
-        reduction_valeur: formData.reduction_valeur,
-        utilisateur: utilisateur?.id, // Passer l'utilisateurId ici
-      });
-
-      if (result.status === "success") {
-        setSuccessMessage(
-          result.message || "Particulier ajouté avec succès"
-        );
-        setShowAddModal(false);
-        // Recharger la page courante
-        if (isSearching && searchTerm.trim()) {
-          await handleSearch(currentPage);
-        } else {
-          await loadParticuliers(currentPage);
-        }
-      } else {
-        setError(
-          result.message || "Erreur lors de l'ajout du particulier"
-        );
-      }
-    } catch (err) {
-      setError("Erreur de connexion au serveur");
-    } finally {
-      setProcessing(false);
-    }
-  };
+  }, [searchTerm]);
 
   return (
     <div className="h-full flex flex-col">
@@ -483,7 +420,59 @@ export default function ParticuliersClient({
           setSelectedParticulier(null);
         }}
         onFormDataChange={setFormData}
-        onAddParticulier={handleAddParticulier} // Utiliser la nouvelle fonction
+        onAddParticulier={async () => {
+          if (!isFormValid()) {
+            setError("Les champs nom, prénom, téléphone et rue sont obligatoires");
+            return;
+          }
+
+          setProcessing(true);
+          try {
+            const { addParticulier } = await import(
+              "@/services/particuliers/particulierService"
+            );
+            const result = await addParticulier({
+              nom: formData.nom,
+              prenom: formData.prenom,
+              date_naissance: formData.date_naissance || undefined,
+              lieu_naissance: formData.lieu_naissance || undefined,
+              sexe: formData.sexe || undefined,
+              rue: formData.rue,
+              ville: formData.ville || undefined,
+              code_postal: formData.code_postal || undefined,
+              province: formData.province || undefined,
+              id_national: formData.id_national || undefined,
+              telephone: formData.telephone,
+              email: formData.email || undefined,
+              nif: formData.nif || undefined,
+              situation_familiale: formData.situation_familiale || undefined,
+              dependants: formData.dependants,
+              reduction_type: formData.reduction_type || undefined,
+              reduction_valeur: formData.reduction_valeur,
+            });
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Particulier ajouté avec succès"
+              );
+              setShowAddModal(false);
+              // Recharger la page courante
+              if (isSearching && searchTerm.trim()) {
+                await handleSearch(currentPage);
+              } else {
+                await loadParticuliers(currentPage);
+              }
+            } else {
+              setError(
+                result.message || "Erreur lors de l'ajout du particulier"
+              );
+            }
+          } catch (err) {
+            setError("Erreur de connexion au serveur");
+          } finally {
+            setProcessing(false);
+          }
+        }}
         onEditParticulier={async () => {
           if (!selectedParticulier || !isFormValid()) {
             setError("Les champs nom, prénom, téléphone et rue sont obligatoires");

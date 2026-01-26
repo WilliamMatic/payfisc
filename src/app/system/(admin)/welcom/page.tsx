@@ -1,28 +1,23 @@
 import { Suspense } from 'react';
 import DashboardClient from './components/DashboardClient';
 
-// Déclare explicitement que cette page est dynamique
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 async function getGlobalStats() {
   try {
-    // Utilisez l'URL absolue avec le bon port
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = `${API_BASE_URL}/global/route.php`;
     
-    // Pas besoin de cache: 'no-store' quand on a force-dynamic
+    // Utilisez 'no-store' pour éviter tout cache
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
+      next: { tags: ['global-stats'] } // Optionnel: pour invalidation par tag
     });
 
     if (!response.ok) {
       console.error('Response not OK:', response.status, response.statusText);
-      console.error('URL attempted:', apiUrl); // Debug
-      // Retourner des données par défaut au lieu de throw une erreur
       return {
         total_contribuables: 0,
         total_provinces: 0,
@@ -56,7 +51,6 @@ async function getGlobalStats() {
 }
 
 export default async function DashboardPage() {
-  // Cette fonction s'exécutera à chaque requête grâce à force-dynamic
   const statsData = await getGlobalStats();
   
   return (

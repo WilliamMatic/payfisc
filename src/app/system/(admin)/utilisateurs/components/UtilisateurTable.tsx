@@ -21,7 +21,19 @@ export default function UtilisateurTable({
     special: 'SP',
     delivrance: 'D',
     plaque: 'P',
-    reproduction: 'R'
+    reproduction: 'R',
+    series: 'SE',
+    autresTaxes: 'AT'
+  };
+
+  const privilegeFullNames: Record<string, string> = {
+    simple: 'Simple',
+    special: 'Spécial',
+    delivrance: 'Délivrance',
+    plaque: 'Plaque',
+    reproduction: 'Reproduction',
+    series: 'Séries',
+    autresTaxes: 'Autres Taxes'
   };
 
   if (loading) {
@@ -74,13 +86,13 @@ export default function UtilisateurTable({
                     {utilisateur.site_nom || 'N/A'}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-1">
+                    <div className="flex flex-wrap gap-1">
                       {Object.entries(utilisateur.privileges).map(([privilege, hasAccess]) => 
                         hasAccess && (
                           <span
                             key={privilege}
                             className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"
-                            title={privilege}
+                            title={privilegeFullNames[privilege] || privilege}
                           >
                             <Shield className="w-3 h-3 mr-1" />
                             {privilegeLabels[privilege]}

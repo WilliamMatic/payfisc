@@ -1,17 +1,17 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { 
-  Utilisateur as UtilisateurType, 
+"use client";
+import { useState, useEffect } from "react";
+import {
+  Utilisateur as UtilisateurType,
   Site,
   UtilisateurFormData,
   Privileges,
   getUtilisateurs,
-  getSitesActifs
-} from '@/services/utilisateurs/utilisateurService';
-import UtilisateurHeader from './UtilisateurHeader';
-import UtilisateurTable from './UtilisateurTable';
-import UtilisateurModals from './UtilisateurModals';
-import AlertMessage from './AlertMessage';
+  getSitesActifs,
+} from "@/services/utilisateurs/utilisateurService";
+import UtilisateurHeader from "./UtilisateurHeader";
+import UtilisateurTable from "./UtilisateurTable";
+import UtilisateurModals from "./UtilisateurModals";
+import AlertMessage from "./AlertMessage";
 
 interface UtilisateurClientProps {
   initialUtilisateurs: UtilisateurType[];
@@ -19,33 +19,38 @@ interface UtilisateurClientProps {
   initialError: string | null;
 }
 
-export default function UtilisateurClient({ 
-  initialUtilisateurs, 
-  initialSites, 
-  initialError 
+export default function UtilisateurClient({
+  initialUtilisateurs,
+  initialSites,
+  initialError,
 }: UtilisateurClientProps) {
-  const [utilisateurs, setUtilisateurs] = useState<UtilisateurType[]>(initialUtilisateurs || []);
+  const [utilisateurs, setUtilisateurs] = useState<UtilisateurType[]>(
+    initialUtilisateurs || [],
+  );
   const [sites, setSites] = useState<Site[]>(initialSites || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
-  const [selectedUtilisateur, setSelectedUtilisateur] = useState<UtilisateurType | null>(null);
+  const [selectedUtilisateur, setSelectedUtilisateur] =
+    useState<UtilisateurType | null>(null);
   const [formData, setFormData] = useState<UtilisateurFormData>({
-    nom_complet: '',
-    telephone: '',
-    adresse: '',
+    nom_complet: "",
+    telephone: "",
+    adresse: "",
     site_affecte_id: 0,
     privileges: {
       simple: false,
       special: false,
       delivrance: false,
       plaque: false,
-      reproduction: false
-    }
+      reproduction: false,
+      series: false,
+      autresTaxes: false,
+    },
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -55,15 +60,17 @@ export default function UtilisateurClient({
     try {
       setLoading(true);
       const result = await getUtilisateurs();
-      
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
         setUtilisateurs(result.data || []);
         setError(null);
       } else {
-        setError(result.message || 'Erreur lors du chargement des utilisateurs');
+        setError(
+          result.message || "Erreur lors du chargement des utilisateurs",
+        );
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
@@ -73,12 +80,12 @@ export default function UtilisateurClient({
   const loadSites = async () => {
     try {
       const result = await getSitesActifs();
-      
-      if (result.status === 'success') {
+
+      if (result.status === "success") {
         setSites(result.data || []);
       }
     } catch (err) {
-      console.error('Erreur lors du chargement des sites:', err);
+      console.error("Erreur lors du chargement des sites:", err);
     }
   };
 
@@ -90,17 +97,23 @@ export default function UtilisateurClient({
         .includes(searchTerm.toLowerCase()) ||
       utilisateur.telephone.includes(searchTerm) ||
       utilisateur.adresse.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      utilisateur.site_nom.toLowerCase().includes(searchTerm.toLowerCase())
+      utilisateur.site_nom.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const openEditModal = (utilisateur: UtilisateurType) => {
+    // Trouver l'ID du site en comparant le nom du site
+    const siteId =
+      sites.find((site) => site.nom === utilisateur.site_nom)?.id ||
+      utilisateur.site_affecte_id ||
+      0;
+
     setSelectedUtilisateur(utilisateur);
     setFormData({
       nom_complet: utilisateur.nom_complet,
       telephone: utilisateur.telephone,
       adresse: utilisateur.adresse,
-      site_affecte_id: utilisateur.site_affecte_id,
-      privileges: utilisateur.privileges
+      site_affecte_id: siteId, // Utiliser l'ID trouvé
+      privileges: utilisateur.privileges,
     });
     setShowEditModal(true);
   };
@@ -117,12 +130,12 @@ export default function UtilisateurClient({
 
   // Mise à jour des privilèges dans le formData
   const updatePrivilege = (privilege: keyof Privileges, value: boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       privileges: {
         ...prev.privileges,
-        [privilege]: value
-      }
+        [privilege]: value,
+      },
     }));
   };
 
@@ -144,8 +157,8 @@ export default function UtilisateurClient({
   return (
     <div className="h-full flex flex-col">
       <AlertMessage error={error} successMessage={successMessage} />
-      
-      <UtilisateurHeader 
+
+      <UtilisateurHeader
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onAddClick={() => setShowAddModal(true)}
@@ -172,18 +185,20 @@ export default function UtilisateurClient({
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedUtilisateur(null);
-          setFormData({ 
-            nom_complet: '', 
-            telephone: '', 
-            adresse: '', 
+          setFormData({
+            nom_complet: "",
+            telephone: "",
+            adresse: "",
             site_affecte_id: 0,
             privileges: {
               simple: false,
               special: false,
               delivrance: false,
               plaque: false,
-              reproduction: false
-            }
+              reproduction: false,
+              series: false,
+              autresTaxes: false,
+            },
           });
         }}
         onDeleteClose={() => {
@@ -197,80 +212,113 @@ export default function UtilisateurClient({
         onFormDataChange={setFormData}
         onPrivilegeChange={updatePrivilege}
         onAddUtilisateur={async () => {
-          if (!formData.nom_complet || !formData.telephone || !formData.site_affecte_id || formData.site_affecte_id === 0) {
-            setError('Le nom complet, le téléphone et le site sont obligatoires');
+          if (
+            !formData.nom_complet ||
+            !formData.telephone ||
+            !formData.site_affecte_id ||
+            formData.site_affecte_id === 0
+          ) {
+            setError(
+              "Le nom complet, le téléphone et le site sont obligatoires",
+            );
             return;
           }
 
           setProcessing(true);
           try {
-            const { addUtilisateur } = await import('@/services/utilisateurs/utilisateurService');
+            const { addUtilisateur } =
+              await import("@/services/utilisateurs/utilisateurService");
             const result = await addUtilisateur(formData);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Utilisateur ajouté avec succès');
-              setFormData({ 
-                nom_complet: '', 
-                telephone: '', 
-                adresse: '', 
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Utilisateur ajouté avec succès",
+              );
+              setFormData({
+                nom_complet: "",
+                telephone: "",
+                adresse: "",
                 site_affecte_id: 0,
                 privileges: {
                   simple: false,
                   special: false,
                   delivrance: false,
                   plaque: false,
-                  reproduction: false
-                }
+                  reproduction: false,
+                  series: false,
+                  autresTaxes: false,
+                },
               });
               setShowAddModal(false);
-              
+
               // Recharger la liste complète des utilisateurs
               await loadUtilisateurs();
             } else {
-              setError(result.message || 'Erreur lors de l\'ajout de l\'utilisateur');
+              setError(
+                result.message || "Erreur lors de l'ajout de l'utilisateur",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
         }}
         onEditUtilisateur={async () => {
-          if (!selectedUtilisateur || !formData.nom_complet || !formData.telephone || !formData.site_affecte_id || formData.site_affecte_id === 0) {
-            setError('Le nom complet, le téléphone et le site sont obligatoires');
+          if (
+            !selectedUtilisateur ||
+            !formData.nom_complet ||
+            !formData.telephone ||
+            !formData.site_affecte_id ||
+            formData.site_affecte_id === 0
+          ) {
+            setError(
+              "Le nom complet, le téléphone et le site sont obligatoires",
+            );
             return;
           }
 
           setProcessing(true);
           try {
-            const { updateUtilisateur } = await import('@/services/utilisateurs/utilisateurService');
-            const result = await updateUtilisateur(selectedUtilisateur.id, formData);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Utilisateur modifié avec succès');
+            const { updateUtilisateur } =
+              await import("@/services/utilisateurs/utilisateurService");
+            const result = await updateUtilisateur(
+              selectedUtilisateur.id,
+              formData,
+            );
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Utilisateur modifié avec succès",
+              );
               setShowEditModal(false);
               setSelectedUtilisateur(null);
-              setFormData({ 
-                nom_complet: '', 
-                telephone: '', 
-                adresse: '', 
+              setFormData({
+                nom_complet: "",
+                telephone: "",
+                adresse: "",
                 site_affecte_id: 0,
                 privileges: {
                   simple: false,
                   special: false,
                   delivrance: false,
                   plaque: false,
-                  reproduction: false
-                }
+                  reproduction: false,
+                  series: false,
+                  autresTaxes: false,
+                },
               });
-              
+
               // Recharger la liste complète des utilisateurs
               await loadUtilisateurs();
             } else {
-              setError(result.message || 'Erreur lors de la modification de l\'utilisateur');
+              setError(
+                result.message ||
+                  "Erreur lors de la modification de l'utilisateur",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -280,21 +328,27 @@ export default function UtilisateurClient({
 
           setProcessing(true);
           try {
-            const { deleteUtilisateur } = await import('@/services/utilisateurs/utilisateurService');
+            const { deleteUtilisateur } =
+              await import("@/services/utilisateurs/utilisateurService");
             const result = await deleteUtilisateur(selectedUtilisateur.id);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Utilisateur supprimé avec succès');
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Utilisateur supprimé avec succès",
+              );
               setShowDeleteModal(false);
               setSelectedUtilisateur(null);
-              
+
               // Recharger la liste complète des utilisateurs
               await loadUtilisateurs();
             } else {
-              setError(result.message || 'Erreur lors de la suppression de l\'utilisateur');
+              setError(
+                result.message ||
+                  "Erreur lors de la suppression de l'utilisateur",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }
@@ -304,21 +358,30 @@ export default function UtilisateurClient({
 
           setProcessing(true);
           try {
-            const { toggleUtilisateurStatus } = await import('@/services/utilisateurs/utilisateurService');
-            const result = await toggleUtilisateurStatus(selectedUtilisateur.id, !selectedUtilisateur.actif);
-            
-            if (result.status === 'success') {
-              setSuccessMessage(result.message || 'Statut de l\'utilisateur modifié avec succès');
+            const { toggleUtilisateurStatus } =
+              await import("@/services/utilisateurs/utilisateurService");
+            const result = await toggleUtilisateurStatus(
+              selectedUtilisateur.id,
+              !selectedUtilisateur.actif,
+            );
+
+            if (result.status === "success") {
+              setSuccessMessage(
+                result.message || "Statut de l'utilisateur modifié avec succès",
+              );
               setShowStatusModal(false);
               setSelectedUtilisateur(null);
-              
+
               // Recharger la liste complète des utilisateurs
               await loadUtilisateurs();
             } else {
-              setError(result.message || 'Erreur lors du changement de statut de l\'utilisateur');
+              setError(
+                result.message ||
+                  "Erreur lors du changement de statut de l'utilisateur",
+              );
             }
           } catch (err) {
-            setError('Erreur de connexion au serveur');
+            setError("Erreur de connexion au serveur");
           } finally {
             setProcessing(false);
           }

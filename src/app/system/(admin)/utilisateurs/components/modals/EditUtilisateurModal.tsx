@@ -1,4 +1,5 @@
 import { Edit, X, Save, Loader2, User, Phone, MapPin, Shield } from 'lucide-react';
+import { useEffect } from 'react';
 import { Utilisateur as UtilisateurType, Site, UtilisateurFormData, Privileges } from '@/services/utilisateurs/utilisateurService';
 
 interface EditUtilisateurModalProps {
@@ -27,8 +28,20 @@ export default function EditUtilisateurModal({
     special: 'Spécial',
     delivrance: 'Délivrance',
     plaque: 'Plaque',
-    reproduction: 'Reproduction'
+    reproduction: 'Reproduction',
+    series: 'Séries',
+    autresTaxes: 'Autres Taxes'
   };
+
+  // Ajoutez ce useEffect pour s'assurer que le formData est correctement initialisé
+  useEffect(() => {
+    if (utilisateur && (!formData.site_affecte_id || formData.site_affecte_id === 0)) {
+      onFormDataChange({
+        ...formData,
+        site_affecte_id: utilisateur.site_affecte_id
+      });
+    }
+  }, [utilisateur]);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4">

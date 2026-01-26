@@ -1,5 +1,11 @@
+'use server';
+
+// Retirer les imports liés au cache
+// import { cacheLife, cacheTag } from 'next/cache';
+// import { revalidateTag } from 'next/cache';
+
 /**
- * Service pour la gestion des annulations de commandes de plaques
+ * Server Actions pour la gestion des annulations de commandes de plaques (SANS CACHE - temps réel)
  */
 
 export interface CommandePlaque {
@@ -70,14 +76,46 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
+// Nettoyer les données
+export async function cleanCommandeData(data: any): Promise<CommandePlaque> {
+  return {
+    id: data.id || 0,
+    particulier_id: data.particulier_id || 0,
+    montant: data.montant || 0,
+    montant_initial: data.montant_initial || 0,
+    nombre_plaques: data.nombre_plaques || 0,
+    mode_paiement: data.mode_paiement || "",
+    operateur: data.operateur || "",
+    numero_transaction: data.numero_transaction || "",
+    numero_cheque: data.numero_cheque || "",
+    banque: data.banque || "",
+    impot_id: data.impot_id || 0,
+    utilisateur_id: data.utilisateur_id || 0,
+    site_id: data.site_id || 0,
+    date_paiement: data.date_paiement || "",
+    nom: data.nom || "",
+    prenom: data.prenom || "",
+    telephone: data.telephone || "",
+    nif: data.nif || "",
+    email: data.email || "",
+    adresse: data.adresse || "",
+    site_nom: data.site_nom || "",
+    caissier: data.caissier || "",
+    reduction_type: data.reduction_type || "",
+    reduction_valeur: data.reduction_valeur || 0,
+    plaques_attribuees: data.plaques_attribuees || [],
+  };
+}
+
 /**
- * Récupère les commandes de plaques avec pagination et filtres
+ * 🔄 Récupère les commandes de plaques avec pagination et filtres (SANS CACHE - temps réel)
  */
-export const getCommandesPlaques = async (
+export async function getCommandesPlaques(
   params: RechercheParams = {}
-): Promise<{ status: string; message?: string; data?: PaginationResponse }> => {
+): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
+  // Retirer 'use cache' et cacheTag/cacheLife
   try {
-    console.log("=== DEBUT APPEL API COMMANDES ===");
+    console.log("=== DEBUT APPEL API COMMANDES (TEMPS REEL) ===");
     console.log("Paramètres reçus:", params);
 
     const formData = new FormData();
@@ -102,6 +140,8 @@ export const getCommandesPlaques = async (
       headers: {
         'Accept': 'application/json',
       },
+      // Ajouter cache: 'no-store' pour éviter tout cache
+      cache: 'no-store',
     });
 
     console.log("Statut HTTP:", response.status);
@@ -129,7 +169,14 @@ export const getCommandesPlaques = async (
       };
     }
 
-    console.log("=== FIN APPEL API COMMANDES ===");
+    // Nettoyer les données
+    if (data.status === "success" && Array.isArray(data.data?.commandes)) {
+      data.data.commandes = await Promise.all(
+        data.data.commandes.map(async (commande: any) => await cleanCommandeData(commande))
+      );
+    }
+
+    console.log("=== FIN APPEL API COMMANDES (TEMPS REEL) ===");
     return data;
 
   } catch (error) {
@@ -139,14 +186,15 @@ export const getCommandesPlaques = async (
       message: `Erreur réseau: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
-};
+}
 
 /**
- * Récupère les statistiques des commandes
+ * 🔄 Récupère les statistiques des commandes (SANS CACHE - temps réel)
  */
-export const getStatsCommandes = async (
+export async function getStatsCommandes(
   params?: Omit<RechercheParams, "page" | "limit" | "order_by" | "order_dir">
-): Promise<{ status: string; message?: string; data?: StatsCommandes }> => {
+): Promise<{ status: string; message?: string; data?: StatsCommandes }> {
+  // Retirer 'use cache' et cacheTag/cacheLife
   try {
     const formData = new FormData();
 
@@ -164,6 +212,7 @@ export const getStatsCommandes = async (
         headers: {
           'Accept': 'application/json',
         },
+        cache: 'no-store',
       }
     );
 
@@ -185,16 +234,16 @@ export const getStatsCommandes = async (
       message: "Erreur réseau lors de la récupération des statistiques",
     };
   }
-};
+}
 
 /**
- * Annule une commande de plaques
+ * 🔄 Annule une commande de plaques (TEMPS RÉEL)
  */
-export const annulerCommandePlaques = async (
+export async function annulerCommandePlaques(
   paiementId: number,
   utilisateurId: number,
   raison: string = "Annulation via interface admin"
-): Promise<{ status: string; message?: string; data?: any }> => {
+): Promise<{ status: string; message?: string; data?: any }> {
   try {
     const formData = new FormData();
     formData.append("paiement_id", paiementId.toString());
@@ -208,6 +257,7 @@ export const annulerCommandePlaques = async (
       headers: {
         'Accept': 'application/json',
       },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -220,6 +270,8 @@ export const annulerCommandePlaques = async (
     }
 
     const data = await response.json();
+
+    // Pas d'invalidation de cache nécessaire puisque tout est en temps réel
     return data;
   } catch (error) {
     console.error("Annuler commande error:", error);
@@ -228,18 +280,19 @@ export const annulerCommandePlaques = async (
       message: "Erreur réseau lors de l'annulation de la commande",
     };
   }
-};
+}
 
 /**
- * Exporte les commandes en Excel
+ * 🔄 Exporte les commandes en Excel (SANS CACHE - temps réel)
  */
-export const exporterCommandesExcel = async (
+export async function exporterCommandesExcel(
   params: RechercheParams = {}
 ): Promise<{
   status: string;
   message?: string;
   data?: { url: string; filename: string };
-}> => {
+}> {
+  // Retirer 'use cache' et cacheTag/cacheLife
   try {
     const formData = new FormData();
 
@@ -255,6 +308,7 @@ export const exporterCommandesExcel = async (
       headers: {
         'Accept': 'application/json',
       },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -275,16 +329,17 @@ export const exporterCommandesExcel = async (
       message: "Erreur réseau lors de l'exportation Excel",
     };
   }
-};
+}
 
 /**
- * Récupère la liste des sites disponibles
+ * 🔄 Récupère la liste des sites disponibles (SANS CACHE - temps réel)
  */
-export const getSitesDisponibles = async (): Promise<{
+export async function getSitesDisponibles(): Promise<{
   status: string;
   message?: string;
   data?: { id: number; nom: string; code: string }[];
-}> => {
+}> {
+  // Retirer 'use cache' et cacheTag/cacheLife
   try {
     const formData = new FormData();
 
@@ -297,6 +352,7 @@ export const getSitesDisponibles = async (): Promise<{
       headers: {
         'Accept': 'application/json',
       },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -328,14 +384,15 @@ export const getSitesDisponibles = async (): Promise<{
       message: `Erreur réseau lors de la récupération des sites: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
-};
+}
 
 /**
- * Récupère les détails d'une commande spécifique avec ses plaques
+ * 🔄 Récupère les détails d'une commande spécifique avec ses plaques (SANS CACHE - temps réel)
  */
-export const getDetailsCommande = async (
+export async function getDetailsCommande(
   paiementId: number
-): Promise<{ status: string; message?: string; data?: CommandePlaque }> => {
+): Promise<{ status: string; message?: string; data?: CommandePlaque }> {
+  // Retirer 'use cache' et cacheTag/cacheLife
   try {
     const formData = new FormData();
     formData.append("paiement_id", paiementId.toString());
@@ -347,6 +404,7 @@ export const getDetailsCommande = async (
       headers: {
         'Accept': 'application/json',
       },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -359,6 +417,12 @@ export const getDetailsCommande = async (
     }
 
     const data = await response.json();
+    
+    // Nettoyer les données
+    if (data.status === "success" && data.data) {
+      data.data = await cleanCommandeData(data.data);
+    }
+
     return data;
   } catch (error) {
     console.error("Get details error:", error);
@@ -367,4 +431,183 @@ export const getDetailsCommande = async (
       message: "Erreur réseau lors de la récupération des détails",
     };
   }
-};
+}
+
+/**
+ * 🔄 Recherche des commandes par mode de paiement (SANS CACHE - temps réel)
+ */
+export async function searchCommandesByModePaiement(
+  modePaiement: string,
+  params?: Omit<RechercheParams, "order_by" | "order_dir">
+): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
+  // Retirer 'use cache' et cacheTag/cacheLife
+  try {
+    const formData = new FormData();
+    formData.append("mode_paiement", modePaiement);
+
+    if (params?.page !== undefined) formData.append("page", params.page.toString());
+    if (params?.limit !== undefined) formData.append("limit", params.limit.toString());
+    if (params?.search) formData.append("search", params.search);
+    if (params?.date_debut) formData.append("date_debut", params.date_debut);
+    if (params?.date_fin) formData.append("date_fin", params.date_fin);
+    if (params?.site_id !== undefined) formData.append("site_id", params.site_id.toString());
+
+    const response = await fetch(
+      `${API_BASE_URL}/commandes/rechercher_commandes_par_mode_paiement.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+        cache: 'no-store',
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP recherche par mode paiement:", errorText);
+      return {
+        status: "error",
+        message: `Échec de la recherche par mode de paiement (${response.status})`,
+      };
+    }
+
+    const data = await response.json();
+
+    // Nettoyer les données
+    if (data.status === "success" && Array.isArray(data.data?.commandes)) {
+      data.data.commandes = await Promise.all(
+        data.data.commandes.map(async (commande: any) => await cleanCommandeData(commande))
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Search commandes by mode paiement error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche par mode de paiement",
+    };
+  }
+}
+
+/**
+ * 🔄 Récupère les commandes récentes (SANS CACHE - temps réel)
+ */
+export async function getCommandesRecent(
+  limit: number = 10,
+  siteId?: number
+): Promise<{ status: string; message?: string; data?: CommandePlaque[] }> {
+  // Retirer 'use cache' et cacheTag/cacheLife
+  try {
+    const formData = new FormData();
+    formData.append("limit", limit.toString());
+    
+    if (siteId !== undefined) {
+      formData.append("site_id", siteId.toString());
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/commandes/get_commandes_recentes.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+        cache: 'no-store',
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP commandes récentes:", errorText);
+      return {
+        status: "error",
+        message: `Échec de la récupération des commandes récentes (${response.status})`,
+      };
+    }
+
+    const data = await response.json();
+    
+    // Nettoyer les données
+    if (data.status === "success" && Array.isArray(data.data)) {
+      data.data = await Promise.all(
+        data.data.map(async (commande: any) => await cleanCommandeData(commande))
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Get commandes recent error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération des commandes récentes",
+    };
+  }
+}
+
+/**
+ * 🔄 Recherche des commandes par nombre de plaques (SANS CACHE - temps réel)
+ */
+export async function searchCommandesByNombrePlaques(
+  minPlaques: number,
+  maxPlaques: number,
+  params?: Omit<RechercheParams, "order_by" | "order_dir">
+): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
+  // Retirer 'use cache' et cacheTag/cacheLife
+  try {
+    const formData = new FormData();
+    formData.append("min_plaques", minPlaques.toString());
+    formData.append("max_plaques", maxPlaques.toString());
+
+    if (params?.page !== undefined) formData.append("page", params.page.toString());
+    if (params?.limit !== undefined) formData.append("limit", params.limit.toString());
+    if (params?.search) formData.append("search", params.search);
+    if (params?.date_debut) formData.append("date_debut", params.date_debut);
+    if (params?.date_fin) formData.append("date_fin", params.date_fin);
+    if (params?.site_id !== undefined) formData.append("site_id", params.site_id.toString());
+
+    const response = await fetch(
+      `${API_BASE_URL}/commandes/rechercher_commandes_par_nombre_plaques.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        },
+        cache: 'no-store',
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur HTTP recherche par nombre plaques:", errorText);
+      return {
+        status: "error",
+        message: `Échec de la recherche par nombre de plaques (${response.status})`,
+      };
+    }
+
+    const data = await response.json();
+
+    // Nettoyer les données
+    if (data.status === "success" && Array.isArray(data.data?.commandes)) {
+      data.data.commandes = await Promise.all(
+        data.data.commandes.map(async (commande: any) => await cleanCommandeData(commande))
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Search commandes by nombre plaques error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la recherche par nombre de plaques",
+    };
+  }
+}

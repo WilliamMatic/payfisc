@@ -1,77 +1,60 @@
-"use client";
-import {
-  getParticuliers,
+// src/app/system/(admin)/particuliers/page.tsx
+import { 
+  getParticuliers, 
   Particulier as ParticulierType,
-  PaginationResponse,
-} from "@/services/particuliers/particulierService";
-import ParticuliersClient from "./components/ParticulierClient";
-import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+  PaginationResponse 
+} from '@/services/particuliers/particulierService';
+import ParticuliersClient from './components/ParticulierClient';
 
-// Composant Loader simple et propre
-const SimpleLoader = () => {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-        <p className="text-gray-600">Chargement des particuliers...</p>
-      </div>
-    </div>
-  );
-};
+// SUPPRIMER TOUTES LES CONFIGURATIONS DE SEGMENT
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
 
-export default function ParticuliersPage() {
-  const { utilisateur, isLoading: authLoading } = useAuth();
-  const [particuliers, setParticuliers] = useState<ParticulierType[]>([]);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export default async function ParticuliersPage() {
+  try {
+    const result = await getParticuliers(1, 10); // Récupère les 10 premiers par défaut
 
-  useEffect(() => {
-    async function loadParticuliers() {
-      try {
-        setLoading(true);
-        const utilisateurId = utilisateur?.id;
-        const result = await getParticuliers(1, 10, utilisateurId);
+    // Vérification et nettoyage des données
+    let particuliers: ParticulierType[] = [];
+    let pagination = {
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 1
+    };
 
-        if (result.status === "success" && result.data) {
-          const filteredParticuliers = (result.data.particuliers || []).filter(
-            (particulier: ParticulierType | null | undefined): particulier is ParticulierType =>
-              particulier !== null && particulier !== undefined
-          );
-          setParticuliers(filteredParticuliers);
-          setPagination(result.data.pagination || pagination);
-        } else if (result.status === "error") {
-          setError(result.message ?? "Erreur inconnue");
-        }
-      } catch (error) {
-        console.error("Error loading particuliers:", error);
-        setError("Erreur lors du chargement des particuliers");
-      } finally {
-        // Petit délai pour éviter le flash du loader
-        setTimeout(() => setLoading(false), 500);
-      }
+    if (result.status === 'success' && result.data) {
+      particuliers = (result.data.particuliers || []).filter(
+        (particulier: ParticulierType | null | undefined): particulier is ParticulierType =>
+          particulier !== null && particulier !== undefined
+      );
+      pagination = result.data.pagination || pagination;
     }
 
-    if (!authLoading) {
-      loadParticuliers();
-    }
-  }, [utilisateur, authLoading]);
+    // Toujours forcer string | null
+    const error: string | null =
+      result.status === 'error' ? result.message ?? 'Erreur inconnue' : null;
 
-  if (authLoading || loading) {
-    return <SimpleLoader />;
+    return (
+      <ParticuliersClient 
+        initialParticuliers={particuliers}
+        initialError={error}
+        initialPagination={pagination}
+      />
+    );
+  } catch (error) {
+    console.error('Error loading particuliers:', error);
+    return (
+      <ParticuliersClient 
+        initialParticuliers={[]}
+        initialError="Erreur lors du chargement des particuliers"
+        initialPagination={{
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 1
+        }}
+      />
+    );
   }
-
-  return (
-    <ParticuliersClient
-      initialParticuliers={particuliers}
-      initialError={error}
-      initialPagination={pagination}
-    />
-  );
 }

@@ -36,6 +36,9 @@
       "@/services/*": [
         "app/services/*"
       ],
+      "@/actions/*": [
+        "app/actions/*"
+      ],
       "@/contexts/*": [
         "app/contexts/*"
       ],

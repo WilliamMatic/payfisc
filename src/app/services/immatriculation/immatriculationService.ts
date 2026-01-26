@@ -1,7 +1,13 @@
+'use server';
+
+import { cacheLife, cacheTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
+
 /**
- * Service pour la gestion de l'immatriculation des plaques
+ * Server Actions pour la gestion de l'immatriculation des plaques avec Cache Components Next.js 16
  */
 
+// Interfaces
 export interface ParticulierData {
   nom: string;
   prenom: string;
@@ -97,21 +103,67 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
-/**
- * Vérifie si un particulier existe par son numéro de téléphone
- */
-export const verifierParticulierParTelephone = async (
-  telephone?: string
-): Promise<VerifierParticulierResponse> => {
-  try {
-    if (!telephone || telephone.trim() === '' || telephone.trim() === '-') {
-      return {
-        status: "success",
-        message: "Téléphone non renseigné ou invalide, vérification ignorée",
-        data: null
-      };
-    }
+// Tags de cache pour invalidation ciblée
+const CACHE_TAGS = {
+  PARTICULIERS_TELEPHONE: (telephone: string) => `particuliers-tel-${telephone}`,
+  MODELES_RECHERCHE: (marqueId: number, searchTerm: string) => `modeles-search-${marqueId}-${searchTerm}`,
+  PUISSANCES_RECHERCHE: (typeEngin: string, searchTerm: string) => `puissances-search-${typeEngin}-${searchTerm}`,
+  PLAQUES_DISPONIBLES: (utilisateurId: number, siteId: number) => `plaques-disponibles-${utilisateurId}-${siteId}`,
+  CHASSIS_VERIFICATION: (numeroChassis: string) => `chassis-verification-${numeroChassis}`,
+  COULEURS_RECHERCHE: (searchTerm: string) => `couleurs-search-${searchTerm}`,
+  COULEURS_NEW: 'couleurs-new', // Tag spécifique pour les nouvelles couleurs
+  VENTES_IMMATRICULATION: 'ventes-immatriculation', // Tag pour les ventes après immatriculation
+};
 
+/**
+ * Invalide le cache après une immatriculation réussie
+ */
+async function invalidateImmatriculationCache() {
+  'use server';
+  
+  // Invalider les caches liés aux ventes (pour le module des ventes)
+  revalidateTag('ventes-list-', "max");
+  revalidateTag('ventes-stats-', "max");
+  revalidateTag('ventes-export-', "max");
+  
+  // Invalider les caches de particuliers
+  revalidateTag('particuliers-list', "max");
+  revalidateTag('particuliers-actifs', "max");
+  revalidateTag('particuliers-search', "max");
+}
+
+/**
+ * Invalide le cache des couleurs après ajout/modification
+ */
+async function invalidateCouleursCache() {
+  'use server';
+  
+  revalidateTag('couleurs-list', "max");
+  revalidateTag('couleurs-actives', "max");
+  revalidateTag('couleurs-search', "max");
+  revalidateTag(CACHE_TAGS.COULEURS_NEW, "max");
+}
+
+/**
+ * Vérifie si un particulier existe par son numéro de téléphone (AVEC CACHE - 5 minutes)
+ */
+export async function verifierParticulierParTelephone(
+  telephone?: string
+): Promise<VerifierParticulierResponse> {
+  'use cache';
+  
+  if (!telephone || telephone.trim() === '' || telephone.trim() === '-') {
+    return {
+      status: "success",
+      message: "Téléphone non renseigné ou invalide, vérification ignorée",
+      data: null
+    };
+  }
+  
+  cacheLife('minutes');
+  cacheTag(CACHE_TAGS.PARTICULIERS_TELEPHONE(telephone));
+
+  try {
     const formData = new FormData();
     formData.append("telephone", telephone);
 
@@ -143,15 +195,19 @@ export const verifierParticulierParTelephone = async (
       data: null
     };
   }
-};
+}
 
 /**
- * Recherche des modèles par marque et terme
+ * Recherche des modèles par marque et terme (AVEC CACHE - 10 minutes)
  */
-export const rechercherModeles = async (
+export async function rechercherModeles(
   marqueId: number,
   searchTerm: string
-): Promise<ImmatriculationResponse> => {
+): Promise<ImmatriculationResponse> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag(CACHE_TAGS.MODELES_RECHERCHE(marqueId, searchTerm));
+
   try {
     const formData = new FormData();
     formData.append("marque_id", marqueId.toString());
@@ -183,15 +239,19 @@ export const rechercherModeles = async (
       message: "Erreur réseau lors de la recherche des modèles",
     };
   }
-};
+}
 
 /**
- * Recherche des puissances fiscales par terme
+ * Recherche des puissances fiscales par terme (AVEC CACHE - 10 minutes)
  */
-export const rechercherPuissances = async (
+export async function rechercherPuissances(
   typeEngin: string,
   searchTerm: string
-): Promise<ImmatriculationResponse> => {
+): Promise<ImmatriculationResponse> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag(CACHE_TAGS.PUISSANCES_RECHERCHE(typeEngin, searchTerm));
+
   try {
     const formData = new FormData();
     formData.append("type_engin", typeEngin);
@@ -223,18 +283,104 @@ export const rechercherPuissances = async (
       message: "Erreur réseau lors de la recherche des puissances",
     };
   }
-};
+}
 
 /**
- * Soumet une demande d'immatriculation complète
+ * Récupère un numéro de plaque disponible (SANS changer le statut) selon la province de l'utilisateur (AVEC CACHE - 5 minutes)
  */
-export const soumettreImmatriculation = async (
+export async function getNumeroPlaqueDisponible(
+  utilisateur: any
+): Promise<ImmatriculationResponse> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag(CACHE_TAGS.PLAQUES_DISPONIBLES(utilisateur.id, utilisateur.site_id || 1));
+
+  try {
+    const formData = new FormData();
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
+
+    const response = await fetch(
+      `${API_BASE_URL}/immatriculation/get_numero_plaque.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la récupération du numéro de plaque",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Get numero plaque error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la récupération du numéro de plaque",
+    };
+  }
+}
+
+/**
+ * Vérifie la disponibilité d'un numéro de chassis (AVEC CACHE - 10 minutes)
+ */
+export async function verifierNumeroChassis(
+  numeroChassis: string
+): Promise<ImmatriculationResponse> {
+  'use cache';
+  cacheLife('minutes');
+  cacheTag(CACHE_TAGS.CHASSIS_VERIFICATION(numeroChassis));
+
+  try {
+    const formData = new FormData();
+    formData.append("numero_chassis", numeroChassis);
+
+    const response = await fetch(
+      `${API_BASE_URL}/immatriculation/verifier_chassis.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la vérification du numéro de chassis",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Verifier chassis error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification du numéro de chassis",
+    };
+  }
+}
+
+/**
+ * Soumet une demande d'immatriculation complète (INVALIDE LE CACHE)
+ * Mutation qui invalide les caches liés aux ventes et particuliers
+ */
+export async function soumettreImmatriculation(
   impotId: string,
   particulierData: ParticulierData,
   enginData: EnginData,
   paiementData: PaiementData,
   utilisateur: any
-): Promise<ImmatriculationResponse> => {
+): Promise<ImmatriculationResponse> {
   try {
     const formData = new FormData();
 
@@ -301,6 +447,11 @@ export const soumettreImmatriculation = async (
       };
     }
 
+    // ⚡ Invalider les caches après une immatriculation réussie
+    if (data.status === "success") {
+      await invalidateImmatriculationCache();
+    }
+
     return data;
   } catch (error) {
     console.error("Soumettre immatriculation error:", error);
@@ -309,93 +460,16 @@ export const soumettreImmatriculation = async (
       message: "Erreur réseau lors de la soumission de l'immatriculation",
     };
   }
-};
+}
 
 /**
- * Récupère un numéro de plaque disponible (SANS changer le statut) selon la province de l'utilisateur
+ * Annule complètement une immatriculation (INVALIDE LE CACHE)
  */
-export const getNumeroPlaqueDisponible = async (
-  utilisateur: any
-): Promise<ImmatriculationResponse> => {
-  try {
-    const formData = new FormData();
-    formData.append("utilisateur_id", utilisateur.id.toString());
-    formData.append("site_id", utilisateur.site_id?.toString() || "1");
-
-    const response = await fetch(
-      `${API_BASE_URL}/immatriculation/get_numero_plaque.php`,
-      {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        status: "error",
-        message: data.message || "Échec de la récupération du numéro de plaque",
-      };
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Get numero plaque error:", error);
-    return {
-      status: "error",
-      message: "Erreur réseau lors de la récupération du numéro de plaque",
-    };
-  }
-};
-
-/**
- * Vérifie la disponibilité d'un numéro de chassis
- */
-export const verifierNumeroChassis = async (
-  numeroChassis: string
-): Promise<ImmatriculationResponse> => {
-  try {
-    const formData = new FormData();
-    formData.append("numero_chassis", numeroChassis);
-
-    const response = await fetch(
-      `${API_BASE_URL}/immatriculation/verifier_chassis.php`,
-      {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        status: "error",
-        message: data.message || "Échec de la vérification du numéro de chassis",
-      };
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Verifier chassis error:", error);
-    return {
-      status: "error",
-      message: "Erreur réseau lors de la vérification du numéro de chassis",
-    };
-  }
-};
-
-/**
- * Annule complètement une immatriculation
- */
-export const annulerImmatriculation = async (
+export async function annulerImmatriculation(
   paiementId: number,
   utilisateurId: number,
   raison?: string
-): Promise<AnnulerImmatriculationResponse> => {
+): Promise<AnnulerImmatriculationResponse> {
   try {
     const formData = new FormData();
     formData.append("paiement_id", paiementId.toString());
@@ -422,6 +496,11 @@ export const annulerImmatriculation = async (
       };
     }
 
+    // ⚡ Invalider les caches après annulation
+    if (data.status === "success") {
+      await invalidateImmatriculationCache();
+    }
+
     return data;
   } catch (error) {
     console.error("Annuler immatriculation error:", error);
@@ -430,14 +509,14 @@ export const annulerImmatriculation = async (
       message: "Erreur réseau lors de l'annulation de l'immatriculation",
     };
   }
-};
+}
 
 /**
- * Recherche une couleur par nom
+ * Recherche une couleur par nom (SANS CACHE - temps réel)
  */
-export const rechercherCouleur = async (
+export async function rechercherCouleur(
   searchTerm: string
-): Promise<any> => {
+): Promise<any> {
   try {
     const formData = new FormData();
     formData.append("search_term", searchTerm);
@@ -448,6 +527,8 @@ export const rechercherCouleur = async (
         method: "POST",
         credentials: "include",
         body: formData,
+        // Pas de cache pour les recherches en temps réel
+        cache: 'no-store'
       }
     );
 
@@ -468,15 +549,16 @@ export const rechercherCouleur = async (
       message: "Erreur réseau lors de la recherche des couleurs",
     };
   }
-};
+}
 
 /**
- * Ajoute une nouvelle couleur
+ * Ajoute une nouvelle couleur (INVALIDE LE CACHE)
+ * Mutation qui invalide les caches des couleurs
  */
-export const ajouterCouleur = async (
+export async function ajouterCouleur(
   nom: string,
   codeHex: string
-): Promise<any> => {
+): Promise<any> {
   try {
     const formData = new FormData();
     formData.append("nom", nom);
@@ -500,6 +582,11 @@ export const ajouterCouleur = async (
       };
     }
 
+    // ⚡ Invalider les caches des couleurs après ajout
+    if (data.status === "success") {
+      await invalidateCouleursCache();
+    }
+
     return data;
   } catch (error) {
     console.error("Ajouter couleur error:", error);
@@ -508,4 +595,4 @@ export const ajouterCouleur = async (
       message: "Erreur réseau lors de l'ajout de la couleur",
     };
   }
-};
+}

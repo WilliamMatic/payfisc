@@ -11,7 +11,7 @@ import {
   Loader,
   Search,
   Plus,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import {
   soumettreImmatriculation,
@@ -539,12 +539,12 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
             >
               Imprimer la Carte Rose
             </button>
-            {/* <button
+            <button
               onClick={() => setShowAnnulation(true)}
               className="px-4 py-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all font-semibold"
             >
               <Trash2 className="w-4 h-4" />
-            </button> */}
+            </button>
           </div>
         </div>
       </div>
@@ -573,7 +573,9 @@ const AnnulationModal: React.FC<AnnulationModalProps> = ({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900">Annuler l'Immatriculation</h3>
+          <h3 className="text-xl font-bold text-gray-900">
+            Annuler l'Immatriculation
+          </h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
@@ -586,7 +588,8 @@ const AnnulationModal: React.FC<AnnulationModalProps> = ({
         <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
           <div className="text-red-600 font-semibold mb-2">⚠️ Attention !</div>
           <p className="text-red-700 text-sm">
-            Cette action est irréversible. Elle supprimera toutes les traces de cette immatriculation :
+            Cette action est irréversible. Elle supprimera toutes les traces de
+            cette immatriculation :
           </p>
           <ul className="text-red-600 text-sm mt-2 space-y-1">
             <li>• Données de paiement (ID: {paiementId})</li>
@@ -672,19 +675,26 @@ export default function ClientSimpleForm({
   >([]);
 
   // États pour les suggestions de marques
-  const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>([]);
+  const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>(
+    []
+  );
   const [showMarquesSuggestions, setShowMarquesSuggestions] = useState(false);
   const [isSearchingMarques, setIsSearchingMarques] = useState(false);
   const [selectedMarqueId, setSelectedMarqueId] = useState<number | null>(null);
 
   // États pour les suggestions de couleurs
-  const [couleursSuggestions, setCouleursSuggestions] = useState<EnginCouleur[]>([]);
+  const [couleursSuggestions, setCouleursSuggestions] = useState<
+    EnginCouleur[]
+  >([]);
   const [showCouleursSuggestions, setShowCouleursSuggestions] = useState(false);
   const [isSearchingCouleurs, setIsSearchingCouleurs] = useState(false);
-  const [couleurInputMode, setCouleurInputMode] = useState<'select' | 'input'>('select');
+  const [selectedCouleur, setSelectedCouleur] = useState<EnginCouleur | null>(
+    null
+  );
+  const [isAddingCouleur, setIsAddingCouleur] = useState(false);
+  const [showAddCouleurForm, setShowAddCouleurForm] = useState(false);
   const [nouvelleCouleurNom, setNouvelleCouleurNom] = useState("");
   const [nouvelleCouleurCode, setNouvelleCouleurCode] = useState("#000000");
-  const [isAddingCouleur, setIsAddingCouleur] = useState(false);
 
   // États pour le taux
   const [tauxActif, setTauxActif] = useState<Taux | null>(null);
@@ -755,7 +765,10 @@ export default function ClientSimpleForm({
     const loadInitialData = async () => {
       try {
         setLoadingTaux(true);
-        const tauxResponse = await getTauxActif();
+        const tauxResponse = await getTauxActif({
+          province_id: null,
+          impot_id: Number(impotId),
+        });
         if (tauxResponse.status === "success" && tauxResponse.data) {
           setTauxActif(tauxResponse.data);
         }
@@ -1040,18 +1053,31 @@ export default function ClientSimpleForm({
       clearTimeout(couleurTimerRef.current);
     }
 
-    if (formData.couleur.length >= 2 && couleurInputMode === 'input') {
+    if (formData.couleur.length >= 2 && !showAddCouleurForm) {
       couleurTimerRef.current = setTimeout(async () => {
         setIsSearchingCouleurs(true);
         try {
           const response = await rechercherCouleur(formData.couleur);
           if (response.status === "success") {
-            setCouleursSuggestions(response.data || []);
-            setShowCouleursSuggestions(true);
+            const data = response.data;
+            if (Array.isArray(data) && data.length > 0) {
+              setCouleursSuggestions(data);
+              setShowCouleursSuggestions(true);
+              setShowAddCouleurForm(false);
+            } else {
+              setCouleursSuggestions([]);
+              setShowCouleursSuggestions(false);
+              // Si aucune couleur n'est trouvée et le texte est assez long, montrer le formulaire d'ajout
+              if (formData.couleur.length >= 3) {
+                setNouvelleCouleurNom(formData.couleur);
+                setShowAddCouleurForm(true);
+              }
+            }
           }
         } catch (error) {
           console.error("Erreur lors de la recherche des couleurs:", error);
           setCouleursSuggestions([]);
+          setShowCouleursSuggestions(false);
         } finally {
           setIsSearchingCouleurs(false);
         }
@@ -1059,6 +1085,9 @@ export default function ClientSimpleForm({
     } else {
       setCouleursSuggestions([]);
       setShowCouleursSuggestions(false);
+      if (formData.couleur.length < 2) {
+        setShowAddCouleurForm(false);
+      }
     }
 
     return () => {
@@ -1066,7 +1095,7 @@ export default function ClientSimpleForm({
         clearTimeout(couleurTimerRef.current);
       }
     };
-  }, [formData.couleur, couleurInputMode]);
+  }, [formData.couleur, showAddCouleurForm]);
 
   // Récupérer automatiquement une plaque disponible au chargement
   useEffect(() => {
@@ -1137,7 +1166,10 @@ export default function ClientSimpleForm({
     setMarquesSuggestions([]);
     setModelesSuggestions([]);
     setPuissancesSuggestions([]);
-    setCouleurInputMode('select');
+    setCouleursSuggestions([]);
+    setShowCouleursSuggestions(false);
+    setSelectedCouleur(null);
+    setShowAddCouleurForm(false);
     setNouvelleCouleurNom("");
     setNouvelleCouleurCode("#000000");
   };
@@ -1163,11 +1195,22 @@ export default function ClientSimpleForm({
       setShowModelesSuggestions(false);
     }
 
-    if (field === "couleur" && value && couleurInputMode === 'input') {
-      // Vérifier si la couleur existe déjà dans la liste
-      const couleurExistante = couleurs.find(c => c.nom.toLowerCase() === value.toLowerCase());
-      if (!couleurExistante && value.length >= 2) {
-        setNouvelleCouleurNom(value);
+    if (field === "couleur") {
+      // Réinitialiser la couleur sélectionnée quand on change le texte
+      setSelectedCouleur(null);
+      if (value.length >= 3) {
+        // Vérifier si la couleur existe déjà dans la liste initiale
+        const couleurExistante = couleurs.find(
+          (c) => c.nom.toLowerCase() === value.toLowerCase()
+        );
+        if (couleurExistante) {
+          setSelectedCouleur(couleurExistante);
+          setShowAddCouleurForm(false);
+        } else {
+          setNouvelleCouleurNom(value);
+        }
+      } else {
+        setShowAddCouleurForm(false);
       }
     }
 
@@ -1194,7 +1237,7 @@ export default function ClientSimpleForm({
     setFormData((prev) => ({ ...prev, marque: marque.libelle }));
     setSelectedMarqueId(marque.id);
     setShowMarquesSuggestions(false);
-    
+
     // Réinitialiser le modèle quand on change de marque
     setFormData((prev) => ({ ...prev, modele: "" }));
     setModelesSuggestions([]);
@@ -1213,8 +1256,9 @@ export default function ClientSimpleForm({
 
   const handleCouleurSelect = (couleur: EnginCouleur) => {
     setFormData((prev) => ({ ...prev, couleur: couleur.nom }));
+    setSelectedCouleur(couleur);
     setShowCouleursSuggestions(false);
-    setCouleurInputMode('select');
+    setShowAddCouleurForm(false);
   };
 
   const handleAjouterCouleur = async () => {
@@ -1225,21 +1269,35 @@ export default function ClientSimpleForm({
 
     setIsAddingCouleur(true);
     try {
-      const response = await ajouterCouleur(nouvelleCouleurNom, nouvelleCouleurCode);
+      const response = await ajouterCouleur(
+        nouvelleCouleurNom,
+        nouvelleCouleurCode
+      );
       if (response.status === "success") {
         // Recharger la liste des couleurs
         const couleursResponse = await getCouleurs();
         if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
-        
+
         // Sélectionner la nouvelle couleur
         setFormData((prev) => ({ ...prev, couleur: nouvelleCouleurNom }));
-        setCouleurInputMode('select');
+        
+        // Créer un objet couleur temporaire pour la sélection
+        const nouvelleCouleur: EnginCouleur = {
+          id: Date.now(), // ID temporaire
+          nom: nouvelleCouleurNom,
+          code_hex: nouvelleCouleurCode,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          statut: "actif"
+        };
+        
+        setSelectedCouleur(nouvelleCouleur);
+        setShowAddCouleurForm(false);
         setNouvelleCouleurNom("");
         setNouvelleCouleurCode("#000000");
-        setShowCouleursSuggestions(false);
-        
+
         alert("Couleur ajoutée avec succès !");
       } else {
         alert(response.message || "Erreur lors de l'ajout de la couleur");
@@ -1814,8 +1872,8 @@ export default function ClientSimpleForm({
                   marquesSuggestions.length === 0 &&
                   formData.marque.length >= 2 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-600">
-                      Aucune marque trouvée. La marque sera créée automatiquement
-                      lors de la soumission.
+                      Aucune marque trouvée. La marque sera créée
+                      automatiquement lors de la soumission.
                     </div>
                   )}
                 {errors.marque && (
@@ -2115,137 +2173,121 @@ export default function ClientSimpleForm({
               )}
             </div>
 
-            {/* Couleur */}
+            {/* Couleur - AUTOCOMPLÉTION */}
             <div className="relative">
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Couleur
               </label>
-              <div className="flex space-x-2 mb-2">
-                <button
-                  type="button"
-                  onClick={() => setCouleurInputMode('select')}
-                  className={`px-3 py-1 text-sm rounded-lg transition-all ${
-                    couleurInputMode === 'select'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  Liste
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCouleurInputMode('input')}
-                  className={`px-3 py-1 text-sm rounded-lg transition-all ${
-                    couleurInputMode === 'input'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  Saisir
-                </button>
-              </div>
-
-              {couleurInputMode === 'select' ? (
-                <div className="relative">
-                  <select
-                    value={formData.couleur}
-                    onChange={(e) => handleInputChange("couleur", e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    disabled={loading.couleurs}
-                  >
-                    <option value="">Sélectionner la couleur</option>
-                    {couleurs.map((couleur) => (
-                      <option key={couleur.id} value={couleur.nom}>
-                        {couleur.nom}
-                      </option>
-                    ))}
-                  </select>
-                  {loading.couleurs && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
-                    </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.couleur}
+                  onChange={(e) =>
+                    handleInputChange("couleur", e.target.value)
+                  }
+                  placeholder="Saisissez la couleur (auto-complétion)"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {isSearchingCouleurs ? (
+                    <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                  ) : (
+                    <Search className="w-4 h-4 text-gray-400" />
                   )}
                 </div>
-              ) : (
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.couleur}
-                    onChange={(e) => handleInputChange("couleur", e.target.value)}
-                    placeholder="Saisissez la couleur (auto-complétion)"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    {isSearchingCouleurs ? (
-                      <Loader className="w-4 h-4 animate-spin text-gray-400" />
-                    ) : (
-                      <Search className="w-4 h-4 text-gray-400" />
-                    )}
-                  </div>
+              </div>
 
-                  {showCouleursSuggestions && couleursSuggestions.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                      {couleursSuggestions.map((couleur) => (
+              {/* Suggestions de couleurs */}
+              {showCouleursSuggestions && couleursSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  {couleursSuggestions.map((couleur) => (
+                    <div
+                      key={couleur.id}
+                      onClick={() => handleCouleurSelect(couleur)}
+                      className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
+                    >
+                      <div className="flex items-center space-x-3">
                         <div
-                          key={couleur.id}
-                          onClick={() => handleCouleurSelect(couleur)}
-                          className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors text-gray-800"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div 
-                              className="w-6 h-6 rounded-full border border-gray-300"
-                              style={{ backgroundColor: couleur.code_hex }}
-                            />
-                            <div>
-                              <div className="font-medium">{couleur.nom}</div>
-                              <div className="text-xs text-gray-500">{couleur.code_hex}</div>
-                            </div>
+                          className="w-6 h-6 rounded-full border border-gray-300"
+                          style={{ backgroundColor: couleur.code_hex }}
+                        />
+                        <div>
+                          <div className="font-medium">{couleur.nom}</div>
+                          <div className="text-xs text-gray-500">
+                            {couleur.code_hex}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {showCouleursSuggestions &&
-                    couleursSuggestions.length === 0 &&
-                    formData.couleur.length >= 2 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
-                        <div className="text-sm text-gray-600 mb-3">
-                          Cette couleur n'existe pas encore. Voulez-vous l'ajouter ?
-                        </div>
-                        <div className="space-y-3">
-                          <input
-                            type="text"
-                            value={nouvelleCouleurNom}
-                            onChange={(e) => setNouvelleCouleurNom(e.target.value)}
-                            placeholder="Nom de la couleur"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                          />
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="color"
-                              value={nouvelleCouleurCode}
-                              onChange={(e) => setNouvelleCouleurCode(e.target.value)}
-                              className="w-10 h-10 cursor-pointer"
-                            />
-                            <span className="text-sm text-gray-600">{nouvelleCouleurCode}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleAjouterCouleur}
-                            disabled={isAddingCouleur || !nouvelleCouleurNom.trim()}
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
-                          >
-                            {isAddingCouleur ? (
-                              <Loader className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Plus className="w-4 h-4" />
-                            )}
-                            <span>Ajouter cette couleur</span>
-                          </button>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Formulaire d'ajout de couleur */}
+              {showAddCouleurForm && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+                  <div className="text-sm text-gray-600 mb-3">
+                    Cette couleur n'existe pas encore. Voulez-vous l'ajouter ?
+                  </div>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={nouvelleCouleurNom}
+                      onChange={(e) => setNouvelleCouleurNom(e.target.value)}
+                      placeholder="Nom de la couleur"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="color"
+                        value={nouvelleCouleurCode}
+                        onChange={(e) => setNouvelleCouleurCode(e.target.value)}
+                        className="w-10 h-10 cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-600">
+                        {nouvelleCouleurCode}
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAddCouleurForm(false);
+                          setNouvelleCouleurNom("");
+                          setNouvelleCouleurCode("#000000");
+                        }}
+                        className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAjouterCouleur}
+                        disabled={isAddingCouleur || !nouvelleCouleurNom.trim()}
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm flex items-center justify-center space-x-2"
+                      >
+                        {isAddingCouleur ? (
+                          <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Plus className="w-4 h-4" />
+                        )}
+                        <span>Ajouter</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Aperçu de la couleur sélectionnée */}
+              {selectedCouleur && (
+                <div className="mt-2 flex items-center space-x-2 text-sm">
+                  <div
+                    className="w-4 h-4 rounded-full border border-gray-300"
+                    style={{ backgroundColor: selectedCouleur.code_hex }}
+                  />
+                  <span className="text-gray-600">
+                    {selectedCouleur.nom} ({selectedCouleur.code_hex})
+                  </span>
                 </div>
               )}
             </div>

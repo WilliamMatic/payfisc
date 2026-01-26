@@ -47,103 +47,96 @@ export default function PlaqueTable({
   };
 
   return (
-    <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-      <div className="overflow-hidden flex-1 flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Série & Province</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Plage Numérique</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Disponibilité</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
-                <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
-                <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-        
-        <div className="overflow-y-auto flex-1 max-h-[calc(100vh-250px)]">
-          <table className="w-full">
-            <tbody className="bg-white divide-y divide-gray-100">
-              {series.map((serie) => (
-                serie && (
-                  <tr key={serie.id} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="bg-blue-50 p-2 rounded-lg mr-3">
-                          <Car className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900 text-lg">{serie.nom_serie || 'N/A'}</div>
-                          <div className="text-gray-500 text-sm">{serie.province_nom} ({serie.province_code})</div>
-                          <div className="text-gray-500 text-xs">ID: {serie.id}</div>
-                        </div>
+    <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="overflow-x-auto h-full">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
+            <tr>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Série & Province</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Plage Numérique</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Disponibilité</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
+              <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-100">
+            {series.map((serie) => (
+              serie && (
+                <tr key={serie.id} className="hover:bg-gray-50/80 transition-colors">
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="bg-blue-50 p-2 rounded-lg mr-3">
+                        <Car className="w-4 h-4 text-blue-600" />
                       </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="text-gray-600 text-sm max-w-xs truncate">
-                        {serie.description || 'Aucune description'}
+                      <div>
+                        <div className="font-bold text-gray-900 text-lg">{serie.nom_serie || 'N/A'}</div>
+                        <div className="text-gray-500 text-sm">{serie.province_nom} ({serie.province_code})</div>
+                        <div className="text-gray-500 text-xs">ID: {serie.id}</div>
                       </div>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="text-gray-600 text-sm font-medium">
-                        {serie.debut_numeros} - {serie.fin_numeros}
-                      </div>
-                      <div className="text-gray-500 text-xs">
-                        {serie.fin_numeros - serie.debut_numeros + 1} numéros
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getAvailabilityBadge(serie.items_disponibles, serie.total_items)}`}>
-                          {serie.items_disponibles}/{serie.total_items} disponibles
-                        </span>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
-                            className="bg-green-500 h-1.5 rounded-full" 
-                            style={{ width: `${(serie.items_disponibles / serie.total_items) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadge(serie.actif)}`}>
-                        {serie.actif ? 'Active' : 'Inactive'}
+                    </div>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="text-gray-600 text-sm max-w-xs">
+                      {serie.description || 'Aucune description'}
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="text-gray-600 text-sm font-medium">
+                      {serie.debut_numeros} - {serie.fin_numeros}
+                    </div>
+                    <div className="text-gray-500 text-xs">
+                      {serie.fin_numeros - serie.debut_numeros + 1} numéros
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="space-y-1">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getAvailabilityBadge(serie.items_disponibles, serie.total_items)}`}>
+                        {serie.items_disponibles}/{serie.total_items} disponibles
                       </span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
-                      {serie.date_creation_formatted || new Date(serie.date_creation).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <div className="flex items-center justify-center space-x-1">
-                        <button
-                          onClick={() => onViewItems(serie)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Voir les plaques"
-                        >
-                          <List className="w-4 h-4" />
-                        </button>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className="bg-green-500 h-1.5 rounded-full" 
+                          style={{ width: `${(serie.items_disponibles / serie.total_items) * 100}%` }}
+                        ></div>
                       </div>
-                    </td>
-                  </tr>
-                )
-              ))}
-            </tbody>
-          </table>
-          
-          {series.length === 0 && (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                <Car className="w-8 h-8 text-gray-400" />
-              </div>
-              <p className="text-gray-500 font-medium">Aucune série trouvée</p>
-              <p className="text-gray-400 text-sm mt-1">Les séries de plaques apparaîtront ici une fois ajoutées</p>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadge(serie.actif)}`}>
+                      {serie.actif ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
+                    {serie.date_creation_formatted || new Date(serie.date_creation).toLocaleDateString('fr-FR')}
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="flex items-center justify-center space-x-1">
+                      <button
+                        onClick={() => onViewItems(serie)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Voir les plaques"
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            ))}
+          </tbody>
+        </table>
+        
+        {series.length === 0 && (
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <Car className="w-8 h-8 text-gray-400" />
             </div>
-          )}
-        </div>
+            <p className="text-gray-500 font-medium">Aucune série trouvée</p>
+            <p className="text-gray-400 text-sm mt-1">Les séries de plaques apparaîtront ici une fois ajoutées</p>
+          </div>
+        )}
       </div>
     </div>
   );
