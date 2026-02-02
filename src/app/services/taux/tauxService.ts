@@ -131,7 +131,7 @@ export async function cleanAttributionData(data: any): Promise<AttributionTaux> 
  */
 export async function getTaux(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TAUX_LIST);
 
   try {
@@ -174,7 +174,7 @@ export async function getTaux(): Promise<ApiResponse> {
  */
 export async function getTauxActifs(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TAUX_ACTIFS);
 
   try {
@@ -442,7 +442,7 @@ export async function getTauxActif(params: {
   impot_id: number;
 }): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   const provinceId = params.province_id !== undefined ? params.province_id : null;
   cacheTag(CACHE_TAGS.TAUX_ACTIF(provinceId, params.impot_id));
 
@@ -489,7 +489,7 @@ export async function getTauxActif(params: {
  */
 export async function getImpots(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.IMPOTS_LIST);
 
   try {
@@ -528,7 +528,7 @@ export async function getImpots(): Promise<ApiResponse> {
  */
 export async function getProvinces(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.PROVINCES_LIST);
 
   try {
@@ -612,7 +612,7 @@ export async function retirerAttributionTaux(retraitData: {
  */
 export async function getTauxById(id: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TAUX_DETAILS(id));
 
   try {
@@ -692,7 +692,7 @@ export async function checkTauxByNom(nom: string): Promise<ApiResponse> {
  */
 export async function searchTaux(searchTerm: string): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TAUX_SEARCH, `search-${searchTerm}`);
 
   try {
@@ -738,7 +738,7 @@ export async function searchTaux(searchTerm: string): Promise<ApiResponse> {
  */
 export async function getTauxPaginees(page: number = 1, limit: number = 10, searchTerm: string = ''): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TAUX_PAGINES(page, searchTerm));
 
   try {

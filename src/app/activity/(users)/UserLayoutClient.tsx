@@ -14,7 +14,7 @@ export default function MouvementsLayoutClient({
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { isAuthenticated, isLoading, logout, userType } = useAuth();
+  const { isAuthenticated, isLoading, logout, userType, utilisateur } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

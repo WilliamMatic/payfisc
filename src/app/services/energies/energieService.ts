@@ -67,7 +67,7 @@ export async function cleanEnergieData(data: any): Promise<Energie> {
  */
 export async function getEnergies(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.ENERGIES_LIST);
 
   try {
@@ -110,7 +110,7 @@ export async function getEnergies(): Promise<ApiResponse> {
  */
 export async function getEnergiesActives(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.ENERGIES_ACTIVES);
 
   try {
@@ -317,7 +317,7 @@ export async function toggleEnergieStatus(
  */
 export async function searchEnergies(searchTerm: string): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.ENERGIES_SEARCH, `search-${searchTerm}`);
 
   try {
@@ -401,7 +401,7 @@ export async function checkEnergieExists(nom: string): Promise<ApiResponse> {
  */
 export async function getEnergieById(id: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.ENERGIE_DETAILS(id));
 
   try {

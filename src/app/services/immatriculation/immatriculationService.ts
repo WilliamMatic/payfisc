@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { cacheLife, cacheTag } from 'next/cache';
-import { revalidateTag } from 'next/cache';
+import { cacheLife, cacheTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 /**
  * Server Actions pour la gestion de l'immatriculation des plaques avec Cache Components Next.js 16
@@ -15,7 +15,7 @@ export interface ParticulierData {
   email?: string;
   adresse: string;
   nif?: string;
-  reduction_type?: 'pourcentage' | 'montant_fixe';
+  reduction_type?: "pourcentage" | "montant_fixe";
   reduction_valeur?: number;
 }
 
@@ -105,42 +105,42 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation ciblée
 const CACHE_TAGS = {
-  PARTICULIERS_TELEPHONE: (telephone: string) => `particuliers-tel-${telephone}`,
-  MODELES_RECHERCHE: (marqueId: number, searchTerm: string) => `modeles-search-${marqueId}-${searchTerm}`,
-  PUISSANCES_RECHERCHE: (typeEngin: string, searchTerm: string) => `puissances-search-${typeEngin}-${searchTerm}`,
-  PLAQUES_DISPONIBLES: (utilisateurId: number, siteId: number) => `plaques-disponibles-${utilisateurId}-${siteId}`,
-  CHASSIS_VERIFICATION: (numeroChassis: string) => `chassis-verification-${numeroChassis}`,
+  PARTICULIERS_TELEPHONE: (telephone: string) =>
+    `particuliers-tel-${telephone}`,
+  MODELES_RECHERCHE: (marqueId: number, searchTerm: string) =>
+    `modeles-search-${marqueId}-${searchTerm}`,
+  PUISSANCES_RECHERCHE: (typeEngin: string, searchTerm: string) =>
+    `puissances-search-${typeEngin}-${searchTerm}`,
+  PLAQUES_DISPONIBLES: (utilisateurId: number, siteId: number) =>
+    `plaques-disponibles-${utilisateurId}-${siteId}`,
+  CHASSIS_VERIFICATION: (numeroChassis: string) =>
+    `chassis-verification-${numeroChassis}`,
   COULEURS_RECHERCHE: (searchTerm: string) => `couleurs-search-${searchTerm}`,
-  COULEURS_NEW: 'couleurs-new', // Tag spécifique pour les nouvelles couleurs
-  VENTES_IMMATRICULATION: 'ventes-immatriculation', // Tag pour les ventes après immatriculation
+  COULEURS_NEW: "couleurs-new", // Tag spécifique pour les nouvelles couleurs
+  VENTES_IMMATRICULATION: "ventes-immatriculation", // Tag pour les ventes après immatriculation
 };
 
 /**
  * Invalide le cache après une immatriculation réussie
  */
 async function invalidateImmatriculationCache() {
-  'use server';
-  
+  "use server";
+
   // Invalider les caches liés aux ventes (pour le module des ventes)
-  revalidateTag('ventes-list-', "max");
-  revalidateTag('ventes-stats-', "max");
-  revalidateTag('ventes-export-', "max");
-  
-  // Invalider les caches de particuliers
-  revalidateTag('particuliers-list', "max");
-  revalidateTag('particuliers-actifs', "max");
-  revalidateTag('particuliers-search', "max");
+  revalidateTag("ventes-list-", "max");
+  revalidateTag("ventes-stats-", "max");
+  revalidateTag("ventes-export-", "max");
 }
 
 /**
  * Invalide le cache des couleurs après ajout/modification
  */
 async function invalidateCouleursCache() {
-  'use server';
-  
-  revalidateTag('couleurs-list', "max");
-  revalidateTag('couleurs-actives', "max");
-  revalidateTag('couleurs-search', "max");
+  "use server";
+
+  revalidateTag("couleurs-list", "max");
+  revalidateTag("couleurs-actives", "max");
+  revalidateTag("couleurs-search", "max");
   revalidateTag(CACHE_TAGS.COULEURS_NEW, "max");
 }
 
@@ -148,19 +148,19 @@ async function invalidateCouleursCache() {
  * Vérifie si un particulier existe par son numéro de téléphone (AVEC CACHE - 5 minutes)
  */
 export async function verifierParticulierParTelephone(
-  telephone?: string
+  telephone?: string,
 ): Promise<VerifierParticulierResponse> {
-  'use cache';
-  
-  if (!telephone || telephone.trim() === '' || telephone.trim() === '-') {
+  "use cache";
+
+  if (!telephone || telephone.trim() === "" || telephone.trim() === "-") {
     return {
       status: "success",
       message: "Téléphone non renseigné ou invalide, vérification ignorée",
-      data: null
+      data: null,
     };
   }
-  
-  cacheLife('minutes');
+
+  cacheLife("weeks");
   cacheTag(CACHE_TAGS.PARTICULIERS_TELEPHONE(telephone));
 
   try {
@@ -173,7 +173,7 @@ export async function verifierParticulierParTelephone(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -182,7 +182,7 @@ export async function verifierParticulierParTelephone(
       return {
         status: "error",
         message: data.message || "Échec de la vérification du particulier",
-        data: null
+        data: null,
       };
     }
 
@@ -192,7 +192,7 @@ export async function verifierParticulierParTelephone(
     return {
       status: "error",
       message: "Erreur réseau lors de la vérification du particulier",
-      data: null
+      data: null,
     };
   }
 }
@@ -202,10 +202,10 @@ export async function verifierParticulierParTelephone(
  */
 export async function rechercherModeles(
   marqueId: number,
-  searchTerm: string
+  searchTerm: string,
 ): Promise<ImmatriculationResponse> {
-  'use cache';
-  cacheLife('minutes');
+  "use cache";
+  cacheLife("minutes");
   cacheTag(CACHE_TAGS.MODELES_RECHERCHE(marqueId, searchTerm));
 
   try {
@@ -219,7 +219,7 @@ export async function rechercherModeles(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -246,10 +246,10 @@ export async function rechercherModeles(
  */
 export async function rechercherPuissances(
   typeEngin: string,
-  searchTerm: string
+  searchTerm: string,
 ): Promise<ImmatriculationResponse> {
-  'use cache';
-  cacheLife('minutes');
+  "use cache";
+  cacheLife("minutes");
   cacheTag(CACHE_TAGS.PUISSANCES_RECHERCHE(typeEngin, searchTerm));
 
   try {
@@ -263,7 +263,7 @@ export async function rechercherPuissances(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -289,11 +289,13 @@ export async function rechercherPuissances(
  * Récupère un numéro de plaque disponible (SANS changer le statut) selon la province de l'utilisateur (AVEC CACHE - 5 minutes)
  */
 export async function getNumeroPlaqueDisponible(
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ImmatriculationResponse> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(CACHE_TAGS.PLAQUES_DISPONIBLES(utilisateur.id, utilisateur.site_id || 1));
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(
+    CACHE_TAGS.PLAQUES_DISPONIBLES(utilisateur.id, utilisateur.site_id || 1),
+  );
 
   try {
     const formData = new FormData();
@@ -306,7 +308,7 @@ export async function getNumeroPlaqueDisponible(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -332,10 +334,10 @@ export async function getNumeroPlaqueDisponible(
  * Vérifie la disponibilité d'un numéro de chassis (AVEC CACHE - 10 minutes)
  */
 export async function verifierNumeroChassis(
-  numeroChassis: string
+  numeroChassis: string,
 ): Promise<ImmatriculationResponse> {
-  'use cache';
-  cacheLife('minutes');
+  "use cache";
+  cacheLife("minutes");
   cacheTag(CACHE_TAGS.CHASSIS_VERIFICATION(numeroChassis));
 
   try {
@@ -348,7 +350,7 @@ export async function verifierNumeroChassis(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -356,7 +358,8 @@ export async function verifierNumeroChassis(
     if (!response.ok) {
       return {
         status: "error",
-        message: data.message || "Échec de la vérification du numéro de chassis",
+        message:
+          data.message || "Échec de la vérification du numéro de chassis",
       };
     }
 
@@ -379,7 +382,7 @@ export async function soumettreImmatriculation(
   particulierData: ParticulierData,
   enginData: EnginData,
   paiementData: PaiementData,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ImmatriculationResponse> {
   try {
     const formData = new FormData();
@@ -396,11 +399,14 @@ export async function soumettreImmatriculation(
     formData.append("email", particulierData.email || "");
     formData.append("adresse", particulierData.adresse);
     formData.append("nif", particulierData.nif || "");
-    
+
     // Données de réduction
     if (particulierData.reduction_type && particulierData.reduction_valeur) {
       formData.append("reduction_type", particulierData.reduction_type);
-      formData.append("reduction_valeur", particulierData.reduction_valeur.toString());
+      formData.append(
+        "reduction_valeur",
+        particulierData.reduction_valeur.toString(),
+      );
     }
 
     // Données de l'engin
@@ -435,7 +441,7 @@ export async function soumettreImmatriculation(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -449,6 +455,14 @@ export async function soumettreImmatriculation(
 
     // ⚡ Invalider les caches après une immatriculation réussie
     if (data.status === "success") {
+      // revalidateTag() est synchrone, pas besoin de await
+      if (particulierData?.telephone?.trim()) {
+        revalidateTag(
+          CACHE_TAGS.PARTICULIERS_TELEPHONE(particulierData.telephone.trim()),
+          "max",
+        );
+      }
+
       await invalidateImmatriculationCache();
     }
 
@@ -468,7 +482,7 @@ export async function soumettreImmatriculation(
 export async function annulerImmatriculation(
   paiementId: number,
   utilisateurId: number,
-  raison?: string
+  raison?: string,
 ): Promise<AnnulerImmatriculationResponse> {
   try {
     const formData = new FormData();
@@ -484,7 +498,7 @@ export async function annulerImmatriculation(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -514,9 +528,7 @@ export async function annulerImmatriculation(
 /**
  * Recherche une couleur par nom (SANS CACHE - temps réel)
  */
-export async function rechercherCouleur(
-  searchTerm: string
-): Promise<any> {
+export async function rechercherCouleur(searchTerm: string): Promise<any> {
   try {
     const formData = new FormData();
     formData.append("search_term", searchTerm);
@@ -528,8 +540,8 @@ export async function rechercherCouleur(
         credentials: "include",
         body: formData,
         // Pas de cache pour les recherches en temps réel
-        cache: 'no-store'
-      }
+        cache: "no-store",
+      },
     );
 
     const data = await response.json();
@@ -557,7 +569,7 @@ export async function rechercherCouleur(
  */
 export async function ajouterCouleur(
   nom: string,
-  codeHex: string
+  codeHex: string,
 ): Promise<any> {
   try {
     const formData = new FormData();
@@ -570,7 +582,7 @@ export async function ajouterCouleur(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();

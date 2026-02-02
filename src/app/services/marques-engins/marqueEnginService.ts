@@ -132,7 +132,7 @@ export async function cleanModeleData(data: any): Promise<ModeleEngin> {
  */
 export async function getMarquesEngins(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS_MARQUES.MARQUES_LIST);
 
   try {
@@ -175,7 +175,7 @@ export async function getMarquesEngins(): Promise<ApiResponse> {
  */
 export async function getMarquesEnginsActives(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS_MARQUES.MARQUES_ACTIVES);
 
   try {
@@ -221,7 +221,7 @@ export async function rechercherMarques(
   searchTerm: string
 ): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('days');
   cacheTag(CACHE_TAGS_MARQUES.MARQUES_SEARCH, `search-${typeEngin}-${searchTerm}`);
 
   try {
@@ -434,7 +434,7 @@ export async function toggleMarqueEnginStatus(
  */
 export async function getMarqueEnginById(id: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS_MARQUES.MARQUE_DETAILS(id));
 
   try {
@@ -518,7 +518,7 @@ export async function checkMarqueEnginExists(libelle: string, typeEnginId: numbe
  */
 export async function getModelesEngins(marqueId?: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   
   if (marqueId) {
     cacheTag(CACHE_TAGS_MODELES.MODELES_BY_MARQUE(marqueId));
@@ -570,7 +570,7 @@ export async function getModelesEngins(marqueId?: number): Promise<ApiResponse> 
  */
 export async function getModelesEnginsActifs(marqueId?: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   
   if (marqueId) {
     cacheTag(CACHE_TAGS_MODELES.MODELES_BY_MARQUE(marqueId), `actifs-${marqueId}`);
@@ -786,7 +786,7 @@ export async function toggleModeleEnginStatus(
  */
 export async function getModeleEnginById(id: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS_MODELES.MODELE_DETAILS(id));
 
   try {
@@ -866,7 +866,7 @@ export async function checkModeleEnginExists(libelle: string, marqueEnginId: num
  */
 export async function searchModelesEngins(searchTerm: string, marqueId?: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   
   const cacheKey = marqueId ? `search-${searchTerm}-marque-${marqueId}` : `search-${searchTerm}`;
   cacheTag(CACHE_TAGS_MODELES.MODELES_SEARCH, cacheKey);

@@ -1,4 +1,4 @@
-// app/login/page.tsx
+// app/login/page.tsx - Corrections
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,21 +19,19 @@ export default function Login() {
   const [year, setYear] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { login, isAuthenticated, userType } = useAuth();
+  const { login, isAuthenticated, userType, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Redirection si déjà authentifié
+  // Redirection si déjà authentifié - SEULEMENT au chargement initial
   useEffect(() => {
-    if (isAuthenticated && userType) {
-      setIsLoading(true);
-
+    if (!authLoading && isAuthenticated && userType) {
       if (userType === "agent") {
         router.push("/system/welcom/");
       } else if (userType === "utilisateur") {
         router.push("/activity/speed/");
       }
     }
-  }, [isAuthenticated, userType, router]);
+  }, [isAuthenticated, userType, authLoading, router]);
 
   // Année courante (client-side only)
   useEffect(() => {
@@ -51,11 +49,8 @@ export default function Login() {
       );
 
       if (result.success) {
-        if (result.userType === "agent") {
-          router.push("/system/welcom/");
-        } else if (result.userType === "utilisateur") {
-          router.push("/activity/speed/");
-        }
+        // Ne pas rediriger ici, la redirection se fera via l'effet ci-dessus
+        // car l'état d'authentification va être mis à jour
       } else {
         setError(result.message || "Identifiants incorrects");
       }
@@ -66,6 +61,40 @@ export default function Login() {
       setIsLoading(false);
     }
   };
+
+  // Afficher un loader pendant le chargement initial
+  if (authLoading) {
+    return (
+      <div className={styles.container}>
+        <StarsBackground />
+        <div className={styles.overlay}></div>
+        <div className={styles.content}>
+          <div className={styles.loadingOverlay}>
+            <div className={styles.spinner}></div>
+            <p>Chargement...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Si déjà authentifié, afficher un message de redirection
+  if (isAuthenticated && userType) {
+    return (
+      <div className={styles.container}>
+        <StarsBackground />
+        <div className={styles.overlay}></div>
+        <div className={styles.content}>
+          <div className={styles.card}>
+            <div className={styles.loadingOverlay}>
+              <div className={styles.spinner}></div>
+              <p>Redirection en cours...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

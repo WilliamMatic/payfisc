@@ -44,10 +44,10 @@ import {
 } from "@/services/type-engins/typeEnginService";
 import { getEnergies, type Energie } from "@/services/energies/energieService";
 import {
-  getCouleurs,
+  getCouleursActives,
   type EnginCouleur,
 } from "@/services/couleurs/couleurService";
-import { getUsages, type UsageEngin } from "@/services/usages/usageService";
+import { getUsagesActifs, type UsageEngin } from "@/services/usages/usageService";
 import {
   rechercherMarques,
   type MarqueEngin,
@@ -840,14 +840,14 @@ export default function ClientSimpleForm({
 
         // Charger les couleurs
         setLoading((prev) => ({ ...prev, couleurs: true }));
-        const couleursResponse = await getCouleurs();
+        const couleursResponse = await getCouleursActives();
         if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
 
         // Charger les usages
         setLoading((prev) => ({ ...prev, usages: true }));
-        const usagesResponse = await getUsages();
+        const usagesResponse = await getUsagesActifs();
         if (usagesResponse.status === "success") {
           setUsages(usagesResponse.data || []);
         }
@@ -1054,7 +1054,7 @@ export default function ClientSimpleForm({
       
       if (response.status === "success") {
         // Recharger les couleurs depuis le serveur (le cache est automatiquement invalidé)
-        const couleursResponse = await getCouleurs();
+        const couleursResponse = await getCouleursActives();
         if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }

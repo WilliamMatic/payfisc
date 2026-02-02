@@ -115,8 +115,6 @@ export async function getCommandesPlaques(
 ): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
   // Retirer 'use cache' et cacheTag/cacheLife
   try {
-    console.log("=== DEBUT APPEL API COMMANDES (TEMPS REEL) ===");
-    console.log("Paramètres reçus:", params);
 
     const formData = new FormData();
 
@@ -131,7 +129,6 @@ export async function getCommandesPlaques(
     if (params.order_dir) formData.append("order_dir", params.order_dir);
 
     const url = `${API_BASE_URL}/commandes/get_commandes_plaques.php`;
-    console.log("URL complète:", url);
 
     const response = await fetch(url, {
       method: "POST",
@@ -144,8 +141,6 @@ export async function getCommandesPlaques(
       cache: 'no-store',
     });
 
-    console.log("Statut HTTP:", response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Erreur HTTP détaillée:", errorText);
@@ -156,7 +151,6 @@ export async function getCommandesPlaques(
     }
 
     const responseText = await response.text();
-    console.log("Réponse brute:", responseText);
 
     let data;
     try {
@@ -175,8 +169,7 @@ export async function getCommandesPlaques(
         data.data.commandes.map(async (commande: any) => await cleanCommandeData(commande))
       );
     }
-
-    console.log("=== FIN APPEL API COMMANDES (TEMPS REEL) ===");
+    
     return data;
 
   } catch (error) {

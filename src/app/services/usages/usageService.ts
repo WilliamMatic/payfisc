@@ -63,15 +63,15 @@ export async function cleanUsageData(data: any): Promise<UsageEngin> {
 }
 
 /**
- * 💾 Récupère la liste de tous les usages (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste de tous les usages (AVEC CACHE)
  */
 export async function getUsages(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks'); // ✅ Changé de 'weeks' à 'hours'
   cacheTag(CACHE_TAGS.USAGES_LIST);
-
+  
   try {
-    const response = await fetch(`${API_BASE_URL}/usages/lister_usages.php`, {
+    const response = await fetch(`${API_BASE_URL}/usages/lister_usages.php`, { 
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -110,7 +110,7 @@ export async function getUsages(): Promise<ApiResponse> {
  */
 export async function getUsagesActifs(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.USAGES_ACTIFS);
 
   try {
@@ -321,7 +321,7 @@ export async function toggleUsageStatus(
  */
 export async function searchUsages(searchTerm: string): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.USAGES_SEARCH, `search-${searchTerm}`);
 
   try {
@@ -443,7 +443,7 @@ export async function checkUsageByLibelle(libelle: string): Promise<ApiResponse>
  */
 export async function getUsageById(id: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.USAGE_DETAILS(id));
 
   try {

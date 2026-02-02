@@ -15,6 +15,7 @@ export interface EnginCouleur {
   created_at?: string;
   updated_at?: string;
   statut?: string;
+  actif?: boolean; // Ajoutez cette ligne
 }
 
 // Interface pour les réponses de l'API
@@ -66,7 +67,7 @@ export async function cleanCouleurData(data: any): Promise<EnginCouleur> {
  */
 export async function getCouleurs(): Promise<ApiResponse> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("weeks");
   cacheTag(CACHE_TAGS.COULEURS_LIST);
 
   try {
@@ -114,7 +115,7 @@ export async function getCouleurs(): Promise<ApiResponse> {
  */
 export async function getCouleursActives(): Promise<ApiResponse> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("weeks");
   cacheTag(CACHE_TAGS.COULEURS_ACTIVES);
 
   try {
@@ -332,7 +333,7 @@ export async function toggleCouleurStatus(
  */
 export async function searchCouleurs(searchTerm: string): Promise<ApiResponse> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("weeks");
   cacheTag(CACHE_TAGS.COULEURS_SEARCH, `search-${searchTerm}`);
 
   try {
@@ -418,7 +419,7 @@ export async function checkCouleurExists(nom: string): Promise<ApiResponse> {
  */
 export async function getCouleurById(id: number): Promise<ApiResponse> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("weeks");
   cacheTag(CACHE_TAGS.COULEUR_DETAILS(id));
 
   try {

@@ -1,9 +1,4 @@
 'use server';
-
-// Retirer les imports liés au cache
-// import { cacheLife, cacheTag } from 'next/cache';
-// import { revalidateTag } from 'next/cache';
-
 /**
  * Server Actions pour la gestion des annulations de cartes roses (SANS CACHE - temps réel)
  */
@@ -117,8 +112,6 @@ export async function getCartesRoses(
 ): Promise<{ status: string; message?: string; data?: PaginationResponseCartesRoses }> {
   // Retirer 'use cache' et cacheTag/cacheLife
   try {
-    console.log("=== DEBUT APPEL API CARTES ROSES (TEMPS REEL) ===");
-    console.log("Paramètres reçus:", params);
 
     const formData = new FormData();
 
@@ -134,7 +127,6 @@ export async function getCartesRoses(
     if (params.order_dir) formData.append("order_dir", params.order_dir);
 
     const url = `${API_BASE_URL}/cartesRoses/get_cartes_roses.php`;
-    console.log("URL complète:", url);
 
     const response = await fetch(url, {
       method: "POST",
@@ -147,8 +139,6 @@ export async function getCartesRoses(
       cache: 'no-store',
     });
 
-    console.log("Statut HTTP:", response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Erreur HTTP détaillée:", errorText);
@@ -159,7 +149,6 @@ export async function getCartesRoses(
     }
 
     const responseText = await response.text();
-    console.log("Réponse brute:", responseText);
 
     let data;
     try {
@@ -178,8 +167,7 @@ export async function getCartesRoses(
         data.data.cartesRoses.map(async (carte: any) => await cleanCarteRoseData(carte))
       );
     }
-
-    console.log("=== FIN APPEL API CARTES ROSES (TEMPS REEL) ===");
+    
     return data;
 
   } catch (error) {

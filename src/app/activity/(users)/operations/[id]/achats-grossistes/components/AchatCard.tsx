@@ -90,14 +90,14 @@ export default function AchatCard({
                 {achat.nombre_plaques}
               </span>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <span className="text-sm text-gray-600">
                 Montant total:
               </span>
               <span className="font-medium text-gray-900">
                 {achat.montant_total.toLocaleString("fr-FR")} $
               </span>
-            </div>
+            </div> */}
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">
                 Mode paiement:

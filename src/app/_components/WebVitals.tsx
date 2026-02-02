@@ -1,11 +1,12 @@
 'use client'
 
 import { useReportWebVitals } from 'next/web-vitals'
+import { useEffect, useState } from 'react'
 
 interface AnalyticsData {
-  name: any;
-  value: any;
-  id: any;
+  name: string;
+  value: number;
+  id: string;
   url: string;
   user_agent: string;
   timestamp: string;
@@ -14,9 +15,17 @@ interface AnalyticsData {
 }
 
 export function WebVitals() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   useReportWebVitals((metric) => {
+    // ⚠️ Ne rien faire si on n'est pas côté client
+    if (!isClient) return;
+
     // 🔥 CORRECTION : Ne pas multiplier CLS par 1000
-    // CLS est déjà une valeur décimale (0.1, 0.25, etc.)
     const metricValue = metric.name === 'CLS' ? metric.value : metric.value;
     
     const analyticsData: AnalyticsData = {
@@ -28,7 +37,7 @@ export function WebVitals() {
       timestamp: new Date().toISOString()
     }
 
-    // Détection des problèmes (version corrigée)
+    // Détection des problèmes
     let description = '';
     let severity = 'info';
 
@@ -60,7 +69,6 @@ export function WebVitals() {
         break;
         
       case 'CLS':
-        // CLS est déjà en valeur décimale
         if (metric.value > 0.25) {
           description = 'Stabilité visuelle mauvaise (CLS > 0.25)';
           severity = 'critical';
@@ -135,12 +143,11 @@ export function WebVitals() {
   return null;
 }
 
-// Fonction d'envoi améliorée avec meilleure gestion d'erreurs
+// Fonction d'envoi améliorée
 function sendMetricToAPI(metricData: AnalyticsData) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL + '/analytics/route.php';
   const token = process.env.NEXT_PUBLIC_ANALYTICS_TOKEN;
 
-  // Debug: vérifier les variables d'environnement
   if (process.env.NODE_ENV === 'development') {
     console.log('🔧 Configuration:', {
       hasApiUrl: !!process.env.NEXT_PUBLIC_API_URL,
@@ -161,14 +168,14 @@ function sendMetricToAPI(metricData: AnalyticsData) {
 
   try {
     // Utiliser sendBeacon pour les envois non-bloquants
-    if (navigator.sendBeacon) {
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       const blob = new Blob([JSON.stringify(metricData)], { type: 'application/json' });
       const success = navigator.sendBeacon(API_URL, blob);
       
       if (process.env.NODE_ENV === 'development') {
         console.log('📤 SendBeacon result:', success);
       }
-    } else {
+    } else if (typeof fetch !== 'undefined') {
       // Fallback avec fetch
       fetch(API_URL, {
         method: 'POST',

@@ -1,6 +1,7 @@
 /**
  * Service pour la recherche de plaques
  */
+'use server';
 
 export interface PlaqueResult {
   serie_item_id: number;

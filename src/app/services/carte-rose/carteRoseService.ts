@@ -1,5 +1,6 @@
 "use server";
 
+import { cacheLife, cacheTag } from "next/cache";
 import { revalidateTag } from "next/cache";
 
 /**
@@ -103,14 +104,48 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation
 const CACHE_TAGS = {
+  PARTICULIERS_TELEPHONE: (telephone: string) =>
+    `particuliers-tel-${telephone}`,
+  PUISSANCES_LIST: "puissances-list",
   CARTE_ROSE_SOUMISSION: "carte-rose-soumission",
   CARTE_ROSE_VERIFICATION: "carte-rose-verification",
   PARTICULIERS_CARTE_ROSE: "particuliers-carte-rose",
 };
 
+// Tags de cache pour les modèles
+const CACHE_TAGS_MODELES = {
+  MODELES_LIST: "modeles-list",
+  MODELES_ACTIFS: "modeles-actifs",
+  MODELE_DETAILS: (id: number) => `modele-${id}`,
+  MODELES_SEARCH: "modeles-search",
+  MODELES_BY_MARQUE: (marqueId: number) => `modeles-marque-${marqueId}`,
+};
+
+async function invalidateModelesCache(modeleId?: number, marqueId?: number) {
+  "use server";
+
+  revalidateTag(CACHE_TAGS_MODELES.MODELES_LIST, "max");
+  revalidateTag(CACHE_TAGS_MODELES.MODELES_ACTIFS, "max");
+  revalidateTag(CACHE_TAGS_MODELES.MODELES_SEARCH, "max");
+
+  if (modeleId) {
+    revalidateTag(CACHE_TAGS_MODELES.MODELE_DETAILS(modeleId), "max");
+  }
+
+  if (marqueId) {
+    revalidateTag(CACHE_TAGS_MODELES.MODELES_BY_MARQUE(marqueId), "max");
+  }
+}
+
 /**
- * Invalide le cache après une soumission de carte rose réussie
+ * Invalide le cache après une mutation
  */
+async function invalidatePuissancesCache(puissanceId?: number) {
+  "use server";
+
+  revalidateTag(CACHE_TAGS.PUISSANCES_LIST, "max");
+}
+
 /**
  * Invalide le cache après une soumission de carte rose réussie
  */
@@ -180,6 +215,8 @@ export async function verifierPlaqueTelephone(
 export async function verifierTelephoneExistant(
   telephone: string,
 ): Promise<CarteRoseResponse> {
+  "use cache";
+
   try {
     // Ne pas vérifier si le téléphone est vide ou juste un tiret
     if (!telephone || telephone.trim() === "" || telephone.trim() === "-") {
@@ -189,6 +226,9 @@ export async function verifierTelephoneExistant(
         data: null,
       };
     }
+
+    cacheLife("weeks");
+    cacheTag(CACHE_TAGS.PARTICULIERS_TELEPHONE(telephone));
 
     const formData = new FormData();
     formData.append("telephone", telephone);
@@ -296,6 +336,8 @@ export async function creerModele(
       };
     }
 
+    await invalidateModelesCache();
+
     return data;
   } catch (error) {
     console.error("Creation modele error:", error);
@@ -383,6 +425,9 @@ export async function creerPuissanceFiscale(
       };
     }
 
+    // ⚡ Invalider le cache
+    await invalidatePuissancesCache();
+
     return data;
   } catch (error) {
     console.error("Creation puissance error:", error);
@@ -466,8 +511,16 @@ export async function soumettreCarteRose(
       };
     }
 
-    // ⚡ Invalider les caches après une soumission réussie
+    // ⚡ Invalider les caches après une immatriculation réussie
     if (data.status === "success") {
+      // revalidateTag() est synchrone, pas besoin de await
+      if (particulierData?.telephone?.trim()) {
+        revalidateTag(
+          CACHE_TAGS.PARTICULIERS_TELEPHONE(particulierData.telephone.trim()),
+          "max",
+        );
+      }
+
       await invalidateCarteRoseCache();
     }
 

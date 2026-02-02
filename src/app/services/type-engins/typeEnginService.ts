@@ -65,7 +65,7 @@ export async function cleanTypeEnginData(data: any): Promise<TypeEngin> {
  */
 export async function getTypeEngins(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TYPE_ENGINS_LIST);
 
   try {
@@ -108,7 +108,7 @@ export async function getTypeEngins(): Promise<ApiResponse> {
  */
 export async function getTypeEnginsActifs(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TYPE_ENGINS_ACTIFS);
 
   try {
@@ -315,7 +315,7 @@ export async function toggleTypeEnginStatus(
  */
 export async function searchTypeEngins(searchTerm: string): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TYPE_ENGINS_SEARCH, `search-${searchTerm}`);
 
   try {
@@ -399,7 +399,7 @@ export async function checkTypeEnginExists(libelle: string): Promise<ApiResponse
  */
 export async function getTypeEnginById(id: number): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.TYPE_ENGIN_DETAILS(id));
 
   try {

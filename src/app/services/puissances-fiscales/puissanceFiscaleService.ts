@@ -72,7 +72,7 @@ export async function cleanPuissanceData(data: any): Promise<PuissanceFiscale> {
  */
 export async function getPuissancesFiscales(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.PUISSANCES_LIST);
 
   try {
@@ -115,7 +115,7 @@ export async function getPuissancesFiscales(): Promise<ApiResponse> {
  */
 export async function getPuissancesFiscalesActives(): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.PUISSANCES_ACTIVES);
 
   try {
@@ -330,7 +330,7 @@ export async function togglePuissanceFiscaleStatus(
  */
 export async function searchPuissancesFiscales(searchTerm: string): Promise<ApiResponse> {
   'use cache';
-  cacheLife('hours');
+  cacheLife('weeks');
   cacheTag(CACHE_TAGS.PUISSANCES_SEARCH, `search-${searchTerm}`);
 
   try {

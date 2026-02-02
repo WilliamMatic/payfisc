@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { cacheLife, cacheTag } from 'next/cache';
-import { revalidateTag } from 'next/cache';
+import { cacheLife, cacheTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 /**
  * Server Actions pour la gestion des commandes de plaques pour clients spéciaux avec Cache Components Next.js 16
@@ -79,30 +79,41 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation ciblée
 const CACHE_TAGS = {
-  ASSUJETTI_TELEPHONE: (telephone: string) => `assujetti-tel-${telephone}`,
-  STOCK_VERIFICATION: (utilisateurId: number, siteId: number, nombrePlaques: number) => 
-    `stock-verification-${utilisateurId}-${siteId}-${nombrePlaques}`,
-  NUMEROS_PLAQUES_DISPONIBLES: (utilisateurId: number, siteId: number, quantite: number) => 
-    `numeros-plaques-disponibles-${utilisateurId}-${siteId}-${quantite}`,
-  SEQUENCE_PLAQUES: (plaqueDebut: string, quantite: number, utilisateurId: number, siteId: number) => 
-    `sequence-plaques-${plaqueDebut}-${quantite}-${utilisateurId}-${siteId}`,
-  COMMANDES_CLIENT_SIMPLE: 'commandes-client-simple',
+  PARTICULIERS_TELEPHONE: (telephone: string) =>
+    `particuliers-tel-${telephone}`,
+  STOCK_VERIFICATION: (
+    utilisateurId: number,
+    siteId: number,
+    nombrePlaques: number,
+  ) => `stock-verification-${utilisateurId}-${siteId}-${nombrePlaques}`,
+  NUMEROS_PLAQUES_DISPONIBLES: (
+    utilisateurId: number,
+    siteId: number,
+    quantite: number,
+  ) => `numeros-plaques-disponibles-${utilisateurId}-${siteId}-${quantite}`,
+  SEQUENCE_PLAQUES: (
+    plaqueDebut: string,
+    quantite: number,
+    utilisateurId: number,
+    siteId: number,
+  ) => `sequence-plaques-${plaqueDebut}-${quantite}-${utilisateurId}-${siteId}`,
+  COMMANDES_CLIENT_SIMPLE: "commandes-client-simple",
 };
 
 /**
  * Invalide le cache après une commande réussie
  */
 async function invalidateCommandesCache() {
-  'use server';
-  
+  "use server";
+
   // Invalider les caches liés aux commandes (pour le module des commandes)
-  revalidateTag('commandes-list-', "max");
-  revalidateTag('commandes-stats-', "max");
-  revalidateTag('commandes-export-', "max");
-  
+  revalidateTag("commandes-list-", "max");
+  revalidateTag("commandes-stats-", "max");
+  revalidateTag("commandes-export-", "max");
+
   // Invalider les caches de stock
-  revalidateTag('stock-verification-', "max");
-  
+  revalidateTag("stock-verification-", "max");
+
   // Invalider le cache spécifique aux commandes client simple
   revalidateTag(CACHE_TAGS.COMMANDES_CLIENT_SIMPLE, "max");
 }
@@ -112,11 +123,11 @@ async function invalidateCommandesCache() {
  */
 export async function rechercherAssujettiParTelephone(
   telephone: string,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(CACHE_TAGS.ASSUJETTI_TELEPHONE(telephone));
+  "use cache";
+  cacheLife("weeks");
+  cacheTag(CACHE_TAGS.PARTICULIERS_TELEPHONE(telephone));
 
   try {
     const formData = new FormData();
@@ -130,7 +141,7 @@ export async function rechercherAssujettiParTelephone(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -160,7 +171,7 @@ export async function soumettreCommandePlaques(
   particulierData: ParticulierData,
   commandeData: CommandeData,
   paiementData: PaiementData,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ClientSimpleResponse> {
   try {
     const formData = new FormData();
@@ -190,7 +201,7 @@ export async function soumettreCommandePlaques(
     if (particulierData.reduction_valeur !== undefined) {
       formData.append(
         "reduction_valeur",
-        particulierData.reduction_valeur.toString()
+        particulierData.reduction_valeur.toString(),
       );
     }
 
@@ -214,7 +225,7 @@ export async function soumettreCommandePlaques(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -225,9 +236,17 @@ export async function soumettreCommandePlaques(
         message: data.message || "Échec de la soumission de la commande",
       };
     }
-
-    // ⚡ Invalider les caches après une commande réussie
+    
+    // ⚡ Invalider les caches après une immatriculation réussie
     if (data.status === "success") {
+      // revalidateTag() est synchrone, pas besoin de await
+      if (particulierData?.telephone?.trim()) {
+        revalidateTag(
+          CACHE_TAGS.PARTICULIERS_TELEPHONE(particulierData.telephone.trim()),
+          "max",
+        );
+      }
+
       await invalidateCommandesCache();
     }
 
@@ -246,11 +265,8 @@ export async function soumettreCommandePlaques(
  */
 export async function verifierStockDisponible(
   nombrePlaques: number,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(CACHE_TAGS.STOCK_VERIFICATION(utilisateur.id, utilisateur.site_id || 1, nombrePlaques));
 
   try {
     const formData = new FormData();
@@ -264,7 +280,7 @@ export async function verifierStockDisponible(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -292,7 +308,7 @@ export async function verifierStockDisponible(
  */
 export async function rechercherPlaquesDisponibles(
   recherche: string,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ClientSimpleResponse> {
   // Note: PAS de 'use cache' ici pour avoir des résultats frais
   try {
@@ -308,8 +324,8 @@ export async function rechercherPlaquesDisponibles(
         credentials: "include",
         body: formData,
         // Pas de cache pour les recherches en temps réel
-        cache: 'no-store'
-      }
+        cache: "no-store",
+      },
     );
 
     const data = await response.json();
@@ -337,11 +353,8 @@ export async function rechercherPlaquesDisponibles(
 export async function verifierSequencePlaques(
   plaqueDebut: string,
   quantite: number,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(CACHE_TAGS.SEQUENCE_PLAQUES(plaqueDebut, quantite, utilisateur.id, utilisateur.site_id || 1));
 
   try {
     const formData = new FormData();
@@ -356,7 +369,7 @@ export async function verifierSequencePlaques(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -383,11 +396,17 @@ export async function verifierSequencePlaques(
  */
 export async function getNumerosPlaquesDisponibles(
   quantite: number,
-  utilisateur: any
+  utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag(CACHE_TAGS.NUMEROS_PLAQUES_DISPONIBLES(utilisateur.id, utilisateur.site_id || 1, quantite));
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(
+    CACHE_TAGS.NUMEROS_PLAQUES_DISPONIBLES(
+      utilisateur.id,
+      utilisateur.site_id || 1,
+      quantite,
+    ),
+  );
 
   try {
     const formData = new FormData();
@@ -401,7 +420,7 @@ export async function getNumerosPlaquesDisponibles(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -428,14 +447,14 @@ export async function getNumerosPlaquesDisponibles(
  * Invalide le cache spécifique après une annulation de commande
  */
 export async function invalidateClientSimpleCache(paiementId?: number) {
-  'use server';
-  
+  "use server";
+
   // Invalider le cache des commandes client simple
   revalidateTag(CACHE_TAGS.COMMANDES_CLIENT_SIMPLE, "max");
-  
+
   // Invalider les caches de stock
-  revalidateTag('stock-verification-', "max");
-  
+  revalidateTag("stock-verification-", "max");
+
   if (paiementId) {
     // Invalider les caches spécifiques si nécessaire
     revalidateTag(`commande-details-${paiementId}`, "max");
@@ -448,7 +467,7 @@ export async function invalidateClientSimpleCache(paiementId?: number) {
 export async function annulerCommandeClientSimple(
   paiementId: number,
   utilisateurId: number,
-  raison: string = "Annulation via interface admin"
+  raison: string = "Annulation via interface admin",
 ): Promise<ClientSimpleResponse> {
   try {
     const formData = new FormData();
@@ -462,7 +481,7 @@ export async function annulerCommandeClientSimple(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();

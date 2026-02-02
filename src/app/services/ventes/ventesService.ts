@@ -85,21 +85,9 @@ const CACHE_TAGS = {
 };
 
 /**
- * Génère un hash des paramètres pour le cache
- */
-function generateParamsHash(params: any): string {
-  const sortedParams = Object.keys(params)
-    .sort()
-    .map(key => `${key}:${params[key]}`)
-    .join('|');
-  return Buffer.from(sortedParams).toString('base64').substring(0, 32);
-}
-
-/**
  * Invalide le cache après une mutation
  */
 async function invalidateVentesCache(venteId?: number) {
-  'use server';
   
   // Invalider tous les caches de listes de ventes (pattern général)
   revalidateTag(CACHE_TAGS.VENTES_LIST(''), "max");
@@ -146,14 +134,8 @@ export async function cleanVenteData(data: any): Promise<VenteNonGrossiste> {
 export async function getVentesNonGrossistes(
   params: RechercheParams = {}
 ): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
-  'use cache';
-  cacheLife('minutes');
-  const paramsHash = generateParamsHash(params);
-  cacheTag(CACHE_TAGS.VENTES_LIST(paramsHash));
 
   try {
-    console.log("=== DEBUT APPEL API VENTES (CACHE) ===");
-    console.log("Paramètres reçus:", params);
 
     const formData = new FormData();
 
@@ -168,7 +150,6 @@ export async function getVentesNonGrossistes(
     if (params.order_dir) formData.append("order_dir", params.order_dir);
 
     const url = `${API_BASE_URL}/ventes/get_ventes_non_grossistes.php`;
-    console.log("URL complète:", url);
 
     const response = await fetch(url, {
       method: "POST",
@@ -178,9 +159,6 @@ export async function getVentesNonGrossistes(
         'Accept': 'application/json',
       },
     });
-
-    console.log("Statut HTTP:", response.status);
-    console.log("Statut OK?", response.ok);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -196,12 +174,10 @@ export async function getVentesNonGrossistes(
     }
 
     const responseText = await response.text();
-    console.log("Réponse brute:", responseText);
 
     let data;
     try {
       data = JSON.parse(responseText);
-      console.log("Données parsées:", data);
     } catch (parseError) {
       console.error("Erreur de parsing JSON:", parseError);
       console.error("Réponse reçue:", responseText);
@@ -218,7 +194,6 @@ export async function getVentesNonGrossistes(
       );
     }
 
-    console.log("=== FIN APPEL API VENTES (CACHE) ===");
     return data;
 
   } catch (error) {
@@ -239,10 +214,6 @@ export async function getVentesNonGrossistes(
 export async function getStatsVentes(
   params?: Omit<RechercheParams, "page" | "limit" | "order_by" | "order_dir">
 ): Promise<{ status: string; message?: string; data?: Stats }> {
-  'use cache';
-  cacheLife('minutes');
-  const paramsHash = generateParamsHash(params || {});
-  cacheTag(CACHE_TAGS.VENTES_STATS(paramsHash));
 
   try {
     const formData = new FormData();
@@ -342,10 +313,6 @@ export async function exporterVentesExcel(
   message?: string;
   data?: { url: string; filename: string };
 }> {
-  'use cache';
-  cacheLife('minutes');
-  const paramsHash = generateParamsHash(params);
-  cacheTag(CACHE_TAGS.VENTES_EXPORT(paramsHash));
 
   try {
     const formData = new FormData();
@@ -393,16 +360,11 @@ export async function getSitesDisponibles(): Promise<{
   message?: string;
   data?: { id: number; nom: string; code: string }[];
 }> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SITES_LIST);
 
   try {
-    console.log("=== DEBUT CHARGEMENT SITES (CACHE) ===");
     const formData = new FormData();
 
     const url = `${API_BASE_URL}/ventes/get_sites.php`;
-    console.log("URL sites:", url);
 
     const response = await fetch(url, {
       method: "POST",
@@ -412,9 +374,6 @@ export async function getSitesDisponibles(): Promise<{
         'Accept': 'application/json',
       },
     });
-
-    console.log("Statut réponse sites:", response.status);
-    console.log("OK?", response.ok);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -426,12 +385,10 @@ export async function getSitesDisponibles(): Promise<{
     }
 
     const responseText = await response.text();
-    console.log("Réponse sites brute:", responseText);
 
     let data;
     try {
       data = JSON.parse(responseText);
-      console.log("Sites parsés:", data);
     } catch (parseError) {
       console.error("Erreur parsing sites:", parseError);
       return {
@@ -439,8 +396,7 @@ export async function getSitesDisponibles(): Promise<{
         message: "Réponse invalide du serveur pour les sites",
       };
     }
-
-    console.log("=== FIN CHARGEMENT SITES (CACHE) ===");
+    
     return data;
   } catch (error) {
     console.error("Get sites error complet:", error);
@@ -457,9 +413,6 @@ export async function getSitesDisponibles(): Promise<{
 export async function getDetailsVente(
   paiementId: number
 ): Promise<{ status: string; message?: string; data?: VenteNonGrossiste }> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.VENTES_DETAILS(paiementId));
 
   try {
     const formData = new FormData();
@@ -510,10 +463,6 @@ export async function searchVentesByModePaiement(
   modePaiement: string,
   params?: Omit<RechercheParams, "order_by" | "order_dir">
 ): Promise<{ status: string; message?: string; data?: PaginationResponse }> {
-  'use cache';
-  cacheLife('minutes');
-  const paramsHash = generateParamsHash({ modePaiement, ...params });
-  cacheTag(CACHE_TAGS.VENTES_MODE_PAIEMENT(modePaiement, paramsHash));
 
   try {
     const formData = new FormData();

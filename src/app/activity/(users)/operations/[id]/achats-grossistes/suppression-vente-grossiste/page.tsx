@@ -518,10 +518,6 @@ function DetailModal({ isOpen, commande, onClose }: DetailModalProps) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Réduction:</span>
-                  <span className="text-gray-900">{getReductionText()}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-green-700 font-medium">
                     Mode paiement:
                   </span>
@@ -547,56 +543,6 @@ function DetailModal({ isOpen, commande, onClose }: DetailModalProps) {
                     </span>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Section Montants */}
-            <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
-              <h4 className="text-lg font-bold text-purple-800 mb-4 flex items-center">
-                <BarChart3 className="w-5 h-5 mr-2" />
-                Montants
-              </h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Montant initial:
-                  </span>
-                  <span className="text-gray-900">
-                    {formatMontant(commande.montant_initial)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Montant final:
-                  </span>
-                  <span className="text-lg font-bold text-green-600">
-                    {formatMontant(commande.montant)}
-                  </span>
-                </div>
-                {commande.reduction_type && (
-                  <div className="flex justify-between">
-                    <span className="text-purple-700 font-medium">
-                      Économie:
-                    </span>
-                    <span className="text-green-600 font-bold">
-                      {formatMontant(
-                        commande.montant_initial - commande.montant,
-                      )}
-                    </span>
-                  </div>
-                )}
-                <div className="pt-3 border-t border-purple-200">
-                  <div className="flex justify-between">
-                    <span className="text-purple-700 font-medium">
-                      Prix unitaire:
-                    </span>
-                    <span className="text-gray-900">
-                      {formatMontant(
-                        commande.montant_initial / commande.nombre_plaques,
-                      )}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -1280,13 +1226,13 @@ export default function CommandesPlaquesScreen() {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <button
+              {/* <button
                 onClick={() => setShowFilterModal(true)}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
               >
                 <FilterIcon className="w-4 h-4" />
                 <span>Filtres</span>
-              </button>
+              </button> */}
               <button
                 onClick={handleResetFilters}
                 className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center space-x-2"
@@ -1336,20 +1282,6 @@ export default function CommandesPlaquesScreen() {
                     </p>
                   </div>
                   <FileText className="w-8 h-8 text-blue-600" />
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-700 font-medium">
-                      Montant Total
-                    </p>
-                    <p className="text-2xl font-bold text-green-800">
-                      {formatMontant(stats.montantTotal)}
-                    </p>
-                  </div>
-                  <DollarSign className="w-8 h-8 text-green-600" />
                 </div>
               </div>
 
@@ -1483,9 +1415,6 @@ export default function CommandesPlaquesScreen() {
                         N° Plaques
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Montant
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Site
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -1531,16 +1460,6 @@ export default function CommandesPlaquesScreen() {
                             <Car className="w-4 h-4 mr-2" />
                             {commande.nombre_plaques} plaque(s)
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-lg font-bold text-green-600">
-                            {formatMontant(commande.montant)}
-                          </div>
-                          {commande.montant_initial > commande.montant && (
-                            <div className="text-xs text-gray-500 line-through">
-                              {formatMontant(commande.montant_initial)}
-                            </div>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">

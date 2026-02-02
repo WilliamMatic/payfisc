@@ -1432,26 +1432,6 @@ export default function CarteRoseAnnulationScreen() {
             </div>
           )}
 
-          {/* Types de véhicules (top 5) */}
-          {stats?.typesVehicules &&
-            Object.keys(stats.typesVehicules).length > 0 && (
-              <div className="mt-6 bg-white rounded-xl p-4 border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
-                  Répartition par type de véhicule
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {getTopTypesVehicules().map(({ type, count }) => (
-                    <div key={type} className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-sm text-gray-600">{type}</div>
-                      <div className="text-xl font-bold text-gray-900">
-                        {count}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
           {/* Barre de recherche */}
           <div className="mt-6">
             <div className="relative max-w-md">

@@ -11,8 +11,8 @@ interface ImpotPageProps {
 
 export default async function ImpotPage({ params }: ImpotPageProps) {
   try {
-    // Await params avant de l'utiliser
-    const resolvedParams = await params;
+    // ✅ CORRECTION : Await params AVANT de l'utiliser
+    const { id } = await params;
     
     const impotsResult = await getImpots();
     
@@ -21,7 +21,7 @@ export default async function ImpotPage({ params }: ImpotPageProps) {
     }
 
     const impots: Impot[] = impotsResult.data || [];
-    const impot = impots.find(i => i.id === parseInt(resolvedParams.id));
+    const impot = impots.find(i => i.id === parseInt(id));
 
     if (!impot) {
       return (
@@ -34,18 +34,16 @@ export default async function ImpotPage({ params }: ImpotPageProps) {
       );
     }
 
-    // Si l'ID de l'impôt est 12, retourner ReproductionServicesClient
-    if (parseInt(resolvedParams.id) === 12) {
+    // ✅ Utiliser directement 'id' au lieu de resolvedParams.id
+    if (parseInt(id) === 12) {
       return <ReproductionServicesClient impot={impot} />;
     }
 
-    // Si l'ID de l'impôt est 14 (VIGNETTE AUTOMOBILE), retourner VignetteServicesClient
-    if (parseInt(resolvedParams.id) === 14) {
+    if (parseInt(id) === 14) {
       return <VignetteServicesClient impot={impot} />;
     }
 
     return <ImpotServicesClient impot={impot} />;
-
   } catch (error) {
     console.error('Error loading impot:', error);
     return (

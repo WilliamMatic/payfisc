@@ -24,22 +24,6 @@ function LoadingSpinner() {
   );
 }
 
-// Composant d'erreur d'authentification
-function UnauthenticatedMessage() {
-  return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="bg-white rounded-xl p-8 shadow-sm border border-red-100 max-w-md mx-auto mt-10">
-        <h2 className="text-xl font-semibold text-red-600 text-center">
-          Non authentifié
-        </h2>
-        <p className="text-gray-600 mt-2 text-center">
-          Veuillez vous connecter pour accéder au tableau de bord.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default async function DashboardPage() {
   // ⚡ Forcer le rendu dynamique avec connection()
   await connection();
