@@ -32,12 +32,18 @@ import {
   getTypeEnginsActifs,
   type TypeEngin,
 } from "@/services/type-engins/typeEnginService";
-import { getEnergiesActives, type Energie } from "@/services/energies/energieService";
+import {
+  getEnergiesActives,
+  type Energie,
+} from "@/services/energies/energieService";
 import {
   getCouleursActives,
   type EnginCouleur,
 } from "@/services/couleurs/couleurService";
-import { getUsagesActifs, type UsageEngin } from "@/services/usages/usageService";
+import {
+  getUsagesActifs,
+  type UsageEngin,
+} from "@/services/usages/usageService";
 import {
   rechercherMarques,
   type MarqueEngin,
@@ -676,7 +682,7 @@ export default function ClientSimpleForm({
 
   // États pour les suggestions de marques
   const [marquesSuggestions, setMarquesSuggestions] = useState<MarqueEngin[]>(
-    []
+    [],
   );
   const [showMarquesSuggestions, setShowMarquesSuggestions] = useState(false);
   const [isSearchingMarques, setIsSearchingMarques] = useState(false);
@@ -689,7 +695,7 @@ export default function ClientSimpleForm({
   const [showCouleursSuggestions, setShowCouleursSuggestions] = useState(false);
   const [isSearchingCouleurs, setIsSearchingCouleurs] = useState(false);
   const [selectedCouleur, setSelectedCouleur] = useState<EnginCouleur | null>(
-    null
+    null,
   );
   const [isAddingCouleur, setIsAddingCouleur] = useState(false);
   const [showAddCouleurForm, setShowAddCouleurForm] = useState(false);
@@ -702,12 +708,12 @@ export default function ClientSimpleForm({
 
   // États pour la recherche de plaques
   const [plaquesSuggestions, setPlaquesSuggestions] = useState<PlaqueResult[]>(
-    []
+    [],
   );
   const [showPlaquesSuggestions, setShowPlaquesSuggestions] = useState(false);
   const [isSearchingPlaques, setIsSearchingPlaques] = useState(false);
   const [plaqueDisponible, setPlaqueDisponible] = useState<boolean | null>(
-    null
+    null,
   );
 
   // États pour la recherche de modèles
@@ -757,7 +763,7 @@ export default function ClientSimpleForm({
 
   // Générer les options d'années
   const anneeOptions = Array.from({ length: 30 }, (_, i) =>
-    (2026 - i).toString()
+    (2026 - i).toString(),
   );
 
   // Chargement des données initiales
@@ -839,7 +845,7 @@ export default function ClientSimpleForm({
         try {
           const response = await rechercherPlaques(
             formData.numeroPlaque,
-            utilisateur
+            utilisateur,
           );
           if (response.status === "success") {
             setPlaquesSuggestions(response.data || []);
@@ -847,10 +853,10 @@ export default function ClientSimpleForm({
 
             const plaqueExacte = response.data?.find(
               (plaque: PlaqueResult) =>
-                plaque.numero_plaque === formData.numeroPlaque
+                plaque.numero_plaque === formData.numeroPlaque,
             );
             setPlaqueDisponible(
-              plaqueExacte ? plaqueExacte.statut === "0" : false
+              plaqueExacte ? plaqueExacte.statut === "0" : false,
             );
           }
         } catch (error) {
@@ -883,7 +889,7 @@ export default function ClientSimpleForm({
       telephoneTimerRef.current = setTimeout(async () => {
         try {
           const response = await verifierParticulierParTelephone(
-            formData.telephone.trim()
+            formData.telephone.trim(),
           );
           if (response.status === "success" && response.data) {
             const particulier = response.data;
@@ -932,7 +938,7 @@ export default function ClientSimpleForm({
         try {
           const response = await rechercherMarques(
             formData.typeEngin,
-            formData.marque
+            formData.marque,
           );
           if (response.status === "success") {
             const data = response.data;
@@ -975,7 +981,7 @@ export default function ClientSimpleForm({
         try {
           const response = await rechercherModeles(
             selectedMarqueId,
-            formData.modele
+            formData.modele,
           );
           if (response.status === "success") {
             const data = response.data;
@@ -1017,7 +1023,7 @@ export default function ClientSimpleForm({
         try {
           const response = await rechercherPuissances(
             formData.typeEngin,
-            formData.puissanceFiscal
+            formData.puissanceFiscal,
           );
           if (response.status === "success") {
             const data = response.data;
@@ -1118,7 +1124,7 @@ export default function ClientSimpleForm({
         } catch (error) {
           console.error(
             "Erreur lors de la récupération automatique de plaque:",
-            error
+            error,
           );
         }
       }
@@ -1201,7 +1207,7 @@ export default function ClientSimpleForm({
       if (value.length >= 3) {
         // Vérifier si la couleur existe déjà dans la liste initiale
         const couleurExistante = couleurs.find(
-          (c) => c.nom.toLowerCase() === value.toLowerCase()
+          (c) => c.nom.toLowerCase() === value.toLowerCase(),
         );
         if (couleurExistante) {
           setSelectedCouleur(couleurExistante);
@@ -1271,7 +1277,7 @@ export default function ClientSimpleForm({
     try {
       const response = await ajouterCouleur(
         nouvelleCouleurNom,
-        nouvelleCouleurCode
+        nouvelleCouleurCode,
       );
       if (response.status === "success") {
         // Recharger la liste des couleurs
@@ -1282,17 +1288,18 @@ export default function ClientSimpleForm({
 
         // Sélectionner la nouvelle couleur
         setFormData((prev) => ({ ...prev, couleur: nouvelleCouleurNom }));
-        
-        // Créer un objet couleur temporaire pour la sélection
+
+        // Créer un objet couleur temporaire pour la sélection avec toutes les propriétés requises
         const nouvelleCouleur: EnginCouleur = {
           id: Date.now(), // ID temporaire
           nom: nouvelleCouleurNom,
           code_hex: nouvelleCouleurCode,
+          actif: true, // Ajout de la propriété actif (probablement 1 pour actif, 0 pour inactif)
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          statut: "actif"
+          statut: "actif",
         };
-        
+
         setSelectedCouleur(nouvelleCouleur);
         setShowAddCouleurForm(false);
         setNouvelleCouleurNom("");
@@ -1372,7 +1379,7 @@ export default function ClientSimpleForm({
 
     if (plaqueDisponible === false) {
       alert(
-        "La plaque sélectionnée n'est pas disponible. Veuillez choisir une autre plaque."
+        "La plaque sélectionnée n'est pas disponible. Veuillez choisir une autre plaque.",
       );
       return;
     }
@@ -1443,7 +1450,7 @@ export default function ClientSimpleForm({
         particulierData,
         enginData,
         dataWithSerieItem,
-        utilisateur
+        utilisateur,
       );
 
       if (response.status === "success" && response.data) {
@@ -1477,7 +1484,7 @@ export default function ClientSimpleForm({
         setShowSuccess(true);
       } else {
         alert(
-          "Erreur: " + (response.message || "Données de réponse manquantes")
+          "Erreur: " + (response.message || "Données de réponse manquantes"),
         );
       }
     } catch (error) {
@@ -1515,7 +1522,7 @@ export default function ClientSimpleForm({
       const response = await annulerImmatriculation(
         parseInt(successData.paiement_id),
         utilisateur.id,
-        raison
+        raison,
       );
 
       if (response.status === "success") {
@@ -2011,10 +2018,10 @@ export default function ClientSimpleForm({
                     errors.numeroPlaque
                       ? "border-red-300 focus:border-red-500"
                       : plaqueDisponible === false
-                      ? "border-red-300 focus:border-red-500"
-                      : plaqueDisponible === true
-                      ? "border-green-300 focus:border-green-500"
-                      : "border-gray-200 focus:border-blue-500"
+                        ? "border-red-300 focus:border-red-500"
+                        : plaqueDisponible === true
+                          ? "border-green-300 focus:border-green-500"
+                          : "border-gray-200 focus:border-blue-500"
                   }`}
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -2182,9 +2189,7 @@ export default function ClientSimpleForm({
                 <input
                   type="text"
                   value={formData.couleur}
-                  onChange={(e) =>
-                    handleInputChange("couleur", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("couleur", e.target.value)}
                   placeholder="Saisissez la couleur (auto-complétion)"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
                 />

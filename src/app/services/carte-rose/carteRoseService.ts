@@ -104,6 +104,8 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation
 const CACHE_TAGS = {
+  SERIES_LIST: "series-list",
+  SERIES_ACTIVES: "series-actives",
   PARTICULIERS_TELEPHONE: (telephone: string) =>
     `particuliers-tel-${telephone}`,
   PUISSANCES_LIST: "puissances-list",
@@ -152,6 +154,8 @@ async function invalidatePuissancesCache(puissanceId?: number) {
 async function invalidateCarteRoseCache() {
   "use server";
 
+  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
+  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   // Invalider les caches des anciens services
   revalidateTag(CACHE_TAGS.CARTE_ROSE_SOUMISSION, "max");
   revalidateTag(CACHE_TAGS.CARTE_ROSE_VERIFICATION, "max");

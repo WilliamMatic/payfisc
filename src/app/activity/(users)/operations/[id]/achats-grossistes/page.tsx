@@ -1,10 +1,9 @@
-import { Metadata } from "next";
 import AchatsGrossistesClient from "./AchatsGrossistesClient";
 
-export const metadata: Metadata = {
-  title: "Achats Grossistes | PayFisc",
-  description: "Suivi et gestion des achats groupés de plaques d'immatriculation",
-};
+// Required for dynamic routes - no prerender
+export function generateStaticParams() {
+  return [{ id: '0' }];
+}
 
 export default function AchatsGrossistesPage() {
   return <AchatsGrossistesClient />;

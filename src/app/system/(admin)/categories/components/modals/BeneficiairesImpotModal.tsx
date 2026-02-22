@@ -225,7 +225,7 @@ export default function BeneficiairesImpotModal({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/impots/beneficiaires/supprimer_beneficiaire_impot.php`,
+        `${process.env.NEXT_PUBLIC_API_URL}/beneficiaires/supprimer_beneficiaire_impot.php`,
         {
           method: "POST",
           credentials: "include",

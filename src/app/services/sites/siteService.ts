@@ -186,12 +186,9 @@ export async function getSitesActifs(): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère la liste de toutes les provinces actives (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste de toutes les provinces actives (PAS DE CACHE)
  */
 export async function getProvinces(): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.PROVINCES_LIST);
 
   try {
     const response = await fetch(`${API_BASE_URL}/sites/lister_provinces.php`, {

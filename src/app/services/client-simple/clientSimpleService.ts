@@ -79,6 +79,8 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation ciblée
 const CACHE_TAGS = {
+  SERIES_LIST: "series-list",
+  SERIES_ACTIVES: "series-actives",
   PARTICULIERS_TELEPHONE: (telephone: string) =>
     `particuliers-tel-${telephone}`,
   STOCK_VERIFICATION: (
@@ -106,6 +108,8 @@ const CACHE_TAGS = {
 async function invalidateCommandesCache() {
   "use server";
 
+  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
+  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   // Invalider les caches liés aux commandes (pour le module des commandes)
   revalidateTag("commandes-list-", "max");
   revalidateTag("commandes-stats-", "max");
@@ -119,16 +123,12 @@ async function invalidateCommandesCache() {
 }
 
 /**
- * Recherche un assujetti par numéro de téléphone (AVEC CACHE - 5 minutes)
+ * Recherche un assujetti par numéro de téléphone (SANS CACHE - temps réel)
  */
 export async function rechercherAssujettiParTelephone(
   telephone: string,
   utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-  "use cache";
-  cacheLife("weeks");
-  cacheTag(CACHE_TAGS.PARTICULIERS_TELEPHONE(telephone));
-
   try {
     const formData = new FormData();
     formData.append("telephone", telephone);
@@ -164,110 +164,12 @@ export async function rechercherAssujettiParTelephone(
 }
 
 /**
- * Soumet une commande de plaques complète (INVALIDE LE CACHE)
- */
-export async function soumettreCommandePlaques(
-  impotId: string,
-  particulierData: ParticulierData,
-  commandeData: CommandeData,
-  paiementData: PaiementData,
-  utilisateur: any,
-): Promise<ClientSimpleResponse> {
-  try {
-    const formData = new FormData();
-
-    // Données de base
-    formData.append("impot_id", impotId);
-    formData.append("utilisateur_id", utilisateur.id.toString());
-    formData.append("site_id", utilisateur.site_id?.toString() || "1");
-
-    // Données du particulier (avec réduction)
-    formData.append("nom", particulierData.nom);
-    formData.append("prenom", particulierData.prenom);
-    formData.append("telephone", particulierData.telephone);
-    formData.append("email", particulierData.email || "");
-    formData.append("adresse", particulierData.adresse);
-    formData.append("nif", particulierData.nif || "");
-
-    // Ajouter la date de mouvement si fournie
-    if (particulierData.date_mouvement) {
-      formData.append("date_mouvement", particulierData.date_mouvement);
-    }
-
-    // Ajouter les données de réduction si présentes
-    if (particulierData.reduction_type) {
-      formData.append("reduction_type", particulierData.reduction_type);
-    }
-    if (particulierData.reduction_valeur !== undefined) {
-      formData.append(
-        "reduction_valeur",
-        particulierData.reduction_valeur.toString(),
-      );
-    }
-
-    // Données de la commande
-    formData.append("nombre_plaques", commandeData.nombrePlaques.toString());
-    if (commandeData.numeroPlaqueDebut) {
-      formData.append("numero_plaque_debut", commandeData.numeroPlaqueDebut);
-    }
-
-    // Données de paiement
-    formData.append("mode_paiement", paiementData.modePaiement);
-    formData.append("operateur", paiementData.operateur || "");
-    formData.append("numero_transaction", paiementData.numeroTransaction || "");
-    formData.append("numero_cheque", paiementData.numeroCheque || "");
-    formData.append("banque", paiementData.banque || "");
-    formData.append("montant_unitaire", utilisateur.formule || "32");
-
-    const response = await fetch(
-      `${API_BASE_URL}/client-simple/soumettre_commande.php`,
-      {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      },
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        status: "error",
-        message: data.message || "Échec de la soumission de la commande",
-      };
-    }
-    
-    // ⚡ Invalider les caches après une immatriculation réussie
-    if (data.status === "success") {
-      // revalidateTag() est synchrone, pas besoin de await
-      if (particulierData?.telephone?.trim()) {
-        revalidateTag(
-          CACHE_TAGS.PARTICULIERS_TELEPHONE(particulierData.telephone.trim()),
-          "max",
-        );
-      }
-
-      await invalidateCommandesCache();
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Soumettre commande error:", error);
-    return {
-      status: "error",
-      message: "Erreur réseau lors de la soumission de la commande",
-    };
-  }
-}
-
-/**
- * Vérifie le stock disponible selon la province de l'utilisateur (AVEC CACHE - 5 minutes)
+ * Vérifie le stock disponible selon la province de l'utilisateur (SANS CACHE - temps réel)
  */
 export async function verifierStockDisponible(
   nombrePlaques: number,
   utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-
   try {
     const formData = new FormData();
     formData.append("nombre_plaques", nombrePlaques.toString());
@@ -348,14 +250,13 @@ export async function rechercherPlaquesDisponibles(
 }
 
 /**
- * Vérifie si une séquence de plaques est disponible (AVEC CACHE - 5 minutes)
+ * Vérifie si une séquence de plaques est disponible (SANS CACHE - temps réel)
  */
 export async function verifierSequencePlaques(
   plaqueDebut: string,
   quantite: number,
   utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-
   try {
     const formData = new FormData();
     formData.append("plaque_debut", plaqueDebut);
@@ -392,22 +293,12 @@ export async function verifierSequencePlaques(
 }
 
 /**
- * Récupère les numéros de plaques disponibles selon la province de l'utilisateur (AVEC CACHE - 5 minutes)
+ * Récupère les numéros de plaques disponibles selon la province de l'utilisateur (SANS CACHE - temps réel)
  */
 export async function getNumerosPlaquesDisponibles(
   quantite: number,
   utilisateur: any,
 ): Promise<ClientSimpleResponse> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag(
-    CACHE_TAGS.NUMEROS_PLAQUES_DISPONIBLES(
-      utilisateur.id,
-      utilisateur.site_id || 1,
-      quantite,
-    ),
-  );
-
   try {
     const formData = new FormData();
     formData.append("quantite", quantite.toString());
@@ -504,6 +395,103 @@ export async function annulerCommandeClientSimple(
     return {
       status: "error",
       message: "Erreur réseau lors de l'annulation de la commande",
+    };
+  }
+}
+
+/**
+ * Soumet une commande de plaques complète (INVALIDE LE CACHE)
+ */
+export async function soumettreCommandePlaques(
+  impotId: string,
+  particulierData: ParticulierData,
+  commandeData: CommandeData,
+  paiementData: PaiementData,
+  utilisateur: any,
+): Promise<ClientSimpleResponse> {
+  try {
+    const formData = new FormData();
+
+    // Données de base
+    formData.append("impot_id", impotId);
+    formData.append("utilisateur_id", utilisateur.id.toString());
+    formData.append("site_id", utilisateur.site_id?.toString() || "1");
+
+    // Données du particulier (avec réduction)
+    formData.append("nom", particulierData.nom);
+    formData.append("prenom", particulierData.prenom);
+    formData.append("telephone", particulierData.telephone);
+    formData.append("email", particulierData.email || "");
+    formData.append("adresse", particulierData.adresse);
+    formData.append("nif", particulierData.nif || "");
+
+    // Ajouter la date de mouvement si fournie
+    if (particulierData.date_mouvement) {
+      formData.append("date_mouvement", particulierData.date_mouvement);
+    }
+
+    // Ajouter les données de réduction si présentes
+    if (particulierData.reduction_type) {
+      formData.append("reduction_type", particulierData.reduction_type);
+    }
+    if (particulierData.reduction_valeur !== undefined) {
+      formData.append(
+        "reduction_valeur",
+        particulierData.reduction_valeur.toString(),
+      );
+    }
+
+    // Données de la commande
+    formData.append("nombre_plaques", commandeData.nombrePlaques.toString());
+    if (commandeData.numeroPlaqueDebut) {
+      formData.append("numero_plaque_debut", commandeData.numeroPlaqueDebut);
+    }
+
+    // Données de paiement
+    formData.append("mode_paiement", paiementData.modePaiement);
+    formData.append("operateur", paiementData.operateur || "");
+    formData.append("numero_transaction", paiementData.numeroTransaction || "");
+    formData.append("numero_cheque", paiementData.numeroCheque || "");
+    formData.append("banque", paiementData.banque || "");
+    formData.append("montant_unitaire", utilisateur.formule || "32");
+
+    const response = await fetch(
+      `${API_BASE_URL}/client-simple/soumettre_commande.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: data.message || "Échec de la soumission de la commande",
+      };
+    }
+
+    // ⚡ Invalider les caches après une immatriculation réussie
+    if (data.status === "success") {
+      // revalidateTag() est synchrone, pas besoin de await
+      if (particulierData?.telephone?.trim()) {
+        revalidateTag(
+          CACHE_TAGS.PARTICULIERS_TELEPHONE(particulierData.telephone.trim()),
+          "max",
+        );
+      }
+
+      await invalidateCommandesCache();
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Soumettre commande error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la soumission de la commande",
     };
   }
 }

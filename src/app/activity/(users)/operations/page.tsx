@@ -1,9 +1,9 @@
-import { getImpots, Impot } from '@/services/impots/impotService';
+import { Impot, getImpotsActifs } from '@/services/impots/impotService';
 import ImpotClient from './components/ImpotClient';
 
 export default async function ImpotsPage() {
   try {
-    const impotsResult = await getImpots();
+    const impotsResult = await getImpotsActifs();
 
     // Vérification et nettoyage des données des impôts
     const impots: Impot[] =

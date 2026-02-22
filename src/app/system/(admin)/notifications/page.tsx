@@ -13,9 +13,6 @@ export const metadata: Metadata = {
  * 💾 Récupère les statistiques côté serveur (AVEC CACHE - 5 minutes)
  */
 async function getStats() {
-  'use cache';
-  cacheLife('minutes');
-  cacheTag('notifications-stats');
 
   try {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;

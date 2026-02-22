@@ -105,6 +105,8 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation ciblée
 const CACHE_TAGS = {
+  SERIES_LIST: "series-list",
+  SERIES_ACTIVES: "series-actives",
   PARTICULIERS_TELEPHONE: (telephone: string) =>
     `particuliers-tel-${telephone}`,
   MODELES_RECHERCHE: (marqueId: number, searchTerm: string) =>
@@ -126,6 +128,8 @@ const CACHE_TAGS = {
 async function invalidateImmatriculationCache() {
   "use server";
 
+  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
+  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   // Invalider les caches liés aux ventes (pour le module des ventes)
   revalidateTag("ventes-list-", "max");
   revalidateTag("ventes-stats-", "max");
@@ -145,23 +149,18 @@ async function invalidateCouleursCache() {
 }
 
 /**
- * Vérifie si un particulier existe par son numéro de téléphone (AVEC CACHE - 5 minutes)
+ * Vérifie si un particulier existe par son numéro de téléphone (SANS CACHE - temps réel)
  */
 export async function verifierParticulierParTelephone(
   telephone?: string,
 ): Promise<VerifierParticulierResponse> {
-  "use cache";
-
-  if (!telephone || telephone.trim() === "" || telephone.trim() === "-") {
+  if (!telephone || telephone.trim() === "" || telephone.length < 8) {
     return {
       status: "success",
       message: "Téléphone non renseigné ou invalide, vérification ignorée",
       data: null,
     };
   }
-
-  cacheLife("weeks");
-  cacheTag(CACHE_TAGS.PARTICULIERS_TELEPHONE(telephone));
 
   try {
     const formData = new FormData();
@@ -198,16 +197,12 @@ export async function verifierParticulierParTelephone(
 }
 
 /**
- * Recherche des modèles par marque et terme (AVEC CACHE - 10 minutes)
+ * Recherche des modèles par marque et terme (SANS CACHE - temps réel)
  */
 export async function rechercherModeles(
   marqueId: number,
   searchTerm: string,
 ): Promise<ImmatriculationResponse> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag(CACHE_TAGS.MODELES_RECHERCHE(marqueId, searchTerm));
-
   try {
     const formData = new FormData();
     formData.append("marque_id", marqueId.toString());
@@ -242,16 +237,12 @@ export async function rechercherModeles(
 }
 
 /**
- * Recherche des puissances fiscales par terme (AVEC CACHE - 10 minutes)
+ * Recherche des puissances fiscales par terme (SANS CACHE - temps réel)
  */
 export async function rechercherPuissances(
   typeEngin: string,
   searchTerm: string,
 ): Promise<ImmatriculationResponse> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag(CACHE_TAGS.PUISSANCES_RECHERCHE(typeEngin, searchTerm));
-
   try {
     const formData = new FormData();
     formData.append("type_engin", typeEngin);
@@ -286,17 +277,11 @@ export async function rechercherPuissances(
 }
 
 /**
- * Récupère un numéro de plaque disponible (SANS changer le statut) selon la province de l'utilisateur (AVEC CACHE - 5 minutes)
+ * Récupère un numéro de plaque disponible (SANS changer le statut) selon la province de l'utilisateur (SANS CACHE - temps réel)
  */
 export async function getNumeroPlaqueDisponible(
   utilisateur: any,
 ): Promise<ImmatriculationResponse> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag(
-    CACHE_TAGS.PLAQUES_DISPONIBLES(utilisateur.id, utilisateur.site_id || 1),
-  );
-
   try {
     const formData = new FormData();
     formData.append("utilisateur_id", utilisateur.id.toString());
@@ -331,15 +316,11 @@ export async function getNumeroPlaqueDisponible(
 }
 
 /**
- * Vérifie la disponibilité d'un numéro de chassis (AVEC CACHE - 10 minutes)
+ * Vérifie la disponibilité d'un numéro de chassis (SANS CACHE - temps réel)
  */
 export async function verifierNumeroChassis(
   numeroChassis: string,
 ): Promise<ImmatriculationResponse> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag(CACHE_TAGS.CHASSIS_VERIFICATION(numeroChassis));
-
   try {
     const formData = new FormData();
     formData.append("numero_chassis", numeroChassis);

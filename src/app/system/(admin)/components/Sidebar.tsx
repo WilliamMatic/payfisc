@@ -59,7 +59,7 @@ export default function Sidebar({
       category: "Contribuables",
       items: [
         { icon: "👤", label: "Assujettis", href: "/system/particuliers" },
-        // { icon: "🏢", label: "Entreprises", href: "/system/entreprises" },
+        // { icon: "🏢", label: "Entreprises", href: "/system/paiement" },
       ],
     },
 

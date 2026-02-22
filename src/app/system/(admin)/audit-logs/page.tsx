@@ -12,10 +12,6 @@ export const metadata = {
  * Les stats changent moins souvent, on peut les cacher
  */
 async function getAuditStats() {
-  'use cache';
-  cacheLife('minutes'); // Cache de 5 minutes
-  cacheTag('audit-stats');
-
   try {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = `${API_BASE_URL}/audit-logs/stats.php`;

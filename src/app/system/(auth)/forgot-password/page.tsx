@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../styles/Login.module.css';
@@ -8,6 +8,11 @@ import { StarsBackground } from '../components/StarsBackground';
 
 export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   const handleBackToLogin = () => {
     window.location.href = '/system/login';
@@ -35,7 +40,7 @@ export default function ForgotPassword() {
           </div>
 
           <div className={styles.copyright}>
-            <p>© {new Date().getFullYear()} PayFisc. Tous droits réservés.</p>
+            <p>© {currentYear ?? 2025} PayFisc. Tous droits réservés.</p>
           </div>
         </div>
       </div>

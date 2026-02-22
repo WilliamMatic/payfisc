@@ -15,7 +15,7 @@ export interface EnginCouleur {
   created_at?: string;
   updated_at?: string;
   statut?: string;
-  actif?: boolean; // Ajoutez cette ligne
+  actif: boolean; // Ajoutez cette ligne
 }
 
 // Interface pour les réponses de l'API
@@ -59,6 +59,7 @@ export async function cleanCouleurData(data: any): Promise<EnginCouleur> {
     id: data.id || 0,
     nom: data.nom || "",
     code_hex: data.code_hex || "#000000",
+    actif: data.actif === 1 || data.actif === true || data.statut === 'actif', // 👈 AJOUT IMPORTANT
   };
 }
 
@@ -234,7 +235,7 @@ export async function updateCouleur(
     }
 
     // ⚡ Invalider le cache
-    await invalidateCouleursCache(id);
+    await invalidateCouleursCache();
 
     return data;
   } catch (error) {
@@ -273,7 +274,7 @@ export async function deleteCouleur(id: number): Promise<ApiResponse> {
     }
 
     // ⚡ Invalider le cache
-    await invalidateCouleursCache(id);
+    await invalidateCouleursCache();
 
     return data;
   } catch (error) {
@@ -316,7 +317,7 @@ export async function toggleCouleurStatus(
     }
 
     // ⚡ Invalider le cache
-    await invalidateCouleursCache(id);
+    await invalidateCouleursCache();
 
     return data;
   } catch (error) {

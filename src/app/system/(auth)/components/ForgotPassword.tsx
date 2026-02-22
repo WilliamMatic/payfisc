@@ -1,8 +1,8 @@
+// components/ForgotPasswordForm.tsx
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
-import styles from "../styles/Login.module.css";
-import { EyeIcon } from "./EyeIcon";
-import { EyeOffIcon } from "./EyeOffIcon";
+
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import styles from "../styles/ForgotPassword.module.css"; // Nouveau fichier CSS dédié
 import {
   requestPasswordReset,
   verifyResetCode,
@@ -20,7 +20,7 @@ export const ForgotPasswordForm = ({
 }: ForgotPasswordFormProps) => {
   const [step, setStep] = useState<Step>(1);
   const [identifiant, setIdentifiant] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +30,16 @@ export const ForgotPasswordForm = ({
   const [success, setSuccess] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
   const [userType, setUserType] = useState<'agent' | 'utilisateur' | null>(null);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  // Timer pour le renvoi de code
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
 
   const handleSendCode = async (e: FormEvent) => {
     e.preventDefault();
@@ -42,8 +52,9 @@ export const ForgotPasswordForm = ({
 
       if (result.status === "success") {
         setStep(2);
+        setResendTimer(60);
         setSuccess(
-          "Un code de vérification a été envoyé à votre adresse email ou téléphone."
+          "Un code de vérification a été envoyé"
         );
       } else {
         setError(result.message || "Erreur lors de l'envoi du code");
@@ -56,28 +67,54 @@ export const ForgotPasswordForm = ({
     }
   };
 
+  const handleCodeChange = (index: number, value: string) => {
+    if (value.length > 1) return;
+    
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
+
+    // Auto-focus suivant
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`code-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      const prevInput = document.getElementById(`code-${index - 1}`);
+      prevInput?.focus();
+    }
+  };
+
   const handleVerifyCode = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     setSuccess("");
 
+    const fullCode = code.join('');
+    if (fullCode.length !== 6) {
+      setError("Veuillez entrer le code complet à 6 chiffres");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await verifyResetCode(identifiant, code);
+      const result = await verifyResetCode(identifiant, fullCode);
 
       if (result.status === "success") {
         setUserId(result.agent_id || result.utilisateur_id || null);
         setUserType(result.user_type || null);
         setStep(3);
-        setSuccess("Code vérifié avec succès.");
-        console.log("User ID récupéré:", result.agent_id || result.utilisateur_id);
-        console.log("User Type:", result.user_type);
+        setSuccess("Code vérifié avec succès");
       } else {
         setError(result.message || "Code invalide");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      setError("Une erreur est survenue lors de la vérification du code");
+      setError("Une erreur est survenue lors de la vérification");
     } finally {
       setIsLoading(false);
     }
@@ -96,20 +133,33 @@ export const ForgotPasswordForm = ({
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères");
+    if (newPassword.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      setError("Le mot de passe doit contenir au moins une majuscule");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      setError("Le mot de passe doit contenir au moins un chiffre");
       setIsLoading(false);
       return;
     }
 
     if (!userId || !userType) {
-      setError("Erreur de session. Veuillez recommencer le processus.");
+      setError("Erreur de session. Veuillez recommencer");
       setIsLoading(false);
       return;
     }
 
     try {
-      const result = await resetPassword(userId, userType, code, newPassword);
+      const fullCode = code.join('');
+      const result = await resetPassword(userId, userType, fullCode, newPassword);
 
       if (result.status === "success") {
         setSuccess("Mot de passe réinitialisé avec succès!");
@@ -121,13 +171,15 @@ export const ForgotPasswordForm = ({
       }
     } catch (error) {
       console.error("Erreur:", error);
-      setError("Une erreur est survenue lors de la réinitialisation");
+      setError("Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendCode = async () => {
+    if (resendTimer > 0) return;
+    
     setIsLoading(true);
     setError("");
     setSuccess("");
@@ -136,36 +188,18 @@ export const ForgotPasswordForm = ({
       const result = await requestPasswordReset(identifiant);
 
       if (result.status === "success") {
-        setSuccess("Un nouveau code a été envoyé.");
+        setResendTimer(60);
+        setSuccess("Un nouveau code a été envoyé");
       } else {
-        setError(result.message || "Erreur lors de l'envoi du code");
+        setError(result.message || "Erreur lors de l'envoi");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      setError("Une erreur est survenue lors de l'envoi du code");
+      setError("Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
   };
-
-  const renderStepIndicator = () => (
-    <div className={styles.stepIndicator}>
-      <div className={`${styles.step} ${step >= 1 ? styles.active : ""}`}>
-        <span>1</span>
-        <p>Identifiant</p>
-      </div>
-      <div className={styles.stepLine}></div>
-      <div className={`${styles.step} ${step >= 2 ? styles.active : ""}`}>
-        <span>2</span>
-        <p>Code</p>
-      </div>
-      <div className={styles.stepLine}></div>
-      <div className={`${styles.step} ${step >= 3 ? styles.active : ""}`}>
-        <span>3</span>
-        <p>Nouveau mot de passe</p>
-      </div>
-    </div>
-  );
 
   // Fonction pour déterminer le type d'identifiant
   const getIdentifiantType = (identifiant: string): 'email' | 'telephone' => {
@@ -174,125 +208,187 @@ export const ForgotPasswordForm = ({
     
     if (emailRegex.test(identifiant)) return 'email';
     if (phoneRegex.test(identifiant)) return 'telephone';
-    return 'email'; // Par défaut
+    return 'email';
   };
 
   const identifiantType = getIdentifiantType(identifiant);
 
   return (
-    <div className={styles.forgotPasswordContainer}>
-      <div className={styles.forgotPasswordHeader}>
-        <h2>Réinitialiser votre mot de passe</h2>
-        <p>
-          {step === 1 &&
-            `Entrez votre ${identifiantType === 'email' ? 'adresse email' : 'numéro de téléphone'} pour recevoir un code de vérification`}
-          {step === 2 &&
-            `Entrez le code de vérification envoyé à votre ${identifiantType === 'email' ? 'adresse email' : 'téléphone'}`}
-          {step === 3 && "Définissez votre nouveau mot de passe"}
+    <div className={styles.container}>
+      {/* Header avec icône */}
+      <div className={styles.header}>
+        <div className={styles.iconWrapper}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2 className={styles.title}>Mot de passe oublié ?</h2>
+        <p className={styles.subtitle}>
+          {step === 1 && "Recevez un code de vérification"}
+          {step === 2 && "Vérifions votre identité"}
+          {step === 3 && "Créez un nouveau mot de passe"}
         </p>
       </div>
 
-      {renderStepIndicator()}
+      {/* Steps progress */}
+      <div className={styles.steps}>
+        <div className={`${styles.step} ${step >= 1 ? styles.active : ''} ${step > 1 ? styles.completed : ''}`}>
+          <div className={styles.stepNumber}>
+            {step > 1 ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ) : (
+              <span>1</span>
+            )}
+          </div>
+          <span className={styles.stepLabel}>Identifiant</span>
+        </div>
+        <div className={styles.stepLine}></div>
+        <div className={`${styles.step} ${step >= 2 ? styles.active : ''} ${step > 2 ? styles.completed : ''}`}>
+          <div className={styles.stepNumber}>
+            {step > 2 ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ) : (
+              <span>2</span>
+            )}
+          </div>
+          <span className={styles.stepLabel}>Code</span>
+        </div>
+        <div className={styles.stepLine}></div>
+        <div className={`${styles.step} ${step >= 3 ? styles.active : ''}`}>
+          <div className={styles.stepNumber}>
+            <span>3</span>
+          </div>
+          <span className={styles.stepLabel}>Nouveau mot de passe</span>
+        </div>
+      </div>
 
-      {/* Messages d'erreur et de succès */}
-      {error && (
-        <div className={styles.errorMessage}>
-          <p>{error}</p>
+      {/* Messages */}
+      {(error || success) && (
+        <div className={`${styles.message} ${error ? styles.error : styles.success}`}>
+          {error ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          )}
+          <p>{error || success}</p>
         </div>
       )}
-      {success && (
-        <div className={styles.successMessage}>
-          <p>{success}</p>
-        </div>
-      )}
 
-      <form
-        onSubmit={
+      <form onSubmit={
           step === 1
             ? handleSendCode
             : step === 2
             ? handleVerifyCode
             : handleResetPassword
-        }
+        } 
         className={styles.form}
       >
+        {/* Étape 1 - Identifiant */}
         {step === 1 && (
-          <div className={styles.inputGroup}>
+          <div className={styles.field}>
             <label htmlFor="identifiant" className={styles.label}>
               {identifiantType === 'email' ? 'Adresse email' : 'Numéro de téléphone'}
             </label>
-            <input
-              id="identifiant"
-              name="identifiant"
-              type={identifiantType === 'email' ? 'email' : 'tel'}
-              required
-              value={identifiant}
-              onChange={(e) => setIdentifiant(e.target.value)}
-              className={styles.input}
-              placeholder={identifiantType === 'email' ? "votre@email.com" : "+225 07 00 00 00 00"}
-              disabled={isLoading}
-            />
-            <div className={styles.identifiantHelp}>
-              <p>
-                {identifiantType === 'email' 
-                  ? "Pour les agents administratifs" 
-                  : "Pour les utilisateurs des sites"}
-              </p>
+            <div className={styles.inputWrapper}>
+              <input
+                id="identifiant"
+                type={identifiantType === 'email' ? 'email' : 'tel'}
+                required
+                value={identifiant}
+                onChange={(e) => setIdentifiant(e.target.value)}
+                onFocus={() => setFocusedField('identifiant')}
+                onBlur={() => setFocusedField(null)}
+                className={styles.input}
+                placeholder={identifiantType === 'email' ? "exemple@email.com" : "+243 00 000 0000"}
+                disabled={isLoading}
+              />
+            </div>
+            <div className={styles.hint}>
+              <span className={`${styles.hintBadge} ${identifiantType === 'email' ? styles.active : ''}`}>
+                <span className={styles.hintDot}></span>
+                Agents: utilisez votre email professionnel
+              </span>
+              <span className={`${styles.hintBadge} ${identifiantType === 'telephone' ? styles.active : ''}`}>
+                <span className={styles.hintDot}></span>
+                Utilisateurs: utilisez votre téléphone
+              </span>
             </div>
           </div>
         )}
 
+        {/* Étape 2 - Code de vérification */}
         {step === 2 && (
-          <div className={styles.inputGroup}>
-            <label htmlFor="code" className={styles.label}>
+          <div className={styles.field}>
+            <label className={styles.label}>
               Code de vérification
             </label>
-            <input
-              id="code"
-              name="code"
-              type="text"
-              required
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className={styles.input}
-              placeholder="Entrez le code reçu"
-              disabled={isLoading}
-              maxLength={6}
-            />
-            <div className={styles.codeHelp}>
-              <p>
-                Vous n'avez pas reçu le code?{" "}
-                <button
-                  type="button"
-                  className={styles.resendLink}
-                  onClick={handleResendCode}
+            <div className={styles.codeGrid}>
+              {code.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`code-${index}`}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleCodeChange(index, e.target.value)}
+                  onKeyDown={(e) => handleCodeKeyDown(index, e)}
+                  className={styles.codeInput}
                   disabled={isLoading}
-                >
-                  Renvoyer
-                </button>
-              </p>
+                  autoFocus={index === 0}
+                />
+              ))}
+            </div>
+            <div className={styles.codeHelp}>
+              <p>Code envoyé à {identifiantType === 'email' ? 'votre email' : 'votre téléphone'}</p>
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={isLoading || resendTimer > 0}
+                className={styles.resendButton}
+              >
+                {resendTimer > 0 ? (
+                  <>Renvoyer dans {resendTimer}s</>
+                ) : (
+                  'Renvoyer le code'
+                )}
+              </button>
             </div>
           </div>
         )}
 
+        {/* Étape 3 - Nouveau mot de passe */}
         {step === 3 && (
           <>
-            <div className={styles.inputGroup}>
+            <div className={styles.field}>
               <label htmlFor="newPassword" className={styles.label}>
                 Nouveau mot de passe
               </label>
-              <div className={styles.passwordContainer}>
+              <div className={styles.inputWrapper}>
                 <input
                   id="newPassword"
-                  name="newPassword"
                   type={showPassword ? "text" : "password"}
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  onFocus={() => setFocusedField('newPassword')}
+                  onBlur={() => setFocusedField(null)}
                   className={styles.input}
-                  placeholder="Votre nouveau mot de passe (min. 6 caractères)"
+                  placeholder="••••••••"
                   disabled={isLoading}
-                  minLength={6}
                 />
                 <button
                   type="button"
@@ -301,30 +397,36 @@ export const ForgotPasswordForm = ({
                   disabled={isLoading}
                 >
                   {showPassword ? (
-                    <EyeOffIcon className={styles.eyeIcon} />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
                   ) : (
-                    <EyeIcon className={styles.eyeIcon} />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
                   )}
                 </button>
               </div>
             </div>
 
-            <div className={styles.inputGroup}>
+            <div className={styles.field}>
               <label htmlFor="confirmPassword" className={styles.label}>
                 Confirmer le mot de passe
               </label>
-              <div className={styles.passwordContainer}>
+              <div className={styles.inputWrapper}>
                 <input
                   id="confirmPassword"
-                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => setFocusedField('confirmPassword')}
+                  onBlur={() => setFocusedField(null)}
                   className={styles.input}
-                  placeholder="Confirmez votre mot de passe"
+                  placeholder="••••••••"
                   disabled={isLoading}
-                  minLength={6}
                 />
                 <button
                   type="button"
@@ -333,54 +435,74 @@ export const ForgotPasswordForm = ({
                   disabled={isLoading}
                 >
                   {showConfirmPassword ? (
-                    <EyeOffIcon className={styles.eyeIcon} />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
                   ) : (
-                    <EyeIcon className={styles.eyeIcon} />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
                   )}
                 </button>
               </div>
             </div>
+
+            {/* Indicateur de force */}
+            {newPassword && (
+              <div className={styles.strengthMeter}>
+                <div className={styles.strengthBars}>
+                  <div className={`${styles.strengthBar} ${newPassword.length >= 8 ? styles.active : ''}`}></div>
+                  <div className={`${styles.strengthBar} ${/[A-Z]/.test(newPassword) ? styles.active : ''}`}></div>
+                  <div className={`${styles.strengthBar} ${/[0-9]/.test(newPassword) ? styles.active : ''}`}></div>
+                </div>
+                <p className={styles.strengthText}>
+                  {newPassword.length < 8 && "Minimum 8 caractères"}
+                  {newPassword.length >= 8 && !/[A-Z]/.test(newPassword) && "Ajoutez une majuscule"}
+                  {newPassword.length >= 8 && /[A-Z]/.test(newPassword) && !/[0-9]/.test(newPassword) && "Ajoutez un chiffre"}
+                  {newPassword.length >= 8 && /[A-Z]/.test(newPassword) && /[0-9]/.test(newPassword) && "Mot de passe fort ✓"}
+                </p>
+              </div>
+            )}
           </>
         )}
 
-        <div className={styles.formActions}>
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={() => setStep(step === 2 ? 1 : 2)}
-              className={styles.backButton}
-              disabled={isLoading}
-            >
-              Retour
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onBackToLogin}
-              className={styles.backButton}
-              disabled={isLoading}
-            >
-              Retour à la connexion
-            </button>
-          )}
+        {/* Actions */}
+        <div className={styles.actions}>
+          <button
+            type="button"
+            onClick={step === 1 ? onBackToLogin : () => setStep(step === 2 ? 1 : 2)}
+            className={styles.backButton}
+            disabled={isLoading}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Retour
+          </button>
 
           <button
             type="submit"
             disabled={isLoading}
-            className={`${styles.submitButton} ${
-              isLoading ? styles.loading : ""
-            }`}
+            className={styles.submitButton}
           >
             {isLoading ? (
-              <span>Chargement...</span>
+              <>
+                <span className={styles.spinner}></span>
+                Chargement...
+              </>
             ) : (
-              <span>
-                {step === 1
-                  ? "Envoyer le code"
-                  : step === 2
-                  ? "Vérifier le code"
-                  : "Réinitialiser le mot de passe"}
-              </span>
+              <>
+                {step === 1 && "Envoyer le code"}
+                {step === 2 && "Vérifier le code"}
+                {step === 3 && "Réinitialiser"}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </>
             )}
           </button>
         </div>

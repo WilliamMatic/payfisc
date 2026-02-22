@@ -28,7 +28,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set<string>()
+    new Set<string>(),
   );
 
   // Ouvrir toutes les catégories par défaut au premier rendu
@@ -54,6 +54,7 @@ export default function Sidebar({
 
   const menuItems: MenuEntry[] = [
     { icon: "📊", label: "Dashboard", href: "/activity/dashboard" },
+    // { icon: "🏢", label: "Entreprises", href: "/system/paiement" },
 
     {
       category: "Contribuables",

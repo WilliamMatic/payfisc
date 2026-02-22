@@ -2860,30 +2860,6 @@ export default function ClientSimpleForm({
                     Impossible de procéder à une nouvelle délivrance.
                   </p>
                 </div>
-
-                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <h4 className="font-semibold text-yellow-800 mb-2">
-                    Informations de la carte rose existante:
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-yellow-600">Propriétaire:</span>
-                      <span className="font-medium">
-                        Nom du propriétaire existant
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-yellow-600">Téléphone:</span>
-                      <span className="font-medium">Téléphone existant</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-yellow-600">Plaque:</span>
-                      <span className="font-medium">
-                        {formData.numeroPlaque}
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="flex justify-end">

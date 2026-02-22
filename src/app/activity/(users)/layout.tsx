@@ -1,4 +1,4 @@
-// app/system/mouvements/layout.tsx
+// C:\laragon\www\Impot\Front\payfisc\src\app\activity\(users)\layout.tsx
 import type { Metadata } from "next";
 import MouvementsLayoutClient from "./UserLayoutClient";
 

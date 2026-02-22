@@ -285,7 +285,7 @@ export async function updateUtilisateur(
       };
     }
 
-    await invalidateUtilisateursCache(id);
+    await invalidateUtilisateursCache();
 
     return data;
   } catch (error) {
@@ -320,7 +320,7 @@ export async function deleteUtilisateur(id: number): Promise<ApiResponse> {
       };
     }
 
-    await invalidateUtilisateursCache(id);
+    await invalidateUtilisateursCache();
 
     return data;
   } catch (error) {
@@ -359,7 +359,7 @@ export async function toggleUtilisateurStatus(
       };
     }
 
-    await invalidateUtilisateursCache(id);
+    await invalidateUtilisateursCache();
 
     return data;
   } catch (error) {
@@ -418,12 +418,9 @@ export async function searchUtilisateurs(searchTerm: string): Promise<ApiRespons
 }
 
 /**
- * 💾 Récupère la liste des sites actifs (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste des sites actifs (PAS DE CACHE)
  */
 export async function getSitesActifs(): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SITES_LIST);
 
   try {
     const response = await fetch(`${API_BASE_URL}/utilisateurs/lister_sites_actifs.php`, {
@@ -684,7 +681,7 @@ export async function updatePrivilegesUtilisateur(
       };
     }
 
-    await invalidateUtilisateursCache(id);
+    await invalidateUtilisateursCache();
 
     return data;
   } catch (error) {

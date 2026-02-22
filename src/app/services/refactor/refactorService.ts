@@ -45,7 +45,7 @@ const API_BASE_URL =
   "http://localhost/SOCOFIAPP/Impot/backend/calls";
 
 /**
- * 🔄 Vérifie un ID DGRK et récupère les données associées (TEMPS RÉEL)
+ * 🔄 Vérifie un ID DGRK ou un numéro de plaque et récupère les données associées (TEMPS RÉEL)
  */
 export const verifierIdDGRK = async (
   identifiant: string,

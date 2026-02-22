@@ -183,9 +183,6 @@ export async function getSeries(
   limit: number = 5,
   utilisateurId?: number
 ): Promise<PaginationResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SERIES_PAGINES(page, utilisateurId));
 
   try {
     let url = `${API_BASE_URL}/plaques/lister_series.php?page=${page}&limit=${limit}`;
@@ -241,9 +238,6 @@ export async function getSeries(
  * 💾 Récupère la liste des provinces actives (AVEC CACHE - 2 heures)
  */
 export async function getProvinces(): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.PROVINCES_LIST);
 
   try {
     const response = await fetch(
@@ -284,12 +278,9 @@ export async function getProvinces(): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère les items d'une série spécifique (AVEC CACHE - 2 heures)
+ * 💾 Récupère les items d'une série spécifique (AVEC CACHE 2 minutes)
  */
 export async function getSerieItems(serieId: number): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SERIE_ITEMS(serieId));
 
   try {
     const response = await fetch(

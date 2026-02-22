@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { cacheLife, cacheTag } from 'next/cache';
-import { revalidateTag } from 'next/cache';
+import { cacheLife, cacheTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 /**
  * Server Actions pour la gestion des impôts avec Cache Components Next.js 16
@@ -64,11 +64,12 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation ciblée
 const CACHE_TAGS = {
-  IMPOTS_LIST: 'impots-list',
-  IMPOTS_ACTIFS: 'impots-actifs',
+  IMPOTS_LIST: "impots-list",
+  IMPOTS_ACTIFS: "impots-actifs",
   IMPOT_DETAILS: (id: number) => `impot-${id}`,
-  IMPOTS_SEARCH: 'impots-search',
-  IMPOTS_PAGINES: (page: number, search?: string) => `impots-page-${page}-${search || ''}`,
+  IMPOTS_SEARCH: "impots-search",
+  IMPOTS_PAGINES: (page: number, search?: string) =>
+    `impots-page-${page}-${search || ""}`,
   IMPOTS_STATUT: (actif: boolean) => `impots-statut-${actif}`,
   BENEFICIAIRES_IMPOT: (impotId: number) => `beneficiaires-impot-${impotId}`,
 };
@@ -77,14 +78,12 @@ const CACHE_TAGS = {
  * Invalide le cache après une mutation avec stale-while-revalidate
  */
 async function invalidateImpotsCache(impotId?: number) {
-  'use server';
-  
   revalidateTag(CACHE_TAGS.IMPOTS_LIST, "max");
   revalidateTag(CACHE_TAGS.IMPOTS_ACTIFS, "max");
   revalidateTag(CACHE_TAGS.IMPOTS_SEARCH, "max");
   revalidateTag(CACHE_TAGS.IMPOTS_STATUT(true), "max");
   revalidateTag(CACHE_TAGS.IMPOTS_STATUT(false), "max");
-  
+
   if (impotId) {
     revalidateTag(CACHE_TAGS.IMPOT_DETAILS(impotId), "max");
     revalidateTag(CACHE_TAGS.BENEFICIAIRES_IMPOT(impotId), "max");
@@ -106,7 +105,9 @@ export async function cleanImpotData(data: any): Promise<Impot> {
   };
 }
 
-export async function cleanBeneficiaireData(data: any): Promise<BeneficiaireImpot> {
+export async function cleanBeneficiaireData(
+  data: any,
+): Promise<BeneficiaireImpot> {
   return {
     id: data.id || 0,
     impot_id: data.impot_id || 0,
@@ -120,12 +121,9 @@ export async function cleanBeneficiaireData(data: any): Promise<BeneficiaireImpo
 }
 
 /**
- * 💾 Récupère la liste de tous les impôts (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste de tous les impôts (SANS CACHE - temps réel)
  */
 export async function getImpots(): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.IMPOTS_LIST);
 
   try {
     const response = await fetch(`${API_BASE_URL}/impots/lister_impots.php`, {
@@ -146,7 +144,9 @@ export async function getImpots(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanImpotData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanImpotData(item)),
+        )
       : [];
 
     return {
@@ -166,18 +166,17 @@ export async function getImpots(): Promise<ApiResponse> {
  * 💾 Récupère la liste des impôts actifs (AVEC CACHE - 2 heures)
  */
 export async function getImpotsActifs(): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.IMPOTS_ACTIFS);
-
   try {
-    const response = await fetch(`${API_BASE_URL}/impots/lister_impots_actifs.php`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${API_BASE_URL}/impots/lister_impots_actifs.php`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     const data = await response.json();
 
@@ -189,7 +188,9 @@ export async function getImpotsActifs(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanImpotData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanImpotData(item)),
+        )
       : [];
 
     return {
@@ -256,7 +257,7 @@ export async function updateImpot(
     nom: string;
     description: string;
     jsonData: string;
-  }
+  },
 ): Promise<ApiResponse> {
   try {
     const formData = new FormData();
@@ -281,7 +282,7 @@ export async function updateImpot(
     }
 
     // ⚡ Invalider le cache
-    await invalidateImpotsCache(id);
+    await invalidateImpotsCache();
 
     return data;
   } catch (error) {
@@ -317,7 +318,7 @@ export async function deleteImpot(id: number): Promise<ApiResponse> {
     }
 
     // ⚡ Invalider le cache
-    await invalidateImpotsCache(id);
+    await invalidateImpotsCache();
 
     return data;
   } catch (error) {
@@ -334,7 +335,7 @@ export async function deleteImpot(id: number): Promise<ApiResponse> {
  */
 export async function toggleImpotStatus(
   id: number,
-  actif: boolean
+  actif: boolean,
 ): Promise<ApiResponse> {
   try {
     const formData = new FormData();
@@ -347,7 +348,7 @@ export async function toggleImpotStatus(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -360,7 +361,7 @@ export async function toggleImpotStatus(
     }
 
     // ⚡ Invalider le cache
-    await invalidateImpotsCache(id);
+    await invalidateImpotsCache();
 
     return data;
   } catch (error) {
@@ -375,17 +376,15 @@ export async function toggleImpotStatus(
 /**
  * 💾 Recherche des impôts par terme (AVEC CACHE - 2 heures)
  */
-export async function searchImpots(
-  searchTerm: string
-): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
+export async function searchImpots(searchTerm: string): Promise<ApiResponse> {
+  // ...existing code...
+  cacheLife("hours");
   cacheTag(CACHE_TAGS.IMPOTS_SEARCH, `search-${searchTerm}`);
 
   try {
     const response = await fetch(
       `${API_BASE_URL}/impots/rechercher_impots.php?search=${encodeURIComponent(
-        searchTerm
+        searchTerm,
       )}`,
       {
         method: "GET",
@@ -393,7 +392,7 @@ export async function searchImpots(
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -406,7 +405,9 @@ export async function searchImpots(
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanImpotData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanImpotData(item)),
+        )
       : [];
 
     return {
@@ -426,10 +427,10 @@ export async function searchImpots(
  * 💾 Récupère les bénéficiaires d'un impôt (AVEC CACHE - 2 heures)
  */
 export async function getBeneficiairesImpot(
-  impotId: number
+  impotId: number,
 ): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
+  // ...existing code...
+  cacheLife("hours");
   cacheTag(CACHE_TAGS.BENEFICIAIRES_IMPOT(impotId));
 
   try {
@@ -441,7 +442,7 @@ export async function getBeneficiairesImpot(
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -454,7 +455,9 @@ export async function getBeneficiairesImpot(
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanBeneficiaireData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanBeneficiaireData(item)),
+        )
       : [];
 
     return {
@@ -489,7 +492,7 @@ export async function addBeneficiaireImpot(beneficiaireData: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(beneficiaireData),
-      }
+      },
     );
 
     const data = await response.json();
@@ -519,7 +522,7 @@ export async function addBeneficiaireImpot(beneficiaireData: {
  */
 export async function removeBeneficiaireImpot(
   impotId: number,
-  beneficiaireId: number
+  beneficiaireId: number,
 ): Promise<ApiResponse> {
   try {
     const response = await fetch(
@@ -534,7 +537,7 @@ export async function removeBeneficiaireImpot(
           impot_id: impotId,
           beneficiaire_id: beneficiaireId,
         }),
-      }
+      },
     );
 
     const data = await response.json();
@@ -563,17 +566,13 @@ export async function removeBeneficiaireImpot(
  * 💾 Récupère un impôt par son ID (AVEC CACHE - 2 heures)
  */
 export async function getImpotById(id: string): Promise<ApiResponse> {
-  'use cache';
-  const impotId = parseInt(id);
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.IMPOT_DETAILS(impotId));
 
   try {
     const response = await fetch(`${API_BASE_URL}/impots/get_impot_by_id.php`, {
-      method: 'POST',
-      credentials: 'include',
+      method: "POST",
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ id }),
     });
@@ -582,8 +581,8 @@ export async function getImpotById(id: string): Promise<ApiResponse> {
 
     if (!response.ok) {
       return {
-        status: 'error',
-        message: data.message || 'Erreur lors de la récupération de l\'impôt',
+        status: "error",
+        message: data.message || "Erreur lors de la récupération de l'impôt",
       };
     }
 
@@ -592,10 +591,10 @@ export async function getImpotById(id: string): Promise<ApiResponse> {
       data: await cleanImpotData(data.data),
     };
   } catch (error) {
-    console.error('Get impot by id error:', error);
+    console.error("Get impot by id error:", error);
     return {
-      status: 'error',
-      message: 'Erreur réseau lors de la récupération de l\'impôt',
+      status: "error",
+      message: "Erreur réseau lors de la récupération de l'impôt",
     };
   }
 }
@@ -613,7 +612,7 @@ export async function checkImpotByNom(nom: string): Promise<ApiResponse> {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -641,19 +640,22 @@ export async function checkImpotByNom(nom: string): Promise<ApiResponse> {
 /**
  * 💾 Recherche des impôts par statut (AVEC CACHE - 2 heures)
  */
-export async function searchImpotsByStatus(actif: boolean, searchTerm?: string): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  const cacheKey = searchTerm ? `search-${searchTerm}` : 'all';
+export async function searchImpotsByStatus(
+  actif: boolean,
+  searchTerm?: string,
+): Promise<ApiResponse> {
+  // ...existing code...
+  cacheLife("hours");
+  const cacheKey = searchTerm ? `search-${searchTerm}` : "all";
   cacheTag(CACHE_TAGS.IMPOTS_STATUT(actif), cacheKey);
 
   try {
     const params = new URLSearchParams({
       actif: actif.toString(),
     });
-    
+
     if (searchTerm) {
-      params.append('search', searchTerm);
+      params.append("search", searchTerm);
     }
 
     const response = await fetch(
@@ -664,7 +666,7 @@ export async function searchImpotsByStatus(actif: boolean, searchTerm?: string):
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -677,7 +679,9 @@ export async function searchImpotsByStatus(actif: boolean, searchTerm?: string):
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanImpotData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanImpotData(item)),
+        )
       : [];
 
     return {
@@ -696,9 +700,13 @@ export async function searchImpotsByStatus(actif: boolean, searchTerm?: string):
 /**
  * 💾 Récupère les impôts avec pagination (AVEC CACHE - 2 heures)
  */
-export async function getImpotsPaginees(page: number = 1, limit: number = 10, searchTerm: string = ''): Promise<PaginationResponse> {
-  'use cache';
-  cacheLife('hours');
+export async function getImpotsPaginees(
+  page: number = 1,
+  limit: number = 10,
+  searchTerm: string = "",
+): Promise<PaginationResponse> {
+  // ...existing code...
+  cacheLife("hours");
   cacheTag(CACHE_TAGS.IMPOTS_PAGINES(page, searchTerm));
 
   try {
@@ -706,9 +714,9 @@ export async function getImpotsPaginees(page: number = 1, limit: number = 10, se
       page: page.toString(),
       limit: limit.toString(),
     });
-    
+
     if (searchTerm) {
-      params.append('search', searchTerm);
+      params.append("search", searchTerm);
     }
 
     const response = await fetch(
@@ -719,7 +727,7 @@ export async function getImpotsPaginees(page: number = 1, limit: number = 10, se
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -732,7 +740,9 @@ export async function getImpotsPaginees(page: number = 1, limit: number = 10, se
     }
 
     const cleanedData = Array.isArray(data.data?.impots)
-      ? await Promise.all(data.data.impots.map(async (item: any) => await cleanImpotData(item)))
+      ? await Promise.all(
+          data.data.impots.map(async (item: any) => await cleanImpotData(item)),
+        )
       : [];
 
     return {
@@ -752,6 +762,30 @@ export async function getImpotsPaginees(page: number = 1, limit: number = 10, se
     return {
       status: "error",
       message: "Erreur réseau lors de la récupération des impôts paginés",
+    };
+  }
+}
+
+/**
+ * 🔄 Revalide manuellement tous les caches des impôts
+ * Cette fonction est une Server Action qui peut être appelée depuis le client
+ */
+export async function revalidateImpotsCache(): Promise<ApiResponse> {
+  "use server";
+
+  try {
+    // Invalider tous les tags de cache liés aux impôts
+    await invalidateImpotsCache();
+
+    return {
+      status: "success",
+      message: "Cache revalidé avec succès",
+    };
+  } catch (error) {
+    console.error("Revalidate cache error:", error);
+    return {
+      status: "error",
+      message: "Erreur lors de la revalidation du cache",
     };
   }
 }

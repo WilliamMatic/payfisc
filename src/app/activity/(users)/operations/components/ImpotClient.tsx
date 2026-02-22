@@ -13,14 +13,20 @@ interface ImpotClientProps {
 export default function ImpotClient({ initialImpots, initialError }: ImpotClientProps) {
   const [impots, setImpots] = useState<ImpotType[]>(initialImpots || []);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fonction pour recharger les impôts
-  const loadImpots = async () => {
+  const loadImpots = async (showRefreshingState = false) => {
     try {
-      setLoading(true);
+      if (showRefreshingState) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      
       const { getImpots } = await import('@/services/impots/impotService');
       const result = await getImpots();
       
@@ -34,6 +40,31 @@ export default function ImpotClient({ initialImpots, initialError }: ImpotClient
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Fonction pour revalider le cache
+  const handleRefreshCache = async () => {
+    try {
+      setRefreshing(true);
+      
+      // Importer dynamiquement la fonction de revalidation
+      const { revalidateImpotsCache } = await import('@/services/impots/impotService');
+      
+      // Appeler la Server Action pour revalider le cache
+      const result = await revalidateImpotsCache();
+      
+      if (result.status === 'success') {
+        setSuccessMessage('Cache revalidé avec succès');
+        // Recharger les données après revalidation du cache
+        await loadImpots(false);
+      } else {
+        setError(result.message || 'Erreur lors de la revalidation du cache');
+      }
+    } catch (err) {
+      setError('Erreur lors de la revalidation du cache');
+      setRefreshing(false);
     }
   };
 
@@ -69,11 +100,13 @@ export default function ImpotClient({ initialImpots, initialError }: ImpotClient
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         impotsCount={filteredImpots.length}
+        onRefresh={handleRefreshCache}
+        isRefreshing={refreshing}
       />
 
       <ImpotGrid
         impots={filteredImpots}
-        loading={loading}
+        loading={loading || refreshing}
       />
     </div>
   );

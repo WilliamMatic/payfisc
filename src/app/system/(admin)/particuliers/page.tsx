@@ -6,10 +6,6 @@ import {
 } from '@/services/particuliers/particulierService';
 import ParticuliersClient from './components/ParticulierClient';
 
-// SUPPRIMER TOUTES LES CONFIGURATIONS DE SEGMENT
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 0;
-
 export default async function ParticuliersPage() {
   try {
     const result = await getParticuliers(1, 10); // Récupère les 10 premiers par défaut

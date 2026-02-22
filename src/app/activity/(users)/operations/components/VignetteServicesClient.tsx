@@ -20,6 +20,10 @@ import {
   Key,
   RefreshCw,
   Crown,
+  Wrench,
+  FileCheck,
+  CarFront,
+  ClipboardCheck
 } from 'lucide-react';
 
 interface VignetteServicesClientProps {
@@ -65,40 +69,40 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
       popular: false,
       requirements: ["Preuve de paiement", "Numéro immatriculation", "QR Code Mobile Money"]
     },
-    // {
-    //   id: "renouvellement-vignette",
-    //   title: "Renouvellement Annuel",
-    //   description: "Service de renouvellement annuel de vignette automobile avec vérification automatique du statut du véhicule.",
-    //   icon: RefreshCw,
-    //   color: "amber",
-    //   features: [
-    //     "Vérification automatique",
-    //     "Historique des vignettes",
-    //     "Paiement en ligne intégré",
-    //     "Rappel automatique"
-    //   ],
-    //   tag: "RENOUVELLEMENT",
-    //   stats: "Annuel",
-    //   popular: true,
-    //   requirements: ["Vignette expirée", "Véhicule en règle", "Contrôle technique valide"]
-    // },
-    // {
-    //   id: "vignette-entreprise",
-    //   title: "Vignette Entreprise",
-    //   description: "Service dédié aux entreprises pour la gestion des vignettes de leur flotte automobile avec facturation groupée.",
-    //   icon: Building,
-    //   color: "purple",
-    //   features: [
-    //     "Gestion flotte complète",
-    //     "Facturation groupée",
-    //     "Dashboard entreprise",
-    //     "Support dédié"
-    //   ],
-    //   tag: "ENTREPRISE",
-    //   stats: "Flotte",
-    //   popular: false,
-    //   requirements: ["Registre commerce", "Liste véhicules", "Accréditation entreprise"]
-    // }
+    {
+      id: "renouvellement-vignette",
+      title: "Renouvellement Annuel",
+      description: "Service de renouvellement annuel de vignette automobile avec vérification automatique du statut du véhicule.",
+      icon: RefreshCw,
+      color: "amber",
+      features: [
+        "Vérification automatique",
+        "Historique des vignettes",
+        "Paiement en ligne intégré",
+        "Rappel automatique"
+      ],
+      tag: "RENOUVELLEMENT",
+      stats: "Annuel",
+      popular: true,
+      requirements: ["Vignette expirée", "Véhicule en règle", "Contrôle technique valide"]
+    },
+    {
+      id: "controle-technique",
+      title: "Contrôle Technique",
+      description: "Consulter la liste des véhicules ayant effectué le contrôle technique et octroyer le Procès-Verbal.",
+      icon: Wrench,
+      color: "purple",
+      features: [
+        "Liste des véhicules contrôlés",
+        "Génération de PV",
+        "Validation des résultats",
+        "Historique des contrôles"
+      ],
+      tag: "CONTROL",
+      stats: "Technique",
+      popular: false,
+      requirements: ["Rapport de contrôle", "Certificat centre agréé", "Données véhicule"]
+    }
   ];
 
   const getColorClasses = (color: string) => {
@@ -343,36 +347,36 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5">
             <div className="flex items-center space-x-3 mb-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <QrCode className="w-5 h-5 text-blue-600" />
+                <CarFront className="w-5 h-5 text-blue-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Vérification QR Code</h3>
+              <h3 className="font-bold text-gray-900">Contrôle Technique</h3>
             </div>
             <p className="text-gray-600 text-sm">
-              Toutes les vignettes disposent d'un QR code unique pour vérification instantanée de l'authenticité.
+              Consultation des résultats de contrôle technique et génération du Procès-Verbal officiel.
             </p>
           </div>
 
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5">
             <div className="flex items-center space-x-3 mb-3">
               <div className="p-2 bg-emerald-100 rounded-lg">
-                <Receipt className="w-5 h-5 text-emerald-600" />
+                <FileCheck className="w-5 h-5 text-emerald-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Reçu Fiscal</h3>
+              <h3 className="font-bold text-gray-900">Procès-Verbal</h3>
             </div>
             <p className="text-gray-600 text-sm">
-              Émission automatique d'un reçu fiscal numérique après chaque transaction pour traçabilité.
+              Émission automatique du PV de contrôle technique après validation des résultats.
             </p>
           </div>
 
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5">
             <div className="flex items-center space-x-3 mb-3">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <Key className="w-5 h-5 text-purple-600" />
+                <ClipboardCheck className="w-5 h-5 text-purple-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Sécurité Maximale</h3>
+              <h3 className="font-bold text-gray-900">Validation des Résultats</h3>
             </div>
             <p className="text-gray-600 text-sm">
-              Système de sécurité multi-couches avec hologrammes et filigranes pour prévenir la contrefaçon.
+              Système de vérification et validation des rapports de contrôle technique des centres agréés.
             </p>
           </div>
         </div>
