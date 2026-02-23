@@ -1,17 +1,21 @@
-import { Car, Search, Plus, FileText } from 'lucide-react';
+import { Car, Search, Plus, FileText, RefreshCw } from 'lucide-react';
 
 interface PlaqueHeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   onAddClick: () => void;
   onRapportClick: () => void;
+  onRefreshClick: () => void; // Nouvelle prop
+  isRefreshing?: boolean; // Optionnel pour l'état de chargement
 }
 
 export default function PlaqueHeader({ 
   searchTerm, 
   onSearchChange, 
   onAddClick, 
-  onRapportClick 
+  onRapportClick,
+  onRefreshClick,
+  isRefreshing = false
 }: PlaqueHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -40,6 +44,23 @@ export default function PlaqueHeader({
         </div>
         
         <div className="flex items-center gap-2">
+          {/* BOUTON RAFRAÎCHIR */}
+          <button
+            onClick={onRefreshClick}
+            disabled={isRefreshing}
+            className={`flex items-center justify-center space-x-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 shadow-sm hover:shadow-md ${
+              isRefreshing ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            title="Rafraîchir les données"
+          >
+            <RefreshCw 
+              className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
+            />
+            <span className="font-medium text-sm hidden sm:inline">
+              {isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir'}
+            </span>
+          </button>
+
           <button
             onClick={onRapportClick}
             className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-sm hover:shadow-md"

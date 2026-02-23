@@ -136,6 +136,39 @@ export default function PlaqueClient({
     }
   };
 
+  // Fonction pour rafraîchir le cache et recharger les données
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { refreshSeriesCache } = await import('@/services/plaques/plaqueService');
+      
+      // Rafraîchir le cache et récupérer les données fraîches
+      const result = await refreshSeriesCache(currentPage, itemsPerPage);
+      
+      if (result.status === 'success' && result.data) {
+        setSeries(result.data.series || []);
+        setCurrentPage(result.data.pagination.page);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
+        setSuccessMessage('Données rafraîchies avec succès');
+        
+        // Si on était en mode recherche, on le désactive
+        if (isSearching) {
+          setIsSearching(false);
+          setSearchTerm('');
+        }
+      } else {
+        setError(result.message || 'Erreur lors du rafraîchissement des données');
+      }
+    } catch (err) {
+      setError('Erreur de connexion lors du rafraîchissement');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Générer un rapport
   const handleGenererRapport = async (params: { date_debut: string; date_fin: string; province_id?: number }) => {
     try {
@@ -244,6 +277,8 @@ export default function PlaqueClient({
         }}
         onAddClick={() => setShowAddModal(true)}
         onRapportClick={() => setShowRapportModal(true)}
+        onRefreshClick={handleRefresh}
+        isRefreshing={loading}
       />
 
       <div className="flex-1 overflow-auto mt-4">

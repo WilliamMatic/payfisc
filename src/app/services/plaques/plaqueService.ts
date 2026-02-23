@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { cacheLife, cacheTag } from 'next/cache';
-import { revalidateTag } from 'next/cache';
+import { cacheLife, cacheTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 /**
  * Server Actions pour la gestion des plaques avec Cache Components Next.js 16
@@ -102,36 +102,39 @@ const API_BASE_URL =
 
 // Tags de cache pour invalidation ciblée
 const CACHE_TAGS = {
-  SERIES_LIST: 'series-list',
-  SERIES_ACTIVES: 'series-actives',
+  SERIES_LIST: "series-list",
+  SERIES_ACTIVES: "series-actives",
   SERIE_DETAILS: (id: number) => `serie-${id}`,
-  SERIES_SEARCH: 'series-search',
-  SERIES_PAGINES: (page: number, utilisateurId?: number) => `series-page-${page}-user-${utilisateurId || 'all'}`,
-  SERIES_SEARCH_PAGINES: (searchTerm: string, page: number) => `series-search-${searchTerm}-page-${page}`,
-  SERIES_PROVINCE: (provinceId: number, page: number) => `series-province-${provinceId}-page-${page}`,
-  PROVINCES_LIST: 'provinces-list',
+  SERIES_SEARCH: "series-search",
+  SERIES_PAGINES: (page: number, utilisateurId?: number) =>
+    `series-page-${page}-user-${utilisateurId || "all"}`,
+  SERIES_SEARCH_PAGINES: (searchTerm: string, page: number) =>
+    `series-search-${searchTerm}-page-${page}`,
+  SERIES_PROVINCE: (provinceId: number, page: number) =>
+    `series-province-${provinceId}-page-${page}`,
+  PROVINCES_LIST: "provinces-list",
   SERIE_ITEMS: (serieId: number) => `serie-items-${serieId}`,
-  RAPPORT_SERIES: (dateDebut: string, dateFin: string, provinceId?: number) => 
-    `rapport-series-${dateDebut}-${dateFin}-${provinceId || 'all'}`,
+  RAPPORT_SERIES: (dateDebut: string, dateFin: string, provinceId?: number) =>
+    `rapport-series-${dateDebut}-${dateFin}-${provinceId || "all"}`,
 };
 
 /**
  * Invalide le cache après une mutation
  */
 async function invalidateSeriesCache(serieId?: number) {
-  'use server';
-  
+  "use server";
+
   revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
   revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   revalidateTag(CACHE_TAGS.SERIES_SEARCH, "max");
-  
+
   if (serieId) {
     revalidateTag(CACHE_TAGS.SERIE_DETAILS(serieId), "max");
     revalidateTag(CACHE_TAGS.SERIE_ITEMS(serieId), "max");
   }
-  
+
   // Invalider tous les rapports de séries
-  revalidateTag(CACHE_TAGS.RAPPORT_SERIES('', '', 0), "max"); // Pattern général
+  revalidateTag(CACHE_TAGS.RAPPORT_SERIES("", "", 0), "max"); // Pattern général
 }
 
 // Nettoyer les données
@@ -176,13 +179,16 @@ export async function cleanProvinceData(data: any): Promise<Province> {
 }
 
 /**
- * 💾 Récupère la liste des séries avec pagination (5 derniers par défaut) (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste des séries avec pagination (5 derniers par défaut) (AVEC CACHE - 2 jours)
  */
 export async function getSeries(
   page: number = 1,
   limit: number = 5,
-  utilisateurId?: number
+  utilisateurId?: number,
 ): Promise<PaginationResponse> {
+  "use cache";
+  cacheLife("days");
+  cacheTag(CACHE_TAGS.SERIES_LIST);
 
   try {
     let url = `${API_BASE_URL}/plaques/lister_series.php?page=${page}&limit=${limit}`;
@@ -210,7 +216,9 @@ export async function getSeries(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      ? await Promise.all(
+          data.data.series.map(async (item: any) => await cleanSerieData(item)),
+        )
       : [];
 
     return {
@@ -235,10 +243,9 @@ export async function getSeries(
 }
 
 /**
- * 💾 Récupère la liste des provinces actives (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste des provinces actives (PAS DE CACHE)
  */
 export async function getProvinces(): Promise<ApiResponse> {
-
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/lister_provinces.php`,
@@ -248,7 +255,7 @@ export async function getProvinces(): Promise<ApiResponse> {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -261,7 +268,9 @@ export async function getProvinces(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanProvinceData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanProvinceData(item)),
+        )
       : [];
 
     return {
@@ -278,10 +287,9 @@ export async function getProvinces(): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère les items d'une série spécifique (AVEC CACHE 2 minutes)
+ * 💾 Récupère les items d'une série spécifique (PAS DE CACHE)
  */
 export async function getSerieItems(serieId: number): Promise<ApiResponse> {
-
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/lister_items_serie.php?serie_id=${serieId}`,
@@ -291,7 +299,7 @@ export async function getSerieItems(serieId: number): Promise<ApiResponse> {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -304,7 +312,9 @@ export async function getSerieItems(serieId: number): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanSerieItemData(item)))
+      ? await Promise.all(
+          data.data.map(async (item: any) => await cleanSerieItemData(item)),
+        )
       : [];
 
     return {
@@ -377,7 +387,7 @@ export async function updateSerie(
     nom_serie: string;
     province_id: number;
     description?: string;
-  }
+  },
 ): Promise<ApiResponse> {
   try {
     const formData = new FormData();
@@ -404,7 +414,7 @@ export async function updateSerie(
     }
 
     // ⚡ Invalider le cache
-    await invalidateSeriesCache(id);
+    await invalidateSeriesCache();
 
     return data;
   } catch (error) {
@@ -430,7 +440,7 @@ export async function deleteSerie(id: number): Promise<ApiResponse> {
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -443,7 +453,7 @@ export async function deleteSerie(id: number): Promise<ApiResponse> {
     }
 
     // ⚡ Invalider le cache
-    await invalidateSeriesCache(id);
+    await invalidateSeriesCache();
 
     return data;
   } catch (error) {
@@ -460,7 +470,7 @@ export async function deleteSerie(id: number): Promise<ApiResponse> {
  */
 export async function toggleSerieStatus(
   id: number,
-  actif: boolean
+  actif: boolean,
 ): Promise<ApiResponse> {
   try {
     const formData = new FormData();
@@ -473,7 +483,7 @@ export async function toggleSerieStatus(
         method: "POST",
         credentials: "include",
         body: formData,
-      }
+      },
     );
 
     const data = await response.json();
@@ -486,7 +496,7 @@ export async function toggleSerieStatus(
     }
 
     // ⚡ Invalider le cache
-    await invalidateSeriesCache(id);
+    await invalidateSeriesCache();
 
     return data;
   } catch (error) {
@@ -499,18 +509,14 @@ export async function toggleSerieStatus(
 }
 
 /**
- * 💾 Recherche des séries dans la base de données avec pagination (AVEC CACHE - 2 heures)
+ * 💾 Recherche des séries dans la base de données avec pagination (PAS DE CACHE)
  */
 export async function searchSeries(
   searchTerm: string,
   page: number = 1,
   limit: number = 5,
-  utilisateurId?: number
+  utilisateurId?: number,
 ): Promise<PaginationResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SERIES_SEARCH_PAGINES(searchTerm, page));
-
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/rechercher_series.php`,
@@ -526,7 +532,7 @@ export async function searchSeries(
           limit: limit,
           utilisateurId: utilisateurId,
         }),
-      }
+      },
     );
 
     const data = await response.json();
@@ -539,7 +545,9 @@ export async function searchSeries(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      ? await Promise.all(
+          data.data.series.map(async (item: any) => await cleanSerieData(item)),
+        )
       : [];
 
     return {
@@ -564,17 +572,13 @@ export async function searchSeries(
 }
 
 /**
- * 💾 Génère un rapport des séries (AVEC CACHE - 2 heures)
+ * 💾 Génère un rapport des séries (PAS DE CACHE)
  */
 export async function genererRapportSeries(params: {
   date_debut: string;
   date_fin: string;
   province_id?: number;
 }): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.RAPPORT_SERIES(params.date_debut, params.date_fin, params.province_id));
-
   try {
     const queryParams = new URLSearchParams({
       date_debut: params.date_debut,
@@ -590,7 +594,7 @@ export async function genererRapportSeries(params: {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -616,17 +620,13 @@ export async function genererRapportSeries(params: {
 }
 
 /**
- * 💾 Récupère la liste des séries actives (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste des séries actives (PAS DE CACHE)
  */
 export async function getSeriesActives(
   page: number = 1,
   limit: number = 5,
-  utilisateurId?: number
+  utilisateurId?: number,
 ): Promise<PaginationResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SERIES_PAGINES(page, utilisateurId), 'actives');
-
   try {
     let url = `${API_BASE_URL}/plaques/lister_series_actives.php?page=${page}&limit=${limit}`;
     if (utilisateurId !== undefined) {
@@ -651,7 +651,9 @@ export async function getSeriesActives(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      ? await Promise.all(
+          data.data.series.map(async (item: any) => await cleanSerieData(item)),
+        )
       : [];
 
     return {
@@ -688,7 +690,7 @@ export async function checkSerieByNom(nomSerie: string): Promise<ApiResponse> {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -714,13 +716,9 @@ export async function checkSerieByNom(nomSerie: string): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère une série par son ID (AVEC CACHE - 2 heures)
+ * 💾 Récupère une série par son ID (PAS DE CACHE)
  */
 export async function getSerieById(id: number): Promise<ApiResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SERIE_DETAILS(id));
-
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/get_serie.php?id=${id}`,
@@ -730,7 +728,7 @@ export async function getSerieById(id: number): Promise<ApiResponse> {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -756,25 +754,21 @@ export async function getSerieById(id: number): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Recherche des séries par province (AVEC CACHE - 2 heures)
+ * 💾 Recherche des séries par province (PAS DE CACHE)
  */
 export async function searchSeriesByProvince(
   provinceId: number,
   page: number = 1,
   limit: number = 5,
-  searchTerm?: string
+  searchTerm?: string,
 ): Promise<PaginationResponse> {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(CACHE_TAGS.SERIES_PROVINCE(provinceId, page));
-
   try {
     const body: any = {
       province_id: provinceId,
       page: page,
       limit: limit,
     };
-    
+
     if (searchTerm) {
       body.search = searchTerm;
     }
@@ -788,7 +782,7 @@ export async function searchSeriesByProvince(
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     const data = await response.json();
@@ -796,12 +790,15 @@ export async function searchSeriesByProvince(
     if (!response.ok) {
       return {
         status: "error",
-        message: data.message || "Échec de la recherche des séries par province",
+        message:
+          data.message || "Échec de la recherche des séries par province",
       };
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(data.data.series.map(async (item: any) => await cleanSerieData(item)))
+      ? await Promise.all(
+          data.data.series.map(async (item: any) => await cleanSerieData(item)),
+        )
       : [];
 
     return {
@@ -822,5 +819,59 @@ export async function searchSeriesByProvince(
       status: "error",
       message: "Erreur réseau lors de la recherche des séries par province",
     };
+  }
+}
+
+/**
+ * 🔄 Revalide manuellement le cache des séries et le rafraîchit
+ * Utile pour forcer une mise à jour du cache après des opérations complexes
+ */
+export async function refreshSeriesCache(
+  page: number = 1,
+  limit: number = 5,
+  utilisateurId?: number,
+): Promise<PaginationResponse> {
+  "use server";
+
+  try {
+    // Invalider d'abord le cache spécifique à cette page
+    revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
+    revalidateTag(CACHE_TAGS.SERIES_PAGINES(page, utilisateurId), "max");
+
+    // Re-fetch les données pour les remettre en cache
+    const result = await getSeries(page, limit, utilisateurId);
+
+    // Si la requête a réussi, on retourne les données fraîches
+    if (result.status === "success") {
+      console.log(`✅ Cache des séries revalidé pour la page ${page}`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Refresh series cache error:", error);
+    return {
+      status: "error",
+      message: "Erreur lors du rafraîchissement du cache des séries",
+    };
+  }
+}
+
+/**
+ * 🔄 Revalide TOUS les caches de séries (toutes pages confondues)
+ * Utile après une opération de masse qui affecte plusieurs pages
+ */
+export async function refreshAllSeriesCache(): Promise<void> {
+  "use server";
+
+  try {
+    // Invalider tous les tags liés aux séries
+    revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
+    revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
+    revalidateTag(CACHE_TAGS.SERIES_SEARCH, "max");
+    revalidateTag(CACHE_TAGS.SERIES_SEARCH_PAGINES("", 0), "max"); // Pattern général
+
+    console.log("✅ Tous les caches des séries ont été invalidés");
+  } catch (error) {
+    console.error("Refresh all series cache error:", error);
   }
 }

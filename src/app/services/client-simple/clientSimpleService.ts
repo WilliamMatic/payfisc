@@ -107,9 +107,6 @@ const CACHE_TAGS = {
  */
 async function invalidateCommandesCache() {
   "use server";
-
-  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
-  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   // Invalider les caches liés aux commandes (pour le module des commandes)
   revalidateTag("commandes-list-", "max");
   revalidateTag("commandes-stats-", "max");

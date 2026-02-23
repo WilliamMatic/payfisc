@@ -13,7 +13,7 @@ import AlertMessage from "./AlertMessage";
 import RapportSeriesModal from "./RapportSeriesModal";
 import Pagination from "./Pagination";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, User, Lock, Loader2 } from "lucide-react"; // Ajout de Loader2
+import { ArrowLeft, User, Lock, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PlaqueClientProps {
@@ -58,7 +58,7 @@ export default function PlaqueClient({
   const [rapportLoading, setRapportLoading] = useState(false);
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [privileges, setPrivileges] = useState<any>(null);
-  const [loadingPrivileges, setLoadingPrivileges] = useState(true); // État de chargement pour les privilèges
+  const [loadingPrivileges, setLoadingPrivileges] = useState(true);
 
   // États de pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -157,6 +157,39 @@ export default function PlaqueClient({
     } catch (err) {
       setError("Erreur de connexion au serveur");
       setSeries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // NOUVELLE FONCTION : Rafraîchir le cache et recharger les données
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { refreshSeriesCache } = await import("@/services/plaques/plaqueService");
+      
+      // Rafraîchir le cache et récupérer les données fraîches
+      const result = await refreshSeriesCache(currentPage, itemsPerPage);
+      
+      if (result.status === "success" && result.data) {
+        setSeries(result.data.series || []);
+        setCurrentPage(result.data.pagination.page);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotalItems(result.data.pagination.total);
+        setSuccessMessage("Données rafraîchies avec succès");
+        
+        // Si on était en mode recherche, on le désactive
+        if (isSearching) {
+          setIsSearching(false);
+          setSearchTerm("");
+        }
+      } else {
+        setError(result.message || "Erreur lors du rafraîchissement des données");
+      }
+    } catch (err) {
+      setError("Erreur de connexion lors du rafraîchissement");
     } finally {
       setLoading(false);
     }
@@ -386,6 +419,8 @@ export default function PlaqueClient({
         }}
         onAddClick={() => setShowAddModal(true)}
         onRapportClick={() => setShowRapportModal(true)}
+        onRefreshClick={handleRefresh} // NOUVEAU : Prop pour le rafraîchissement
+        isRefreshing={loading} // NOUVEAU : État de chargement pour l'animation
       />
 
       <div className="flex-1 overflow-auto mt-4">

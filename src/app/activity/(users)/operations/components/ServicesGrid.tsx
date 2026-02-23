@@ -66,7 +66,7 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
       features: [
         "Transfert de propriété",
         "Activation finale",
-        "Validation DGI en direct",
+        "Validation MPAKO en direct",
         "Biométrie optionnelle",
       ],
       tag: "TRANSFERT",
@@ -101,7 +101,7 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
         "Correction IA vérifiée",
         "Réimpression sécurisée",
         "Traçabilité complète",
-        "Validation DGI",
+        "Validation MPAKO",
       ],
       tag: "SUPPORT",
       stats: "16/6",

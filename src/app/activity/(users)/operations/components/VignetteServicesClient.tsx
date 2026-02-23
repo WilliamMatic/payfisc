@@ -43,7 +43,7 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
       color: "emerald",
       features: [
         "Vérification immatriculation",
-        "Paiement sécurisé DGI",
+        "Paiement sécurisé MPAKO",
         "Émission vignette physique",
         "Validation en temps réel"
       ],

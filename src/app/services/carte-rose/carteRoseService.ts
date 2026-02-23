@@ -153,9 +153,6 @@ async function invalidatePuissancesCache(puissanceId?: number) {
  */
 async function invalidateCarteRoseCache() {
   "use server";
-
-  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
-  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   // Invalider les caches des anciens services
   revalidateTag(CACHE_TAGS.CARTE_ROSE_SOUMISSION, "max");
   revalidateTag(CACHE_TAGS.CARTE_ROSE_VERIFICATION, "max");

@@ -165,7 +165,7 @@ export default function ImpotServicesHeader({ impot }: ImpotServicesHeaderProps)
                 </div>
                 <div className="text-xs text-amber-600 mt-2 flex items-center">
                   <AlertTriangle className="w-3 h-3 mr-1" />
-                  Conformité DGI 2026
+                  Conformité MPAKO 2026
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -237,7 +237,7 @@ export default function ImpotServicesHeader({ impot }: ImpotServicesHeaderProps)
             {/* FOOTER */}
             <div className="mt-6 pt-4 border-t border-gray-700/50">
               <div className="text-xs text-gray-500 text-center">
-                Version 2026.1 • DGI Compliant
+                Version 2026.1 • MPAKO Compliant
               </div>
             </div>
           </div>

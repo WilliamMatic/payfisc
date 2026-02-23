@@ -121,10 +121,12 @@ export async function cleanBeneficiaireData(
 }
 
 /**
- * 💾 Récupère la liste de tous les impôts (SANS CACHE - temps réel)
+ * 💾 Récupère la liste de tous les impôts (AVEC CACHE - 2 jours)
  */
 export async function getImpots(): Promise<ApiResponse> {
-
+  "use cache";
+  cacheLife("days");
+  cacheTag(CACHE_TAGS.IMPOTS_LIST);
   try {
     const response = await fetch(`${API_BASE_URL}/impots/lister_impots.php`, {
       method: "GET",
@@ -163,9 +165,12 @@ export async function getImpots(): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère la liste des impôts actifs (AVEC CACHE - 2 heures)
+ * 💾 Récupère la liste des impôts actifs (AVEC CACHE - 2 jours)
  */
 export async function getImpotsActifs(): Promise<ApiResponse> {
+  "use cache";
+  cacheLife("days");
+  cacheTag(CACHE_TAGS.IMPOTS_ACTIFS);
   try {
     const response = await fetch(
       `${API_BASE_URL}/impots/lister_impots_actifs.php`,
@@ -374,13 +379,9 @@ export async function toggleImpotStatus(
 }
 
 /**
- * 💾 Recherche des impôts par terme (AVEC CACHE - 2 heures)
+ * 💾 Recherche des impôts par terme (PAS DE CACHE)
  */
 export async function searchImpots(searchTerm: string): Promise<ApiResponse> {
-  // ...existing code...
-  cacheLife("hours");
-  cacheTag(CACHE_TAGS.IMPOTS_SEARCH, `search-${searchTerm}`);
-
   try {
     const response = await fetch(
       `${API_BASE_URL}/impots/rechercher_impots.php?search=${encodeURIComponent(
@@ -424,15 +425,11 @@ export async function searchImpots(searchTerm: string): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère les bénéficiaires d'un impôt (AVEC CACHE - 2 heures)
+ * 💾 Récupère les bénéficiaires d'un impôt (PAS DE CACHE)
  */
 export async function getBeneficiairesImpot(
   impotId: number,
 ): Promise<ApiResponse> {
-  // ...existing code...
-  cacheLife("hours");
-  cacheTag(CACHE_TAGS.BENEFICIAIRES_IMPOT(impotId));
-
   try {
     const response = await fetch(
       `${API_BASE_URL}/impots/beneficiaires/lister_beneficiaires_impot.php?impot_id=${impotId}`,
@@ -505,7 +502,7 @@ export async function addBeneficiaireImpot(beneficiaireData: {
     }
 
     // ⚡ Invalider le cache des bénéficiaires de cet impôt
-    await invalidateImpotsCache(beneficiaireData.impot_id);
+    await invalidateImpotsCache();
 
     return data;
   } catch (error) {
@@ -550,7 +547,7 @@ export async function removeBeneficiaireImpot(
     }
 
     // ⚡ Invalider le cache des bénéficiaires de cet impôt
-    await invalidateImpotsCache(impotId);
+    await invalidateImpotsCache();
 
     return data;
   } catch (error) {
@@ -566,7 +563,6 @@ export async function removeBeneficiaireImpot(
  * 💾 Récupère un impôt par son ID (AVEC CACHE - 2 heures)
  */
 export async function getImpotById(id: string): Promise<ApiResponse> {
-
   try {
     const response = await fetch(`${API_BASE_URL}/impots/get_impot_by_id.php`, {
       method: "POST",
@@ -644,11 +640,6 @@ export async function searchImpotsByStatus(
   actif: boolean,
   searchTerm?: string,
 ): Promise<ApiResponse> {
-  // ...existing code...
-  cacheLife("hours");
-  const cacheKey = searchTerm ? `search-${searchTerm}` : "all";
-  cacheTag(CACHE_TAGS.IMPOTS_STATUT(actif), cacheKey);
-
   try {
     const params = new URLSearchParams({
       actif: actif.toString(),
@@ -705,10 +696,6 @@ export async function getImpotsPaginees(
   limit: number = 10,
   searchTerm: string = "",
 ): Promise<PaginationResponse> {
-  // ...existing code...
-  cacheLife("hours");
-  cacheTag(CACHE_TAGS.IMPOTS_PAGINES(page, searchTerm));
-
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -770,6 +757,10 @@ export async function getImpotsPaginees(
  * 🔄 Revalide manuellement tous les caches des impôts
  * Cette fonction est une Server Action qui peut être appelée depuis le client
  */
+/**
+ * 🔄 Revalide manuellement tous les caches des impôts et recharge les données
+ * Cette fonction est une Server Action qui peut être appelée depuis le client
+ */
 export async function revalidateImpotsCache(): Promise<ApiResponse> {
   "use server";
 
@@ -777,9 +768,37 @@ export async function revalidateImpotsCache(): Promise<ApiResponse> {
     // Invalider tous les tags de cache liés aux impôts
     await invalidateImpotsCache();
 
+    // Recharger les données pour les remettre en cache
+    const [impotsResult, impotsActifsResult] = await Promise.all([
+      getImpots(),
+      getImpotsActifs(),
+    ]);
+
+    // Vérifier si les rechargements ont réussi
+    const hasErrors =
+      impotsResult.status === "error" || impotsActifsResult.status === "error";
+
+    if (hasErrors) {
+      return {
+        status: "error", // Changé de "warning" à "error"
+        message: "Cache revalidé mais certains rechargements ont échoué",
+        data: {
+          impots: impotsResult.status === "success" ? impotsResult.data : null,
+          impotsActifs:
+            impotsActifsResult.status === "success"
+              ? impotsActifsResult.data
+              : null,
+        },
+      };
+    }
+
     return {
       status: "success",
-      message: "Cache revalidé avec succès",
+      message: "Cache revalidé et données rechargées avec succès",
+      data: {
+        impots: impotsResult.data,
+        impotsActifs: impotsActifsResult.data,
+      },
     };
   } catch (error) {
     console.error("Revalidate cache error:", error);

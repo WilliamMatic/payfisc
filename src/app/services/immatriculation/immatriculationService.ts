@@ -127,9 +127,6 @@ const CACHE_TAGS = {
  */
 async function invalidateImmatriculationCache() {
   "use server";
-
-  revalidateTag(CACHE_TAGS.SERIES_LIST, "max");
-  revalidateTag(CACHE_TAGS.SERIES_ACTIVES, "max");
   // Invalider les caches liés aux ventes (pour le module des ventes)
   revalidateTag("ventes-list-", "max");
   revalidateTag("ventes-stats-", "max");
