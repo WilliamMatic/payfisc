@@ -11,6 +11,9 @@ export default function CarteRoseClient() {
   const impotId = params.id as string;
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
+  
+  // Clé pour forcer la réinitialisation du formulaire enfant
+  const [resetKey, setResetKey] = useState(0);
 
   // Parser les privilèges quand utilisateur change
   useEffect(() => {
@@ -26,6 +29,15 @@ export default function CarteRoseClient() {
       setParsedPrivileges({});
     }
   }, [utilisateur]);
+
+  // Fonction pour gérer le retour aux services avec réinitialisation
+  const handleRetourAuxServices = () => {
+    // Incrémenter la clé pour forcer le remontage du formulaire (réinitialisation complète)
+    setResetKey(prev => prev + 1);
+    
+    // Navigation vers la page des services
+    router.back();
+  };
 
   // Afficher un écran de chargement
   if (authLoading || parsedPrivileges === null) {
@@ -119,7 +131,7 @@ export default function CarteRoseClient() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <button
-              onClick={() => router.back()}
+              onClick={handleRetourAuxServices}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -154,8 +166,12 @@ export default function CarteRoseClient() {
           </div>
         </div>
 
-        {/* FORMULAIRE */}
-        <ClientSimpleForm impotId={impotId} utilisateur={utilisateur} />
+        {/* FORMULAIRE AVEC KEY DYNAMIQUE POUR RÉINITIALISATION */}
+        <ClientSimpleForm 
+          key={resetKey}
+          impotId={impotId} 
+          utilisateur={utilisateur} 
+        />
       </div>
     </div>
   );

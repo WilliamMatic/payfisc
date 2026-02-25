@@ -29,15 +29,34 @@ interface StatsData {
 interface NotificationsPageClientProps {
   initialStats: StatsData | null;
   initialNotifications: Notification[];
+  isLoading?: boolean; // Ajout de la prop isLoading
 }
 
 export default function NotificationsPageClient({ 
   initialStats, 
-  initialNotifications 
+  initialNotifications,
+  isLoading = false // Valeur par défaut à false
 }: NotificationsPageClientProps) {
   const [stats, setStats] = useState<StatsData | null>(initialStats);
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isLoading);
+
+  // Mettre à jour loading quand isLoading change
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
+
+  // Simuler un chargement si initialNotifications est vide et isLoading est true
+  useEffect(() => {
+    if (isLoading) {
+      // Optionnel: Vous pouvez ajouter un timeout pour simuler un chargement plus long
+      const timer = setTimeout(() => {
+        // Ne rien faire, juste pour garder l'état loading
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   // Fonction pour convertir le type de notification PHP en type frontend
   const convertNotificationType = (type: string): "success" | "warning" | "info" | "error" => {
@@ -115,6 +134,33 @@ export default function NotificationsPageClient({
   // Notifications converties pour le frontend
   const frontendNotifications = notifications.map(convertToFrontendFormat);
 
+  // Afficher un écran de chargement complet si nécessaire
+  if (isLoading && notifications.length === 0 && !stats) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+        <div className="max-w-4xl mx-auto">
+          {/* En-tête avec animation de chargement */}
+          <div className="text-center mb-8">
+            <div className="h-12 w-64 bg-gray-200 rounded-lg animate-pulse mx-auto mb-4"></div>
+            <div className="h-6 w-96 bg-gray-200 rounded-lg animate-pulse mx-auto"></div>
+          </div>
+
+          {/* Stats skeleton */}
+          <StatsCardsSkeleton />
+
+          {/* En-tête de la liste avec actions */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="h-10 w-48 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
+
+          {/* Notifications skeleton */}
+          <NotificationsListSkeleton />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -130,21 +176,30 @@ export default function NotificationsPageClient({
 
         {/* Statistiques rapides avec Suspense */}
         <Suspense fallback={<StatsCardsSkeleton />}>
-          <StatsCards stats={stats} />
+          <StatsCards stats={stats} isLoading={loading} />
         </Suspense>
 
         {/* En-tête de la liste avec actions */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">
             Dernières Notifications
+            {loading && (
+              <span className="ml-3 text-sm font-normal text-gray-500">
+                (Mise à jour...)
+              </span>
+            )}
           </h2>
-          {unreadCount > 0 && (
+          {!loading && unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
             >
               Tout marquer comme lu
             </button>
+          )}
+          {loading && (
+            <div className="h-10 w-48 bg-gray-200 rounded-lg animate-pulse"></div>
           )}
         </div>
 
@@ -153,6 +208,7 @@ export default function NotificationsPageClient({
           <NotificationsList
             notifications={frontendNotifications}
             onMarkAsRead={markAsRead}
+            isLoading={loading}
           />
         </Suspense>
       </div>

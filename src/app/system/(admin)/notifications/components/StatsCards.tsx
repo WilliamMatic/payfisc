@@ -1,4 +1,3 @@
-// app/notifications/components/StatsCards.tsx
 "use client";
 
 interface StatsData {
@@ -10,9 +9,30 @@ interface StatsData {
 
 interface StatsCardsProps {
   stats: StatsData | null;
+  isLoading?: boolean; // Ajout de la prop isLoading
 }
 
-export default function StatsCards({ stats }: StatsCardsProps) {
+// Composant de skeleton pour les stats
+function StatsCardsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mx-auto mb-2"></div>
+          <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mx-auto"></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function StatsCards({ stats, isLoading = false }: StatsCardsProps) {
+  // Afficher le skeleton pendant le chargement
+  if (isLoading) {
+    return <StatsCardsSkeleton />;
+  }
+
+  // Ne rien afficher si pas de stats et pas en chargement
   if (!stats) {
     return null;
   }

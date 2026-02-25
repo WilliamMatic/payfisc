@@ -86,7 +86,7 @@ export default function Login() {
 
           <div className={styles.statsCards}>
             <div className={styles.statCard}>
-              <span className={styles.statNumber}>5000+</span>
+              <span className={styles.statNumber}>180000+</span>
               <span className={styles.statLabel}>Motos immatriculées</span>
             </div>
             <div className={styles.statCard}>
