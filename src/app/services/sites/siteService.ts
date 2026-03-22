@@ -70,6 +70,8 @@ async function invalidateSitesCache(siteId?: number) {
   revalidateTag(CACHE_TAGS.SITES_LIST, "max");
   revalidateTag(CACHE_TAGS.SITES_ACTIFS, "max");
   revalidateTag(CACHE_TAGS.SITES_SEARCH, "max");
+  // Invalider aussi le select de sites dans /system/utilisateurs
+  revalidateTag('sites-list-utilisateurs', "max");
   
   if (siteId) {
     revalidateTag(CACHE_TAGS.SITE_DETAILS(siteId), "max");
@@ -186,9 +188,12 @@ export async function getSitesActifs(): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère la liste de toutes les provinces actives (PAS DE CACHE)
+ * 💾 Récupère la liste de toutes les provinces actives (CACHED 2h)
  */
 export async function getProvinces(): Promise<ApiResponse> {
+  'use cache';
+  cacheTag(CACHE_TAGS.PROVINCES_LIST);
+  cacheLife('hours');
 
   try {
     const response = await fetch(`${API_BASE_URL}/sites/lister_provinces.php`, {

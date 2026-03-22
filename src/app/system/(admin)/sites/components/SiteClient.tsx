@@ -8,6 +8,7 @@ import SiteHeader from "./SiteHeader";
 import SiteTable from "./SiteTable";
 import SiteModals from "./SiteModals";
 import AlertMessage from "./AlertMessage";
+import SiteTaxesModal from "./SiteTaxesModal"; // Nouvel import
 
 interface SiteClientProps {
   initialSites: SiteType[];
@@ -31,6 +32,7 @@ export default function SiteClient({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showTaxesModal, setShowTaxesModal] = useState(false); // Nouvel état
   const [selectedSite, setSelectedSite] = useState<SiteType | null>(null);
   const [formData, setFormData] = useState({
     nom: "",
@@ -96,6 +98,11 @@ export default function SiteClient({
     setShowStatusModal(true);
   };
 
+  const openTaxesModal = (site: SiteType) => { // Nouvelle fonction
+    setSelectedSite(site);
+    setShowTaxesModal(true);
+  };
+
   // Effacer les messages après un délai
   useEffect(() => {
     if (error) {
@@ -127,6 +134,7 @@ export default function SiteClient({
         onEdit={openEditModal}
         onDelete={openDeleteModal}
         onToggleStatus={openStatusModal}
+        onManageTaxes={openTaxesModal} // Nouvelle prop
       />
 
       <SiteModals
@@ -292,6 +300,18 @@ export default function SiteClient({
           }
         }}
       />
+
+      {/* Nouvelle modale pour les taxes */}
+      {showTaxesModal && selectedSite && (
+        <SiteTaxesModal
+          siteId={selectedSite.id}
+          siteNom={selectedSite.nom}
+          onClose={() => {
+            setShowTaxesModal(false);
+            setSelectedSite(null);
+          }}
+        />
+      )}
     </div>
   );
 }

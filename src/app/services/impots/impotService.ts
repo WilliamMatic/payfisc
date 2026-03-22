@@ -165,37 +165,58 @@ export async function getImpots(): Promise<ApiResponse> {
 }
 
 /**
- * 💾 Récupère la liste des impôts actifs (AVEC CACHE - 2 jours)
+ * Récupère la liste des impôts actifs pour un site donné.
+ * ⚠️ PAS de "use cache" global ici car le résultat dépend du site_code utilisateur.
+ * On utilise revalidate HTTP côté fetch pour un cache léger.
  */
-export async function getImpotsActifs(): Promise<ApiResponse> {
-  "use cache";
-  cacheLife("days");
-  cacheTag(CACHE_TAGS.IMPOTS_ACTIFS);
+export async function getImpotsActifs(site_code: string): Promise<ApiResponse> {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/impots/lister_impots_actifs.php`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
+    const url = `${API_BASE_URL}/impots/lister_impots_actifs.php?site_code=${encodeURIComponent(site_code)}`;
 
-    const data = await response.json();
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
       return {
         status: "error",
         message: data.message || "Échec de la récupération des impôts actifs",
       };
     }
 
-    const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(
-          data.data.map(async (item: any) => await cleanImpotData(item)),
-        )
+    const data = await response.json();
+
+    if (data.status === "error") {
+      return {
+        status: "error",
+        message: data.message || "Erreur retournée par le serveur",
+      };
+    }
+
+    const cleanedData: Impot[] = Array.isArray(data.data)
+      ? data.data.map((item: any) => ({
+          id: Number(item.id),
+          nom: item.nom ?? "",
+          description: item.description ?? "",
+          periode: item.periode ?? "",
+          delai_accord: Number(item.delai_accord ?? 0),
+          prix: item.prix ?? "0",
+          penalites: item.penalites ?? null,
+          actif: Number(item.actif ?? 0),
+          date_creation: item.date_creation ?? "",
+          site_taxe_id: Number(item.site_taxe_id ?? 0),
+          site_id: Number(item.site_id ?? 0),
+          prix_site: item.prix_site ?? "0",
+          site_taxe_status: Number(item.site_taxe_status ?? 0),
+          site_taxe_date: item.site_taxe_date ?? "",
+          site_nom: item.site_nom ?? "",
+          site_code: item.site_code ?? "",
+        }))
       : [];
 
     return {
@@ -203,14 +224,13 @@ export async function getImpotsActifs(): Promise<ApiResponse> {
       data: cleanedData,
     };
   } catch (error) {
-    console.error("Get impots actifs error:", error);
+    console.error("getImpotsActifs error:", error);
     return {
       status: "error",
       message: "Erreur réseau lors de la récupération des impôts actifs",
     };
   }
 }
-
 /**
  * 🔄 Ajoute un nouvel impôt (INVALIDE LE CACHE)
  */
@@ -771,7 +791,7 @@ export async function revalidateImpotsCache(): Promise<ApiResponse> {
     // Recharger les données pour les remettre en cache
     const [impotsResult, impotsActifsResult] = await Promise.all([
       getImpots(),
-      getImpotsActifs(),
+      getImpotsActifs("default_site_code"), // Remplacer par le site_code approprié
     ]);
 
     // Vérifier si les rechargements ont réussi

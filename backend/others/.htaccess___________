@@ -1,0 +1,67 @@
+# CONFIGURATION PHP GLOBALE - pour TOUS les fichiers .php
+location ~ \.php$ {
+    # Vérifier que le fichier existe
+    try_files $uri =404;
+    
+    # FastCGI configuration
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+    fastcgi_index index.php;
+    
+    # Paramètres essentiels
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param PATH_INFO $fastcgi_path_info;
+    
+    # Sécurité
+    fastcgi_hide_header X-Powered-By;
+    
+    # Timeout
+    fastcgi_read_timeout 300;
+}
+
+# PROTECTION des dossiers sensibles
+location ~ ^/Backend/Reporting/(includes|models/class)/ {
+    deny all;
+    return 403;
+}
+
+# ROUTING API SPÉCIFIQUE - solution la plus fiable
+location /Backend/Reporting/models/calls/ {
+    # Laisser passer les fichiers existants (CSS, JS, images)
+    location ~* \.(css|js|jpg|jpeg|png|gif|ico|svg)$ {
+        expires 30d;
+        access_log off;
+    }
+    
+    # Pour tout ce qui n'est pas un fichier statique
+    try_files $uri $uri/ @api_router;
+    
+    # Point de réécriture
+    location @api_router {
+        rewrite ^/Backend/Reporting/models/calls/(.*)$ /Backend/Reporting/models/calls/index.php?route=$1 break;
+        
+        # Inclure la config PHP (mais déjà géré par le bloc global .php)
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root/Backend/Reporting/models/calls/index.php;
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+    }
+}
+
+# ACCÈS aux fichiers statiques
+location /Backend/Reporting/assets/ {
+    expires 30d;
+    add_header Cache-Control "public, immutable";
+    access_log off;
+}
+
+# Bloc spécifique pour /Backend/models/calls/
+location /Backend/models/calls/ {
+    allow all;
+    index index.php;
+    
+    # Réécriture pour le routing
+    if (!-e $request_filename) {
+        rewrite ^/Backend/models/calls/(.*)$ /Backend/models/calls/index.php?$1 last;
+    }
+}

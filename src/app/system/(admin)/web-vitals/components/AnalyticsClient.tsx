@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface GlobalStats {
   total_metrics: number;
@@ -39,11 +39,82 @@ interface AnalyticsClientProps {
   statsData: AnalyticsStats;
 }
 
+// Traductions des noms de métriques en français
+const METRIC_FR: Record<string, { name: string; description: string; unit: string }> = {
+  FCP: { name: "Premier Affichage de Contenu", description: "Temps avant le premier élément visible", unit: "ms" },
+  LCP: { name: "Plus Grand Affichage de Contenu", description: "Temps de chargement de l'élément principal", unit: "ms" },
+  CLS: { name: "Stabilité Visuelle", description: "Décalage cumulatif de la mise en page", unit: "" },
+  FID: { name: "Délai de Première Interaction", description: "Temps de réponse au premier clic", unit: "ms" },
+  TTFB: { name: "Temps de Réponse Serveur", description: "Temps avant le premier octet reçu", unit: "ms" },
+  INP: { name: "Réactivité d'Interaction", description: "Temps entre interaction et prochain affichage", unit: "ms" },
+  JS_ERROR: { name: "Erreur JavaScript", description: "Erreur JavaScript détectée", unit: "" },
+  PROMISE_REJECTION: { name: "Promesse Rejetée", description: "Promesse non gérée rejetée", unit: "" },
+  PAGE_VIEW: { name: "Vue de Page", description: "Navigation de page enregistrée", unit: "ms" },
+};
+
+const DESCRIPTION_FR: Record<string, string> = {
+  "First Contentful Paint très lent (>3s)": "Premier affichage très lent (> 3s)",
+  "First Contentful Paint lent (>2s)": "Premier affichage lent (> 2s)",
+  "First Contentful Paint excellent": "Premier affichage excellent",
+  "Largest Contentful Paint très lent (>4s)": "Affichage principal très lent (> 4s)",
+  "Largest Contentful Paint lent (>2.5s)": "Affichage principal lent (> 2,5s)",
+  "Largest Contentful Paint excellent": "Affichage principal excellent",
+  "Stabilité visuelle mauvaise (CLS > 0.25)": "Stabilité visuelle mauvaise (CLS > 0,25)",
+  "Stabilité visuelle à améliorer (CLS > 0.1)": "Stabilité visuelle à améliorer (CLS > 0,1)",
+  "Stabilité visuelle excellente": "Stabilité visuelle excellente",
+  "Délai de première interaction élevé (>300ms)": "Délai de première interaction élevé (> 300 ms)",
+  "Délai de première interaction acceptable (>100ms)": "Délai de première interaction acceptable (> 100 ms)",
+  "Délai de première interaction excellent": "Délai de première interaction excellent",
+  "Time to First Byte lent (>800ms)": "Réponse serveur lente (> 800 ms)",
+  "Time to First Byte acceptable (>500ms)": "Réponse serveur acceptable (> 500 ms)",
+  "Time to First Byte excellent": "Réponse serveur excellent",
+  "Interaction to Next Paint lent (>500ms)": "Réactivité lente (> 500 ms)",
+  "Interaction to Next Paint à surveiller (>200ms)": "Réactivité à surveiller (> 200 ms)",
+  "Interaction to Next Paint excellent": "Réactivité excellente",
+  "Erreur JavaScript détectée": "Erreur JavaScript détectée",
+  "Promise rejetée non gérée": "Promesse rejetée non gérée",
+  "Navigation page vue": "Navigation de page",
+};
+
+const STATUS_FR: Record<string, string> = {
+  Excellent: "Excellent",
+  Bon: "Bon",
+  Moyen: "Moyen",
+  "À améliorer": "À améliorer",
+  Critique: "Critique",
+  "Non disponible": "Non disponible",
+};
+
+function translateMetricName(name: string): string {
+  return METRIC_FR[name]?.name || name;
+}
+
+function translateDescription(desc: string): string {
+  return DESCRIPTION_FR[desc] || desc;
+}
+
+function translateStatus(status: string): string {
+  return STATUS_FR[status] || status;
+}
+
+function formatMetricValue(name: string, value: number): string {
+  const info = METRIC_FR[name];
+  const num = Number(value);
+  if (isNaN(num)) return "0";
+  if (name === "CLS") return num.toFixed(4);
+  if (info?.unit === "ms") return `${Math.round(num)} ms`;
+  return String(Math.round(num * 1000) / 1000);
+}
+
+const ITEMS_PER_PAGE = 5;
+
 export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
   const [dateRange, setDateRange] = useState({
     startDate: "",
     endDate: "",
   });
+  const [metricsPage, setMetricsPage] = useState(1);
+  const [problemsPage, setProblemsPage] = useState(1);
 
   const handleDateFilter = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +127,7 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
   };
 
   const clearFilters = () => {
-    window.location.href = "/web-vitals";
+    window.location.href = "/system/web-vitals";
   };
 
   const {
@@ -66,6 +137,20 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
     performance_score,
     performance_status,
   } = statsData;
+
+  // Pagination métriques
+  const metricsTotalPages = Math.max(1, Math.ceil(metrics_details.length / ITEMS_PER_PAGE));
+  const paginatedMetrics = useMemo(
+    () => metrics_details.slice((metricsPage - 1) * ITEMS_PER_PAGE, metricsPage * ITEMS_PER_PAGE),
+    [metrics_details, metricsPage]
+  );
+
+  // Pagination problèmes
+  const problemsTotalPages = Math.max(1, Math.ceil(recurrent_problems.length / ITEMS_PER_PAGE));
+  const paginatedProblems = useMemo(
+    () => recurrent_problems.slice((problemsPage - 1) * ITEMS_PER_PAGE, problemsPage * ITEMS_PER_PAGE),
+    [recurrent_problems, problemsPage]
+  );
 
   const getPerformanceColor = (score: number) => {
     if (score >= 90) return "from-green-500 to-emerald-500 text-white";
@@ -88,6 +173,12 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
     return "❌";
   };
 
+  const getStatusLabel = (problems: number) => {
+    if (problems > 10) return "Critique";
+    if (problems > 5) return "Attention";
+    return "Optimal";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-4 lg:p-6">
       {/* Header */}
@@ -101,11 +192,11 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                 </div>
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Analytics Performance
+                Performances Web Vitals
               </h1>
             </div>
             <p className="text-slate-600 text-sm lg:text-base ml-11">
-              Surveillance des Web Vitals et détection proactive des problèmes
+              Surveillance des indicateurs de performance et détection proactive des problèmes
             </p>
           </div>
 
@@ -122,7 +213,7 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                 <span className="text-lg opacity-90">/100</span>
               </p>
               <p className="text-xs font-medium opacity-90 mt-1">
-                {performance_status}
+                {translateStatus(performance_status)}
               </p>
             </div>
           </div>
@@ -197,13 +288,13 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-600">
-                  Métriques Total
+                  Total des Métriques
                 </p>
                 <p className="text-2xl font-bold text-slate-800">
-                  {global_stats.total_metrics}
+                  {global_stats.total_metrics.toLocaleString("fr-FR")}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  {global_stats.total_sessions} sessions
+                  {global_stats.total_sessions.toLocaleString("fr-FR")} sessions
                 </p>
               </div>
             </div>
@@ -221,10 +312,10 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                   Problèmes Détectés
                 </p>
                 <p className="text-2xl font-bold text-rose-600">
-                  {global_stats.total_problems}
+                  {global_stats.total_problems.toLocaleString("fr-FR")}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  {global_stats.total_pages} pages analysées
+                  {global_stats.total_pages.toLocaleString("fr-FR")} pages analysées
                 </p>
               </div>
             </div>
@@ -243,12 +334,11 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                 </p>
                 <p className="text-2xl font-bold text-emerald-600">
                   {global_stats.average_performance != null
-                    ? Number(global_stats.average_performance).toFixed(3)
-                    : "0.00"}
+                    ? Number(global_stats.average_performance).toLocaleString("fr-FR", { maximumFractionDigits: 3 })
+                    : "0,00"}
                 </p>
-
                 <p className="text-xs text-slate-500 mt-1">
-                  Pire: {global_stats.worst_performance}
+                  Pire : {global_stats.worst_performance != null ? Number(global_stats.worst_performance).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) : "0"}
                 </p>
               </div>
             </div>
@@ -258,13 +348,18 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Metrics Table */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-200/60">
+            <div className="px-6 py-5 border-b border-slate-200/60 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                 <span className="bg-blue-100 text-blue-800 p-1.5 rounded-lg">
                   📋
                 </span>
                 Détail des Métriques
               </h2>
+              {metrics_details.length > 0 && (
+                <span className="text-xs text-slate-500">
+                  {metrics_details.length} métrique{metrics_details.length > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -285,24 +380,30 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200/60">
-                  {metrics_details.map((metric, index) => (
+                  {paginatedMetrics.map((metric, index) => (
                     <tr
                       key={index}
                       className="hover:bg-slate-50/50 transition-colors duration-150"
                     >
                       <td className="py-4 px-6">
                         <div className="font-medium text-slate-800">
+                          {translateMetricName(metric.metric_name)}
+                        </div>
+                        <div className="text-xs text-slate-400 mt-0.5">
                           {metric.metric_name}
+                          {METRIC_FR[metric.metric_name]?.description && (
+                            <> — {METRIC_FR[metric.metric_name].description}</>
+                          )}
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <span className="text-slate-700 font-medium">
-                          {metric.occurrences}
+                          {metric.occurrences.toLocaleString("fr-FR")}
                         </span>
                       </td>
                       <td className="py-4 px-6">
                         <span className="text-slate-700 font-medium">
-                          {metric.average_value ? metric.average_value : "0"}
+                          {formatMetricValue(metric.metric_name, metric.average_value)}
                         </span>
                       </td>
                       <td className="py-4 px-6">
@@ -312,11 +413,7 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                           )}`}
                         >
                           {getStatusIcon(metric.problems_count)}
-                          {metric.problems_count > 10
-                            ? "Critique"
-                            : metric.problems_count > 5
-                            ? "Attention"
-                            : "Optimal"}
+                          {getStatusLabel(metric.problems_count)}
                         </span>
                       </td>
                     </tr>
@@ -334,22 +431,64 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                 </tbody>
               </table>
             </div>
+            {/* Pagination métriques */}
+            {metricsTotalPages > 1 && (
+              <div className="px-6 py-4 border-t border-slate-200/60 flex items-center justify-between">
+                <p className="text-xs text-slate-500">
+                  Page {metricsPage} sur {metricsTotalPages}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setMetricsPage((p) => Math.max(1, p - 1))}
+                    disabled={metricsPage === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Précédent
+                  </button>
+                  {Array.from({ length: metricsTotalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setMetricsPage(page)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                        page === metricsPage
+                          ? "bg-blue-600 text-white"
+                          : "border border-slate-300 text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setMetricsPage((p) => Math.min(metricsTotalPages, p + 1))}
+                    disabled={metricsPage === metricsTotalPages}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Suivant
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Recurrent Problems */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-200/60">
+            <div className="px-6 py-5 border-b border-slate-200/60 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                 <span className="bg-rose-100 text-rose-800 p-1.5 rounded-lg">
                   🚨
                 </span>
                 Problèmes Récurrents
               </h2>
+              {recurrent_problems.length > 0 && (
+                <span className="text-xs text-slate-500">
+                  {recurrent_problems.length} problème{recurrent_problems.length > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
             <div className="p-6">
               {recurrent_problems.length > 0 ? (
                 <div className="space-y-4">
-                  {recurrent_problems.map((problem, index) => (
+                  {paginatedProblems.map((problem, index) => (
                     <div
                       key={index}
                       className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200/60 rounded-xl p-4 hover:shadow-sm transition-all duration-200"
@@ -359,22 +498,21 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                           <div className="flex items-center gap-2 mb-2">
                             <span className="w-2 h-2 bg-rose-500 rounded-full"></span>
                             <h4 className="font-semibold text-rose-800">
-                              {problem.metric_name}
+                              {translateMetricName(problem.metric_name)}
                             </h4>
+                            <span className="text-xs text-rose-400">({problem.metric_name})</span>
                           </div>
                           <p className="text-rose-700 text-sm leading-relaxed">
-                            {problem.description}
+                            {translateDescription(problem.description)}
                           </p>
                         </div>
                         <div className="text-right ml-4">
                           <span className="inline-block bg-rose-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-                            {problem.problem_count} occ.
+                            {problem.problem_count.toLocaleString("fr-FR")} occ.
                           </span>
                           <p className="text-rose-600 text-xs mt-2 font-medium">
-                            Moyenne:{" "}
-                            {problem.average_value
-                              ? problem.average_value
-                              : "0"}
+                            Moyenne :{" "}
+                            {formatMetricValue(problem.metric_name, problem.average_value)}
                           </p>
                         </div>
                       </div>
@@ -390,11 +528,48 @@ export default function AnalyticsClient({ statsData }: AnalyticsClientProps) {
                     Aucun problème récurrent détecté
                   </p>
                   <p className="text-slate-500 text-sm mt-1">
-                    Tous les systèmes fonctionnent optimalement
+                    Tous les systèmes fonctionnent de manière optimale
                   </p>
                 </div>
               )}
             </div>
+            {/* Pagination problèmes */}
+            {problemsTotalPages > 1 && (
+              <div className="px-6 py-4 border-t border-slate-200/60 flex items-center justify-between">
+                <p className="text-xs text-slate-500">
+                  Page {problemsPage} sur {problemsTotalPages}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setProblemsPage((p) => Math.max(1, p - 1))}
+                    disabled={problemsPage === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Précédent
+                  </button>
+                  {Array.from({ length: problemsTotalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setProblemsPage(page)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                        page === problemsPage
+                          ? "bg-rose-600 text-white"
+                          : "border border-slate-300 text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setProblemsPage((p) => Math.min(problemsTotalPages, p + 1))}
+                    disabled={problemsPage === problemsTotalPages}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Suivant
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

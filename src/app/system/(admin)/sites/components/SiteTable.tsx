@@ -1,4 +1,4 @@
-import { MapPin, Loader2, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { MapPin, Loader2, Edit, Trash2, Eye, EyeOff, Receipt } from 'lucide-react';
 import { Site as SiteType } from '@/services/sites/siteService';
 
 interface SiteTableProps {
@@ -7,6 +7,7 @@ interface SiteTableProps {
   onEdit: (site: SiteType) => void;
   onDelete: (site: SiteType) => void;
   onToggleStatus: (site: SiteType) => void;
+  onManageTaxes: (site: SiteType) => void;
 }
 
 export default function SiteTable({ 
@@ -14,7 +15,8 @@ export default function SiteTable({
   loading, 
   onEdit, 
   onDelete, 
-  onToggleStatus 
+  onToggleStatus,
+  onManageTaxes
 }: SiteTableProps) {
   if (loading) {
     return (
@@ -32,12 +34,13 @@ export default function SiteTable({
       <div className="overflow-x-auto h-full">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
-            <tr>
+            <tr>{/* SUPPRIMER TOUT ESPACE AVANT LES <th> */}
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Site</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Code</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Province</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Taxes</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -68,6 +71,16 @@ export default function SiteTable({
                     }`}>
                       {site.actif ? 'Actif' : 'Inactif'}
                     </span>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => onManageTaxes(site)}
+                      className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100 hover:bg-purple-100 transition-colors"
+                      title="Gérer les taxes"
+                    >
+                      <Receipt className="w-3 h-3" />
+                      <span>Taxes</span>
+                    </button>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-sm">
                     {site.date_creation}

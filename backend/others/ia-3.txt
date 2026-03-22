@@ -1,0 +1,1649 @@
+Agis comme un expert en développement web front-end et UI/UX. Crée un portfolio OnPage complet pour un développeur Web & Mobile (Next.js, React Native, Go, PHP) avec HTML, CSS et JS pur.
+
+Le portfolio doit être responsive, rapide, optimisé SEO et prêt pour être mis en ligne.
+
+Sections à inclure :
+
+Header avec navigation sticky et smooth scroll
+
+Hero section avec photo, titre et CTA (contact ou projet)
+
+À propos / Bio
+
+Compétences techniques (Next.js, React Native, Go, PHP, etc.)
+
+Portfolio / Projets avec images, descriptions, technologies utilisées et lien live/github
+
+Blog / Articles avec liste d’articles et liens vers chaque article
+
+Contact avec formulaire fonctionnel, email et liens réseaux sociaux
+
+Footer avec mentions légales et copyright
+
+Fonctionnalités JS à intégrer :
+
+Menu responsive (hamburger sur mobile)
+
+Smooth scrolling sur les liens internes
+
+Animation simple au scroll pour les sections
+
+Filtrage des projets par technologie
+
+Formulaire de contact avec validation JS
+
+Génère tous les fichiers nécessaires (index.html, style.css, script.js) et assure-toi que le code est propre, commenté et facilement modifiable.
+Fournis également des conseils pour l’optimisation SEO et la performance.
+
+
+
+Inspire toi de ce OnePage : <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mpako - Plateforme de Gestion Fiscale Moderne | Simplifiez vos impôts</title>
+    <meta name="description" content="Mpako révolutionne la gestion fiscale avec une plateforme complète qui simplifie les déclarations, paiements et suivi fiscal pour administrations, agents et contribuables.">
+    <meta name="keywords" content="gestion fiscale, impôts, déclarations, paiements, administration fiscale, Mpako, RDC">
+    <meta name="author" content="Mpako">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mpako.net/">
+    <meta property="og:title" content="Mpako - Plateforme de Gestion Fiscale Moderne">
+    <meta property="og:description" content="Simplifiez vos impôts avec Mpako, la plateforme complète de gestion fiscale moderne.">
+    <meta property="og:image" content="https://mpako.net/assets/images/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mpako.net/">
+    <meta property="twitter:title" content="Mpako - Plateforme de Gestion Fiscale Moderne">
+    <meta property="twitter:description" content="Simplifiez vos impôts avec Mpako, la plateforme complète de gestion fiscale moderne.">
+    <meta property="twitter:image" content="https://mpako.net/assets/images/twitter-image.jpg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-dark: #153258;
+            --primary-light: #23A974;
+            --primary-gradient: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            --secondary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --white: #ffffff;
+            --light-bg: #f8f9fa;
+            --dark-text: #333333;
+            --light-text: #666666;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --transition-slow: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --border-radius: 16px;
+            --border-radius-card: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Saira', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            background-color: var(--white);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(35, 169, 116, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(21, 50, 88, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header amélioré */
+        header {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        header.scrolled {
+            padding: 5px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            text-decoration: none;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .logo:hover::after {
+            width: 100%;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(35, 169, 116, 0.2);
+            transition: var(--transition);
+        }
+
+        .logo:hover .logo-icon {
+            transform: rotate(15deg) scale(1.1);
+            box-shadow: 0 8px 25px rgba(35, 169, 116, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-text);
+            font-weight: 600;
+            font-size: 1.05rem;
+            position: relative;
+            padding: 5px 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-light);
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        .cta-button {
+            background: var(--primary-gradient);
+            color: var(--white);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 20px rgba(35, 169, 116, 0.25);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--secondary-gradient);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .cta-button:hover::before {
+            left: 0;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(35, 169, 116, 0.4);
+        }
+
+        .mobile-menu {
+            display: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--primary-dark);
+            transition: var(--transition);
+            z-index: 1001;
+        }
+
+        .mobile-menu:hover {
+            color: var(--primary-light);
+            transform: rotate(90deg);
+        }
+
+        /* Hero Section améliorée */
+        .hero {
+            padding: 180px 0 120px;
+            background: var(--primary-gradient);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .hero .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content {
+            flex: 1;
+            animation: slideInLeft 1s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: 3.8rem;
+            margin-bottom: 25px;
+            line-height: 1.1;
+            font-weight: 900;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero p {
+            font-size: 1.35rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            max-width: 600px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .app-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .app-button {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: var(--white);
+            padding: 15px 25px;
+            border-radius: 14px;
+            text-decoration: none;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 180px;
+        }
+
+        .app-button:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .app-button i {
+            font-size: 1.8rem;
+        }
+
+        .app-button-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .app-button-text span:first-child {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .app-button-text span:last-child {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-image svg {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
+        }
+
+        /* Sections générales */
+        section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-title h2 {
+            font-size: 3.2rem;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            font-weight: 900;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 5px;
+            background: var(--primary-gradient);
+            border-radius: 5px;
+        }
+
+        .section-title p {
+            font-size: 1.25rem;
+            color: var(--light-text);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* Cards améliorées */
+        .features-grid, .platforms-grid, .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            perspective: 1000px;
+        }
+
+        .feature-card, .platform-card, .payment-method-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: var(--border-radius-card);
+            padding: 40px 35px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform-style: preserve-3d;
+            transform: translateZ(0);
+        }
+
+        .feature-card::before, .platform-card::before, .payment-method-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .feature-card:hover::before, .platform-card:hover::before, .payment-method-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover, .platform-card:hover, .payment-method-card:hover {
+            transform: translateY(-20px) rotateX(5deg) rotateY(5deg) scale(1.03);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .feature-card:nth-child(even):hover {
+            transform: translateY(-20px) rotateX(5deg) rotateY(-5deg) scale(1.03);
+        }
+
+        .feature-icon, .platform-icon, .payment-method-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            position: relative;
+            display: inline-block;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-icon::after, .platform-icon::after, .payment-method-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gradient);
+            opacity: 0.1;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .feature-card h3, .platform-card h3, .payment-method-card h3 {
+            font-size: 1.7rem;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        .feature-card p, .platform-card p, .payment-method-card p {
+            color: var(--light-text);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* Dashboard Preview amélioré */
+        .dashboard-preview {
+            background-color: var(--light-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(35, 169, 116, 0.05) 0%, transparent 30%),
+                radial-gradient(circle at 90% 90%, rgba(21, 50, 88, 0.05) 0%, transparent 30%);
+        }
+
+        .dashboard-content {
+            display: flex;
+            align-items: center;
+            gap: 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-text {
+            flex: 1;
+        }
+
+        .dashboard-text h2 {
+            font-size: 3.2rem;
+            margin-bottom: 25px;
+            color: var(--primary-dark);
+            font-weight: 900;
+        }
+
+        .dashboard-text p {
+            font-size: 1.25rem;
+            margin-bottom: 25px;
+            color: var(--light-text);
+            line-height: 1.8;
+        }
+
+        .dashboard-text ul {
+            margin-top: 30px;
+            list-style-type: none;
+        }
+
+        .dashboard-text li {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            position: relative;
+            padding-left: 35px;
+        }
+
+        .dashboard-text li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 25px;
+            height: 25px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .dashboard-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .dashboard-image-container {
+            background: var(--white);
+            border-radius: var(--border-radius-card);
+            padding: 25px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 0 100px rgba(35, 169, 116, 0.1);
+            transform: rotateY(-15deg) rotateX(5deg);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-image-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 70%
+            );
+            transform: rotate(45deg);
+            animation: shine 3s infinite linear;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .dashboard-image-container:hover {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+        }
+
+        .dashboard-image img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* CTA Section améliorée */
+        .cta {
+            text-align: center;
+            background: var(--primary-gradient);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+            padding: 150px 0;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 40%);
+        }
+
+        .cta .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta h2 {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            font-weight: 900;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta p {
+            font-size: 1.35rem;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.95;
+            line-height: 1.8;
+        }
+
+        /* Footer amélioré */
+        footer {
+            background: linear-gradient(160deg, #0d1f3d 0%, #153258 100%);
+            color: var(--white);
+            padding: 100px 0 30px;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary-gradient);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 60px;
+            margin-bottom: 60px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: var(--primary-light);
+            font-weight: 800;
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 3px;
+        }
+
+        .footer-column p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-block;
+            padding: 5px 0;
+            position: relative;
+        }
+
+        .footer-links a::before {
+            content: '›';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: var(--transition);
+            color: var(--primary-light);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-light);
+            transform: translateX(10px);
+        }
+
+        .footer-links a:hover::before {
+            opacity: 1;
+            left: -15px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+        }
+
+        /* Responsive amélioré */
+        @media (max-width: 1200px) {
+            .hero h1 {
+                font-size: 3.2rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2.8rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero .container, .dashboard-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 300px;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 30px;
+                transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .dashboard-image-container {
+                transform: rotateY(0) rotateX(0);
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 150px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .section-title h2 {
+                font-size: 2.2rem;
+            }
+
+            section {
+                padding: 80px 0;
+            }
+
+            .app-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .app-button {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+
+            .cta h2 {
+                font-size: 2.5rem;
+            }
+
+            .cta p {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+
+            .feature-card, .platform-card, .payment-method-card {
+                padding: 30px 25px;
+            }
+
+            .features-grid, .platforms-grid, .payment-methods-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations améliorées */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Particules interactives */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float-particle 20s infinite linear;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.1;
+            }
+            90% {
+                opacity: 0.1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Bouton retour en haut */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(20px);
+            box-shadow: 0 10px 30px rgba(35, 169, 116, 0.3);
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 40px rgba(35, 169, 116, 0.4);
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loader-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loader-logo {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: white;
+            animation: load 1.5s ease-in-out;
+        }
+
+        @keyframes load {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* Effet de glitch sur le logo au hover */
+        .logo:hover .logo-text {
+            animation: glitch 0.5s linear;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+    </style>
+</head>
+<body>
+<!-- Loader -->
+<div class="loader" id="loader">
+    <div class="loader-content">
+        <div class="loader-logo">Mpako</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Particules -->
+<div class="particles" id="particles"></div>
+
+<!-- Bouton retour en haut -->
+<div class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+</div>
+
+<!-- Header -->
+<header id="header">
+    <div class="container">
+        <nav class="navbar">
+            <a href="#" class="logo">
+                <div class="logo-icon">M</div>
+                <span class="logo-text">Mpako</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Fonctionnalités</a></li>
+                <li><a href="#platforms">Plateformes</a></li>
+                <li><a href="#payment-methods">Modes de Paiement</a></li>
+                <li><a href="#dashboard">Dashboard</a></li>
+                <li><a href="#about">À propos</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button type="button" class="cta-button" onclick="window.location.href='https://payfisc.vercel.app'">
+                Connexion
+            </button>
+            <div class="mobile-menu" id="mobileMenu">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Gestion Fiscale Moderne et Intuitive</h1>
+            <p>Mpako révolutionne la gestion des impôts avec une plateforme complète qui simplifie les déclarations, les paiements et le suivi fiscal pour les administrations, agents et contribuables.</p>
+            <div class="hero-buttons">
+                <div class="app-buttons">
+                    <a href="#" class="app-button">
+                        <i class="fab fa-apple"></i>
+                        <div class="app-button-text">
+                            <span>Télécharger sur</span>
+                            <span>App Store</span>
+                        </div>
+                    </a>
+                    <a href="#" class="app-button">
+                        <i class="fab fa-google-play"></i>
+                        <div class="app-button-text">
+                            <span>Disponible sur</span>
+                            <span>Google Play</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <svg viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="white" stop-opacity="0.8" />
+                        <stop offset="100%" stop-color="white" stop-opacity="0.4" />
+                    </linearGradient>
+                </defs>
+                <path d="M250 50L450 150V350L250 450L50 350V150L250 50Z" stroke="url(#heroGradient)" stroke-width="4" fill="none"/>
+                <circle cx="250" cy="250" r="80" stroke="url(#heroGradient)" stroke-width="3" fill="none"/>
+                <path d="M200 200L250 250L300 200" stroke="url(#heroGradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M150 100H350" stroke="url(#heroGradient)" stroke-width="3" stroke-linecap="round"/>
+                <path d="M150 150H350" stroke="url(#heroGradient)" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="150" cy="100" r="8" fill="white" fill-opacity="0.6"/>
+                <circle cx="350" cy="100" r="8" fill="white" fill-opacity="0.6"/>
+                <circle cx="150" cy="150" r="8" fill="white" fill-opacity="0.6"/>
+                <circle cx="350" cy="150" r="8" fill="white" fill-opacity="0.6"/>
+            </svg>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="container">
+        <div class="section-title">
+            <h2>Fonctionnalités Principales</h2>
+            <p>Découvrez les outils puissants qui simplifient la gestion fiscale</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3>Administration Complète</h3>
+                <p>Création intelligente d'impôts, gestion des agents avec système de privilèges, configuration des taux, et suivi des provinces pour une traçabilité optimale.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>IA Fiscale Avancée</h3>
+                <p>Notre IA analyse automatiquement les taxes, remplit les formulaires, calcule les pénalités et génère les montants à payer avec une précision remarquable.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Application Mobile</h3>
+                <p>Déclarations et paiements simplifiés sur iOS et Android. Scan de QR code, historique des paiements et notifications en temps réel.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <h3>Fonctionnement Hors Ligne</h3>
+                <p>Les agents de site peuvent enregistrer des déclarations même sans connexion internet, avec synchronisation automatique dès que la connexion est rétablie.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Sécurité Renforcée</h3>
+                <p>Authentification avancée, monitoring en temps réel, et API sécurisées avec webhooks pour les échanges de données avec les institutions partenaires.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <h3>Paiements Multi-Canaux</h3>
+                <p>Intégration avec les API bancaires pour Mobile Money, cartes de crédit et dépôts directs. Paiements rapides et sécurisés.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Alertes et Notifications</h3>
+                <p>Recevez des alertes à chaque étape de votre dossier : paiement, progression, livraison, etc. Restez informé en temps réel.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Dashboard Analytique</h3>
+                <p>Tableaux de bord complets avec statistiques détaillées, recherche avancée et suivi des performances en temps réel.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Platforms Section -->
+<section class="platforms" id="platforms">
+    <div class="container">
+        <div class="section-title">
+            <h2>Nos Plateformes</h2>
+            <p>Mpako est disponible sur tous vos appareils préférés</p>
+        </div>
+        <div class="platforms-grid">
+            <div class="platform-card">
+                <div class="platform-icon">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <h3>Administration Web</h3>
+                <p>Interface complète pour la gestion centralisée de tous les aspects fiscaux avec des outils avancés d'analyse et de reporting.</p>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3>Application Site</h3>
+                <p>Solution dédiée aux agents de site pour effectuer les paiements et générer des déclarations rapidement et efficacement.</p>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Application Mobile</h3>
+                <p>Disponible sur iOS et Android pour les contribuables qui souhaitent gérer leurs obligations fiscales en déplacement.</p>
+                <div class="app-buttons" style="margin-top: 25px; justify-content: center;">
+                    <a href="#" class="app-button" style="background-color: rgba(21, 50, 88, 0.08); color: var(--primary-dark);">
+                        <i class="fab fa-apple"></i>
+                        <div class="app-button-text">
+                            <span>Télécharger</span>
+                            <span>iOS</span>
+                        </div>
+                    </a>
+                    <a href="#" class="app-button" style="background-color: rgba(21, 50, 88, 0.08); color: var(--primary-dark);">
+                        <i class="fab fa-android"></i>
+                        <div class="app-button-text">
+                            <span>Télécharger</span>
+                            <span>Android</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="platform-card">
+                <div class="platform-icon">
+                    <i class="fas fa-plug"></i>
+                </div>
+                <h3>API & Intégrations</h3>
+                <p>API complètes avec webhooks pour l'intégration avec les systèmes des grandes institutions et partenaires.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Payment Methods Section -->
+<section class="payment-methods" id="payment-methods">
+    <div class="container">
+        <div class="section-title">
+            <h2>Modes de Paiement Flexibles</h2>
+            <p>Payez vos impôts de la manière qui vous convient le mieux</p>
+        </div>
+        <div class="payment-methods-grid">
+            <div class="payment-method-card">
+                <div class="payment-method-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3>Agents Opérateurs Mobiles</h3>
+                <p>Rendez-vous chez un agent mobile pour payer vos impôts en espèces. L'agent effectue le paiement directement dans votre compte Mpako.</p>
+            </div>
+            <div class="payment-method-card">
+                <div class="payment-method-icon">
+                    <i class="fas fa-mobile"></i>
+                </div>
+                <h3>Paiement USSD</h3>
+                <p>Effectuez vos paiements directement depuis votre téléphone via le code USSD, sans avoir besoin d'une connexion internet.</p>
+            </div>
+            <div class="payment-method-card">
+                <div class="payment-method-icon">
+                    <i class="fas fa-sms"></i>
+                </div>
+                <h3>Messages Publicitaires</h3>
+                <p>Recevez des messages explicatifs sur comment payer vos impôts via votre réseau mobile.</p>
+            </div>
+            <div class="payment-method-card">
+                <div class="payment-method-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h3>Guichets Bancaires</h3>
+                <p>Payez vos impôts directement aux guichets bancaires en suivant une procédure simplifiée et sécurisée.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Preview Section -->
+<section class="dashboard-preview" id="dashboard">
+    <div class="container">
+        <div class="dashboard-content">
+            <div class="dashboard-text">
+                <h2>Dashboard Intelligent</h2>
+                <p>Visualisez en temps réel toutes vos données fiscales avec notre dashboard intuitif et personnalisable. Suivez les performances, analysez les tendances et prenez des décisions éclairées.</p>
+                <ul>
+                    <li>Statistiques détaillées par province et type d'impôt</li>
+                    <li>Recherche avancée dans les déclarations</li>
+                    <li>Suivi des paiements en temps réel</li>
+                    <li>Alertes et notifications intelligentes</li>
+                    <li>Suivi de la progression des dossiers</li>
+                </ul>
+                <button class="cta-button" onclick="window.location.href='https://payfisc.vercel.app/'" style="margin-top: 40px;">Explorer le Dashboard</button>
+            </div>
+            <div class="dashboard-image">
+                <div class="dashboard-image-container">
+                    <img src="assets/images/dashboard.png" width="650" height="250" alt="Dashboard Mpako">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta" id="about">
+    <div class="container">
+        <h2>Prêt à révolutionner votre gestion fiscale?</h2>
+        <p>Rejoignez les milliers d'administrations et de contribuables qui font confiance à Mpako pour simplifier leurs processus fiscaux.</p>
+        <button class="cta-button" onclick="window.location.href='https://payfisc.vercel.app/'">Commencer maintenant</button>
+        <div class="app-buttons" style="margin-top: 30px; justify-content: center;">
+            <a href="#" class="app-button">
+                <i class="fab fa-apple"></i>
+                <div class="app-button-text">
+                    <span>Télécharger sur</span>
+                    <span>App Store</span>
+                </div>
+            </a>
+            <a href="#" class="app-button">
+                <i class="fab fa-google-play"></i>
+                <div class="app-button-text">
+                    <span>Disponible sur</span>
+                    <span>Google Play</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Mpako</h3>
+                <p>Plateforme complète de gestion fiscale moderne et intuitive.</p>
+                <div class="app-buttons" style="margin-top: 20px;">
+                    <a href="#" class="app-button" style="padding: 10px 20px; background: rgba(255, 255, 255, 0.1);">
+                        <i class="fab fa-apple"></i>
+                        <div class="app-button-text">
+                            <span>iOS</span>
+                        </div>
+                    </a>
+                    <a href="#" class="app-button" style="padding: 10px 20px; background: rgba(255, 255, 255, 0.1);">
+                        <i class="fab fa-android"></i>
+                        <div class="app-button-text">
+                            <span>Android</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Liens Rapides</h3>
+                <ul class="footer-links">
+                    <li><a href="#features">Fonctionnalités</a></li>
+                    <li><a href="#platforms">Plateformes</a></li>
+                    <li><a href="#payment-methods">Modes de Paiement</a></li>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#about">À propos</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Solutions</h3>
+                <ul class="footer-links">
+                    <li><a href="Backend/Reporting/">Pour les Administrations</a></li>
+                    <li><a href="https://payfisc.vercel.app">Pour les Agents de Site</a></li>
+                    <li><a href="#">Pour les Contribuables</a></li>
+                    <li><a href="docs.php">API & Intégrations</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Contact</h3>
+                <ul class="footer-links">
+                    <li><a href="mailto:info@mpako.net">info@mpako.net</a></li>
+                    <li><a href="tel:+243811552166">+243 811 552 166</a></li>
+                    <li><a href="#">Kinshasa, RDC</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Mpako. Tous droits réservés.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cacher le loader
+        setTimeout(() => {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            loader.style.visibility = 'hidden';
+            setTimeout(() => loader.remove(), 500);
+        }, 1500);
+
+        // Créer des particules
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 50;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Taille aléatoire
+            const size = Math.random() * 15 + 5;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            // Position initiale aléatoire
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            
+            // Délai d'animation aléatoire
+            particle.style.animationDelay = `${Math.random() * 20}s`;
+            
+            // Opacité aléatoire
+            particle.style.opacity = `${Math.random() * 0.1 + 0.05}`;
+            
+            particlesContainer.appendChild(particle);
+        }
+
+        // Menu mobile
+        const mobileMenu = document.getElementById('mobileMenu');
+        const navLinks = document.querySelector('.nav-links');
+        const body = document.body;
+
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenu.innerHTML = navLinks.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+        });
+
+        // Fermer le menu au clic sur un lien
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenu.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+        });
+
+        // Header scroll effect
+        const header = document.getElementById('header');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            // Bouton retour en haut
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Bouton retour en haut
+        document.getElementById('backToTop').addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Animation au défilement
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    
+                    // Animation des cartes en cascade
+                    if (entry.target.classList.contains('features-grid') || 
+                        entry.target.classList.contains('platforms-grid') || 
+                        entry.target.classList.contains('payment-methods-grid')) {
+                        const cards = entry.target.querySelectorAll('.feature-card, .platform-card, .payment-method-card');
+                        cards.forEach((card, index) => {
+                            setTimeout(() => {
+                                card.style.animationDelay = `${index * 0.1}s`;
+                                card.classList.add('fade-in');
+                            }, 100);
+                        });
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observer les sections et grids
+        document.querySelectorAll('section, .features-grid, .platforms-grid, .payment-methods-grid').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Effet 3D sur les cartes au survol
+        document.querySelectorAll('.feature-card, .platform-card, .payment-method-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateY = ((x - centerX) / centerX) * 10;
+                const rotateX = ((centerY - y) / centerY) * 10;
+                
+                card.style.transform = `translateY(-20px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(-20px) rotateX(5deg) rotateY(5deg) scale(1.03)';
+                setTimeout(() => {
+                    if (!card.matches(':hover')) {
+                        card.style.transform = 'translateY(0) rotateX(0) rotateY(0) scale(1)';
+                    }
+                }, 100);
+            });
+        });
+
+        // Effet de parallaxe sur le dashboard
+        const dashboardContainer = document.querySelector('.dashboard-image-container');
+        
+        window.addEventListener('mousemove', (e) => {
+            if (dashboardContainer) {
+                const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                const y = (e.clientY / window.innerHeight - 0.5) * 20;
+                
+                dashboardContainer.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+            }
+        });
+
+        // Animation au clic des boutons
+        document.querySelectorAll('.cta-button, .app-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Créer un effet de ripple
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    width: ${size}px;
+                    height: ${size}px;
+                    top: ${y}px;
+                    left: ${x}px;
+                `;
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Ajouter le CSS pour l'effet ripple
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+</body>
+</html>

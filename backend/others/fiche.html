@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Fiche d'identification moto</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+		*{
+			font-family: "Nunito Sans", sans-serif;
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: 10px;
+			background: #f5f5f5;
+		}
+
+		.page-a4 {
+			width: 210mm;
+			min-height: 297mm;
+			height: 297mm;
+			margin: auto;
+			padding: 10mm 15mm 15mm 15mm;
+			background: white;
+			border: 1px solid chocolate;
+			position: relative;
+			overflow: hidden;
+			box-sizing: border-box;
+		}
+
+		/* Fond principal qui couvre toute la page */
+		.full-background {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 1;
+			pointer-events: none;
+		}
+
+		.full-background img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 0.50;
+		}
+
+		/* Image d'armoirie au centre */
+		.armoirie-center {
+			position: absolute;
+			top: 50%;
+			left: 75%;
+			transform: translate(-50%, -50%);
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		.armoirie-center img {
+			width: 180px;
+			height: auto;
+			opacity: 0.15;
+		}
+
+		/* Image cachée en bas à droite de l'armoirie */
+		.hidden-near-armoirie {
+			position: absolute;
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		/* Image de signature sécurisée */
+		.secure-signature {
+			position: absolute;
+			z-index: 3;
+			pointer-events: none;
+		}
+
+		/* Contenu principal au-dessus des images de fond */
+		header, section, footer {
+			position: relative;
+			z-index: 4;
+		}
+
+		header{
+			width: 100%;
+			height: auto;
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 5mm;
+		}
+
+		header .header__title{
+			width: 70%;
+			background: #9f5514;
+			color: rgba(255, 255, 255, 0.9);
+			padding: 8px 15px;
+			border-radius: 4px;
+		}
+
+		header .header__title h1, header .header__title p{
+			padding: 0;
+			margin: 0;
+			line-height: 1.2;
+		}
+
+		header .header__title h1{
+			font-size: 1.8em;
+			margin-bottom: 3px;
+		}
+
+		header .header__title p{
+			margin-left: 5px;
+			font-size: 0.85em;
+		}
+
+		header .header__validity{
+			width: 28%;
+			position: relative;
+			padding-top: 0;
+		}
+
+		.validity-box {
+			display: flex;
+			justify-content: flex-end;
+		}
+
+		.validity-content {
+			width: 100%;
+			border: 1px solid chocolate;
+			padding: 6px 8px;
+			background: #fff;
+			border-radius: 4px;
+			text-align: center;
+		}
+
+		.validity-content strong {
+			display: block;
+			font-size: 0.9em;
+		}
+
+		.validity-days {
+			color: chocolate;
+			font-size: 1.1em !important;
+			margin-top: 2px;
+		}
+
+		.qr-code {
+			position: absolute;
+			left: 0;
+			top: 70px;
+			text-align: center;
+		}
+
+		.qr-code img {
+			width: 90px;
+			height: 90px;
+			display: block;
+			margin: 0 auto 5px;
+		}
+
+		.qr-code figcaption {
+			text-align: center;
+			font-size: 0.7em;
+			line-height: 1.2;
+		}
+
+		section {
+			margin-top: 5mm;
+		}
+
+		legend {
+			display: block;
+			width: 100%;
+			margin: 15px 0 8px 0;
+			padding: 0;
+		}
+
+		legend h3 {
+			padding: 0;
+			margin: 0;
+			font-size: 1.1em;
+			color: #9f5514;
+			border-bottom: 1px solid #e0e0e0;
+			padding-bottom: 4px;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 10px;
+		}
+
+		table tbody tr td{
+			padding: 6px 5px;
+			vertical-align: top;
+		}
+
+		table tbody tr td:first-child{
+			width: 160px;
+			min-width: 160px;
+			font-weight: bold;
+			color: #333;
+		}
+
+		table tbody tr td:nth-child(2){
+			color: #555;
+			border-bottom: 1px dotted #ddd;
+		}
+
+		.checkbox-group {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 15px;
+			margin-top: 5px;
+		}
+
+		.checkbox-group label {
+			display: flex;
+			align-items: center;
+			font-size: 0.9em;
+			color: #555;
+		}
+
+		.checkbox-group input[type="checkbox"] {
+			margin-right: 6px;
+			transform: scale(1.1);
+		}
+
+		.signature-section {
+			margin-top: 15px;
+			padding-top: 10px;
+			border-top: 1px solid #e0e0e0;
+			position: relative;
+		}
+
+		.signature-line {
+			position: relative;
+		}
+
+		.validation-section {
+			margin-top: 20px;
+			padding: 10px;
+			background: #f9f9f9;
+			border-radius: 4px;
+			border: 1px solid #e0e0e0;
+		}
+
+		.validation-section td {
+			padding: 4px 0;
+			font-size: 0.85em;
+			color: #666;
+			border: none !important;
+		}
+
+		.contact-info {
+			text-align: right;
+			margin-top: 10px;
+			padding-top: 10px;
+			border-top: 1px dashed #ddd;
+		}
+
+		.contact-info div {
+			margin: 3px 0;
+		}
+
+		.contact-info span {
+			font-size: 0.85em;
+		}
+
+		footer {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: #9f5514;
+			height: 25px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			margin: 0 -15mm;
+			width: calc(100% + 30mm);
+			z-index: 4;
+		}
+
+		footer p {
+			color: rgba(255, 255, 255, 0.9);
+			font-size: 0.75em;
+			margin: 0;
+			font-weight: bold;
+			letter-spacing: 0.5px;
+		}
+
+		/* Style pour les lignes vides (placeholder) */
+		.placeholder {
+			color: #999;
+			font-style: italic;
+		}
+
+		/* Ajustements pour l'impression */
+		@media print {
+			body {
+				background: none;
+				padding: 0;
+			}
+			
+			.page-a4 {
+				border: none;
+				padding: 10mm 15mm 15mm 15mm;
+				margin: 0;
+				height: 297mm;
+				min-height: 297mm;
+			}
+			
+			footer {
+				margin: 0 -15mm;
+				width: calc(100% + 30mm);
+			}
+
+			.full-background, .armoirie-center, .hidden-near-armoirie, .secure-signature {
+				print-color-adjust: exact;
+				-webkit-print-color-adjust: exact;
+			}
+
+			.full-background img {
+				opacity: 0.50;
+			}
+
+			.armoirie-center img {
+				opacity: 0.2;
+			}
+		}
+	</style>
+</head>
+<body>
+
+	<div class="page-a4">
+		
+		<!-- Fond principal qui couvre toute la page -->
+		<div class="full-background">
+			<img src="fond.png" alt="Fond de page">
+		</div>
+
+		<!-- Armoirie au centre -->
+		<div class="armoirie-center">
+			<img src="armoirie.png" alt="Armoirie">
+		</div>
+
+		<!-- Image cachée en bas à droite de l'armoirie -->
+		<div class="hidden-near-armoirie" style="top: 60%; left: 66%;">
+			<img src="cache.png" alt="Image cachée" width="150" height="150" style="opacity: .75;">
+		</div>
+
+		<header>
+			<div class="header__title">
+				<h1>
+					FICHE D'IDENTIFICATION <br> 
+					& IMMATRICULATION MOTO 
+				</h1>
+				<p>
+					Tenant lieu de Carte Rose <br> 
+					& Plaque d'immatriculation provisoire 
+				</p>
+			</div>
+
+			<div class="header__validity">
+				<div class="validity-box">
+					<div class="validity-content">
+						<strong>Validité :</strong>
+						<strong class="validity-days">45 jours non <span style="font-size: 0.8em;">renouvelable</span></strong>
+					</div>
+				</div>
+
+				<figure class="qr-code">
+					<img src="qrcode.png" alt="QR Code">
+					<figcaption>
+						<b>Scannez pour</b><br>vérifier l'authenticité
+					</figcaption>
+				</figure>
+			</div>
+		</header>
+
+		<section>
+			<table>
+				<legend>
+					<h3>1. Information du Propriétaire</h3>
+				</legend>
+				<tbody>
+					<tr>
+						<td>Nom :</td>
+						<td>INSISILI N'GUTSH</td>
+					</tr>
+					<tr>
+						<td>Prénom :</td>
+						<td>Willyam</td>
+					</tr>
+					<tr>
+						<td>Sexe :</td>
+						<td>Masculin</td>
+					</tr>
+					<tr>
+						<td>Date de naissance :</td>
+						<td>15/03/1985</td>
+					</tr>
+					<tr>
+						<td>Lieu de naissance :</td>
+						<td>Kinshasa</td>
+					</tr>
+					<tr>
+						<td>Adresse complète :</td>
+						<td>Avenue de la Justice N°123, Kinshasa/Gombe</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<table>
+				<legend>
+					<h3>2. Type de document d'identité</h3>
+				</legend>
+				<tbody>
+					<tr>
+						<td colspan="2">
+							<div class="checkbox-group">
+								<label>
+									<input type="checkbox" name="id_type"> Carte d'identité
+								</label>
+								<label>
+									<input type="checkbox" name="id_type"> Passeport
+								</label>
+								<label>
+									<input type="checkbox" name="id_type"> Permis de conduire
+								</label>
+								<label>
+									<input type="checkbox" name="id_type"> Carte d'électeur
+								</label>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<table>
+				<legend>
+					<h3>3. Information du Véhicule</h3>
+				</legend>
+				<tbody>
+					<tr>
+						<td>NIUP Moto :</td>
+						<td>CD-KN-2024-123456</td>
+					</tr>
+					<tr>
+						<td>Marque/Modèle :</td>
+						<td>Yamaha XTZ 125</td>
+					</tr>
+					<tr>
+						<td>Année de fabrication :</td>
+						<td>2023</td>
+					</tr>
+					<tr>
+						<td>Couleur :</td>
+						<td>Noir</td>
+					</tr>
+					<tr>
+						<td>Numéro de chassis (VIN) :</td>
+						<td>JYACE19Y000123456</td>
+					</tr>
+					<tr>
+						<td>Cylindrée / Puissance :</td>
+						<td>124cc / 11.1 CV</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div class="signature-section">
+				<!-- Image de signature sécurisée -->
+				<div class="secure-signature" style="right: 20px; bottom: 40px;">
+					<img src="signature.png" alt="Signature sécurisée" width="120" height="40">
+				</div>
+
+				<table>
+					<tbody>
+						<tr class="signature-line">
+							<td>Signature du propriétaire :</td>
+							<td><span class="placeholder">_______________________________________</span></td>
+						</tr>
+						<tr>
+							<td>Date :</td>
+							<td><span class="placeholder">_________________</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="validation-section">
+				<table>
+					<legend>
+						<h3>4. Validation</h3>
+					</legend>
+					<tbody>
+						<tr>
+							<td colspan="2">• Document sécurisé - propriété exclusive de Holding TSC-NPS SA</td>
+						</tr>
+						<tr>
+							<td colspan="2">• Toute falsification, reproduction ou altération est punie par la loi</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<div class="contact-info">
+									<div>
+										<span>📞</span>
+										<span>+243 824 559 985</span>
+									</div>
+									<div>
+										<span>📞</span>
+										<span>+243 999 249 991</span>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<footer>
+			<p>DOCUMENT SÉCURISÉ</p>
+		</footer>
+
+	</div>
+
+</body>
+</html>

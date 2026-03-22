@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -147,13 +148,15 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
     const [error, setLocalError] = useState<string | null>(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
 
     // Charger les cartes roses
     const loadCartesRoses = useCallback(
       async (page = 1) => {
         setIsLoading(true);
         setLocalError(null);
-        onError(null);
+        onErrorRef.current(null);
 
         try {
           const params: RechercheParamsCartesRoses = {
@@ -201,7 +204,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
             const errorMessage =
               result.message || "Erreur inconnue lors du chargement";
             setLocalError(errorMessage);
-            onError(errorMessage);
+            onErrorRef.current(errorMessage);
             setCartesRoses([]);
             setPagination((prev) => ({
               ...prev,
@@ -212,7 +215,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
         } catch (error) {
           const errorMessage = "Erreur réseau. Vérifiez votre connexion.";
           setLocalError(errorMessage);
-          onError(errorMessage);
+          onErrorRef.current(errorMessage);
           setCartesRoses([]);
           setPagination((prev) => ({
             ...prev,
@@ -223,7 +226,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
           setIsLoading(false);
         }
       },
-      [searchTerm, filters, pagination.limit, onError],
+      [searchTerm, filters, pagination.limit],
     );
 
     // Exposer la méthode refresh au parent via ref

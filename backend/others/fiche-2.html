@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche d'Identification & Immatriculation Moto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .fiche {
+            width: 650px;
+            background: linear-gradient(135deg, #d4a855 0%, #c9a050 100%);
+            border: 15px solid #8b4513;
+            padding: 0;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: #a0522d;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-left h1 {
+            color: #d4a855;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+        }
+
+        .header-left p {
+            color: #d4a855;
+            font-size: 13px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .validity-box {
+            background: #d4a855;
+            padding: 10px 15px;
+            text-align: center;
+            border: 3px solid #8b4513;
+            min-width: 160px;
+        }
+
+        .validity-box h3 {
+            color: #8b4513;
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .qr-code {
+            width: 110px;
+            height: 110px;
+            margin: 10px auto;
+            background: #fff;
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .scan-text {
+            color: #000;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.3;
+        }
+
+        .main-content {
+            padding: 25px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .left-section {
+            flex: 1;
+        }
+
+        .right-section {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #000;
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .field {
+            color: #000;
+            font-size: 14px;
+            margin-bottom: 7px;
+            display: flex;
+            align-items: center;
+        }
+
+        .field label {
+            font-weight: normal;
+        }
+
+        .dots {
+            flex: 1;
+            border-bottom: 1px dotted #000;
+            margin-left: 5px;
+            height: 18px;
+        }
+
+        .sexe-group {
+            display: flex;
+            gap: 40px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            background: transparent;
+            flex-shrink: 0;
+        }
+
+        .armoirie-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .armoirie-container img {
+            width: 100%;
+            height: auto;
+        }
+
+        .cachet {
+            background: #d4a855;
+            border: 3px solid #000;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .signature-section {
+            padding: 0 25px;
+            margin-bottom: 20px;
+        }
+
+        .validation-section {
+            padding: 0 25px;
+            margin-bottom: 20px;
+        }
+
+        .validation-section h2 {
+            color: #000;
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .validation-text {
+            font-size: 11px;
+            color: #000;
+            margin-bottom: 5px;
+        }
+
+        .contact {
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .footer {
+            background: rgba(139, 69, 19, 0.3);
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #8b4513;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        .date-field {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .date-separator {
+            margin: 0 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="fiche">
+        <div class="header">
+            <div class="header-left">
+                <h1>FICHE D'IDENTIFICATION<br>& IMMATRICULATION MOTO</h1>
+                <p>Tenant lieu de Carte Rose<br>& Plaque d'immatriculation provisoire</p>
+            </div>
+            <div class="validity-box">
+                <h3>Validité: 45<br>jours non<br>renouvelable</h3>
+                <div class="qr-code">
+                    <img src="qrcode.png" alt="QR Code">
+                </div>
+                <p class="scan-text">Scannez pour<br>vérifier l'authenticité</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-section">
+                <div class="section">
+                    <h2>1. Informations du Propriétaire</h2>
+                    <div class="field">
+                        <label>Nom :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Prénom :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field sexe-group">
+                        <label>Sexe : M</label>
+                        <label>F</label>
+                    </div>
+                    <div class="field">
+                        <label class="date-field">
+                            Date de naissance 
+                            <span class="dots" style="width: 60px;"></span>
+                            <span class="date-separator">/</span>
+                            <span class="dots" style="width: 30px;"></span>
+                            <span class="date-separator">/</span>
+                            <span class="dots" style="width: 60px;"></span>
+                        </label>
+                    </div>
+                    <div class="field">
+                        <label>Lieu de naissance :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Adresse complète :</label>
+                        <div class="dots"></div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>2. Type de document d'identité</h2>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <div class="checkbox"></div>
+                            <span>Carte d'identité</span>
+                        </div>
+                        <div class="checkbox-item">
+                            <div class="checkbox"></div>
+                            <span>Passeport</span>
+                        </div>
+                        <div class="checkbox-item">
+                            <div class="checkbox"></div>
+                            <span>Permis de conduire</span>
+                        </div>
+                        <div class="checkbox-item">
+                            <div class="checkbox"></div>
+                            <span>Carte d'électeur</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>3. Sécurisation Digitale</h2>
+                    <div class="field">
+                        <label>NIUP Moto</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Modèle :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Année de fabrication :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Couleur :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Numero de chassis (VIN) :</label>
+                        <div class="dots"></div>
+                    </div>
+                    <div class="field">
+                        <label>Cylindre / Puissance :</label>
+                        <div class="dots"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-section">
+                <div class="armoirie-container">
+                    <img src="armoirie.png" alt="Armoirie Justice Paix Travail">
+                </div>
+                <div class="cachet">Cachet TSC-NPS SA</div>
+            </div>
+        </div>
+
+        <div class="signature-section">
+            <div class="field">
+                <label>Signature du propriétaire :</label>
+                <div class="dots"></div>
+            </div>
+            <div class="field">
+                <label class="date-field">
+                    Date :
+                    <span class="dots" style="width: 40px;"></span>
+                    <span class="date-separator">/</span>
+                    <span class="dots" style="width: 40px;"></span>
+                    <span class="date-separator">/</span>
+                    <span class="dots" style="width: 50px;"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="validation-section">
+            <h2>4. Validation</h2>
+            <p class="validation-text">• Document sécurisé - propriété exclusive de Holding TSC-NPS SA</p>
+            <p class="validation-text">• Toute falsification, reproduction ou altération est punie par la loi</p>
+            <div class="contact">
+                <div class="contact-item">
+                    <span>📞</span>
+                    <span>+243 824 559 985</span>
+                </div>
+                <div class="contact-item">
+                    <span>📞</span>
+                    <span>+243 999 249 991</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span>DOCUMENT SÉCURISÉ</span>
+            <span>DOCUMENT SÉCURISÉ</span>
+        </div>
+    </div>
+</body>
+</html>

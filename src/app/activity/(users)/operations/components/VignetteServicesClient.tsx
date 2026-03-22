@@ -20,10 +20,7 @@ import {
   Key,
   RefreshCw,
   Crown,
-  Wrench,
-  FileCheck,
-  CarFront,
-  ClipboardCheck
+  Wrench
 } from 'lucide-react';
 
 interface VignetteServicesClientProps {
@@ -71,8 +68,8 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
     },
     {
       id: "renouvellement-vignette",
-      title: "Renouvellement Annuel",
-      description: "Service de renouvellement annuel de vignette automobile avec vérification automatique du statut du véhicule.",
+      title: "Renouvellement Vignette",
+      description: "Service de renouvellement de vignette automobile après expiration de la période de validité de 6 mois.",
       icon: RefreshCw,
       color: "amber",
       features: [
@@ -82,26 +79,9 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
         "Rappel automatique"
       ],
       tag: "RENOUVELLEMENT",
-      stats: "Annuel",
+      stats: "6 mois",
       popular: true,
-      requirements: ["Vignette expirée", "Véhicule en règle", "Contrôle technique valide"]
-    },
-    {
-      id: "controle-technique",
-      title: "Contrôle Technique",
-      description: "Consulter la liste des véhicules ayant effectué le contrôle technique et octroyer le Procès-Verbal.",
-      icon: Wrench,
-      color: "purple",
-      features: [
-        "Liste des véhicules contrôlés",
-        "Génération de PV",
-        "Validation des résultats",
-        "Historique des contrôles"
-      ],
-      tag: "CONTROL",
-      stats: "Technique",
-      popular: false,
-      requirements: ["Rapport de contrôle", "Certificat centre agréé", "Données véhicule"]
+      requirements: ["Vignette expirée ou proche expiration", "Véhicule en règle"]
     }
   ];
 
@@ -130,14 +110,6 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
         button: "bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 shadow-amber-200/50",
         badge: "bg-amber-100 text-amber-800",
         tag: "bg-amber-500/10 text-amber-700 border-amber-500/20",
-      },
-      purple: {
-        bg: "bg-gradient-to-br from-purple-50 to-purple-25",
-        border: "border-purple-200/60",
-        icon: "text-purple-600",
-        button: "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 shadow-purple-200/50",
-        badge: "bg-purple-100 text-purple-800",
-        tag: "bg-purple-500/10 text-purple-700 border-purple-500/20",
       },
     };
     return classes[color as keyof typeof classes] || classes.emerald;
@@ -189,8 +161,8 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
           </div>
         </div>
 
-        {/* Grille des services */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {/* Grille des services - 3 colonnes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {services.map((service) => {
             const colorClasses = getColorClasses(service.color);
             const IconComponent = service.icon;
@@ -343,40 +315,28 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
         </div>
 
         {/* Informations complémentaires */}
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <CarFront className="w-5 h-5 text-blue-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Contrôle Technique</h3>
-            </div>
-            <p className="text-gray-600 text-sm">
-              Consultation des résultats de contrôle technique et génération du Procès-Verbal officiel.
-            </p>
-          </div>
-
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5">
             <div className="flex items-center space-x-3 mb-3">
               <div className="p-2 bg-emerald-100 rounded-lg">
-                <FileCheck className="w-5 h-5 text-emerald-600" />
+                <Receipt className="w-5 h-5 text-emerald-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Procès-Verbal</h3>
+              <h3 className="font-bold text-gray-900">Paiement Sécurisé</h3>
             </div>
             <p className="text-gray-600 text-sm">
-              Émission automatique du PV de contrôle technique après validation des résultats.
+              Intégration avec MPAKO pour des transactions sécurisées et traçables.
             </p>
           </div>
 
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5">
             <div className="flex items-center space-x-3 mb-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <ClipboardCheck className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <QrCode className="w-5 h-5 text-blue-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Validation des Résultats</h3>
+              <h3 className="font-bold text-gray-900">Mobile Money</h3>
             </div>
             <p className="text-gray-600 text-sm">
-              Système de vérification et validation des rapports de contrôle technique des centres agréés.
+              Support des paiements Mobile Money avec vérification automatique.
             </p>
           </div>
         </div>

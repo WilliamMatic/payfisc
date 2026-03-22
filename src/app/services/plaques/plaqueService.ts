@@ -138,7 +138,7 @@ async function invalidateSeriesCache(serieId?: number) {
 }
 
 // Nettoyer les données
-export async function cleanSerieData(data: any): Promise<Serie> {
+function cleanSerieData(data: any): Serie {
   return {
     id: data.id || 0,
     nom_serie: data.nom_serie || "",
@@ -157,7 +157,7 @@ export async function cleanSerieData(data: any): Promise<Serie> {
   };
 }
 
-export async function cleanSerieItemData(data: any): Promise<SerieItem> {
+function cleanSerieItemData(data: any): SerieItem {
   return {
     id: data.id || 0,
     serie_id: data.serie_id || 0,
@@ -169,7 +169,7 @@ export async function cleanSerieItemData(data: any): Promise<SerieItem> {
   };
 }
 
-export async function cleanProvinceData(data: any): Promise<Province> {
+function cleanProvinceData(data: any): Province {
   return {
     id: data.id || 0,
     nom: data.nom || "",
@@ -216,9 +216,7 @@ export async function getSeries(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(
-          data.data.series.map(async (item: any) => await cleanSerieData(item)),
-        )
+      ? data.data.series.map((item: any) => cleanSerieData(item))
       : [];
 
     return {
@@ -243,9 +241,13 @@ export async function getSeries(
 }
 
 /**
- * 💾 Récupère la liste des provinces actives (PAS DE CACHE)
+ * 💾 Récupère la liste des provinces actives (AVEC CACHE - 2 jours)
  */
 export async function getProvinces(): Promise<ApiResponse> {
+  "use cache";
+  cacheLife("days");
+  cacheTag(CACHE_TAGS.PROVINCES_LIST);
+
   try {
     const response = await fetch(
       `${API_BASE_URL}/plaques/lister_provinces.php`,
@@ -268,9 +270,7 @@ export async function getProvinces(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(
-          data.data.map(async (item: any) => await cleanProvinceData(item)),
-        )
+      ? data.data.map((item: any) => cleanProvinceData(item))
       : [];
 
     return {
@@ -312,9 +312,7 @@ export async function getSerieItems(serieId: number): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(
-          data.data.map(async (item: any) => await cleanSerieItemData(item)),
-        )
+      ? data.data.map((item: any) => cleanSerieItemData(item))
       : [];
 
     return {
@@ -545,9 +543,7 @@ export async function searchSeries(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(
-          data.data.series.map(async (item: any) => await cleanSerieData(item)),
-        )
+      ? data.data.series.map((item: any) => cleanSerieData(item))
       : [];
 
     return {
@@ -651,9 +647,7 @@ export async function getSeriesActives(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(
-          data.data.series.map(async (item: any) => await cleanSerieData(item)),
-        )
+      ? data.data.series.map((item: any) => cleanSerieData(item))
       : [];
 
     return {
@@ -742,7 +736,7 @@ export async function getSerieById(id: number): Promise<ApiResponse> {
 
     return {
       status: "success",
-      data: await cleanSerieData(data.data),
+      data: cleanSerieData(data.data),
     };
   } catch (error) {
     console.error("Get serie by ID error:", error);
@@ -796,9 +790,7 @@ export async function searchSeriesByProvince(
     }
 
     const cleanedData = Array.isArray(data.data?.series)
-      ? await Promise.all(
-          data.data.series.map(async (item: any) => await cleanSerieData(item)),
-        )
+      ? data.data.series.map((item: any) => cleanSerieData(item))
       : [];
 
     return {

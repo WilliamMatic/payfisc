@@ -1,0 +1,3972 @@
+1.	Taxes administratives 
+
+[
+  {
+    "nom_taxe": "Taxe de certificat de résidence",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_RESIDENCE",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "adresse_demandeur",
+      "date_demande",
+      "forfait_residence",
+      "total_a_payer = forfait_residence"
+    ],
+    "description": "Taxe perçue pour la délivrance d'un certificat attestant la résidence d'une personne dans une commune."
+  },
+  {
+    "nom_taxe": "Taxe de certificat de bonne vie et mœurs",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_BVM",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "adresse_demandeur",
+      "date_demande",
+      "forfait_bvm",
+      "total_a_payer = forfait_bvm"
+    ],
+    "description": "Taxe perçue pour la délivrance d'un certificat attestant de la bonne conduite et moralité d'une personne."
+  },
+  {
+    "nom_taxe": "Taxe d’attestation de perte de pièce",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_PERTE",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "adresse_demandeur",
+      "date_demande",
+      "piece_perdue (type)",
+      "forfait_perte",
+      "total_a_payer = forfait_perte"
+    ],
+    "description": "Taxe perçue pour la délivrance d'une attestation déclarant la perte d'un document officiel."
+  },
+  {
+    "nom_taxe": "Taxe de légalisation de signature",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune par signature",
+    "formule_calcul": "FORFAIT_SIGNATURE * nombre_signatures",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "adresse_demandeur",
+      "date_demande",
+      "nombre_signatures",
+      "forfait_signature",
+      "total_a_payer = forfait_signature * nombre_signatures"
+    ],
+    "description": "Taxe perçue pour l'authentification et la légalisation d'une ou plusieurs signatures sur un document."
+  },
+  {
+    "nom_taxe": "Taxe de certificat de composition familiale",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_COMPOSITION",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_chef_famille",
+      "adresse_famille",
+      "nombre_membres_famille",
+      "date_demande",
+      "forfait_composition",
+      "total_a_payer = forfait_composition"
+    ],
+    "description": "Taxe perçue pour la délivrance d'un document listant les membres d'un ménage vivant à la même adresse."
+  },
+  {
+    "nom_taxe": "Taxe de changement d’adresse",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_CHANGEMENT_ADRESSE",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "ancienne_adresse",
+      "nouvelle_adresse",
+      "date_demande",
+      "forfait_changement_adresse",
+      "total_a_payer = forfait_changement_adresse"
+    ],
+    "description": "Taxe perçue pour mettre à jour et officialiser un changement de résidence auprès des autorités communales."
+  },
+  {
+    "nom_taxe": "Taxe d’attestation de naissance tardive",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_NAISSANCE_TARDIVE",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_enfant",
+      "nom_parents",
+      "date_naissance_reelle",
+      "date_declaration_tardive",
+      "forfait_naissance_tardive",
+      "total_a_payer = forfait_naissance_tardive"
+    ],
+    "description": "Taxe perçue pour l'enregistrement et la régularisation d'une déclaration de naissance effectuée après le délai légal."
+  },
+  {
+    "nom_taxe": "Taxe d’attestation de célibat",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_CELIBAT",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "adresse_demandeur",
+      "date_demande",
+      "forfait_celibat",
+      "total_a_payer = forfait_celibat"
+    ],
+    "description": "Taxe perçue pour la délivrance d'un certificat attestant l'état civil de célibataire d'une personne."
+  },
+  {
+    "nom_taxe": "Taxe de certificat de nationalité (au niveau local)",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la commune",
+    "formule_calcul": "FORFAIT_NATIONALITE",
+    "penalite_periode": "ponctuel",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "adresse_demandeur",
+      "date_demande",
+      "forfait_nationalite",
+      "total_a_payer = forfait_nationalite"
+    ],
+    "description": "Taxe perçue au niveau communal pour la délivrance d'un certificat attestant de la nationalité congolaise d'un individu."
+  }
+]
+
+2.	 Taxes économiques et commerciales
+
+[
+  {
+    "nom_taxe": "Patente communale (petits commerçants)",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface du commerce et activité",
+    "formule_calcul": "FORFAIT_BASE + (SUPPL_SURFACE * surface_m2) + SUPPL_ACTIVITE[type_activite]",
+    "penalite_periode": "trimestriel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_commercant",
+      "nom_enseigne",
+      "adresse_commerce",
+      "type_activite_commerciale",
+      "surface_commerce_m2",
+      "forfait_base",
+      "supplement_surface_par_m2",
+      "supplement_activite",
+      "montant_base = forfait_base + (supplement_surface_par_m2 * surface_commerce_m2)",
+      "penalite_retard = montant_base * 0.1 * mois_retard",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Taxe annuelle due par les petits commerçants pour l'exercice d'une activité commerciale sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Patente communale (kiosques)",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Emplacement et type de kiosque",
+    "formule_calcul": "FORFAIT_KIOSQUE[type_kiosque] + SUPPL_EMPLACEMENT[zone]",
+    "penalite_periode": "trimestriel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_gestionnaire",
+      "adresse_kiosque",
+      "type_kiosque (journaux, alimentation, etc.)",
+      "zone_emplacement",
+      "forfait_type_kiosque",
+      "supplement_zone",
+      "montant_base = forfait_type_kiosque + supplement_zone",
+      "penalite_retard = montant_base * 0.1 * mois_retard",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Taxe annuelle spécifique aux kiosques pour l'exploitation commerciale dans l'espace public communal."
+  },
+  {
+    "nom_taxe": "Patente communale (boutiques)",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface et catégorie de la boutique",
+    "formule_calcul": "FORFAIT_CATEGORIE[cat_boutique] + (TAUX_SURFACE * surface_m2)",
+    "penalite_periode": "trimestriel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_boutique",
+      "nom_boutique",
+      "adresse_boutique",
+      "categorie_boutique",
+      "surface_boutique_m2",
+      "forfait_categorie",
+      "taux_surface_par_m2",
+      "montant_base = forfait_categorie + (taux_surface_par_m2 * surface_boutique_m2)",
+      "penalite_retard = montant_base * 0.1 * mois_retard",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Taxe annuelle due par les propriétaires ou gérants de boutiques fixes pour l'exercice d'activités commerciales."
+  },
+  {
+    "nom_taxe": "Taxe sur les établissements commerciaux",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Chiffre d'affaires annuel et type d'établissement",
+    "formule_calcul": "TAUX_ETABLISSEMENT[type_etablissement] * chiffre_affaires_annuel",
+    "penalite_periode": "trimestriel après échéance",
+    "penalite_calcul": "5% du montant dû par mois de retard",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "numero_identification",
+      "type_etablissement (supermarché, magasin, etc.)",
+      "chiffre_affaires_annuel",
+      "taux_applicable",
+      "montant_base = chiffre_affaires_annuel * taux_applicable",
+      "penalite_retard = montant_base * 0.05 * mois_retard",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Taxe basée sur le chiffre d'affaires des établissements commerciaux de taille moyenne à grande."
+  },
+  {
+    "nom_taxe": "Taxe sur les débits de boisson",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Nombre de tables et type de licence",
+    "formule_calcul": "FORFAIT_LICENCE[type_licence] + (SUPPL_TABLE * nombre_tables)",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_etablissement",
+      "adresse_debit",
+      "type_licence_boisson",
+      "nombre_tables_clients",
+      "forfait_licence",
+      "supplement_par_table",
+      "montant_trimestriel = forfait_licence + (supplement_par_table * nombre_tables_clients)",
+      "penalite_retard = montant_trimestriel * 0.15 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe trimestrielle spécifique aux établissements vendant des boissons alcoolisées ou non."
+  },
+  {
+    "nom_taxe": "Taxe sur les restaurants et terrasses",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Surface de la terrasse et nombre de couverts",
+    "formule_calcul": "FORFAIT_RESTAURANT + (TAUX_TERRASSE * surface_terrasse_m2) + (SUPPL_COUVERT * nombre_couverts)",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_restaurant",
+      "adresse_restaurant",
+      "surface_terrasse_m2",
+      "nombre_couverts_interieur",
+      "forfait_restaurant",
+      "taux_terrasse_par_m2",
+      "supplement_par_couvert",
+      "montant_trimestriel = forfait_restaurant + (taux_terrasse_par_m2 * surface_terrasse_m2) + (supplement_par_couvert * nombre_couverts_interieur)",
+      "penalite_retard = montant_trimestriel * 0.12 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les établissements de restauration pour l'exploitation de locaux et terrasses sur le domaine public."
+  },
+  {
+    "nom_taxe": "Taxe sur les salons de coiffure",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Nombre de postes de travail et catégorie",
+    "formule_calcul": "FORFAIT_CATEGORIE[cat_coiffure] + (SUPPL_POSTE * nombre_postes)",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_salon",
+      "adresse_salon",
+      "categorie_salon (homme, femme, mixte)",
+      "nombre_postes_travail",
+      "forfait_categorie",
+      "supplement_par_poste",
+      "montant_annuel = forfait_categorie + (supplement_par_poste * nombre_postes_travail)",
+      "penalite_retard = montant_annuel * 0.08 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due par les salons de coiffure et instituts de beauté pour l'exercice de leur activité."
+  },
+  {
+    "nom_taxe": "Taxe sur les cybercafés",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Nombre d'ordinateurs et vitesse de connexion",
+    "formule_calcul": "FORFAIT_CYBER + (SUPPL_ORDINATEUR * nombre_ordinateurs) + SUPPL_CONNEXION[type_connexion]",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_cybercafe",
+      "adresse_cybercafe",
+      "nombre_ordinateurs",
+      "type_connexion_internet",
+      "forfait_cyber",
+      "supplement_par_ordinateur",
+      "supplement_connexion",
+      "montant_trimestriel = forfait_cyber + (supplement_par_ordinateur * nombre_ordinateurs) + supplement_connexion",
+      "penalite_retard = montant_trimestriel * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe trimestrielle due par les cybercafés pour l'exploitation d'un espace informatique accessible au public."
+  },
+  {
+    "nom_taxe": "Taxe sur les ateliers artisanaux",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Type d'artisanat et nombre d'ouvriers",
+    "formule_calcul": "FORFAIT_METIER[type_metier] + (SUPPL_OUVRIER * nombre_ouvriers)",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "7% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_atelier",
+      "adresse_atelier",
+      "type_metier_artisanal (menuiserie, couture, mécanique, etc.)",
+      "nombre_ouvriers",
+      "forfait_metier",
+      "supplement_par_ouvrier",
+      "montant_annuel = forfait_metier + (supplement_par_ouvrier * nombre_ouvriers)",
+      "penalite_retard = montant_annuel * 0.07 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due par les ateliers artisanaux pour l'exercice d'activités de production ou de transformation manuelle."
+  },
+  {
+    "nom_taxe": "Taxe sur les marchés",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "quotidien/mensuel",
+    "base_calcul": "Surface occupée et type de marchandises",
+    "formule_calcul": "FORFAIT_MARCHE[type_marchandise] * surface_m2 * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Double du forfait en cas de non-paiement avant occupation",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "numero_emplacement",
+      "type_marchandise_vendue",
+      "surface_occupee_m2",
+      "nombre_jours_occupation",
+      "forfait_journalier_type_marchandise",
+      "paiement_prealable (oui/non)",
+      "montant_base = forfait_journalier_type_marchandise * surface_occupee_m2 * nombre_jours_occupation",
+      "penalite = paiement_prealable == 'non' ? montant_base : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due par les vendeurs pour l'occupation d'un espace dans les marchés publics communaux."
+  },
+  {
+    "nom_taxe": "Taxe sur les étals",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "quotidien/mensuel",
+    "base_calcul": "Longueur de l'étal et emplacement",
+    "formule_calcul": "FORFAIT_ETAL[zone] * longueur_etal_metres * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Amende fixe + double du forfait journalier",
+    "rubriques_paiement": [
+      "nom_vendeur_etal",
+      "emplacement_etal (rue, avenue, etc.)",
+      "zone_commerciale",
+      "longueur_etal_metres",
+      "nombre_jours_utilisation",
+      "forfait_journalier_par_metre_zone",
+      "paiement_prealable (oui/non)",
+      "montant_base = forfait_journalier_par_metre_zone * longueur_etal_metres * nombre_jours_utilisation",
+      "penalite = paiement_prealable == 'non' ? (montant_base + AMENDE_FIXE) : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due par les vendeurs ambulants ou semi-fixes pour l'installation d'étals sur la voie publique."
+  }
+]
+
+
+3.	 Taxes de voirie et occupation du domaine public
+
+[
+  {
+    "nom_taxe": "Taxe d’occupation temporaire de la voie publique",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel/quotidien",
+    "base_calcul": "Surface occupée, durée et type d'occupation",
+    "formule_calcul": "FORFAIT_OCCUPATION[type_activite] * surface_m2 * nombre_jours",
+    "penalite_periode": "immédiat après constatation",
+    "penalite_calcul": "Double du montant calculé + amende fixe administrative",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "raison_sociale",
+      "adresse_chantier_occupation",
+      "type_occupation (chantier, événement, dépôt, etc.)",
+      "surface_occupee_m2",
+      "duree_occupation_jours",
+      "forfait_journalier_type_activite",
+      "autorisation_prealable (oui/non)",
+      "montant_base = forfait_journalier_type_activite * surface_occupee_m2 * duree_occupation_jours",
+      "penalite = autorisation_prealable == 'non' ? (montant_base * 2 + AMENDE_FIXE) : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour toute occupation temporaire de l'espace public (trottoirs, chaussée) à des fins privées."
+  },
+  {
+    "nom_taxe": "Taxe sur les terrasses commerciales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Surface de la terrasse, nombre de tables et emplacement",
+    "formule_calcul": "(FORFAIT_BASE_TERRASSE + (TAUX_SURFACE * surface_m2) + (SUPPL_TABLE * nombre_tables)) * COEFF_ZONE[zone]",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_etablissement",
+      "adresse_etablissement",
+      "surface_terrasse_m2",
+      "nombre_tables_terrasse",
+      "nombre_chaises_terrasse",
+      "zone_commerciale",
+      "forfait_base_terrasse",
+      "taux_surface_par_m2",
+      "supplement_par_table",
+      "coefficient_zone",
+      "montant_trimestriel = (forfait_base_terrasse + (taux_surface_par_m2 * surface_terrasse_m2) + (supplement_par_table * nombre_tables_terrasse)) * coefficient_zone",
+      "penalite_retard = montant_trimestriel * 0.15 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe spécifique pour l'exploitation commerciale d'une terrasse sur le domaine public communal."
+  },
+  {
+    "nom_taxe": "Taxe sur les étalages extérieurs",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "quotidien/mensuel",
+    "base_calcul": "Surface ou longueur d'étalage, type de marchandises",
+    "formule_calcul": "FORFAIT_ETALAGE[type_marchandise] * surface_m2 * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Triple du forfait journalier en cas d'étalage non autorisé",
+    "rubriques_paiement": [
+      "nom_commercant",
+      "nom_magasin",
+      "type_marchandises_etalage",
+      "surface_etalage_m2",
+      "duree_etalage_jours",
+      "forfait_journalier_type_marchandise",
+      "autorisation_etalage (oui/non)",
+      "montant_base = forfait_journalier_type_marchandise * surface_etalage_m2 * duree_etalage_jours",
+      "penalite = autorisation_etalage == 'non' ? montant_base * 3 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'installation d'étalages de marchandises en dehors des limites du commerce (sur trottoirs)."
+  },
+  {
+    "nom_taxe": "Taxe sur les chantiers privés",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel/mensuel",
+    "base_calcul": "Surface du terrain, durée des travaux, type de construction",
+    "formule_calcul": "FORFAIT_CHANTIER[type_construction] * surface_terrain_m2 * (duree_mois / 12)",
+    "penalite_periode": "après contrôle",
+    "penalite_calcul": "20% du montant dû par mois de retard dans la déclaration",
+    "rubriques_paiement": [
+      "nom_maitre_ouvrage",
+      "adresse_chantier",
+      "type_construction (maison, immeuble, etc.)",
+      "surface_terrain_m2",
+      "duree_prevue_travaux_mois",
+      "forfait_type_construction",
+      "declaration_prealable (oui/non)",
+      "date_declaration",
+      "date_debut_travaux",
+      "montant_base = forfait_type_construction * surface_terrain_m2 * (duree_prevue_travaux_mois / 12)",
+      "penalite_retard_declaration = declaration_prealable == 'non' ? montant_base * 0.2 * mois_retard : 0",
+      "total_a_payer = montant_base + penalite_retard_declaration"
+    ],
+    "description": "Taxe due pour l'occupation du domaine public par des chantiers de construction privés (dépôt de matériaux, échafaudages, etc.)."
+  },
+  {
+    "nom_taxe": "Taxe sur les parkings privés ouverts au public",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Nombre de places de parking et taux d'occupation",
+    "formule_calcul": "FORFAIT_PARKING * nombre_places * TAUX_OCCUPATION_MOYEN",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_parking",
+      "adresse_parking",
+      "nombre_places_total",
+      "taux_occupation_moyen_estime",
+      "tarif_horaire_moyen",
+      "forfait_par_place",
+      "montant_trimestriel_base = forfait_par_place * nombre_places_total",
+      "montant_trimestriel_corrige = montant_trimestriel_base * taux_occupation_moyen_estime",
+      "penalite_retard = montant_trimestriel_corrige * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel_corrige + penalite_retard"
+    ],
+    "description": "Taxe due par les gestionnaires de parkings privés accessibles au public, basée sur la capacité d'accueil."
+  },
+  {
+    "nom_taxe": "Taxe sur les garages et parcs automobiles",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface couverte et activités (vente, réparation, location)",
+    "formule_calcul": "FORFAIT_GARAGE[type_activite] * surface_couverte_m2 + SUPPL_VEHICULES * nombre_vehicules_stock",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_automobile",
+      "adresse_garage",
+      "type_activite (vente, reparation, location, etc.)",
+      "surface_couverte_totale_m2",
+      "nombre_vehicules_en_stock_moyen",
+      "forfait_type_activite",
+      "taux_surface_par_m2",
+      "supplement_par_vehicule_stock",
+      "montant_annuel = (forfait_type_activite * surface_couverte_totale_m2) + (supplement_par_vehicule_stock * nombre_vehicules_en_stock_moyen)",
+      "penalite_retard = montant_annuel * 0.12 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due par les entreprises automobiles (garages, concessions, parcs de location) pour l'exploitation de surfaces destinées aux véhicules."
+  }
+]
+
+[
+  {
+    "nom_taxe": "Taxe sur les parcelles bâties",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Valeur locative du bâtiment et surface bâtie",
+    "formule_calcul": "VALEUR_LOCATIVE * TAUX_PARCELLE_BATIE * surface_batie_m2",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "5% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "adresse_parcelle",
+      "numero_parcelle",
+      "valeur_locative_annuelle",
+      "surface_batie_m2",
+      "taux_communal_parcelle_batie",
+      "montant_annuel = valeur_locative_annuelle * taux_communal_parcelle_batie * surface_batie_m2",
+      "penalite_retard = montant_annuel * 0.05 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due sur les terrains comportant des constructions, basée sur la valeur locative des bâtiments."
+  },
+  {
+    "nom_taxe": "Taxe sur les parcelles non bâties",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface du terrain non bâti et valeur du sol",
+    "formule_calcul": "VALEUR_FONCIERE * TAUX_PARCELLE_NON_BATIE * surface_m2",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "5% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "adresse_terrain",
+      "numero_parcelle",
+      "valeur_fonciere_au_m2",
+      "surface_terrain_m2",
+      "taux_communal_parcelle_non_batie",
+      "montant_annuel = valeur_fonciere_au_m2 * taux_communal_parcelle_non_batie * surface_terrain_m2",
+      "penalite_retard = montant_annuel * 0.05 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due sur les terrains sans construction, basée sur la valeur foncière du sol."
+  },
+  {
+    "nom_taxe": "Taxe sur les concessions foncières communales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface concédée et durée de la concession",
+    "formule_calcul": "FORFAIT_CONCESSION[type_usage] * surface_m2 * COEFF_DUREE[annees]",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_concessionnaire",
+      "adresse_concession",
+      "type_usage_concession (habitation, commercial, etc.)",
+      "surface_concedee_m2",
+      "duree_concession_annees",
+      "forfait_type_usage",
+      "coefficient_duree",
+      "montant_annuel = forfait_type_usage * surface_concedee_m2 * coefficient_duree",
+      "penalite_retard = montant_annuel * 0.1 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due par les titulaires de concessions foncières accordées par la commune."
+  },
+  {
+    "nom_taxe": "Taxe d'affichage immobilier",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Surface du panneau et durée d'affichage",
+    "formule_calcul": "FORFAIT_AFFICHAGE * surface_panneau_m2 * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Double du montant si affichage sans autorisation",
+    "rubriques_paiement": [
+      "nom_agence_immobiliere",
+      "adresse_bien_annonce",
+      "surface_panneau_m2",
+      "duree_affichage_jours",
+      "forfait_journalier_affichage",
+      "autorisation_affichage (oui/non)",
+      "montant_base = forfait_journalier_affichage * surface_panneau_m2 * duree_affichage_jours",
+      "penalite = autorisation_affichage == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'affichage publicitaire de biens immobiliers à vendre ou à louer."
+  },
+  {
+    "nom_taxe": "Taxe sur les maisons de location (part communale)",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Loyer mensuel et nombre de logements",
+    "formule_calcul": "LOYER_MENSUEL_MOYEN * TAUX_LOCATION_COMMUNE * nombre_logements",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "adresse_immeuble_location",
+      "nombre_logements_location",
+      "loyer_mensuel_moyen_par_logement",
+      "taux_communal_location",
+      "montant_trimestriel = loyer_mensuel_moyen_par_logement * taux_communal_location * nombre_logements_location * 3",
+      "penalite_retard = montant_trimestriel * 0.08 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les propriétaires de maisons ou appartements mis en location, part revenant à la commune."
+  },
+  {
+    "nom_taxe": "Taxe communale sur les motos",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Cylindrée et type de moto",
+    "formule_calcul": "FORFAIT_MOTO[cylindree] * COEFF_USAGE[type_usage]",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "20% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "numero_plaque",
+      "marque_modele_moto",
+      "cylindree_moto",
+      "type_usage (personnel, taxi-moto, etc.)",
+      "forfait_cylindree",
+      "coefficient_usage",
+      "montant_annuel = forfait_cylindree * coefficient_usage",
+      "penalite_retard = montant_annuel * 0.2 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due pour la circulation des motocyclettes sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe communale sur les véhicules",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Puissance fiscale et type de véhicule",
+    "formule_calcul": "FORFAIT_VEHICULE[puissance_fiscale] * COEFF_TYPE[type_vehicule]",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "numero_plaque",
+      "marque_modele_vehicule",
+      "puissance_fiscale",
+      "type_vehicule (particulier, utilitaire, etc.)",
+      "forfait_puissance",
+      "coefficient_type",
+      "montant_annuel = forfait_puissance * coefficient_type",
+      "penalite_retard = montant_annuel * 0.15 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due pour la circulation des véhicules automobiles sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe sur les parkings motos et véhicules",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Nombre de places et type de parking",
+    "formule_calcul": "FORFAIT_PARKING[type_parking] * nombre_places",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_gestionnaire_parking",
+      "adresse_parking",
+      "type_parking (moto, vehicule, mixte)",
+      "nombre_places_total",
+      "forfait_place_type_parking",
+      "montant_trimestriel = forfait_place_type_parking * nombre_places_total",
+      "penalite_retard = montant_trimestriel * 0.12 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les exploitants de parkings publics ou privés accessibles au public pour motos et véhicules."
+  },
+  {
+    "nom_taxe": "Taxe de stationnement",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel/horaire",
+    "base_calcul": "Durée de stationnement et zone",
+    "formule_calcul": "TARIF_HORAIRE[zone] * duree_heures",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Forfait de contravention si non-paiement",
+    "rubriques_paiement": [
+      "numero_plaque_vehicule",
+      "zone_stationnement",
+      "heure_debut_stationnement",
+      "heure_fin_stationnement",
+      "duree_stationnement_heures",
+      "tarif_horaire_zone",
+      "paiement_effectue (oui/non)",
+      "montant_due = tarif_horaire_zone * duree_stationnement_heures",
+      "penalite = paiement_effectue == 'non' ? FORFAIT_CONTRAVENTION : 0",
+      "total_a_payer = montant_due + penalite"
+    ],
+    "description": "Taxe due pour le stationnement des véhicules dans les zones réglementées de la commune."
+  },
+  {
+    "nom_taxe": "Taxe sur les gares routières communales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Fréquence des départs et capacité de la gare",
+    "formule_calcul": "FORFAIT_GARE * nombre_departs_quotidiens * COEFF_CAPACITE",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "10% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_gestionnaire_gare",
+      "adresse_gare_routiere",
+      "nombre_departs_bus_quotidiens",
+      "capacite_passagers_par_jour",
+      "forfait_gare_routiere",
+      "coefficient_capacite",
+      "montant_mensuel = forfait_gare_routiere * nombre_departs_bus_quotidiens * coefficient_capacite",
+      "penalite_retard = montant_mensuel * 0.1 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe due par les exploitants de gares routières pour l'utilisation des infrastructures communales."
+  },
+  {
+    "nom_taxe": "Taxe sur les chargement et déchargement",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Durée d'occupation de la voie et type de véhicule",
+    "formule_calcul": "FORFAIT_CHARGEMENT[type_vehicule] * duree_heures",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Double du forfait si occupation non autorisée",
+    "rubriques_paiement": [
+      "nom_entreprise_transport",
+      "numero_plaque_camion",
+      "type_vehicule (camionnette, camion, etc.)",
+      "adresse_chargement_dechargement",
+      "duree_operation_heures",
+      "forfait_horaire_type_vehicule",
+      "autorisation_occupation (oui/non)",
+      "montant_base = forfait_horaire_type_vehicule * duree_operation_heures",
+      "penalite = autorisation_occupation == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'occupation de la voie publique lors d'opérations de chargement ou déchargement de marchandises."
+  },
+  {
+    "nom_taxe": "Taxe sur les enseignes lumineuses",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface de l'enseigne et consommation électrique",
+    "formule_calcul": "FORFAIT_ENSEIGNE * surface_m2 + SUPPL_LUMINEUX * consommation_kwh",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_commerce",
+      "adresse_enseigne",
+      "surface_enseigne_m2",
+      "consommation_annuelle_estimee_kwh",
+      "forfait_enseigne_surface",
+      "supplement_lumineux_par_kwh",
+      "montant_annuel = forfait_enseigne_surface * surface_enseigne_m2 + supplement_lumineux_par_kwh * consommation_annuelle_estimee_kwh",
+      "penalite_retard = montant_annuel * 0.15 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due pour l'installation et l'exploitation d'enseignes lumineuses commerciales."
+  },
+  {
+    "nom_taxe": "Taxe sur les panneaux publicitaires",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Surface du panneau et emplacement",
+    "formule_calcul": "FORFAIT_PANNEAU[type_panneau] * surface_m2 * COEFF_ZONE[zone]",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_annonceur",
+      "adresse_panneau",
+      "type_panneau (abribus, mur, etc.)",
+      "surface_panneau_m2",
+      "zone_publicitaire",
+      "forfait_type_panneau",
+      "coefficient_zone",
+      "montant_trimestriel = forfait_type_panneau * surface_panneau_m2 * coefficient_zone",
+      "penalite_retard = montant_trimestriel * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due pour l'installation de panneaux publicitaires fixes sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe sur la publicité mobile",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Nombre de véhicules et durée de campagne",
+    "formule_calcul": "FORFAIT_VEHICULE_PUB * nombre_vehicules * duree_mois",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "8% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_agence_publicite",
+      "type_vehicules_publicitaires",
+      "nombre_vehicules_mobiles",
+      "duree_campagne_mois",
+      "forfait_vehicule_publicitaire",
+      "montant_mensuel = forfait_vehicule_publicitaire * nombre_vehicules_mobiles * duree_campagne_mois",
+      "penalite_retard = montant_mensuel * 0.08 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe due pour les campagnes publicitaires utilisant des véhicules mobiles (bus, voitures, etc.)."
+  },
+  {
+    "nom_taxe": "Taxe sur les banderoles et affiches",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de banderoles/affiches et durée d'affichage",
+    "formule_calcul": "FORFAIT_BANDEROLE * nombre_unites * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Triple du montant si affichage sauvage",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "type_evenement",
+      "nombre_banderoles_affiches",
+      "duree_affichage_jours",
+      "forfait_journalier_banderole",
+      "autorisation_affichage (oui/non)",
+      "montant_base = forfait_journalier_banderole * nombre_banderoles_affiches * duree_affichage_jours",
+      "penalite = autorisation_affichage == 'non' ? montant_base * 3 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'affichage temporaire de banderoles et affiches publicitaires ou informatives."
+  },
+  {
+    "nom_taxe": "Taxe d'assainissement",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Consommation d'eau et type d'habitation",
+    "formule_calcul": "CONSOMMATION_EAU_M3 * TAUX_ASSINISSEMENT * COEFF_TYPE[type_batiment]",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "5% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_abonne",
+      "adresse_batiment",
+      "type_batiment (menage, commercial, etc.)",
+      "consommation_eau_trimestre_m3",
+      "taux_assainissement_communal",
+      "coefficient_type_batiment",
+      "montant_trimestriel = consommation_eau_trimestre_m3 * taux_assainissement_communal * coefficient_type_batiment",
+      "penalite_retard = montant_trimestriel * 0.05 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe destinée à financer les services d'assainissement et de traitement des eaux usées."
+  },
+  {
+    "nom_taxe": "Taxe d'évacuation des immondices",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Volume de déchets et type d'activité",
+    "formule_calcul": "FORFAIT_IMMONDICES[type_activite] * nombre_bacs * COEFF_FREQUENCE",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "10% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_client",
+      "adresse_collecte",
+      "type_activite_generatrice",
+      "nombre_bacs_dechets",
+      "frequence_collecte_semaine",
+      "forfait_type_activite",
+      "coefficient_frequence",
+      "montant_mensuel = forfait_type_activite * nombre_bacs_dechets * coefficient_frequence",
+      "penalite_retard = montant_mensuel * 0.1 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe due pour le service de collecte et d'évacuation des ordures ménagères et déchets."
+  },
+  {
+    "nom_taxe": "Taxe sur les abattoirs communaux",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre et type d'animaux abattus",
+    "formule_calcul": "FORFAIT_ABATTAGE[type_animal] * nombre_animaux",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Amende fixe si abattage non déclaré",
+    "rubriques_paiement": [
+      "nom_eleveur_ou_boucher",
+      "type_animaux_abattus",
+      "nombre_animaux_abattus",
+      "date_abattage",
+      "forfait_par_animal_type",
+      "declaration_abattage (oui/non)",
+      "montant_base = forfait_par_animal_type * nombre_animaux_abattus",
+      "penalite = declaration_abattage == 'non' ? AMENDE_ABATTAGE : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'utilisation des infrastructures d'abattage communal et contrôle sanitaire."
+  },
+  {
+    "nom_taxe": "Taxe sur les marchés à bétail",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre d'animaux présentés à la vente",
+    "formule_calcul": "FORFAIT_MARCHE_BETAIL[type_animal] * nombre_animaux",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Double du forfait si présence non déclarée",
+    "rubriques_paiement": [
+      "nom_eleveur_vendeur",
+      "type_animaux_vendus",
+      "nombre_animaux_presentes",
+      "date_marche",
+      "forfait_marche_par_animal",
+      "declaration_presence (oui/non)",
+      "montant_base = forfait_marche_par_animal * nombre_animaux_presentes",
+      "penalite = declaration_presence == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due par les éleveurs et vendeurs pour l'utilisation des marchés à bétail communaux."
+  },
+  {
+    "nom_taxe": "Taxe sur les toilettes publiques",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Fréquentation estimée et maintenance",
+    "formule_calcul": "FORFAIT_TOILETTES * nombre_cabines * COEFF_FREQUENTATION",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "15% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_gestionnaire_toilettes",
+      "adresse_toilettes_publiques",
+      "nombre_cabines_toilettes",
+      "frequentation_quotidienne_estimee",
+      "forfait_toilettes_cabine",
+      "coefficient_frequentation",
+      "montant_mensuel = forfait_toilettes_cabine * nombre_cabines_toilettes * coefficient_frequentation",
+      "penalite_retard = montant_mensuel * 0.15 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe due pour l'exploitation et l'entretien des toilettes publiques communales."
+  },
+  {
+    "nom_taxe": "Taxe d'inspection sanitaire",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel/annuel",
+    "base_calcul": "Type d'établissement et fréquence d'inspection",
+    "formule_calcul": "FORFAIT_INSPECTION[type_etablissement] * nombre_inspections",
+    "penalite_periode": "immédiat après inspection",
+    "penalite_calcul": "Majoration de 50% si contre-visite nécessaire",
+    "rubriques_paiement": [
+      "nom_etablissement",
+      "adresse_etablissement",
+      "type_etablissement (restaurant, boucherie, etc.)",
+      "nombre_inspections_annuelles",
+      "forfait_inspection_type",
+      "resultat_inspection (conforme/non_conforme)",
+      "montant_base = forfait_inspection_type * nombre_inspections_annuelles",
+      "penalite_contre_visite = resultat_inspection == 'non_conforme' ? montant_base * 0.5 : 0",
+      "total_a_payer = montant_base + penalite_contre_visite"
+    ],
+    "description": "Taxe due pour les inspections sanitaires des établissements à risque (alimentation, santé publique)."
+  },
+  {
+    "nom_taxe": "Taxe sur les salles de fête",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Capacité d'accueil et durée de location",
+    "formule_calcul": "FORFAIT_SALLE[capacite] * duree_heures",
+    "penalite_periode": "immédiat après événement",
+    "penalite_calcul": "20% supplémentaire si dépassement d'horaire",
+    "rubriques_paiement": [
+      "nom_locataire_salle",
+      "adresse_salle_fete",
+      "capacite_maximale_personnes",
+      "duree_location_heures",
+      "forfait_salle_capacite",
+      "heure_fin_prevue",
+      "heure_fin_reelle",
+      "montant_base = forfait_salle_capacite * duree_location_heures",
+      "penalite_depassement = heure_fin_reelle > heure_fin_prevue ? montant_base * 0.2 : 0",
+      "total_a_payer = montant_base + penalite_depassement"
+    ],
+    "description": "Taxe due pour la location de salles de fête communales ou l'organisation d'événements dans ces salles."
+  },
+  {
+    "nom_taxe": "Taxe sur les cinémas et spectacles",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de places et prix du billet",
+    "formule_calcul": "TAUX_SPECTACLE * (prix_billet * nombre_places_vendues)",
+    "penalite_periode": "après représentation",
+    "penalite_calcul": "10% par jour de retard dans la déclaration",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "lieu_spectacle",
+      "type_spectacle (cinema, theatre, concert)",
+      "nombre_places_vendues",
+      "prix_billet_moyen",
+      "taux_communal_spectacle",
+      "date_spectacle",
+      "date_declaration",
+      "montant_base = taux_communal_spectacle * (prix_billet_moyen * nombre_places_vendues)",
+      "penalite_retard_declaration = jours_retard_declaration * montant_base * 0.1",
+      "total_a_payer = montant_base + penalite_retard_declaration"
+    ],
+    "description": "Taxe due sur les recettes des spectacles publics et séances de cinéma."
+  },
+  {
+    "nom_taxe": "Taxe sur les bars dancing",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Surface de la piste de danse et horaire d'ouverture",
+    "formule_calcul": "FORFAIT_BAR_DANCING * surface_piste_m2 * COEFF_NOCTURNE[horaires]",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "15% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_bar_dancing",
+      "adresse_etablissement",
+      "surface_piste_danse_m2",
+      "horaire_nocturne (oui/non)",
+      "forfait_bar_dancing",
+      "coefficient_nocturne",
+      "montant_mensuel = forfait_bar_dancing * surface_piste_danse_m2 * coefficient_nocturne",
+      "penalite_retard = montant_mensuel * 0.15 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe spécifique aux établissements de nuit avec piste de danse, due pour les nuisances sonores et occupation nocturne."
+  },
+  {
+    "nom_taxe": "Taxe sur les jeux de hasard",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Mise totale ou chiffre d'affaires des jeux",
+    "formule_calcul": "TAUX_JEUX_HASARD * mise_totale_mensuelle",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "20% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_etablissement_jeux",
+      "adresse_etablissement",
+      "type_jeux_hasard (machines, cartes, etc.)",
+      "mise_totale_mensuelle",
+      "taux_communal_jeux",
+      "montant_mensuel = taux_communal_jeux * mise_totale_mensuelle",
+      "penalite_retard = montant_mensuel * 0.2 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe due par les établissements proposant des jeux d'argent et de hasard."
+  },
+  {
+    "nom_taxe": "Taxe sur les événements publics",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de participants et durée de l'événement",
+    "formule_calcul": "FORFAIT_EVENEMENT[type_evenement] * nombre_participants * nombre_jours",
+    "penalite_periode": "après événement",
+    "penalite_calcul": "Double du montant si organisation sans autorisation",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "type_evenement (culturel, sportif, etc.)",
+      "lieu_evenement",
+      "nombre_participants_estime",
+      "duree_evenement_jours",
+      "forfait_type_evenement",
+      "autorisation_commune (oui/non)",
+      "montant_base = forfait_type_evenement * nombre_participants_estime * duree_evenement_jours",
+      "penalite = autorisation_commune == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'organisation d'événements publics rassemblant un grand nombre de personnes."
+  },
+  {
+    "nom_taxe": "Taxe sur les activités commerciales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Chiffre d'affaires et type de commerce",
+    "formule_calcul": "TAUX_ACTIVITE_COMMERCIALE[type_commerce] * chiffre_affaires_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_commercant",
+      "activite_commerciale",
+      "chiffre_affaires_trimestriel",
+      "type_commerce (detail, gros, etc.)",
+      "taux_activite_commerciale",
+      "montant_trimestriel = taux_activite_commerciale * chiffre_affaires_trimestriel",
+      "penalite_retard = montant_trimestriel * 0.08 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe générale sur les activités commerciales exercées sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe sur les activités industrielles",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Valeur ajoutée ou production brute",
+    "formule_calcul": "TAUX_INDUSTRIEL[type_industrie] * valeur_ajoutee_trimestrielle",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "6% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_industrielle",
+      "secteur_industrie",
+      "valeur_ajoutee_trimestrielle",
+      "type_industrie (transformation, fabrication, etc.)",
+      "taux_activite_industrielle",
+      "montant_trimestriel = taux_activite_industrielle * valeur_ajoutee_trimestrielle",
+      "penalite_retard = montant_trimestriel * 0.06 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les entreprises industrielles pour leur activité de production sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe sur les prestations de services",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Chiffre d'affaires des services",
+    "formule_calcul": "TAUX_PRESTATIONS[type_service] * ca_services_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "7% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_prestataire",
+      "type_service (consulting, maintenance, etc.)",
+      "chiffre_affaires_services_trimestriel",
+      "categorie_service",
+      "taux_prestations_service",
+      "montant_trimestriel = taux_prestations_service * chiffre_affaires_services_trimestriel",
+      "penalite_retard = montant_trimestriel * 0.07 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les entreprises et professionnels offrant des services sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe sur les activités artisanales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Nombre d'artisans et type de métier",
+    "formule_calcul": "FORFAIT_ARTISANAL[metier] * nombre_artisans",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_atelier_artisanal",
+      "metier_artisanal",
+      "nombre_artisans_employes",
+      "annee_activite",
+      "forfait_metier_artisanal",
+      "montant_annuel = forfait_metier_artisanal * nombre_artisans_employes",
+      "penalite_retard = montant_annuel * 0.1 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe due par les artisans pour l'exercice de leur métier traditionnel ou manuel."
+  },
+  {
+    "nom_taxe": "Taxe sur les professions libérales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Revenu professionnel déclaré",
+    "formule_calcul": "TAUX_PROFESSION_LIBERALE * revenu_professionnel_annuel",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_professionnel",
+      "profession_liberale (medecin, avocat, etc.)",
+      "revenu_professionnel_annuel",
+      "annee_fiscale",
+      "taux_profession_liberale",
+      "montant_annuel = taux_profession_liberale * revenu_professionnel_annuel",
+      "penalite_retard = montant_annuel * 0.08 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe due par les professionnels libéraux exerçant une activité réglementée sur le territoire communal."
+  },
+  {
+    "nom_taxe": "Taxe sur les entreprises de transport",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Nombre de véhicules et kilométrage",
+    "formule_calcul": "FORFAIT_TRANSPORT[type_transport] * nombre_vehicules * kilometrage_moyen",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_transport",
+      "type_transport (personnes, marchandises)",
+      "nombre_vehicules_flotte",
+      "kilometrage_moyen_trimestriel_par_vehicule",
+      "forfait_type_transport",
+      "montant_trimestriel = forfait_type_transport * nombre_vehicules_flotte * kilometrage_moyen_trimestriel_par_vehicule",
+      "penalite_retard = montant_trimestriel * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les entreprises de transport routier pour l'utilisation des infrastructures communales."
+  },
+  {
+    "nom_taxe": "Taxe sur les entreprises minières artisanales (part provinciale)",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Quantité de minerai extrait et type de minerai",
+    "formule_calcul": "TAUX_MINIER[type_minerai] * quantite_extraite_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_miniere",
+      "site_extraction",
+      "type_minerai_extrait",
+      "quantite_extraite_trimestriel_tonnes",
+      "taux_minier_provincial",
+      "montant_trimestriel = taux_minier_provincial * quantite_extraite_trimestriel_tonnes",
+      "penalite_retard = montant_trimestriel * 0.15 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe provinciale due par les exploitants miniers artisanaux pour l'extraction de ressources minérales."
+  },
+  {
+    "nom_taxe": "Taxe sur les carrières et matériaux de construction",
+    "autorite_beneficiaire": "Commune/Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Volume de matériaux extraits",
+    "formule_calcul": "TAUX_CARRIERE[type_materiau] * volume_extraite_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_exploitant_carriere",
+      "localisation_carriere",
+      "type_materiau_extrait (sable, gravier, pierre)",
+      "volume_extraite_trimestriel_m3",
+      "taux_carriere",
+      "montant_trimestriel = taux_carriere * volume_extraite_trimestriel_m3",
+      "penalite_retard = montant_trimestriel * 0.12 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due pour l'exploitation de carrières et l'extraction de matériaux de construction."
+  },
+  {
+    "nom_taxe": "Vignette provinciale des véhicules",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Puissance fiscale du véhicule",
+    "formule_calcul": "FORFAIT_VIGNETTE[puissance_fiscale] * COEFF_TYPE_VEHICULE",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "20% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "numero_plaque",
+      "puissance_fiscale_vehicule",
+      "type_usage_vehicule",
+      "forfait_vignette_puissance",
+      "coefficient_type_vehicule",
+      "montant_annuel = forfait_vignette_puissance * coefficient_type_vehicule",
+      "penalite_retard = montant_annuel * 0.2 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale annuelle obligatoire pour la circulation des véhicules automobiles dans la province."
+  },
+  {
+    "nom_taxe": "Vignette provinciale des motos",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Cylindrée de la moto",
+    "formule_calcul": "FORFAIT_VIGNETTE_MOTO[cylindree] * COEFF_USAGE_MOTO",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "25% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "numero_plaque_moto",
+      "cylindree_moto",
+      "type_usage_moto (personnel, taxi-moto)",
+      "forfait_vignette_moto_cylindree",
+      "coefficient_usage_moto",
+      "montant_annuel = forfait_vignette_moto_cylindree * coefficient_usage_moto",
+      "penalite_retard = montant_annuel * 0.25 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale annuelle obligatoire pour la circulation des motocyclettes dans la province."
+  },
+  {
+    "nom_taxe": "Taxe de circulation provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Type et tonnage du véhicule",
+    "formule_calcul": "FORFAIT_CIRCULATION[type_vehicule] * COEFF_TONNAGE[tonnage]",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_transporteur",
+      "type_vehicule_circulation",
+      "tonnage_vehicule",
+      "zone_circulation_province",
+      "forfait_circulation_type",
+      "coefficient_tonnage",
+      "montant_annuel = forfait_circulation_type * coefficient_tonnage",
+      "penalite_retard = montant_annuel * 0.15 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale générale sur la circulation des véhicules commerciaux et de transport."
+  },
+  {
+    "nom_taxe": "Taxe sur les véhicules affectés au transport public",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Nombre de places et fréquentation",
+    "formule_calcul": "FORFAIT_TRANSPORT_PUBLIC[type_vehicule] * nombre_places * COEFF_FREQUENTATION",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_transport",
+      "type_vehicule_public (bus, taxi, minibus)",
+      "nombre_places_vehicule",
+      "frequentation_moyenne_quotidienne",
+      "forfait_transport_public",
+      "coefficient_frequentation",
+      "montant_trimestriel = forfait_transport_public * nombre_places_vehicule * coefficient_frequentation",
+      "penalite_retard = montant_trimestriel * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe spécifique aux véhicules utilisés pour le transport public de personnes dans la province."
+  },
+  {
+    "nom_taxe": "Taxe sur les engins lourds (bulldozers, chargeuses, etc.)",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Poids et puissance de l'engin",
+    "formule_calcul": "FORFAIT_ENGIN[type_engin] * puissance_ch * COEFF_POIDS",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "18% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_engin",
+      "type_engin_lourd",
+      "puissance_engin_cheveaux",
+      "poids_engin_tonnes",
+      "forfait_type_engin",
+      "coefficient_poids",
+      "montant_annuel = forfait_type_engin * puissance_engin_cheveaux * coefficient_poids",
+      "penalite_retard = montant_annuel * 0.18 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe due pour les engins de chantier et machines lourdes circulant ou stationnant dans la province."
+  },
+  {
+    "nom_taxe": "Taxe sur les bateaux et embarcations (lacs et fleuves)",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Tonnage et type d'embarcation",
+    "formule_calcul": "FORFAIT_BATEAU[type_embarcation] * tonnage * COEFF_ACTIVITE",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_bateau",
+      "type_embarcation (peche, transport, plaisance)",
+      "tonnage_bateau",
+      "port_attache",
+      "forfait_type_embarcation",
+      "coefficient_activite",
+      "montant_annuel = forfait_type_embarcation * tonnage_bateau * coefficient_activite",
+      "penalite_retard = montant_annuel * 0.15 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale sur les embarcations naviguant sur les cours d'eau et lacs de la province."
+  },
+  {
+    "nom_taxe": "Taxe sur les concessions foncières",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface concédée et usage",
+    "formule_calcul": "FORFAIT_CONCESSION_PROV[type_usage] * surface_hectares * COEFF_DUREE_CONCESSION",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_concessionnaire",
+      "localisation_concession",
+      "type_usage_concession (agricole, industriel, etc.)",
+      "surface_concedee_hectares",
+      "duree_concession_annees",
+      "forfait_concession_provinciale",
+      "coefficient_duree",
+      "montant_annuel = forfait_concession_provinciale * surface_concedee_hectares * coefficient_duree",
+      "penalite_retard = montant_annuel * 0.12 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale annuelle sur les concessions foncières accordées par l'État dans le domaine provincial."
+  },
+  {
+    "nom_taxe": "Taxe sur les immeubles bâtis",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Valeur locative des bâtiments",
+    "formule_calcul": "VALEUR_LOCATIVE * TAUX_IMMEUBLE_BATI_PROV",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_immeuble",
+      "adresse_immeuble",
+      "valeur_locative_annuelle",
+      "surface_totale_batie_m2",
+      "taux_provincial_immeuble_bati",
+      "montant_annuel = valeur_locative_annuelle * taux_provincial_immeuble_bati",
+      "penalite_retard = montant_annuel * 0.08 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale annuelle sur les immeubles construits, basée sur leur valeur locative."
+  },
+  {
+    "nom_taxe": "Taxe sur les immeubles non bâtis",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Valeur foncière du terrain",
+    "formule_calcul": "VALEUR_FONCIERE * TAUX_IMMEUBLE_NON_BATI_PROV",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_terrain",
+      "localisation_terrain",
+      "valeur_fonciere_terrain",
+      "surface_terrain_m2",
+      "taux_provincial_immeuble_non_bati",
+      "montant_annuel = valeur_fonciere_terrain * taux_provincial_immeuble_non_bati",
+      "penalite_retard = montant_annuel * 0.08 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale annuelle sur les terrains non construits, basée sur leur valeur foncière."
+  },
+  {
+    "nom_taxe": "Taxe sur les lotissements",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Superficie du lotissement et nombre de lots",
+    "formule_calcul": "FORFAIT_LOTISSEMENT * surface_hectares + SUPPL_LOT * nombre_lots",
+    "penalite_periode": "après approbation",
+    "penalite_calcul": "10% par mois de retard dans le paiement après approbation",
+    "rubriques_paiement": [
+      "nom_promoteur_lotissement",
+      "localisation_lotissement",
+      "surface_lotissement_hectares",
+      "nombre_lots_prevus",
+      "forfait_lotissement_surface",
+      "supplement_par_lot",
+      "date_approbation_lotissement",
+      "montant_base = forfait_lotissement_surface * surface_lotissement_hectares + supplement_par_lot * nombre_lots_prevus",
+      "penalite_retard = montant_base * 0.1 * mois_retard_paiement",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Taxe due par les promoteurs pour l'approbation et la réalisation de lotissements."
+  },
+  {
+    "nom_taxe": "Taxe sur les mutations immobilières",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Prix de vente ou valeur vénale",
+    "formule_calcul": "TAUX_MUTATION * prix_vente_immeuble",
+    "penalite_periode": "après transaction",
+    "penalite_calcul": "1% par mois de retard dans l'enregistrement",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "nom_acheteur",
+      "adresse_immeuble_vendu",
+      "prix_vente_declare",
+      "date_acte_notarie",
+      "taux_mutation_provinciale",
+      "montant_base = taux_mutation_provinciale * prix_vente_declare",
+      "penalite_retard_enregistrement = montant_base * 0.01 * mois_retard_enregistrement",
+      "total_a_payer = montant_base + penalite_retard_enregistrement"
+    ],
+    "description": "Taxe due lors de la vente ou transfert de propriété d'un bien immobilier, perçue par la province."
+  },
+  {
+    "nom_taxe": "Taxe sur les locations d'immeubles (quote-part provinciale)",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Montant des loyers perçus",
+    "formule_calcul": "TAUX_LOCATION_PROV * total_loyers_trimestriels",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "7% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_bailleur",
+      "adresse_immeuble_location",
+      "total_loyers_percus_trimestriel",
+      "nombre_locataires",
+      "taux_location_provinciale",
+      "montant_trimestriel = taux_location_provinciale * total_loyers_percus_trimestriel",
+      "penalite_retard = montant_trimestriel * 0.07 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Part provinciale de la taxe sur les revenus locatifs des immeubles."
+  },
+  {
+    "nom_taxe": "Taxe de voirie provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Frontage et type de construction",
+    "formule_calcul": "FORFAIT_VOIRIE * longueur_frontage_metres * COEFF_TYPE_CONSTRUCTION",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_proprietaire_riverain",
+      "adresse_propriete",
+      "longueur_frontage_metres",
+      "type_construction_riveraine",
+      "forfait_voirie_provinciale",
+      "coefficient_type_construction",
+      "montant_annuel = forfait_voirie_provinciale * longueur_frontage_metres * coefficient_type_construction",
+      "penalite_retard = montant_annuel * 0.1 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale pour l'entretien et la construction des voiries, due par les riverains."
+  },
+  {
+    "nom_taxe": "Taxe de péage routier provincial",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de véhicule et distance",
+    "formule_calcul": "TARIF_PEAGE[type_vehicule] * nombre_passages",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Amende forfaitaire si non-paiement du péage",
+    "rubriques_paiement": [
+      "numero_plaque_vehicule",
+      "type_vehicule_peage",
+      "point_entree_peage",
+      "point_sortie_peage",
+      "tarif_peage_type_vehicule",
+      "paiement_effectue (oui/non)",
+      "montant_due = tarif_peage_type_vehicule",
+      "penalite = paiement_effectue == 'non' ? AMENDE_PEAGE : 0",
+      "total_a_payer = montant_due + penalite"
+    ],
+    "description": "Taxe de péage pour l'utilisation des routes à péage gérées par la province."
+  },
+  {
+    "nom_taxe": "Taxe sur l'exploitation forestière provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Volume de bois exploité",
+    "formule_calcul": "TAUX_EXPLOITATION_FORESTIERE * volume_bois_exploite_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_exploitant_forestier",
+      "concession_forestiere",
+      "type_bois_exploite",
+      "volume_bois_exploite_trimestriel_m3",
+      "taux_exploitation_forestiere",
+      "montant_trimestriel = taux_exploitation_forestiere * volume_bois_exploite_trimestriel_m3",
+      "penalite_retard = montant_trimestriel * 0.15 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe provinciale sur l'exploitation des ressources forestières."
+  },
+  {
+    "nom_taxe": "Taxe environnementale provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Impact environnemental de l'activité",
+    "formule_calcul": "FORFAIT_ENVIRONNEMENTAL[type_activite] * COEFF_IMPACT",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "20% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "secteur_activite",
+      "type_impact_environnemental",
+      "mesures_atténuation (oui/non)",
+      "forfait_environnemental_type",
+      "coefficient_impact",
+      "montant_annuel = forfait_environnemental_type * coefficient_impact",
+      "penalite_retard = montant_annuel * 0.2 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe destinée à compenser les impacts environnementaux des activités industrielles et commerciales."
+  },
+  {
+    "nom_taxe": "Taxe sur l'exploitation des ressources naturelles non minières",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Volume ou quantité de ressources exploitées",
+    "formule_calcul": "TAUX_RESSOURCES_NATURELLES[type_ressource] * quantite_exploitee_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "type_ressource_exploitee (eau, sable, etc.)",
+      "quantite_exploitee_trimestriel",
+      "unite_mesure",
+      "taux_ressources_naturelles",
+      "montant_trimestriel = taux_ressources_naturelles * quantite_exploitee_trimestriel",
+      "penalite_retard = montant_trimestriel * 0.12 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe provinciale sur l'exploitation des ressources naturelles autres que les minerais."
+  },
+  {
+    "nom_taxe": "Taxe d'assainissement provincial",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Consommation d'eau et rejets",
+    "formule_calcul": "TAUX_ASSINISSEMENT_PROV * consommation_eau_trimestriel_m3 * COEFF_REJET",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_abonne_ou_entreprise",
+      "adresse_installation",
+      "type_activite_generatrice",
+      "consommation_eau_trimestriel_m3",
+      "type_rejets (domestiques, industriels)",
+      "taux_assainissement_provincial",
+      "coefficient_rejet",
+      "montant_trimestriel = taux_assainissement_provincial * consommation_eau_trimestriel_m3 * coefficient_rejet",
+      "penalite_retard = montant_trimestriel * 0.08 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe provinciale pour financer les infrastructures d'assainissement à l'échelle provinciale."
+  }
+]
+
+[
+  {
+    "nom_taxe": "Taxe sur les enseignes commerciales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface de l'enseigne et emplacement",
+    "formule_calcul": "FORFAIT_ENSEIGNE[type_enseigne] * surface_m2 * COEFF_ZONE[zone]",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_commerce",
+      "adresse_enseigne",
+      "type_enseigne (fixe, suspendue, etc.)",
+      "surface_enseigne_m2",
+      "zone_commerciale",
+      "forfait_type_enseigne",
+      "coefficient_zone",
+      "montant_annuel = forfait_type_enseigne * surface_enseigne_m2 * coefficient_zone",
+      "penalite_retard = montant_annuel * 0.15 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due pour l'installation et l'exploitation d'enseignes commerciales identifiant un établissement."
+  },
+  {
+    "nom_taxe": "Taxe sur les panneaux publicitaires",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Surface du panneau et type d'affichage",
+    "formule_calcul": "FORFAIT_PANNEAU[type_affichage] * surface_m2 * nombre_jours_affichage",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_annonceur",
+      "adresse_panneau",
+      "type_affichage (permanent, temporaire)",
+      "surface_panneau_m2",
+      "duree_affichage_jours",
+      "forfait_type_affichage",
+      "montant_trimestriel = forfait_type_affichage * surface_panneau_m2 * (duree_affichage_jours / 90)",
+      "penalite_retard = montant_trimestriel * 0.12 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due pour l'affichage publicitaire sur panneaux fixes, basée sur la surface et la durée."
+  },
+  {
+    "nom_taxe": "Taxe sur la publicité lumineuse",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Consommation électrique et surface lumineuse",
+    "formule_calcul": "FORFAIT_LUMINEUX * surface_m2 + SUPPL_ELECTRIQUE * consommation_kwh",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "18% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "adresse_publicite",
+      "surface_lumineuse_m2",
+      "consommation_annuelle_estimee_kwh",
+      "forfait_lumineux_surface",
+      "supplement_electrique_par_kwh",
+      "montant_annuel = forfait_lumineux_surface * surface_lumineuse_m2 + supplement_electrique_par_kwh * consommation_annuelle_estimee_kwh",
+      "penalite_retard = montant_annuel * 0.18 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe spécifique pour les publicités utilisant l'éclairage électrique, incluant la consommation d'énergie."
+  },
+  {
+    "nom_taxe": "Taxe sur la publicité mobile",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Nombre de véhicules et durée de campagne",
+    "formule_calcul": "FORFAIT_VEHICULE_PUB * nombre_vehicules * COEFF_VISIBILITE",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "10% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_agence_publicite",
+      "type_campagne_mobile",
+      "nombre_vehicules_publicitaires",
+      "zone_couverture",
+      "forfait_vehicule_publicitaire",
+      "coefficient_visibilite",
+      "montant_mensuel = forfait_vehicule_publicitaire * nombre_vehicules_publicitaires * coefficient_visibilite",
+      "penalite_retard = montant_mensuel * 0.1 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe pour les campagnes publicitaires sur véhicules en mouvement dans la commune."
+  },
+  {
+    "nom_taxe": "Taxe sur les banderoles et affiches commerciales",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre d'unités et durée d'affichage",
+    "formule_calcul": "FORFAIT_BANDEROLE * nombre_unites * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Triple du montant si affichage non autorisé",
+    "rubriques_paiement": [
+      "nom_annonceur",
+      "type_support (banderole, affiche)",
+      "nombre_unites_affichage",
+      "duree_affichage_jours",
+      "forfait_journalier_unite",
+      "autorisation_affichage (oui/non)",
+      "montant_base = forfait_journalier_unite * nombre_unites_affichage * duree_affichage_jours",
+      "penalite = autorisation_affichage == 'non' ? montant_base * 3 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe pour l'affichage temporaire de banderoles et affiches à but commercial."
+  },
+  {
+    "nom_taxe": "Taxe sur les débits de boisson",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Type de licence et capacité d'accueil",
+    "formule_calcul": "FORFAIT_LICENCE[type_licence] + (SUPPL_CAPACITE * nombre_places)",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_debit_boisson",
+      "adresse_etablissement",
+      "type_licence_boisson",
+      "nombre_places_clients",
+      "forfait_licence_type",
+      "supplement_par_place",
+      "montant_trimestriel = forfait_licence_type + (supplement_par_place * nombre_places_clients)",
+      "penalite_retard = montant_trimestriel * 0.15 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe trimestrielle spécifique aux établissements vendant des boissons alcoolisées."
+  },
+  {
+    "nom_taxe": "Taxe sur les hôtels et maisons d'hébergement",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Nombre de chambres et taux d'occupation",
+    "formule_calcul": "FORFAIT_HOTEL[category] * nombre_chambres * taux_occupation_moyen",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "10% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_hotel",
+      "adresse_etablissement",
+      "categorie_etablissement",
+      "nombre_chambres_total",
+      "taux_occupation_moyen_mensuel",
+      "forfait_categorie",
+      "montant_mensuel = forfait_categorie * nombre_chambres_total * taux_occupation_moyen_mensuel",
+      "penalite_retard = montant_mensuel * 0.1 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe mensuelle due par les établissements d'hébergement touristique ou professionnel."
+  },
+  {
+    "nom_taxe": "Taxe sur les restaurants et bars",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Surface de vente et nombre de couverts",
+    "formule_calcul": "FORFAIT_RESTAURANT[type] * surface_m2 + SUPPL_COUVERT * nombre_couverts",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_restaurant_bar",
+      "adresse_etablissement",
+      "type_etablissement (restaurant, bar, cafe)",
+      "surface_vente_m2",
+      "nombre_couverts_places",
+      "forfait_type_etablissement",
+      "supplement_par_couvert",
+      "montant_trimestriel = forfait_type_etablissement * surface_vente_m2 + (supplement_par_couvert * nombre_couverts_places)",
+      "penalite_retard = montant_trimestriel * 0.12 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe trimestrielle due par les établissements de restauration et de boissons."
+  },
+  {
+    "nom_taxe": "Taxe sur les jeux de hasard et paris",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Mise totale ou chiffre d'affaires des jeux",
+    "formule_calcul": "TAUX_JEUX_HASARD * total_mises_mensuelles",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "20% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_etablissement_jeux",
+      "adresse_etablissement",
+      "type_jeux_hasard (machines, paris, etc.)",
+      "total_mises_mensuelles",
+      "taux_provincial_jeux",
+      "montant_mensuel = taux_provincial_jeux * total_mises_mensuelles",
+      "penalite_retard = montant_mensuel * 0.2 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe provinciale sur les jeux d'argent et les activités de paris."
+  },
+  {
+    "nom_taxe": "Taxe sur les spectacles publics",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de spectateurs et prix d'entrée",
+    "formule_calcul": "TAUX_SPECTACLE * (prix_billet_moyen * nombre_spectateurs)",
+    "penalite_periode": "après spectacle",
+    "penalite_calcul": "15% par jour de retard dans la déclaration",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "lieu_spectacle",
+      "type_spectacle",
+      "nombre_spectateurs",
+      "prix_billet_moyen",
+      "taux_provincial_spectacle",
+      "date_spectacle",
+      "date_declaration",
+      "montant_base = taux_provincial_spectacle * (prix_billet_moyen * nombre_spectateurs)",
+      "penalite_retard = jours_retard_declaration * montant_base * 0.15",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Taxe provinciale sur les recettes des spectacles publics."
+  },
+  {
+    "nom_taxe": "Taxe sur les stations-service",
+    "autorite_beneficiaire": "Commune/Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Volume de carburant vendu",
+    "formule_calcul": "TAUX_STATION_SERVICE * volume_carburant_vendu_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_station_service",
+      "adresse_station",
+      "type_carburant_principal",
+      "volume_vendu_trimestriel_litres",
+      "taux_station_service",
+      "montant_trimestriel = taux_station_service * volume_vendu_trimestriel_litres",
+      "penalite_retard = montant_trimestriel * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due par les stations-service sur le volume de carburant distribué."
+  },
+  {
+    "nom_taxe": "Taxe sur les entrepôts et dépôts commerciaux",
+    "autorite_beneficiaire": "Commune",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface couverte et type de marchandises",
+    "formule_calcul": "FORFAIT_ENTREPOT[type_marchandise] * surface_couverte_m2",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "12% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "adresse_entrepot",
+      "type_marchandises_stockees",
+      "surface_couverte_m2",
+      "forfait_type_marchandise",
+      "montant_annuel = forfait_type_marchandise * surface_couverte_m2",
+      "penalite_retard = montant_annuel * 0.12 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Taxe annuelle due pour l'exploitation d'entrepôts et dépôts commerciaux."
+  },
+  {
+    "nom_taxe": "Droits d'autorisation d'exploitation",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'activité et investissement",
+    "formule_calcul": "FORFAIT_AUTORISATION[type_activite] * COEFF_INVESTISSEMENT",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "1% par mois de retard dans le paiement",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "type_activite_exploitation",
+      "montant_investissement_estime",
+      "duree_autorisation_annees",
+      "forfait_type_activite",
+      "coefficient_investissement",
+      "montant_base = forfait_type_activite * coefficient_investissement",
+      "penalite_retard = montant_base * 0.01 * mois_retard_paiement",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Droits à payer pour l'obtention d'une autorisation provinciale d'exploitation d'une activité."
+  },
+  {
+    "nom_taxe": "Droits d'agrément provincial",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Secteur d'activité et taille de l'entreprise",
+    "formule_calcul": "FORFAIT_AGREMENT[secteur] * COEFF_TAILLE[effectif]",
+    "penalite_periode": "après approbation",
+    "penalite_calcul": "2% par mois de retard dans le paiement",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "secteur_activite",
+      "effectif_employes",
+      "chiffre_affaires_annuel",
+      "forfait_secteur",
+      "coefficient_taille",
+      "montant_base = forfait_secteur * coefficient_taille",
+      "penalite_retard = montant_base * 0.02 * mois_retard_paiement",
+      "total_a_payer = montant_base + penalite_retard"
+    ],
+    "description": "Droits à payer pour l'obtention d'un agrément provincial pour exercer certaines activités réglementées."
+  },
+  {
+    "nom_taxe": "Droits de licence commerciale provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "annuel",
+    "base_calcul": "Type de commerce et chiffre d'affaires",
+    "formule_calcul": "FORFAIT_LICENCE_COMMERCIALE[type] * COEFF_CA[chiffre_affaires]",
+    "penalite_periode": "semestriel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_commercant",
+      "type_commerce",
+      "chiffre_affaires_annuel",
+      "localisation_commerce",
+      "forfait_type_commerce",
+      "coefficient_chiffre_affaires",
+      "montant_annuel = forfait_type_commerce * coefficient_chiffre_affaires",
+      "penalite_retard = montant_annuel * 0.15 * mois_retard",
+      "total_a_payer = montant_annuel + penalite_retard"
+    ],
+    "description": "Droits annuels pour la détention d'une licence commerciale provinciale."
+  },
+  {
+    "nom_taxe": "Droits de certificat et attestation provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de document et urgence",
+    "formule_calcul": "FORFAIT_CERTIFICAT[type_document] * COEFF_URGENCE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "type_document (certificat, attestation)",
+      "objet_document",
+      "delai_traitement (normal/urgent)",
+      "forfait_type_document",
+      "coefficient_urgence",
+      "total_a_payer = forfait_type_document * coefficient_urgence"
+    ],
+    "description": "Droits à payer pour l'obtention de certificats et attestations délivrés par la province."
+  },
+  {
+    "nom_taxe": "Redevance d'inspection provinciale",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'inspection et durée",
+    "formule_calcul": "FORFAIT_INSPECTION[type] * duree_heures",
+    "penalite_periode": "après inspection",
+    "penalite_calcul": "Amende si obstruction à l'inspection",
+    "rubriques_paiement": [
+      "nom_entreprise_inspectee",
+      "type_inspection (sanitaire, technique, etc.)",
+      "duree_inspection_heures",
+      "date_inspection",
+      "forfait_type_inspection",
+      "cooperation_inspection (oui/non)",
+      "montant_base = forfait_type_inspection * duree_inspection_heures",
+      "penalite_obstruction = cooperation_inspection == 'non' ? AMENDE_OBSTRUCTION : 0",
+      "total_a_payer = montant_base + penalite_obstruction"
+    ],
+    "description": "Redevance due pour les inspections techniques, sanitaires ou autres réalisées par la province."
+  },
+  {
+    "nom_taxe": "Redevance de contrôle et surveillance",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Secteur d'activité et niveau de risque",
+    "formule_calcul": "FORFAIT_CONTROLE[secteur] * COEFF_RISQUE",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "10% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise",
+      "secteur_activite",
+      "niveau_risque_activite",
+      "periode_controle",
+      "forfait_secteur",
+      "coefficient_risque",
+      "montant_trimestriel = forfait_secteur * coefficient_risque",
+      "penalite_retard = montant_trimestriel * 0.1 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Redevance trimestrielle pour les services de contrôle et surveillance des activités par la province."
+  },
+  {
+    "nom_taxe": "Taxe sur les marchés provinciaux",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "quotidien/mensuel",
+    "base_calcul": "Surface occupée et type de marchandises",
+    "formule_calcul": "FORFAIT_MARCHE_PROV[type_marchandise] * surface_m2 * nombre_jours",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Double du forfait si occupation non autorisée",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "marche_provincial",
+      "type_marchandises",
+      "surface_occupee_m2",
+      "nombre_jours_occupation",
+      "forfait_type_marchandise",
+      "autorisation_occupation (oui/non)",
+      "montant_base = forfait_type_marchandise * surface_occupee_m2 * nombre_jours_occupation",
+      "penalite = autorisation_occupation == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'occupation d'emplacements dans les marchés relevant de la compétence provinciale."
+  },
+  {
+    "nom_taxe": "Taxe sur les gares routières provinciales",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Nombre de départs et taille de la gare",
+    "formule_calcul": "FORFAIT_GARE_PROV * nombre_departs_quotidiens * COEFF_TAILLE_GARE",
+    "penalite_periode": "hebdomadaire après échéance",
+    "penalite_calcul": "12% par semaine de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_gestionnaire_gare",
+      "nom_gare_routiere",
+      "nombre_departs_quotidiens",
+      "capacite_gare_passagers",
+      "forfait_gare_provinciale",
+      "coefficient_taille",
+      "montant_mensuel = forfait_gare_provinciale * nombre_departs_quotidiens * coefficient_taille",
+      "penalite_retard = montant_mensuel * 0.12 * semaines_retard",
+      "total_a_payer = montant_mensuel + penalite_retard"
+    ],
+    "description": "Taxe mensuelle due par les exploitants de gares routières provinciales."
+  },
+  {
+    "nom_taxe": "Taxe sur les ports fluviaux et lacustres",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Tonnage des embarcations et fréquence",
+    "formule_calcul": "FORFAIT_PORT[type_embarcation] * tonnage * nombre_accostages_trimestriel",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "15% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_gestionnaire_port",
+      "nom_port",
+      "type_embarcations_principal",
+      "tonnage_moyen_embarcations",
+      "nombre_accostages_trimestriel",
+      "forfait_type_embarcation",
+      "montant_trimestriel = forfait_type_embarcation * tonnage_moyen_embarcations * nombre_accostages_trimestriel",
+      "penalite_retard = montant_trimestriel * 0.15 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Taxe due pour l'utilisation des infrastructures portuaires fluviales et lacustres provinciales."
+  },
+  {
+    "nom_taxe": "Taxe sur les abattoirs provinciaux",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre et type d'animaux abattus",
+    "formule_calcul": "FORFAIT_ABATTAGE_PROV[type_animal] * nombre_animaux",
+    "penalite_periode": "après abattage",
+    "penalite_calcul": "Double du montant si abattage clandestin",
+    "rubriques_paiement": [
+      "nom_abattoir",
+      "localisation_abattoir",
+      "type_animaux_abattus",
+      "nombre_animaux_abattus",
+      "date_abattage",
+      "forfait_abattage_provincial",
+      "declaration_conforme (oui/non)",
+      "montant_base = forfait_abattage_provincial * nombre_animaux_abattus",
+      "penalite = declaration_conforme == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe provinciale pour l'utilisation des abattoirs publics provinciaux."
+  },
+  {
+    "nom_taxe": "Taxe sur les zones économiques spéciales (part provinciale)",
+    "autorite_beneficiaire": "Province",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Valeur ajoutée générée dans la zone",
+    "formule_calcul": "TAUX_ZES_PROV * valeur_ajoutee_trimestrielle",
+    "penalite_periode": "mensuel après échéance",
+    "penalite_calcul": "8% par mois de retard sur le montant dû",
+    "rubriques_paiement": [
+      "nom_entreprise_zes",
+      "zone_economique_speciale",
+      "valeur_ajoutee_trimestrielle",
+      "nombre_employes_zes",
+      "taux_provincial_zes",
+      "montant_trimestriel = taux_provincial_zes * valeur_ajoutee_trimestrielle",
+      "penalite_retard = montant_trimestriel * 0.08 * mois_retard",
+      "total_a_payer = montant_trimestriel + penalite_retard"
+    ],
+    "description": "Part provinciale de la taxe sur les activités exercées dans les zones économiques spéciales."
+  },
+  {
+    "nom_taxe": "Taxe de reconnaissance coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Forfait fixé par la coutume",
+    "formule_calcul": "FORFAIT_RECONNAISSANCE",
+    "penalite_periode": "après reconnaissance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "village_communautaire",
+      "motif_reconnaissance",
+      "forfait_reconnaissance_coutumiere",
+      "total_a_payer = forfait_reconnaissance_coutumiere"
+    ],
+    "description": "Taxe coutumière due pour la reconnaissance officielle d'une personne ou d'un statut dans la communauté."
+  },
+  {
+    "nom_taxe": "Taxe d'allégeance ou de redevance coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Statut familial et capacité contributive",
+    "formule_calcul": "FORFAIT_ALLEGEANCE[statut] * COEFF_CAPACITE",
+    "penalite_periode": "après saison agricole",
+    "penalite_calcul": "Produits agricoles supplémentaires si retard",
+    "rubriques_paiement": [
+      "nom_famille",
+      "statut_familial",
+      "capacite_contributive_estimee",
+      "annee_coutumiere",
+      "forfait_statut",
+      "coefficient_capacite",
+      "montant_annuel = forfait_statut * coefficient_capacite",
+      "penalite_retard = naturelle (produits agricoles)",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Redevance annuelle symbolique due à l'autorité coutumière en signe d'allégeance et de cohésion sociale."
+  },
+  {
+    "nom_taxe": "Contribution communautaire annuelle",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Nombre de membres actifs du ménage",
+    "formule_calcul": "FORFAIT_CONTRIBUTION * nombre_membres_actifs",
+    "penalite_periode": "après assemblée générale",
+    "penalite_calcul": "Travaux communautaires supplémentaires",
+    "rubriques_paiement": [
+      "nom_chef_famille",
+      "village_secteur",
+      "nombre_membres_actifs_famille",
+      "forfait_contribution_annuelle",
+      "montant_annuel = forfait_contribution_annuelle * nombre_membres_actifs_famille",
+      "penalite_retard = travaux_communautaires_supplementaires",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Contribution annuelle des ménages pour financer les projets communautaires décidés par l'assemblée villageoise."
+  },
+  {
+    "nom_taxe": "Taxe de palabre / conciliation coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Complexité du conflit et parties impliquées",
+    "formule_calcul": "FORFAIT_PALABRE[complexite] * nombre_parties",
+    "penalite_periode": "après jugement",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_parties_conflit",
+      "nature_conflit",
+      "nombre_parties_impliquees",
+      "complexite_dossier",
+      "forfait_palabre",
+      "total_a_payer = forfait_palabre * nombre_parties_impliquees"
+    ],
+    "description": "Taxe due pour l'organisation d'une palabre ou procédure de conciliation coutumière pour résoudre un conflit."
+  },
+  {
+    "nom_taxe": "Droit d'arbitrage coutumier",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Valeur en litige et durée de l'arbitrage",
+    "formule_calcul": "FORFAIT_ARBITRAGE * COEFF_VALEUR_LITIGE * nombre_jours_arbitrage",
+    "penalite_periode": "après sentence",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_parties_arbitrage",
+      "objet_litige",
+      "valeur_estimee_litige",
+      "duree_arbitrage_jours",
+      "forfait_arbitrage_base",
+      "coefficient_valeur",
+      "total_a_payer = forfait_arbitrage_base * coefficient_valeur * duree_arbitrage_jours"
+    ],
+    "description": "Droit à payer pour le recours à l'arbitrage coutumier pour résoudre un différend."
+  },
+  {
+    "nom_taxe": "Droit d'hommage coutumier (selon usages locaux)",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Occasion et statut du donateur",
+    "formule_calcul": "FORFAIT_HOMMAGE[occasion] * COEFF_STATUT",
+    "penalite_periode": "selon occasion",
+    "penalite_calcul": "Pas de pénalité pour ce rite coutumier",
+    "rubriques_paiement": [
+      "nom_donateur",
+      "occasion_hommage (mariage, décès, fête)",
+      "statut_donateur",
+      "nature_hommage (argent, produits, animaux)",
+      "forfait_occasion",
+      "coefficient_statut",
+      "total_a_payer = forfait_occasion * coefficient_statut"
+    ],
+    "description": "Droit d'hommage symbolique offert à l'autorité coutumière lors d'événements spéciaux selon les traditions locales."
+  },
+  {
+    "nom_taxe": "Taxe sur l'occupation des terres coutumières",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface occupée et type d'utilisation",
+    "formule_calcul": "FORFAIT_OCCUPATION_TERRE[type_utilisation] * surface_hectares",
+    "penalite_periode": "après récolte",
+    "penalite_calcul": "Part de récolte supplémentaire si non-paiement",
+    "rubriques_paiement": [
+      "nom_occupant",
+      "localisation_terrain",
+      "type_utilisation_terres (habitation, agriculture, etc.)",
+      "surface_occupee_hectares",
+      "forfait_type_utilisation",
+      "montant_annuel = forfait_type_utilisation * surface_occupee_hectares",
+      "penalite_retard = part_recolte_supplementaire",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'occupation et l'utilisation des terres relevant du domaine coutumier."
+  },
+  {
+    "nom_taxe": "Redevance d'attribution de parcelle coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Surface de la parcelle et usage prévu",
+    "formule_calcul": "FORFAIT_ATTRIBUTION[usage] * surface_hectares",
+    "penalite_periode": "après attribution",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_beneficiaire",
+      "village_secteur",
+      "usage_prevu_parcelle",
+      "surface_parcelle_hectares",
+      "forfait_attribution_usage",
+      "total_a_payer = forfait_attribution_usage * surface_parcelle_hectares"
+    ],
+    "description": "Redevance due pour l'attribution d'une parcelle de terre par l'autorité coutumière."
+  },
+  {
+    "nom_taxe": "Taxe sur la cession ou mutation coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Valeur de la terre et type de cession",
+    "formule_calcul": "FORFAIT_CESSION[type_cession] * COEFF_VALEUR_TERRE",
+    "penalite_periode": "après cession",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_cedant",
+      "nom_cessionnaire",
+      "type_cession (vente, don, héritage)",
+      "valeur_estimee_terre",
+      "localisation_terre",
+      "forfait_type_cession",
+      "coefficient_valeur",
+      "total_a_payer = forfait_type_cession * coefficient_valeur"
+    ],
+    "description": "Taxe due pour l'enregistrement et la validation d'une cession de droits coutumiers sur une terre."
+  },
+  {
+    "nom_taxe": "Redevance sur l'exploitation des terres agricoles",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Surface cultivée et type de culture",
+    "formule_calcul": "FORFAIT_EXPLOITATION_AGRICOLE[type_culture] * surface_hectares",
+    "penalite_periode": "après récolte",
+    "penalite_calcul": "Pourcentage de la récolte si non-paiement",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "type_culture_principale",
+      "surface_cultivee_hectares",
+      "saison_culturale",
+      "forfait_type_culture",
+      "montant_saisonnier = forfait_type_culture * surface_cultivee_hectares",
+      "penalite_retard = pourcentage_recolte",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Redevance saisonnière due pour l'exploitation des terres agricoles coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les concessions rurales coutumières",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface de la concession et durée",
+    "formule_calcul": "FORFAIT_CONCESSION_RURALE * surface_hectares * COEFF_DUREE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Travaux communautaires supplémentaires",
+    "rubriques_paiement": [
+      "nom_concessionnaire",
+      "localisation_concession",
+      "surface_concession_hectares",
+      "duree_concession_annees",
+      "forfait_concession_rurale",
+      "coefficient_duree",
+      "montant_annuel = forfait_concession_rurale * surface_concession_hectares * coefficient_duree",
+      "penalite_retard = travaux_communautaires",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour les concessions rurales accordées par l'autorité coutumière."
+  },
+  {
+    "nom_taxe": "Redevance sur les champs communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Participation aux travaux communautaires",
+    "formule_calcul": "FORFAIT_CHAMP_COMMUNAUTAIRE * nombre_jours_travail",
+    "penalite_periode": "après travaux",
+    "penalite_calcul": "Jours de travail supplémentaires",
+    "rubriques_paiement": [
+      "nom_famille",
+      "village_communautaire",
+      "nombre_jours_travail_effectues",
+      "saison_travaux",
+      "forfait_champ_communautaire",
+      "montant_saisonnier = forfait_champ_communautaire * nombre_jours_travail_effectues",
+      "penalite_retard = jours_travail_supplementaires",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Redevance due sous forme de travail ou de contribution pour l'entretien des champs communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur l'exploitation forestière artisanale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Volume de bois exploité",
+    "formule_calcul": "FORFAIT_EXPLOITATION_FORESTIERE * volume_bois_m3",
+    "penalite_periode": "après exploitation",
+    "penalite_calcul": "Double du volume exploité en compensation",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "foret_exploitee",
+      "type_bois_exploite",
+      "volume_bois_exploite_m3",
+      "saison_exploitation",
+      "forfait_exploitation_forestiere",
+      "montant_saisonnier = forfait_exploitation_forestiere * volume_bois_exploite_m3",
+      "penalite_retard = volume_bois_double",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Taxe due pour l'exploitation artisanale des ressources forestières sur les terres coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur l'exploitation des carrières artisanales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Volume de matériaux extraits",
+    "formule_calcul": "FORFAIT_CARRIERE_ARTISANALE[type_materiau] * volume_extrait_m3",
+    "penalite_periode": "après extraction",
+    "penalite_calcul": "Matériaux supplémentaires fournis gratuitement",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "localisation_carriere",
+      "type_materiau_extrait",
+      "volume_extrait_trimestriel_m3",
+      "forfait_type_materiau",
+      "montant_trimestriel = forfait_type_materiau * volume_extrait_trimestriel_m3",
+      "penalite_retard = materiaux_supplementaires",
+      "total_a_payer = montant_trimestriel"
+    ],
+    "description": "Taxe due pour l'exploitation artisanale de carrières sur les terres coutumières."
+  },
+  {
+    "nom_taxe": "Redevance sur le sable, gravier, latérite",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Volume prélevé et usage",
+    "formule_calcul": "FORFAIT_MATERIAUX[type] * volume_preleve_m3",
+    "penalite_periode": "après prélèvement",
+    "penalite_calcul": "Double du volume prélevé",
+    "rubriques_paiement": [
+      "nom_preneur",
+      "site_prelevement",
+      "type_materiau_preleve",
+      "volume_preleve_m3",
+      "usage_materiau",
+      "forfait_type_materiau",
+      "montant_base = forfait_type_materiau * volume_preleve_m3",
+      "penalite = autorisation_prealable == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Redevance due pour le prélèvement de matériaux de construction sur les terres coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur la pêche artisanale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Type d'engin de pêche et période",
+    "formule_calcul": "FORFAIT_PECHE[type_engin] * nombre_jours_peche",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Part du poisson pêché",
+    "rubriques_paiement": [
+      "nom_pecheur",
+      "plan_eau_peche",
+      "type_engin_peche",
+      "nombre_jours_peche_saison",
+      "forfait_type_engin",
+      "montant_saisonnier = forfait_type_engin * nombre_jours_peche_saison",
+      "penalite_retard = part_poisson_peche",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Taxe due pour la pratique de la pêche artisanale dans les eaux coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur la chasse traditionnelle",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Type de gibier et période de chasse",
+    "formule_calcul": "FORFAIT_CHASSE[type_gibier] * nombre_sorties_chasse",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Part du gibier chassé",
+    "rubriques_paiement": [
+      "nom_chasseur",
+      "zone_chasse",
+      "type_gibier_cible",
+      "nombre_sorties_chasse_saison",
+      "forfait_type_gibier",
+      "montant_saisonnier = forfait_type_gibier * nombre_sorties_chasse_saison",
+      "penalite_retard = part_gibier_chasse",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Taxe due pour la pratique de la chasse traditionnelle sur les terres coutumières."
+  },
+  {
+    "nom_taxe": "Redevance sur les produits forestiers non ligneux (bois de chauffe, charbon, miel)",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Quantité collectée et type de produit",
+    "formule_calcul": "FORFAIT_PFNL[type_produit] * quantite_collectee",
+    "penalite_periode": "après collecte",
+    "penalite_calcul": "Produits collectés supplémentaires",
+    "rubriques_paiement": [
+      "nom_collecteur",
+      "foret_collecte",
+      "type_produit_collecte",
+      "quantite_collectee_saison",
+      "unite_mesure",
+      "forfait_type_produit",
+      "montant_saisonnier = forfait_type_produit * quantite_collectee_saison",
+      "penalite_retard = produits_supplementaires",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Redevance due pour la collecte des produits forestiers non ligneux sur les terres coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les marchés ruraux",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "quotidien",
+    "base_calcul": "Espace occupé et type de marchandises",
+    "formule_calcul": "FORFAIT_MARCHE_RURAL[type_marchandise] * espace_occupe",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Produits agricoles supplémentaires",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "marche_rural",
+      "type_marchandises_vendues",
+      "espace_occupe_estimation",
+      "jour_marche",
+      "forfait_type_marchandise",
+      "montant_journalier = forfait_type_marchandise * espace_occupe_estimation",
+      "penalite = paiement_jour_marche == 'non' ? PRODUITS_AGRICOLES_SUPP : 0",
+      "total_a_payer = montant_journalier"
+    ],
+    "description": "Taxe journalière due pour la vente de produits dans les marchés ruraux coutumiers."
+  },
+  {
+    "nom_taxe": "Taxe sur les étals et kiosques",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "hebdomadaire",
+    "base_calcul": "Taille de l'étal/kiosque et emplacement",
+    "formule_calcul": "FORFAIT_ETAL_RURAL[type] * taille_etal",
+    "penalite_periode": "après semaine",
+    "penalite_calcul": "Travaux communautaires",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "emplacement_etal",
+      "type_etal_kiosque",
+      "taille_etal_estimation",
+      "semaine_activite",
+      "forfait_type_etal",
+      "montant_hebdomadaire = forfait_type_etal * taille_etal_estimation",
+      "penalite_retard = travaux_communautaires",
+      "total_a_payer = montant_hebdomadaire"
+    ],
+    "description": "Taxe hebdomadaire due pour l'installation d'étals et kiosques dans les espaces coutumiers."
+  },
+  {
+    "nom_taxe": "Taxe sur les petits commerces",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Type de commerce et chiffre d'affaires estimé",
+    "formule_calcul": "FORFAIT_PETIT_COMMERCE[type] * COEFF_CA_ESTIME",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Produits ou services équivalents",
+    "rubriques_paiement": [
+      "nom_commercant",
+      "type_petit_commerce",
+      "chiffre_affaires_estime_mensuel",
+      "localisation_commerce",
+      "forfait_type_commerce",
+      "coefficient_ca",
+      "montant_mensuel = forfait_type_commerce * coefficient_ca",
+      "penalite_retard = produits_services_equivalents",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe mensuelle due par les petits commerces opérant dans les zones coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les débits de boisson traditionnels",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "hebdomadaire",
+    "base_calcul": "Type de boisson et volume vendu",
+    "formule_calcul": "FORFAIT_BOISSON_TRADITIONNELLE[type] * volume_vendu_estime",
+    "penalite_periode": "après semaine",
+    "penalite_calcul": "Boissons fournies gratuitement",
+    "rubriques_paiement": [
+      "nom_debitant",
+      "type_boisson_traditionnelle",
+      "volume_vendu_estime_semaine",
+      "localisation_debit",
+      "forfait_type_boisson",
+      "montant_hebdomadaire = forfait_type_boisson * volume_vendu_estime_semaine",
+      "penalite_retard = boissons_gratuites",
+      "total_a_payer = montant_hebdomadaire"
+    ],
+    "description": "Taxe due pour la vente de boissons traditionnelles dans les communautés coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les moulins, presses, décortiqueuses",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Type de machine et volume traité",
+    "formule_calcul": "FORFAIT_MACHINE[type] * volume_traite_mensuel",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Services gratuits supplémentaires",
+    "rubriques_paiement": [
+      "nom_proprietaire_machine",
+      "type_machine (moulin, presse, etc.)",
+      "volume_traite_mensuel_estime",
+      "localisation_machine",
+      "forfait_type_machine",
+      "montant_mensuel = forfait_type_machine * volume_traite_mensuel_estime",
+      "penalite_retard = services_gratuits",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe due pour l'exploitation de machines de transformation agricole dans les communautés coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les activités artisanales locales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Type d'artisanat et production",
+    "formule_calcul": "FORFAIT_ARTISANAT_LOCAL[type] * production_estimee",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Produits artisanaux fournis gratuitement",
+    "rubriques_paiement": [
+      "nom_artisan",
+      "type_artisanat_local",
+      "production_estimee_mensuelle",
+      "atelier_localisation",
+      "forfait_type_artisanat",
+      "montant_mensuel = forfait_type_artisanat * production_estimee_mensuelle",
+      "penalite_retard = produits_artisanaux_gratuits",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe due pour l'exercice d'activités artisanales traditionnelles dans les communautés coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les motos rurales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Usage de la moto et fréquence",
+    "formule_calcul": "FORFAIT_MOTO_RURALE[usage] * COEFF_FREQUENCE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Services de transport gratuits",
+    "rubriques_paiement": [
+      "nom_proprietaire_moto",
+      "usage_moto_rurale (personnel, transport)",
+      "frequence_utilisation",
+      "village_secteur",
+      "forfait_usage_moto",
+      "coefficient_frequence",
+      "montant_annuel = forfait_usage_moto * coefficient_frequence",
+      "penalite_retard = transport_gratuit",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'utilisation de motocyclettes dans les zones rurales coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les vélos et pirogues",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Type d'engin et usage",
+    "formule_calcul": "FORFAIT_ENGIN_RURAL[type] * COEFF_USAGE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Services communautaires supplémentaires",
+    "rubriques_paiement": [
+      "nom_proprietaire",
+      "type_engin_rural (velo, pirogue)",
+      "usage_principal",
+      "localisation_utilisation",
+      "forfait_type_engin",
+      "coefficient_usage",
+      "montant_annuel = forfait_type_engin * coefficient_usage",
+      "penalite_retard = services_communautaires",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'utilisation de vélos et pirogues dans les communautés rurales coutumières."
+  },
+  {
+    "nom_taxe": "Taxe de passage sur routes et pistes rurales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de véhicule et charge",
+    "formule_calcul": "FORFAIT_PASSAGE[type_vehicule] * COEFF_CHARGE",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Double du tarif si refus de paiement",
+    "rubriques_paiement": [
+      "nom_conducteur",
+      "type_vehicule_passage",
+      "charge_transportee",
+      "section_route_piste",
+      "forfait_type_vehicule",
+      "coefficient_charge",
+      "montant_passage = forfait_type_vehicule * coefficient_charge",
+      "penalite = paiement_refuse ? montant_passage * 2 : 0",
+      "total_a_payer = montant_passage + penalite"
+    ],
+    "description": "Taxe de passage due pour l'utilisation des routes et pistes rurales entretenues par la communauté."
+  },
+  {
+    "nom_taxe": "Redevance sur les bacs et ponts communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de passage et nombre de personnes",
+    "formule_calcul": "FORFAIT_BAC_PONT[type_passage] * nombre_personnes",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Services communautaires supplémentaires",
+    "rubriques_paiement": [
+      "nom_utilisateur",
+      "bac_pont_utilise",
+      "type_passage (personnes, marchandises)",
+      "nombre_personnes_ou_charge",
+      "forfait_type_passage",
+      "montant_passage = forfait_type_passage * nombre_personnes_ou_charge",
+      "penalite = paiement_refuse ? SERVICES_COMMUNAUTAIRES : 0",
+      "total_a_payer = montant_passage"
+    ],
+    "description": "Redevance due pour l'utilisation des bacs et ponts construits et entretenus par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les gares rurales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "quotidien",
+    "base_calcul": "Nombre de passagers et type de transport",
+    "formule_calcul": "FORFAIT_GARE_RURALE[type_transport] * nombre_passagers",
+    "penalite_periode": "après journée",
+    "penalite_calcul": "Services de transport gratuits",
+    "rubriques_paiement": [
+      "nom_conducteur",
+      "type_transport_rural",
+      "nombre_passagers_transportes",
+      "gare_rurale_utilisee",
+      "forfait_type_transport",
+      "montant_journalier = forfait_type_transport * nombre_passagers_transportes",
+      "penalite_retard = transport_gratuit",
+      "total_a_payer = montant_journalier"
+    ],
+    "description": "Taxe due pour l'utilisation des gares routières rurales gérées par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe de chargement et déchargement",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de marchandises et volume",
+    "formule_calcul": "FORFAIT_CHARGEMENT[type_marchandise] * volume_charge",
+    "penalite_periode": "après opération",
+    "penalite_calcul": "Travaux de manutention supplémentaires",
+    "rubriques_paiement": [
+      "nom_transporteur",
+      "type_marchandises_charge",
+      "volume_charge_estime",
+      "lieu_chargement_dechargement",
+      "forfait_type_marchandise",
+      "montant_operation = forfait_type_marchandise * volume_charge_estime",
+      "penalite_retard = manutention_supplementaire",
+      "total_a_payer = montant_operation"
+    ],
+    "description": "Taxe due pour les opérations de chargement et déchargement dans les zones rurales coutumières."
+  },
+  {
+    "nom_taxe": "Taxe sur les cérémonies traditionnelles",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type et envergure de la cérémonie",
+    "formule_calcul": "FORFAIT_CEREMONIE[type] * COEFF_ENVERGURE",
+    "penalite_periode": "après cérémonie",
+    "penalite_calcul": "Pas de pénalité pour les rites traditionnels",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "type_ceremonie_traditionnelle",
+      "envergure_ceremonie (familiale, communautaire)",
+      "date_ceremonie",
+      "forfait_type_ceremonie",
+      "coefficient_envergure",
+      "total_a_payer = forfait_type_ceremonie * coefficient_envergure"
+    ],
+    "description": "Taxe due pour l'organisation de cérémonies traditionnelles dans la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les mariages coutumiers",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Statut des familles et importance du mariage",
+    "formule_calcul": "FORFAIT_MARIAGE_COUTUMIER * COEFF_IMPORTANCE",
+    "penalite_periode": "après mariage",
+    "penalite_calcul": "Pas de pénalité pour les mariages coutumiers",
+    "rubriques_paiement": [
+      "nom_marie",
+      "nom_mariee",
+      "familles_impliquees",
+      "importance_mariage",
+      "date_mariage_coutumier",
+      "forfait_mariage_coutumier",
+      "coefficient_importance",
+      "total_a_payer = forfait_mariage_coutumier * coefficient_importance"
+    ],
+    "description": "Taxe due pour la célébration d'un mariage selon les rites coutumiers."
+  },
+  {
+    "nom_taxe": "Taxe sur les fêtes et manifestations locales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de participants et durée",
+    "formule_calcul": "FORFAIT_FETE_LOCALE * nombre_participants * nombre_jours",
+    "penalite_periode": "après manifestation",
+    "penalite_calcul": "Participation aux nettoyages communautaires",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "type_fete_manifestation",
+      "nombre_participants_estime",
+      "duree_evenement_jours",
+      "forfait_fete_locale",
+      "montant_base = forfait_fete_locale * nombre_participants_estime * duree_evenement_jours",
+      "penalite_retard = nettoyage_communautaire",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour l'organisation de fêtes et manifestations locales dans la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les rites d'initiation",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre d'initiés et type de rite",
+    "formule_calcul": "FORFAIT_INITIATION[type_rite] * nombre_inities",
+    "penalite_periode": "après cérémonie",
+    "penalite_calcul": "Pas de pénalité pour les rites sacrés",
+    "rubriques_paiement": [
+      "nom_responsable_rite",
+      "type_rite_initiation",
+      "nombre_personnes_initiees",
+      "periode_initiation",
+      "forfait_type_rite",
+      "total_a_payer = forfait_type_rite * nombre_personnes_initiees"
+    ],
+    "description": "Taxe due pour la célébration des rites d'initiation traditionnels."
+  },
+  {
+    "nom_taxe": "Redevance sur les salles communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Durée d'utilisation et nombre de personnes",
+    "formule_calcul": "FORFAIT_SALLE_COMMUNAUTAIRE * duree_heures * nombre_personnes",
+    "penalite_periode": "après utilisation",
+    "penalite_calcul": "Travaux d'entretien supplémentaires",
+    "rubriques_paiement": [
+      "nom_utilisateur",
+      "salle_communautaire_utilisee",
+      "nombre_personnes_presentes",
+      "duree_utilisation_heures",
+      "forfait_salle_communautaire",
+      "montant_utilisation = forfait_salle_communautaire * duree_utilisation_heures * nombre_personnes_presentes",
+      "penalite_retard = entretien_supplementaire",
+      "total_a_payer = montant_utilisation"
+    ],
+    "description": "Redevance due pour l'utilisation des salles communautaires pour des événements privés ou publics."
+  },
+  {
+    "nom_taxe": "Taxe d'assainissement communautaire",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Taille du ménage et type d'habitation",
+    "formule_calcul": "FORFAIT_ASSINISSEMENT_COMMUNAUTAIRE * nombre_membres_menage",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Participation aux travaux de salubrité",
+    "rubriques_paiement": [
+      "nom_chef_menage",
+      "village_quartier",
+      "nombre_membres_menage",
+      "type_habitation",
+      "forfait_assainissement",
+      "montant_mensuel = forfait_assainissement * nombre_membres_menage",
+      "penalite_retard = travaux_salubrite",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe mensuelle pour financer les activités d'assainissement et de salubrité dans la communauté."
+  },
+  {
+    "nom_taxe": "Redevance pour gestion des déchets",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "hebdomadaire",
+    "base_calcul": "Volume de déchets produits",
+    "formule_calcul": "FORFAIT_GESTION_DECHETS * volume_dechets_estime",
+    "penalite_periode": "après semaine",
+    "penalite_calcul": "Participation au nettoyage communautaire",
+    "rubriques_paiement": [
+      "nom_menage_entreprise",
+      "type_activite_generatrice",
+      "volume_dechets_produits_semaine",
+      "localisation_collecte",
+      "forfait_gestion_dechets",
+      "montant_hebdomadaire = forfait_gestion_dechets * volume_dechets_produits_semaine",
+      "penalite_retard = nettoyage_communautaire",
+      "total_a_payer = montant_hebdomadaire"
+    ],
+    "description": "Redevance due pour la collecte et la gestion des déchets dans la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les abattoirs ruraux",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre et type d'animaux abattus",
+    "formule_calcul": "FORFAIT_ABATTAGE_RURAL[type_animal] * nombre_animaux",
+    "penalite_periode": "après abattage",
+    "penalite_calcul": "Part de viande fournie gratuitement",
+    "rubriques_paiement": [
+      "nom_abatteur",
+      "abattoir_rural_utilise",
+      "type_animaux_abattus",
+      "nombre_animaux_abattus",
+      "date_abattage",
+      "forfait_abattage_rural",
+      "montant_base = forfait_abattage_rural * nombre_animaux_abattus",
+      "penalite_retard = part_viande_gratuite",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour l'utilisation des abattoirs ruraux communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les points d'eau communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Volume d'eau prélevé et usage",
+    "formule_calcul": "FORFAIT_POINT_EAU[usage] * volume_preleve_m3",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Participation à l'entretien des points d'eau",
+    "rubriques_paiement": [
+      "nom_utilisateur",
+      "point_eau_utilise",
+      "usage_eau (domestique, agricole, elevage)",
+      "volume_preleve_estime_m3",
+      "forfait_usage_eau",
+      "montant_mensuel = forfait_usage_eau * volume_preleve_estime_m3",
+      "penalite_retard = entretien_points_eau",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe due pour l'utilisation des points d'eau communautaires (puits, sources, forages)."
+  },
+  {
+    "nom_taxe": "Taxe d'inspection sanitaire locale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'établissement et fréquence",
+    "formule_calcul": "FORFAIT_INSPECTION_SANITAIRE[type_etablissement]",
+    "penalite_periode": "après inspection",
+    "penalite_calcul": "Pas de pénalité pour ce service communautaire",
+    "rubriques_paiement": [
+      "nom_etablissement",
+      "type_etablissement_local",
+      "date_inspection",
+      "resultat_inspection",
+      "forfait_inspection_sanitaire",
+      "total_a_payer = forfait_inspection_sanitaire"
+    ],
+    "description": "Taxe due pour les inspections sanitaires des établissements locaux par les responsables communautaires."
+  },
+  {
+    "nom_taxe": "Droit d'attestation coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'attestation et urgence",
+    "formule_calcul": "FORFAIT_ATTESTATION_COUTUMIERE[type] * COEFF_URGENCE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "type_attestation_coutumiere",
+      "urgence_demande",
+      "motif_attestation",
+      "forfait_type_attestation",
+      "coefficient_urgence",
+      "total_a_payer = forfait_type_attestation * coefficient_urgence"
+    ],
+    "description": "Droit à payer pour l'obtention d'une attestation délivrée par l'autorité coutumière."
+  },
+  {
+    "nom_taxe": "Droit de certificat de résidence rurale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Durée de résidence et statut",
+    "formule_calcul": "FORFAIT_CERTIFICAT_RESIDENCE * COEFF_DUREE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_resident",
+      "village_residence",
+      "duree_residence_annees",
+      "statut_resident",
+      "forfait_certificat_residence",
+      "coefficient_duree",
+      "total_a_payer = forfait_certificat_residence * coefficient_duree"
+    ],
+    "description": "Droit à payer pour l'obtention d'un certificat de résidence en milieu rural coutumier."
+  },
+  {
+    "nom_taxe": "Droit de témoignage coutumier",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nature du témoignage et durée",
+    "formule_calcul": "FORFAIT_TEMOIGNAGE_COUTUMIER[nature] * duree_heures",
+    "penalite_periode": "après témoignage",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_temoin",
+      "nature_temoignage",
+      "duree_temoignage_heures",
+      "affaire_concernee",
+      "forfait_nature_temoignage",
+      "total_a_payer = forfait_nature_temoignage * duree_temoignage_heures"
+    ],
+    "description": "Droit à payer pour la déposition d'un témoignage devant l'autorité coutumière."
+  },
+  {
+    "nom_taxe": "Droit d'autorisation d'installation",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'installation et durée",
+    "formule_calcul": "FORFAIT_AUTORISATION_INSTALLATION[type] * COEFF_DUREE",
+    "penalite_periode": "après autorisation",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_installateur",
+      "type_installation (habitation, commerce, atelier)",
+      "duree_installation_prevue",
+      "localisation_installation",
+      "forfait_type_installation",
+      "coefficient_duree",
+      "total_a_payer = forfait_type_installation * coefficient_duree"
+    ],
+    "description": "Droit à payer pour obtenir l'autorisation coutumière de s'installer dans une communauté."
+  },
+  {
+    "nom_taxe": "Droit d'attestation d'héritage coutumier",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Valeur de l'héritage et complexité",
+    "formule_calcul": "FORFAIT_HERITAGE_COUTUMIER * COEFF_COMPLEXITE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_heritier",
+      "defunt",
+      "valeur_estimee_heritage",
+      "complexite_succession",
+      "forfait_heritage_coutumier",
+      "coefficient_complexite",
+      "total_a_payer = forfait_heritage_coutumier * coefficient_complexite"
+    ],
+    "description": "Droit à payer pour l'obtention d'une attestation de succession selon les règles coutumières."
+  }
+]
+
+[
+  {
+    "nom_taxe": "Contribution communautaire annuelle",
+    "autorite_beneficiaire": "Chefferie/Localité",
+    "periode_paiement": "annuel",
+    "base_calcul": "Nombre de membres actifs du ménage",
+    "formule_calcul": "FORFAIT_CONTRIBUTION_ANNUELLE * nombre_membres_actifs",
+    "penalite_periode": "après assemblée générale",
+    "penalite_calcul": "Travaux communautaires supplémentaires",
+    "rubriques_paiement": [
+      "nom_chef_famille",
+      "village_localite",
+      "nombre_membres_actifs_famille",
+      "forfait_contribution_annuelle",
+      "montant_annuel = forfait_contribution_annuelle * nombre_membres_actifs_famille",
+      "penalite_retard = travaux_communautaires_supplementaires",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Contribution annuelle obligatoire pour chaque ménage pour financer les projets de développement communautaire."
+  },
+  {
+    "nom_taxe": "Taxe de développement local",
+    "autorite_beneficiaire": "Chefferie/Localité",
+    "periode_paiement": "annuel",
+    "base_calcul": "Capacité contributive du ménage",
+    "formule_calcul": "FORFAIT_DEVELOPPEMENT_LOCAL * COEFF_CAPACITE_CONTRIBUTIVE",
+    "penalite_periode": "après saison agricole",
+    "penalite_calcul": "Participation forcée aux travaux communautaires",
+    "rubriques_paiement": [
+      "nom_chef_famille",
+      "capacite_contributive_estimee",
+      "village_localite",
+      "forfait_development_local",
+      "coefficient_capacite",
+      "montant_annuel = forfait_development_local * coefficient_capacite",
+      "penalite_retard = travaux_communautaires_forces",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe spécifiquement destinée au financement des infrastructures de développement local (puits, écoles, dispensaires)."
+  },
+  {
+    "nom_taxe": "Redevance communautaire de solidarité",
+    "autorite_beneficiaire": "Chefferie/Localité",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Situation économique du ménage",
+    "formule_calcul": "FORFAIT_SOLIDARITE * COEFF_SITUATION_ECONOMIQUE",
+    "penalite_periode": "après trimestre",
+    "penalite_calcul": "Exclusion temporaire des bénéfices communautaires",
+    "rubriques_paiement": [
+      "nom_chef_famille",
+      "situation_economique_menage",
+      "village_localite",
+      "forfait_solidarite",
+      "coefficient_situation",
+      "montant_trimestriel = forfait_solidarite * coefficient_situation",
+      "penalite_retard = exclusion_benefices_communautaires",
+      "total_a_payer = montant_trimestriel"
+    ],
+    "description": "Redevance destinée à financer les actions de solidarité envers les membres vulnérables de la communauté."
+  },
+  {
+    "nom_taxe": "Contribution pour travaux communautaires",
+    "autorite_beneficiaire": "Chefferie/Localité",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de jours de travail exigés",
+    "formule_calcul": "FORFAIT_TRAVAUX_COMMUNAUTAIRES * nombre_jours_exiges",
+    "penalite_periode": "après travaux",
+    "penalite_calcul": "Jours supplémentaires obligatoires",
+    "rubriques_paiement": [
+      "nom_contribuable",
+      "type_travaux_communautaires",
+      "nombre_jours_exiges",
+      "village_localite",
+      "forfait_travaux_communautaires",
+      "jours_realises",
+      "montant_base = forfait_travaux_communautaires * nombre_jours_exiges",
+      "penalite = jours_realises < nombre_jours_exiges ? (nombre_jours_exiges - jours_realises) * forfait_travaux_communautaires * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Contribution obligatoire en nature (travail) ou en espèces pour les travaux d'intérêt communautaire."
+  },
+  {
+    "nom_taxe": "Taxe de sécurité locale (surveillance communautaire)",
+    "autorite_beneficiaire": "Chefferie/Localité",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Nombre de membres du ménage",
+    "formule_calcul": "FORFAIT_SECURITE_LOCALE * nombre_membres_menage",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Exclusion du système de sécurité communautaire",
+    "rubriques_paiement": [
+      "nom_chef_famille",
+      "village_localite",
+      "nombre_membres_menage",
+      "forfait_securite_locale",
+      "montant_mensuel = forfait_securite_locale * nombre_membres_menage",
+      "penalite_retard = exclusion_securite_communautaire",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe pour financer les services de sécurité communautaire (vigiles, rondes nocturnes, surveillance)."
+  },
+  {
+    "nom_taxe": "Taxe d'occupation des terres du groupement",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface occupée et type d'utilisation",
+    "formule_calcul": "FORFAIT_OCCUPATION_TERRES * surface_hectares * COEFF_TYPE_UTILISATION",
+    "penalite_periode": "après récolte",
+    "penalite_calcul": "Saisie partielle des récoltes",
+    "rubriques_paiement": [
+      "nom_occupant",
+      "village_groupement",
+      "type_utilisation_terres",
+      "surface_occupee_hectares",
+      "forfait_occupation_terres",
+      "coefficient_utilisation",
+      "montant_annuel = forfait_occupation_terres * surface_occupee_hectares * coefficient_utilisation",
+      "penalite_retard = saisie_partielle_recoltes",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'occupation des terres appartenant au groupement coutumier."
+  },
+  {
+    "nom_taxe": "Redevance d'attribution de parcelle communautaire",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Surface de la parcelle et usage",
+    "formule_calcul": "FORFAIT_ATTRIBUTION_PARCELLE * surface_hectares * COEFF_USAGE",
+    "penalite_periode": "après attribution",
+    "penalite_calcul": "Retrait du droit d'usage",
+    "rubriques_paiement": [
+      "nom_beneficiaire",
+      "village_groupement",
+      "usage_prevu_parcelle",
+      "surface_parcelle_hectares",
+      "forfait_attribution_parcelle",
+      "coefficient_usage",
+      "montant_base = forfait_attribution_parcelle * surface_parcelle_hectares * coefficient_usage",
+      "penalite = paiement_refuse ? retrait_droit_usage : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Redevance due pour l'obtention d'une parcelle de terre communautaire pour usage personnel."
+  },
+  {
+    "nom_taxe": "Taxe sur la mutation ou cession coutumière",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Valeur estimée du bien et type de cession",
+    "formule_calcul": "FORFAIT_MUTATION_COUTUMIERE * COEFF_VALEUR * COEFF_TYPE_CESSION",
+    "penalite_periode": "après cession",
+    "penalite_calcul": "Invalidation de la cession",
+    "rubriques_paiement": [
+      "nom_cedant",
+      "nom_cessionnaire",
+      "type_cession_coutumiere",
+      "valeur_estimee_bien",
+      "forfait_mutation_coutumiere",
+      "coefficient_valeur",
+      "coefficient_type_cession",
+      "montant_base = forfait_mutation_coutumiere * coefficient_valeur * coefficient_type_cession",
+      "penalite = paiement_refuse ? invalidation_cession : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour l'enregistrement et la validation d'une cession de droits coutumiers sur une terre ou un bien."
+  },
+  {
+    "nom_taxe": "Redevance d'exploitation agricole communautaire",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Surface cultivée et type de culture",
+    "formule_calcul": "FORFAIT_EXPLOITATION_AGRICOLE_COMMUNAUTAIRE * surface_hectares * COEFF_TYPE_CULTURE",
+    "penalite_periode": "après récolte",
+    "penalite_calcul": "Prélèvement sur les récoltes",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "village_groupement",
+      "type_culture_principale",
+      "surface_cultivee_hectares",
+      "forfait_exploitation_agricole_communautaire",
+      "coefficient_type_culture",
+      "montant_saisonnier = forfait_exploitation_agricole_communautaire * surface_cultivee_hectares * coefficient_type_culture",
+      "penalite_retard = prelevement_recoltes",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Redevance due pour l'exploitation des terres agricoles communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les champs et concessions rurales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Surface exploitée et durée",
+    "formule_calcul": "FORFAIT_CHAMPS_CONCESSIONS * surface_hectares * COEFF_DUREE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Réduction de la superficie accordée",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "village_groupement",
+      "type_concession_rurale",
+      "surface_exploitee_hectares",
+      "duree_exploitation_annees",
+      "forfait_champs_concessions",
+      "coefficient_duree",
+      "montant_annuel = forfait_champs_concessions * surface_exploitee_hectares * coefficient_duree",
+      "penalite_retard = reduction_superficie",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'exploitation des champs et concessions rurales dans le groupement."
+  },
+  {
+    "nom_taxe": "Redevance sur les jardins communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Surface utilisée et production",
+    "formule_calcul": "FORFAIT_JARDINS_COMMUNAUTAIRES * surface_hectares * COEFF_PRODUCTION",
+    "penalite_periode": "après récolte",
+    "penalite_calcul": "Part des productions prélevée",
+    "rubriques_paiement": [
+      "nom_jardinier",
+      "village_groupement",
+      "type_production_jardin",
+      "surface_utilisee_hectares",
+      "production_estimee",
+      "forfait_jardins_communautaires",
+      "coefficient_production",
+      "montant_saisonnier = forfait_jardins_communautaires * surface_utilisee_hectares * coefficient_production",
+      "penalite_retard = part_production_prelevee",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Redevance due pour l'utilisation des jardins communautaires gérés collectivement."
+  },
+  {
+    "nom_taxe": "Taxe sur l'exploitation forestière artisanale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Volume de bois exploité et essence",
+    "formule_calcul": "FORFAIT_EXPLOITATION_FORESTIERE_ARTISANALE * volume_bois_m3 * COEFF_ESSENCE",
+    "penalite_periode": "après exploitation",
+    "penalite_calcul": "Saisie du bois exploité",
+    "rubriques_paiement": [
+      "nom_exploitant",
+      "foret_exploitee",
+      "essence_bois_exploite",
+      "volume_bois_exploite_m3",
+      "forfait_exploitation_forestiere_artisanale",
+      "coefficient_essence",
+      "montant_saisonnier = forfait_exploitation_forestiere_artisanale * volume_bois_exploite_m3 * coefficient_essence",
+      "penalite_retard = saisie_bois_exploite",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Taxe due pour l'exploitation artisanale des ressources forestières du groupement."
+  },
+  {
+    "nom_taxe": "Redevance sur le bois de chauffe et le charbon",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "trimestriel",
+    "base_calcul": "Quantité collectée et type",
+    "formule_calcul": "FORFAIT_BOIS_CHARBON[type] * quantite_collectee",
+    "penalite_periode": "après collecte",
+    "penalite_calcul": "Confiscation des produits collectés",
+    "rubriques_paiement": [
+      "nom_collecteur",
+      "type_produit (bois_chauffe, charbon)",
+      "quantite_collectee_trimestriel",
+      "foret_collecte",
+      "forfait_type_produit",
+      "montant_trimestriel = forfait_type_produit * quantite_collectee_trimestriel",
+      "penalite_retard = confiscation_produits",
+      "total_a_payer = montant_trimestriel"
+    ],
+    "description": "Redevance due pour la collecte de bois de chauffe et de charbon de bois dans les forêts communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur l'extraction artisanale de sable, gravier, argile",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Volume extrait et type de matériau",
+    "formule_calcul": "FORFAIT_EXTRACTION_MATERIAUX[type_materiau] * volume_extrait_m3",
+    "penalite_periode": "après extraction",
+    "penalite_calcul": "Double du volume à fournir gratuitement",
+    "rubriques_paiement": [
+      "nom_extracteur",
+      "type_materiau_extrait",
+      "volume_extrait_m3",
+      "site_extraction",
+      "forfait_type_materiau",
+      "montant_base = forfait_type_materiau * volume_extrait_m3",
+      "penalite = autorisation_extraction == 'non' ? montant_base * 2 : 0",
+      "total_a_payer = montant_base + penalite"
+    ],
+    "description": "Taxe due pour l'extraction artisanale de matériaux de construction dans les sites communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur la pêche artisanale locale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Type d'engin et période de pêche",
+    "formule_calcul": "FORFAIT_PECHE_ARTISANALE[type_engin] * nombre_jours_peche",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Confiscation des prises",
+    "rubriques_paiement": [
+      "nom_pecheur",
+      "type_engin_peche",
+      "nombre_jours_peche_saison",
+      "plan_eau_peche",
+      "forfait_type_engin",
+      "montant_saisonnier = forfait_type_engin * nombre_jours_peche_saison",
+      "penalite_retard = confiscation_prises",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Taxe due pour la pratique de la pêche artisanale dans les eaux communautaires."
+  },
+  {
+    "nom_taxe": "Redevance sur la chasse traditionnelle",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Type de gibier et nombre de sorties",
+    "formule_calcul": "FORFAIT_CHASSE_TRADITIONNELLE[type_gibier] * nombre_sorties_chasse",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Interdiction de chasse temporaire",
+    "rubriques_paiement": [
+      "nom_chasseur",
+      "type_gibier_cible",
+      "nombre_sorties_chasse_saison",
+      "zone_chasse",
+      "forfait_type_gibier",
+      "montant_saisonnier = forfait_type_gibier * nombre_sorties_chasse_saison",
+      "penalite_retard = interdiction_chasse_temporaire",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Redevance due pour la pratique de la chasse traditionnelle sur les terres communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les produits forestiers non ligneux (miel, fruits sauvages, plantes médicinales)",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "saisonnière",
+    "base_calcul": "Quantité collectée et type de produit",
+    "formule_calcul": "FORFAIT_PFNL_COMMUNAUTAIRE[type_produit] * quantite_collectee",
+    "penalite_periode": "après collecte",
+    "penalite_calcul": "Interdiction de collecte future",
+    "rubriques_paiement": [
+      "nom_collecteur",
+      "type_produit_forestier",
+      "quantite_collectee_saison",
+      "foret_collecte",
+      "forfait_type_produit",
+      "montant_saisonnier = forfait_type_produit * quantite_collectee_saison",
+      "penalite_retard = interdiction_collecte",
+      "total_a_payer = montant_saisonnier"
+    ],
+    "description": "Taxe due pour la collecte des produits forestiers non ligneux dans les forêts communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les marchés de groupement",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "quotidien",
+    "base_calcul": "Espace occupé et type de marchandises",
+    "formule_calcul": "FORFAIT_MARCHE_GROUPEMENT[type_marchandise] * espace_occupe",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Exclusion temporaire du marché",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "marche_groupement",
+      "type_marchandises_vendues",
+      "espace_occupe_estimation",
+      "jour_marche",
+      "forfait_type_marchandise",
+      "montant_journalier = forfait_type_marchandise * espace_occupe_estimation",
+      "penalite = paiement_refuse ? exclusion_temporaire_marche : 0",
+      "total_a_payer = montant_journalier"
+    ],
+    "description": "Taxe journalière due pour la vente de produits dans les marchés du groupement."
+  },
+  {
+    "nom_taxe": "Taxe sur les étals et kiosques",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "hebdomadaire",
+    "base_calcul": "Taille de l'installation et emplacement",
+    "formule_calcul": "FORFAIT_ETAL_KIOSQUE[type] * taille_installation",
+    "penalite_periode": "après semaine",
+    "penalite_calcul": "Démontage de l'installation",
+    "rubriques_paiement": [
+      "nom_vendeur",
+      "type_installation (etal, kiosque)",
+      "taille_installation_estimation",
+      "emplacement",
+      "forfait_type_installation",
+      "montant_hebdomadaire = forfait_type_installation * taille_installation_estimation",
+      "penalite_retard = demontage_installation",
+      "total_a_payer = montant_hebdomadaire"
+    ],
+    "description": "Taxe hebdomadaire due pour l'installation d'étals et kiosques dans les espaces communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les boutiques rurales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Surface de la boutique et chiffre d'affaires estimé",
+    "formule_calcul": "FORFAIT_BOUTIQUE_RURALE * surface_m2 * COEFF_CA_ESTIME",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Fermeture temporaire",
+    "rubriques_paiement": [
+      "nom_boutiquier",
+      "surface_boutique_m2",
+      "chiffre_affaires_estime_mensuel",
+      "localisation_boutique",
+      "forfait_boutique_rurale",
+      "coefficient_ca",
+      "montant_mensuel = forfait_boutique_rurale * surface_m2 * coefficient_ca",
+      "penalite_retard = fermeture_temporaire",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe mensuelle due par les boutiques opérant en milieu rural coutumier."
+  },
+  {
+    "nom_taxe": "Taxe sur les moulins, presses, décortiqueuses",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Type de machine et volume traité",
+    "formule_calcul": "FORFAIT_MACHINE_COMMUNAUTAIRE[type] * volume_traite_mensuel",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Saisie temporaire de la machine",
+    "rubriques_paiement": [
+      "nom_proprietaire_machine",
+      "type_machine_communautaire",
+      "volume_traite_mensuel_estime",
+      "localisation_machine",
+      "forfait_type_machine",
+      "montant_mensuel = forfait_type_machine * volume_traite_mensuel_estime",
+      "penalite_retard = saisie_temporaire_machine",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe due pour l'exploitation de machines de transformation dans les communautés rurales."
+  },
+  {
+    "nom_taxe": "Taxe sur les débits de boisson traditionnels",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "hebdomadaire",
+    "base_calcul": "Type de boisson et volume vendu",
+    "formule_calcul": "FORFAIT_BOISSON_TRADITIONNELLE_COMMUNAUTAIRE[type] * volume_vendu_estime",
+    "penalite_periode": "après semaine",
+    "penalite_calcul": "Fermeture définitive",
+    "rubriques_paiement": [
+      "nom_debitant",
+      "type_boisson_traditionnelle",
+      "volume_vendu_estime_semaine",
+      "localisation_debit",
+      "forfait_type_boisson",
+      "montant_hebdomadaire = forfait_type_boisson * volume_vendu_estime_semaine",
+      "penalite_retard = fermeture_definitive",
+      "total_a_payer = montant_hebdomadaire"
+    ],
+    "description": "Taxe due pour la vente de boissons traditionnelles dans les communautés."
+  },
+  {
+    "nom_taxe": "Taxe sur les ateliers artisanaux",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Type d'artisanat et production",
+    "formule_calcul": "FORFAIT_ATELIER_ARTISANAL[type] * production_estimee",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Saisie des outils de travail",
+    "rubriques_paiement": [
+      "nom_artisan",
+      "type_atelier_artisanal",
+      "production_estimee_mensuelle",
+      "atelier_localisation",
+      "forfait_type_atelier",
+      "montant_mensuel = forfait_type_atelier * production_estimee_mensuelle",
+      "penalite_retard = saisie_outils_travail",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe due pour l'exploitation d'ateliers artisanaux dans les communautés."
+  },
+  {
+    "nom_taxe": "Taxe sur les activités informelles",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Type d'activité et revenu estimé",
+    "formule_calcul": "FORFAIT_ACTIVITE_INFORMELLE[type] * revenu_estime_mensuel",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Interdiction d'exercice",
+    "rubriques_paiement": [
+      "nom_operateur",
+      "type_activite_informelle",
+      "revenu_estime_mensuel",
+      "localisation_activite",
+      "forfait_type_activite",
+      "montant_mensuel = forfait_type_activite * revenu_estime_mensuel",
+      "penalite_retard = interdiction_exercice",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe due pour l'exercice d'activités économiques informelles dans la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les motos rurales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Usage de la moto et fréquence",
+    "formule_calcul": "FORFAIT_MOTO_RURALE_COMMUNAUTAIRE[usage] * COEFF_FREQUENCE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Immobilisation du véhicule",
+    "rubriques_paiement": [
+      "nom_proprietaire_moto",
+      "usage_moto_rurale",
+      "frequence_utilisation",
+      "village_groupement",
+      "forfait_usage_moto",
+      "coefficient_frequence",
+      "montant_annuel = forfait_usage_moto * coefficient_frequence",
+      "penalite_retard = immobilisation_vehicule",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'utilisation de motocyclettes dans les zones rurales communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les vélos",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Usage du vélo et fréquence",
+    "formule_calcul": "FORFAIT_VELO_COMMUNAUTAIRE[usage] * COEFF_FREQUENCE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Confiscation temporaire",
+    "rubriques_paiement": [
+      "nom_proprietaire_velo",
+      "usage_velo_principal",
+      "frequence_utilisation",
+      "village_groupement",
+      "forfait_usage_velo",
+      "coefficient_frequence",
+      "montant_annuel = forfait_usage_velo * coefficient_frequence",
+      "penalite_retard = confiscation_temporaire",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'utilisation de vélos dans les communautés rurales."
+  },
+  {
+    "nom_taxe": "Taxe sur les pirogues locales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "annuel",
+    "base_calcul": "Taille de la pirogue et usage",
+    "formule_calcul": "FORFAIT_PIROGUE_LOCALE[taille] * COEFF_USAGE",
+    "penalite_periode": "après saison",
+    "penalite_calcul": "Interdiction de navigation",
+    "rubriques_paiement": [
+      "nom_proprietaire_pirogue",
+      "taille_pirogue",
+      "usage_principal_pirogue",
+      "plan_eau_utilisation",
+      "forfait_taille_pirogue",
+      "coefficient_usage",
+      "montant_annuel = forfait_taille_pirogue * coefficient_usage",
+      "penalite_retard = interdiction_navigation",
+      "total_a_payer = montant_annuel"
+    ],
+    "description": "Taxe annuelle due pour l'utilisation de pirogues dans les eaux communautaires."
+  },
+  {
+    "nom_taxe": "Redevance de passage sur pistes communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de véhicule et charge",
+    "formule_calcul": "FORFAIT_PASSAGE_PISTE[type_vehicule] * COEFF_CHARGE",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Interdiction de passage futur",
+    "rubriques_paiement": [
+      "nom_conducteur",
+      "type_vehicule_passage",
+      "charge_transportee",
+      "section_piste_communautaire",
+      "forfait_type_vehicule",
+      "coefficient_charge",
+      "montant_passage = forfait_type_vehicule * coefficient_charge",
+      "penalite = paiement_refuse ? interdiction_passage_futur : 0",
+      "total_a_payer = montant_passage + penalite"
+    ],
+    "description": "Redevance due pour l'utilisation des pistes entretenues par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe de chargement et déchargement",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type de marchandises et volume",
+    "formule_calcul": "FORFAIT_CHARGEMENT_COMMUNAUTAIRE[type_marchandise] * volume_charge",
+    "penalite_periode": "après opération",
+    "penalite_calcul": "Saisie des marchandises",
+    "rubriques_paiement": [
+      "nom_transporteur",
+      "type_marchandises_charge",
+      "volume_charge_estime",
+      "lieu_chargement_dechargement",
+      "forfait_type_marchandise",
+      "montant_operation = forfait_type_marchandise * volume_charge_estime",
+      "penalite_retard = saisie_marchandises",
+      "total_a_payer = montant_operation"
+    ],
+    "description": "Taxe due pour les opérations de chargement et déchargement dans les zones communautaires."
+  },
+  {
+    "nom_taxe": "Taxe sur les parkings ruraux",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "quotidien",
+    "base_calcul": "Type de véhicule et durée",
+    "formule_calcul": "FORFAIT_PARKING_RURAL[type_vehicule] * duree_heures",
+    "penalite_periode": "immédiat",
+    "penalite_calcul": "Immobilisation du véhicule",
+    "rubriques_paiement": [
+      "nom_conducteur",
+      "type_vehicule_stationne",
+      "duree_stationnement_heures",
+      "parking_rural_utilise",
+      "forfait_type_vehicule",
+      "montant_journalier = forfait_type_vehicule * duree_stationnement_heures",
+      "penalite = paiement_refuse ? immobilisation_vehicule : 0",
+      "total_a_payer = montant_journalier + penalite"
+    ],
+    "description": "Taxe due pour le stationnement dans les parkings aménagés par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les cérémonies coutumières",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type et envergure de la cérémonie",
+    "formule_calcul": "FORFAIT_CEREMONIE_COUTUMIERE[type] * COEFF_ENVERGURE",
+    "penalite_periode": "après cérémonie",
+    "penalite_calcul": "Interdiction de futures cérémonies",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "type_ceremonie_coutumiere",
+      "envergure_ceremonie",
+      "date_ceremonie",
+      "forfait_type_ceremonie",
+      "coefficient_envergure",
+      "montant_base = forfait_type_ceremonie * coefficient_envergure",
+      "penalite = paiement_refuse ? interdiction_futures_ceremonies : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour l'organisation de cérémonies coutumières dans la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les mariages traditionnels",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Statut des familles et importance",
+    "formule_calcul": "FORFAIT_MARIAGE_TRADITIONNEL * COEFF_IMPORTANCE",
+    "penalite_periode": "après mariage",
+    "penalite_calcul": "Non-reconnaissance du mariage",
+    "rubriques_paiement": [
+      "nom_marie",
+      "nom_mariee",
+      "importance_mariage_traditionnel",
+      "date_mariage",
+      "forfait_mariage_traditionnel",
+      "coefficient_importance",
+      "montant_base = forfait_mariage_traditionnel * coefficient_importance",
+      "penalite = paiement_refuse ? non_reconnaissance_mariage : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour la célébration d'un mariage selon les traditions coutumières."
+  },
+  {
+    "nom_taxe": "Redevance sur les funérailles",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Statut du défunt et envergure des obsèques",
+    "formule_calcul": "FORFAIT_FUNERAILLES * COEFF_STATUT_DEFUNT",
+    "penalite_periode": "après funérailles",
+    "penalite_calcul": "Pas de pénalité pour les rites funéraires",
+    "rubriques_paiement": [
+      "nom_famille_defunt",
+      "statut_defunt_communautaire",
+      "envergure_funerailles",
+      "date_funerailles",
+      "forfait_funerailles",
+      "coefficient_statut",
+      "total_a_payer = forfait_funerailles * coefficient_statut"
+    ],
+    "description": "Redevance due pour l'organisation de funérailles selon les rites coutumiers."
+  },
+  {
+    "nom_taxe": "Taxe sur les fêtes et manifestations locales",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre de participants et durée",
+    "formule_calcul": "FORFAIT_FETE_LOCALE_COMMUNAUTAIRE * nombre_participants * nombre_jours",
+    "penalite_periode": "après manifestation",
+    "penalite_calcul": "Interdiction d'organisation future",
+    "rubriques_paiement": [
+      "nom_organisateur",
+      "type_fete_manifestation",
+      "nombre_participants_estime",
+      "duree_evenement_jours",
+      "forfait_fete_locale_communautaire",
+      "montant_base = forfait_fete_locale_communautaire * nombre_participants_estime * duree_evenement_jours",
+      "penalite = paiement_refuse ? interdiction_organisation_future : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour l'organisation de fêtes et manifestations locales dans la communauté."
+  },
+  {
+    "nom_taxe": "Redevance sur l'utilisation des salles communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Durée d'utilisation et nombre de personnes",
+    "formule_calcul": "FORFAIT_SALLE_COMMUNAUTAIRE_UTILISATION * duree_heures * nombre_personnes",
+    "penalite_periode": "après utilisation",
+    "penalite_calcul": "Interdiction d'accès futur",
+    "rubriques_paiement": [
+      "nom_utilisateur",
+      "salle_communautaire_utilisee",
+      "nombre_personnes_presentes",
+      "duree_utilisation_heures",
+      "forfait_salle_communautaire_utilisation",
+      "montant_utilisation = forfait_salle_communautaire_utilisation * duree_utilisation_heures * nombre_personnes_presentes",
+      "penalite = paiement_refuse ? interdiction_acces_futur : 0",
+      "total_a_payer = montant_utilisation"
+    ],
+    "description": "Redevance due pour l'utilisation des salles communautaires pour des événements privés."
+  },
+  {
+    "nom_taxe": "Taxe d'assainissement communautaire",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Taille du ménage et type d'habitation",
+    "formule_calcul": "FORFAIT_ASSINISSEMENT_COMMUNAUTAIRE_MENAGE * nombre_membres_menage",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Exclusion du service d'assainissement",
+    "rubriques_paiement": [
+      "nom_chef_menage",
+      "village_localite",
+      "nombre_membres_menage",
+      "type_habitation",
+      "forfait_assainissement_communautaire",
+      "montant_mensuel = forfait_assainissement_communautaire * nombre_membres_menage",
+      "penalite_retard = exclusion_service_assainissement",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Taxe mensuelle pour financer les services communautaires d'assainissement et de salubrité."
+  },
+  {
+    "nom_taxe": "Redevance pour la gestion des déchets",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "hebdomadaire",
+    "base_calcul": "Volume de déchets produits",
+    "formule_calcul": "FORFAIT_GESTION_DECHETS_COMMUNAUTAIRE * volume_dechets_estime",
+    "penalite_periode": "après semaine",
+    "penalite_calcul": "Refus de collecte des déchets",
+    "rubriques_paiement": [
+      "nom_menage_entreprise",
+      "type_activite_generatrice",
+      "volume_dechets_produits_semaine",
+      "localisation_collecte",
+      "forfait_gestion_dechets_communautaire",
+      "montant_hebdomadaire = forfait_gestion_dechets_communautaire * volume_dechets_produits_semaine",
+      "penalite_retard = refus_collecte_dechets",
+      "total_a_payer = montant_hebdomadaire"
+    ],
+    "description": "Redevance due pour la collecte et la gestion des déchets par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les abattoirs ruraux",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre et type d'animaux abattus",
+    "formule_calcul": "FORFAIT_ABATTAGE_RURAL_COMMUNAUTAIRE[type_animal] * nombre_animaux",
+    "penalite_periode": "après abattage",
+    "penalite_calcul": "Interdiction d'utilisation future",
+    "rubriques_paiement": [
+      "nom_abatteur",
+      "abattoir_rural_utilise",
+      "type_animaux_abattus",
+      "nombre_animaux_abattus",
+      "date_abattage",
+      "forfait_abattage_rural_communautaire",
+      "montant_base = forfait_abattage_rural_communautaire * nombre_animaux_abattus",
+      "penalite = paiement_refuse ? interdiction_utilisation_future : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour l'utilisation des abattoirs ruraux gérés par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe sur les marchés à bétail",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nombre d'animaux présentés",
+    "formule_calcul": "FORFAIT_MARCHE_BETAIL_COMMUNAUTAIRE[type_animal] * nombre_animaux",
+    "penalite_periode": "après marché",
+    "penalite_calcul": "Interdiction de participation future",
+    "rubriques_paiement": [
+      "nom_eleveur_vendeur",
+      "marche_betail_communautaire",
+      "type_animaux_vendus",
+      "nombre_animaux_presentes",
+      "date_marche",
+      "forfait_marche_betail_communautaire",
+      "montant_base = forfait_marche_betail_communautaire * nombre_animaux_presentes",
+      "penalite = paiement_refuse ? interdiction_participation_future : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour la participation aux marchés à bétail communautaires."
+  },
+  {
+    "nom_taxe": "Redevance sur les points d'eau communautaires",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "mensuel",
+    "base_calcul": "Volume d'eau prélevé et usage",
+    "formule_calcul": "FORFAIT_POINT_EAU_COMMUNAUTAIRE[usage] * volume_preleve_m3",
+    "penalite_periode": "après mois",
+    "penalite_calcul": "Interdiction d'accès à l'eau",
+    "rubriques_paiement": [
+      "nom_utilisateur",
+      "point_eau_communautaire_utilise",
+      "usage_eau_principal",
+      "volume_preleve_estime_m3",
+      "forfait_usage_eau_communautaire",
+      "montant_mensuel = forfait_usage_eau_communautaire * volume_preleve_estime_m3",
+      "penalite_retard = interdiction_acces_eau",
+      "total_a_payer = montant_mensuel"
+    ],
+    "description": "Redevance due pour l'utilisation des points d'eau gérés par la communauté."
+  },
+  {
+    "nom_taxe": "Taxe d'inspection sanitaire locale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'établissement",
+    "formule_calcul": "FORFAIT_INSPECTION_SANITAIRE_LOCALE[type_etablissement]",
+    "penalite_periode": "après inspection",
+    "penalite_calcul": "Fermeture administrative",
+    "rubriques_paiement": [
+      "nom_etablissement",
+      "type_etablissement_local",
+      "date_inspection",
+      "resultat_inspection",
+      "forfait_inspection_sanitaire_locale",
+      "montant_base = forfait_inspection_sanitaire_locale",
+      "penalite = paiement_refuse ? fermeture_administrative : 0",
+      "total_a_payer = montant_base"
+    ],
+    "description": "Taxe due pour les inspections sanitaires réalisées par les autorités communautaires."
+  },
+  {
+    "nom_taxe": "Droit d'attestation du chef de groupement",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'attestation et urgence",
+    "formule_calcul": "FORFAIT_ATTESTATION_CHEF_GROUPEMENT[type] * COEFF_URGENCE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_demandeur",
+      "type_attestation_chef_groupement",
+      "urgence_demande",
+      "motif_attestation",
+      "forfait_type_attestation",
+      "coefficient_urgence",
+      "total_a_payer = forfait_type_attestation * coefficient_urgence"
+    ],
+    "description": "Droit à payer pour l'obtention d'une attestation délivrée par le chef de groupement."
+  },
+  {
+    "nom_taxe": "Droit de certificat de résidence rurale",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Durée de résidence et statut",
+    "formule_calcul": "FORFAIT_CERTIFICAT_RESIDENCE_RURALE * COEFF_DUREE_RESIDENCE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_resident",
+      "village_residence",
+      "duree_residence_annees",
+      "statut_resident_rural",
+      "forfait_certificat_residence_rurale",
+      "coefficient_duree",
+      "total_a_payer = forfait_certificat_residence_rurale * coefficient_duree"
+    ],
+    "description": "Droit à payer pour l'obtention d'un certificat de résidence en milieu rural coutumier."
+  },
+  {
+    "nom_taxe": "Droit de témoignage coutumier",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nature du témoignage et durée",
+    "formule_calcul": "FORFAIT_TEMOIGNAGE_COUTUMIER_COMMUNAUTAIRE[nature] * duree_heures",
+    "penalite_periode": "après témoignage",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_temoin",
+      "nature_temoignage_coutumier",
+      "duree_temoignage_heures",
+      "affaire_concernee",
+      "forfait_nature_temoignage_communautaire",
+      "total_a_payer = forfait_nature_temoignage_communautaire * duree_temoignage_heures"
+    ],
+    "description": "Droit à payer pour la déposition d'un témoignage devant l'autorité coutumière du groupement."
+  },
+  {
+    "nom_taxe": "Droit d'autorisation d'installation",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Type d'installation et durée",
+    "formule_calcul": "FORFAIT_AUTORISATION_INSTALLATION_COMMUNAUTAIRE[type] * COEFF_DUREE",
+    "penalite_periode": "après autorisation",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_installateur",
+      "type_installation_communautaire",
+      "duree_installation_prevue",
+      "localisation_installation",
+      "forfait_type_installation_communautaire",
+      "coefficient_duree",
+      "total_a_payer = forfait_type_installation_communautaire * coefficient_duree"
+    ],
+    "description": "Droit à payer pour obtenir l'autorisation coutumière de s'installer dans le groupement."
+  },
+  {
+    "nom_taxe": "Droit d'attestation d'héritage coutumier",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Valeur de l'héritage et complexité",
+    "formule_calcul": "FORFAIT_HERITAGE_COUTUMIER_COMMUNAUTAIRE * COEFF_COMPLEXITE",
+    "penalite_periode": "après délivrance",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_heritier",
+      "defunt",
+      "valeur_estimee_heritage",
+      "complexite_succession_coutumiere",
+      "forfait_heritage_coutumier_communautaire",
+      "coefficient_complexite",
+      "total_a_payer = forfait_heritage_coutumier_communautaire * coefficient_complexite"
+    ],
+    "description": "Droit à payer pour l'obtention d'une attestation de succession selon les règles coutumières du groupement."
+  },
+  {
+    "nom_taxe": "Droit de règlement de litiges mineurs",
+    "autorite_beneficiaire": "Chefferie",
+    "periode_paiement": "ponctuel",
+    "base_calcul": "Nature du litige et complexité",
+    "formule_calcul": "FORFAIT_REGLEMENT_LITIGES[nature] * COEFF_COMPLEXITE",
+    "penalite_periode": "après règlement",
+    "penalite_calcul": "Pas de pénalité pour ce service coutumier",
+    "rubriques_paiement": [
+      "nom_parties_litige",
+      "nature_litige_mineur",
+      "complexite_litige",
+      "date_reglement",
+      "forfait_nature_litige",
+      "coefficient_complexite",
+      "total_a_payer = forfait_nature_litige * coefficient_complexite"
+    ],
+    "description": "Droit à payer pour le règlement de litiges mineurs par l'autorité coutumière du groupement."
+  }
+]

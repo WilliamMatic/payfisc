@@ -1,0 +1,73 @@
+{
+  "site": {
+    "id": 358,
+    "nom_site": "LIMETE",
+    "fournisseur": "TSC-NPS"
+  },
+  "assujetti": {
+    "id": 462774,
+    "nom_complet": "OSONGA - ANDRE",
+    "telephone": "",
+    "adresse": "A-038 AV. KILOSA Q. MOZINDO\nC. BARUMBU",
+    "nif": "",
+    "email": ""
+  },
+  "engin": {
+    "id": 191,
+    "numero_plaque": "SP222",
+    "marque": "TVS HLX125",
+    "modele": "",
+    "couleur": "",
+    "energie": 1,
+    "usage_engin": 1,
+    "puissance_fiscal": "",
+    "annee_fabrication": "2024",
+    "numero_chassis": "09971",
+    "numero_moteur": "*******",
+    "type_engin": 5
+  },
+  "paiement": {
+    "id": 444,
+    "montant": 20.0,
+    "montant_initial": 20.0,
+    "mode_paiement": "espece",
+    "operateur": null,
+    "numero_transaction": "VIGN-1768822573481-3014",
+    "date_paiement": "2026-01-19 12:36:13",
+    "statut": "completed"
+  },
+  "repartition": {
+    "total_montant": 20,
+    "total_reparti": 20,
+    "reste": 0,
+    "details": [
+      {
+        "beneficiaire_id": 10,
+        "beneficiaire_nom": "PROV",
+        "numero_compte": "xxx",
+        "type_part": "pourcentage",
+        "valeur_part_originale": 70,
+        "valeur_part_calculee": 70,
+        "montant": 14
+      },
+      {
+        "beneficiaire_id": 9,
+        "beneficiaire_nom": "TSC",
+        "numero_compte": "xx",
+        "type_part": "pourcentage",
+        "valeur_part_originale": 30,
+        "valeur_part_calculee": 30,
+        "montant": 6
+      }
+    ],
+    "nombre_beneficiaires": 2
+  },
+  "taux": {
+    "taux_actif": 2300.0,
+    "date_application": "2026-01-19"
+  },
+  "utilisateur": {
+    "id": 20,
+    "nom": "Bekeya"
+  }
+}

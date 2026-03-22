@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import AdminLayoutClient from "./AdminLayoutClient";
 import { ThemeProvider } from "../../contexts/ThemeContext";
 
@@ -19,7 +20,7 @@ async function getNotifications() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 15 }, // Revalider toutes les 15 secondes
+      next: { revalidate: 120 }, // Revalider toutes les 2 minutes
     });
 
     if (!response.ok) {
@@ -55,7 +56,7 @@ async function getAuditLogs() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 30 }, // Revalider toutes les 30 secondes
+      next: { revalidate: 120 }, // Revalider toutes les 2 minutes
     });
 
     if (!response.ok) {
@@ -80,25 +81,37 @@ async function getAuditLogs() {
   }
 }
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Récupérer les notifications et logs d'audit côté serveur en parallèle
+// Composant async qui charge les données non-critiques en streaming
+async function AdminDataLoader({ children }: { children: React.ReactNode }) {
   const [notifications, auditLogs] = await Promise.all([
     getNotifications(),
     getAuditLogs()
   ]);
 
   return (
+    <AdminLayoutClient 
+      notifications={notifications}
+      auditLogs={auditLogs}
+    >
+      {children}
+    </AdminLayoutClient>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
     <ThemeProvider>
-      <AdminLayoutClient 
-        notifications={notifications}
-        auditLogs={auditLogs}
-      >
-        {children}
-      </AdminLayoutClient>
+      <Suspense fallback={
+        <AdminLayoutClient notifications={[]} auditLogs={[]}>
+          {children}
+        </AdminLayoutClient>
+      }>
+        <AdminDataLoader>{children}</AdminDataLoader>
+      </Suspense>
     </ThemeProvider>
   );
 }

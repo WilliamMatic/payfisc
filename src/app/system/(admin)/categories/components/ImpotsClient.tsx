@@ -133,7 +133,8 @@ export default function ImpotsClient({ initialImpots, initialError }: ImpotsClie
       jsonData: JSON.stringify({
         periode: impot.periode,
         delaiAccord: impot.delai_accord,
-        penalites: impot.penalites
+        penalites: impot.penalites,
+        prix: impot.prix || 0
       }, null, 2)
     });
     setShowEditModal(true);

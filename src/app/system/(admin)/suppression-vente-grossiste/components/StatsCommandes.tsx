@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
 import { FileText, DollarSign, Users, Car, Loader2 } from "lucide-react";
 import { getStatsCommandes } from "@/services/commande/commandesService";
 import type { StatsCommandes as StatsType, FilterState } from "../types";
@@ -57,11 +57,13 @@ const StatsCommandes = forwardRef<StatsCommandesRef, StatsCommandesProps>(
     const [stats, setStats] = useState<StatsType | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setLocalError] = useState<string | null>(null);
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
 
-    const loadStats = async () => {
+    const loadStats = useCallback(async () => {
       setIsLoading(true);
       setLocalError(null);
-      onError(null);
+      onErrorRef.current(null);
 
       try {
         const params = {
@@ -80,76 +82,27 @@ const StatsCommandes = forwardRef<StatsCommandesRef, StatsCommandesProps>(
           setLocalError(
             result.message || "Erreur lors du chargement des statistiques",
           );
-          onError(
+          onErrorRef.current(
             result.message || "Erreur lors du chargement des statistiques",
           );
         }
       } catch (error) {
         setStats(null);
         setLocalError("Erreur réseau");
-        onError("Erreur réseau");
+        onErrorRef.current("Erreur réseau");
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [searchTerm, filters]);
 
     // Exposer la méthode refresh au parent via ref
     useImperativeHandle(ref, () => ({
-      refresh: async () => {
-        await loadStats();
-      },
+      refresh: loadStats,
     }));
 
     useEffect(() => {
-      let isMounted = true;
-
-      const loadStatsMounted = async () => {
-        setIsLoading(true);
-        setLocalError(null);
-        onError(null);
-
-        try {
-          const params = {
-            search: searchTerm,
-            date_debut: filters.date_debut,
-            date_fin: filters.date_fin,
-            site_id: filters.site_id,
-          };
-
-          const result = await getStatsCommandes(params);
-
-          if (isMounted) {
-            if (result.status === "success" && result.data) {
-              setStats(result.data);
-            } else {
-              setStats(null);
-              setLocalError(
-                result.message || "Erreur lors du chargement des statistiques",
-              );
-              onError(
-                result.message || "Erreur lors du chargement des statistiques",
-              );
-            }
-          }
-        } catch (error) {
-          if (isMounted) {
-            setStats(null);
-            setLocalError("Erreur réseau");
-            onError("Erreur réseau");
-          }
-        } finally {
-          if (isMounted) {
-            setIsLoading(false);
-          }
-        }
-      };
-
-      loadStatsMounted();
-
-      return () => {
-        isMounted = false;
-      };
-    }, [searchTerm, filters, onError]);
+      loadStats();
+    }, [loadStats]);
 
     if (isLoading) {
       return <StatsLoading />;

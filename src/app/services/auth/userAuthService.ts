@@ -1,7 +1,6 @@
-'use server';
-
 /**
- * Server Actions pour l'authentification utilisateur (particuliers/entreprises)
+ * Service d'authentification utilisateur (particuliers/entreprises)
+ * Ces fonctions s'exécutent côté client pour envoyer les cookies PHP de session
  */
 
 export interface UtilisateurSession {
@@ -11,6 +10,7 @@ export interface UtilisateurSession {
   adresse: string;
   site_nom: string;
   site_code: string;
+  site_id?: number;
   formule?: string;
 }
 

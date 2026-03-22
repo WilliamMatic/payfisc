@@ -1,0 +1,38 @@
+-- Migration: Créer la table vignettes_delivrees
+-- et ajouter statut 'livre' à paiements_bancaires
+
+-- 1. Créer la table vignettes_delivrees
+CREATE TABLE IF NOT EXISTS `vignettes_delivrees` (
+  `id`                          INT NOT NULL AUTO_INCREMENT,
+  `id_paiement`                 INT NOT NULL,
+  `impot_id`                    INT NULL DEFAULT NULL,
+  `type_mouvement`              ENUM('achat','delivrance','renouvellement') NOT NULL DEFAULT 'achat',
+  `duree_mois`                  INT NOT NULL DEFAULT 6,
+  `engin_id`                    INT NOT NULL,
+  `particulier_id`              INT NOT NULL,
+  `code_vignette`               VARCHAR(100) NOT NULL,
+  `date_delivrance`             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `date_validite`               DATE NOT NULL,
+  `utilisateur_delivrance_id`   INT NOT NULL,
+  `utilisateur_delivrance_nom`  VARCHAR(255) NULL,
+  `site_id`                     INT NOT NULL,
+  `etat`                        TINYINT NOT NULL DEFAULT 1,
+  `date_creation`               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_vd_id_paiement` (`id_paiement`),
+  KEY `idx_vd_engin_id` (`engin_id`),
+  KEY `idx_vd_particulier_id` (`particulier_id`),
+  KEY `idx_vd_site_id` (`site_id`),
+  KEY `idx_vd_impot_id` (`impot_id`),
+  KEY `idx_vd_etat` (`etat`),
+  KEY `idx_vd_date_validite` (`date_validite`),
+  KEY `idx_vd_type_mouvement` (`type_mouvement`),
+  CONSTRAINT `fk_vd_paiement` FOREIGN KEY (`id_paiement`) REFERENCES `paiements_immatriculation` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_vd_engin` FOREIGN KEY (`engin_id`) REFERENCES `engins` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_vd_particulier` FOREIGN KEY (`particulier_id`) REFERENCES `particuliers` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_vd_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 2. Modifier l'ENUM statut dans paiements_bancaires pour ajouter 'livre'
+ALTER TABLE `paiements_bancaires`
+    MODIFY COLUMN `statut` ENUM('initie','complete','annule','echec','livre') NULL DEFAULT 'initie';

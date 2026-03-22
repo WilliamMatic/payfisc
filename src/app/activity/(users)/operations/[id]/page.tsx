@@ -3,6 +3,8 @@ import { getImpots, Impot } from "@/services/impots/impotService";
 import ImpotServicesClient from "../components/ImpotServicesClient";
 import ReproductionServicesClient from "../components/ReproductionServicesClient";
 import VignetteServicesClient from "../components/VignetteServicesClient";
+import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
 
 // Required for dynamic routes - no prerender
 export function generateStaticParams() {
@@ -13,9 +15,28 @@ interface ImpotPageProps {
   params: Promise<{ id: string }>;
 }
 
+function ImpotIntrouvable({ id }: { id: string }) {
+  return (
+    <div className="p-6">
+      <div className="bg-red-50 border border-red-300 text-red-800 rounded-lg px-5 py-4 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="font-semibold">Impôt introuvable</p>
+          <p className="text-sm mt-1">
+            L&apos;impôt avec l&apos;identifiant <strong>#{id}</strong> n&apos;existe pas ou a été supprimé.{" "}
+            <Link href="/activity/operations" className="underline font-medium hover:text-red-900">
+              Retour aux opérations
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Composant pour le contenu principal
 async function ImpotContent({ params }: ImpotPageProps) {
-  const { id } = await params; // 👈 Déballer la Promise params
+  const { id } = await params;
   const impotsResult = await getImpots();
   
   if (impotsResult.status === "error") {
@@ -26,18 +47,7 @@ async function ImpotContent({ params }: ImpotPageProps) {
   const impot = impots.find((i) => i.id === parseInt(id));
   
   if (!impot) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Impôt non trouvé
-          </h1>
-          <p className="text-gray-600">
-            L'impôt que vous recherchez n'existe pas.
-          </p>
-        </div>
-      </div>
-    );
+    return <ImpotIntrouvable id={id} />;
   }
   
   const parsedId = parseInt(id);
@@ -49,26 +59,7 @@ async function ImpotContent({ params }: ImpotPageProps) {
   } else if (parsedId === 11) {
     return <ImpotServicesClient impot={impot} />;
   } else {
-    return (
-      <div
-        style={{
-          padding: "40px",
-          textAlign: "center",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-          maxWidth: "500px",
-          margin: "40px auto",
-        }}
-      >
-        <h2 style={{ color: "#e11d48", marginBottom: "10px" }}>
-          Service non trouvé
-        </h2>
-        <p style={{ color: "#555" }}>
-          Le service demandé n'existe pas ou n'est pas encore configuré.
-        </p>
-      </div>
-    );
+    return <ImpotIntrouvable id={id} />;
   }
 }
 

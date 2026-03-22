@@ -8,6 +8,15 @@ import {
   Building,
   Car as CarIcon,
   Gauge,
+  Phone,
+  Mail,
+  MapPin,
+  FileText,
+  Fuel,
+  Palette,
+  Hash,
+  Cog,
+  FileCheck,
 } from "lucide-react";
 import type { CarteRose } from "@/services/carteRose/carteRoseService";
 
@@ -45,242 +54,245 @@ export default function DetailModal({
   if (!isOpen || !carteRose) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* En-tête */}
-        <div className="p-6 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">
-                Détails de la carte rose
-              </h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Paiement #{carteRose.paiement_id} • Plaque{" "}
-                {carteRose.numero_plaque}
-              </p>
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div
+          className="fixed inset-0 bg-gray-500/50 backdrop-blur-sm transition-opacity"
+          onClick={onClose}
+        />
+        <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+        <div className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full">
+          {/* En-tête gradient */}
+          <div className="bg-gradient-to-r from-rose-600 to-rose-500 px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-xl">
+                <FileCheck className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  Détails de la carte rose
+                </h3>
+                <p className="text-rose-100 text-sm">
+                  Paiement #{carteRose.paiement_id} • {carteRose.numero_plaque}
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="text-white/80 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
 
-        {/* Contenu */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Section Propriétaire */}
-            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
-              <h4 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
-                <User className="w-5 h-5 mr-2" />
-                Informations du propriétaire
-              </h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">
-                    Nom complet:
-                  </span>
-                  <span className="text-gray-900 font-bold">
-                    {carteRose.nom} {carteRose.prenom}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">Téléphone:</span>
-                  <span className="text-gray-900">
-                    {carteRose.telephone || "Non renseigné"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">Email:</span>
-                  <span className="text-gray-900">
-                    {carteRose.email || "Non renseigné"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">Adresse:</span>
-                  <span className="text-gray-900">
-                    {carteRose.adresse || "Non renseignée"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">NIF:</span>
-                  <span className="text-gray-900">
-                    {carteRose.nif || "Non renseigné"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 font-medium">
-                    ID Propriétaire:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.particulier_id}
-                  </span>
-                </div>
+          {/* Résumé plaque + site */}
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Numéro de plaque</div>
+                <div className="text-lg font-bold text-gray-900">{carteRose.numero_plaque}</div>
               </div>
-            </div>
-
-            {/* Section Véhicule */}
-            <div className="bg-green-50 rounded-xl p-5 border border-green-200">
-              <h4 className="text-lg font-bold text-green-800 mb-4 flex items-center">
-                <CarIcon className="w-5 h-5 mr-2" />
-                Informations du véhicule
-              </h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">
-                    Numéro plaque:
-                  </span>
-                  <span className="text-gray-900 font-bold">
-                    {carteRose.numero_plaque}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Type:</span>
-                  <span className="text-gray-900">{carteRose.type_engin}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Marque:</span>
-                  <span className="text-gray-900">{carteRose.marque}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">Énergie:</span>
-                  <span className="text-gray-900">
-                    {carteRose.energie || "Non renseignée"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">
-                    Année fabrication:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.annee_fabrication || "Non renseignée"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-700 font-medium">
-                    Année circulation:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.annee_circulation || "Non renseignée"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Section Caractéristiques */}
-            <div className="bg-purple-50 rounded-xl p-5 border border-purple-200">
-              <h4 className="text-lg font-bold text-purple-800 mb-4 flex items-center">
-                <Gauge className="w-5 h-5 mr-2" />
-                Caractéristiques techniques
-              </h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Couleur:</span>
-                  <span className="text-gray-900">
-                    {carteRose.couleur || "Non renseignée"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Puissance fiscale:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.puissance_fiscal || "Non renseignée"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">Usage:</span>
-                  <span className="text-gray-900">
-                    {carteRose.usage_engin || "Non renseigné"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Numéro chassis:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.numero_chassis || "Non renseigné"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">
-                    Numéro moteur:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.numero_moteur || "Non renseigné"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-purple-700 font-medium">ID Engin:</span>
-                  <span className="text-gray-900">{carteRose.engin_id}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Section Administration */}
-            <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
-              <h4 className="text-lg font-bold text-amber-800 mb-4 flex items-center">
-                <Calendar className="w-5 h-5 mr-2" />
-                Informations administratives
-              </h4>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">
-                    Date attribution:
-                  </span>
-                  <span className="text-gray-900">
-                    {formatDate(carteRose.date_attribution)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Site:</span>
-                  <span className="text-gray-900">{carteRose.site_nom}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Caissier:</span>
-                  <span className="text-gray-900">{carteRose.caissier}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">
-                    ID Paiement:
-                  </span>
-                  <span className="text-gray-900">{carteRose.paiement_id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">ID Impôt:</span>
-                  <span className="text-gray-900">{carteRose.impot_id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">
-                    ID Plaque attribuée:
-                  </span>
-                  <span className="text-gray-900">
-                    {carteRose.plaque_attribuee_id || "Non renseigné"}
-                  </span>
-                </div>
-                {carteRose.reprint_id && (
-                  <div className="flex justify-between">
-                    <span className="text-amber-700 font-medium">
-                      ID Carte reprint:
-                    </span>
-                    <span className="text-gray-900">
-                      {carteRose.reprint_id}
-                    </span>
-                  </div>
-                )}
+              <div className="text-right">
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Attribution</div>
+                <div className="text-sm font-medium text-gray-700">{formatDate(carteRose.date_attribution)}</div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Pied de page */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-          <div className="flex justify-end">
+          {/* Contenu */}
+          <div className="p-6 max-h-[60vh] overflow-y-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Section Propriétaire */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <User className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <h4 className="font-bold text-gray-900">Propriétaire</h4>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Nom complet</p>
+                      <p className="text-sm font-medium">{carteRose.nom} {carteRose.prenom}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Téléphone</p>
+                      <p className="text-sm font-medium">{carteRose.telephone || "Non renseigné"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="text-sm font-medium">{carteRose.email || "Non renseigné"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Adresse</p>
+                      <p className="text-sm font-medium">{carteRose.adresse || "Non renseignée"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">NIF</p>
+                      <p className="text-sm font-medium">{carteRose.nif || "Non renseigné"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section Véhicule */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <CarIcon className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h4 className="font-bold text-gray-900">Véhicule</h4>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <CarIcon className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Type</p>
+                      <p className="text-sm font-medium">{carteRose.type_engin}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Marque</p>
+                      <p className="text-sm font-medium">{carteRose.marque}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Fuel className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Énergie</p>
+                      <p className="text-sm font-medium">{carteRose.energie || "Non renseignée"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Année fabrication</p>
+                      <p className="text-sm font-medium">{carteRose.annee_fabrication || "Non renseignée"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Année circulation</p>
+                      <p className="text-sm font-medium">{carteRose.annee_circulation || "Non renseignée"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section Caractéristiques */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Gauge className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h4 className="font-bold text-gray-900">Caractéristiques</h4>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <Palette className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Couleur</p>
+                      <p className="text-sm font-medium">{carteRose.couleur || "Non renseignée"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Gauge className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Puissance fiscale</p>
+                      <p className="text-sm font-medium">{carteRose.puissance_fiscal || "Non renseignée"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Cog className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Usage</p>
+                      <p className="text-sm font-medium">{carteRose.usage_engin || "Non renseigné"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">N° chassis</p>
+                      <p className="text-sm font-medium">{carteRose.numero_chassis || "Non renseigné"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">N° moteur</p>
+                      <p className="text-sm font-medium">{carteRose.numero_moteur || "Non renseigné"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section Administration */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <Building className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <h4 className="font-bold text-gray-900">Administration</h4>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <Building className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Site</p>
+                      <p className="text-sm font-medium">{carteRose.site_nom}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Caissier</p>
+                      <p className="text-sm font-medium">{carteRose.caissier}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Date attribution</p>
+                      <p className="text-sm font-medium">{formatDate(carteRose.date_attribution)}</p>
+                    </div>
+                  </div>
+                  {carteRose.reprint_id && (
+                    <div className="flex items-start space-x-3">
+                      <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Carte reprint</p>
+                        <p className="text-sm font-medium">#{carteRose.reprint_id}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pied de page */}
+          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-5 py-2.5 bg-rose-600 text-white text-sm font-medium rounded-xl hover:bg-rose-700 transition-colors"
             >
               Fermer
             </button>

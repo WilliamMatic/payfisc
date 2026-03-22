@@ -1,0 +1,135 @@
+{
+  "id": 1756821001234,
+  "nom": "Impôt sur le Revenu des Personnes Physiques (IRPP)",
+  "description": "Impôt appliqué sur les revenus annuels des particuliers après déduction des charges autorisées.",
+  "periode": "annuelle",
+  "delaiAccord": 15,
+  "penalites": {
+    "type": "pourcentage",
+    "valeur": 10
+  },
+  "formulaire": [
+    {
+      "champ": "Nom du contribuable",
+      "type": "texte"
+    },
+    {
+      "champ": "Numéro fiscal",
+      "type": "texte"
+    },
+    {
+      "champ": "Revenu Annuel Brut",
+      "type": "nombre"
+    },
+    {
+      "champ": "Charges Déductibles",
+      "type": "nombre"
+    },
+    {
+      "champ": "Nombre de parts fiscales",
+      "type": "nombre"
+    }
+  ],
+  "calcul": {
+    "formule": "(Revenu Annuel Brut - Charges Déductibles) / Nombre de parts fiscales"
+  },
+  "dateCreation": "2025-09-02T14:10:21.123Z",
+  "version": "1.0"
+}
+
+{
+  "id": 1756821105678,
+  "nom": "Taxe sur la Valeur Ajoutée (TVA)",
+  "description": "Taxe appliquée sur la consommation de biens et services.",
+  "periode": "mensuelle",
+  "delaiAccord": 5,
+  "penalites": {
+    "type": "fixe",
+    "valeur": 2000
+  },
+  "formulaire": [
+    {
+      "champ": "Raison sociale",
+      "type": "texte"
+    },
+    {
+      "champ": "Numéro d'identification fiscale",
+      "type": "texte"
+    },
+    {
+      "champ": "Chiffre d'affaires mensuel",
+      "type": "nombre"
+    }
+  ],
+  "calcul": {
+    "formule": "Chiffre d'affaires mensuel * 0.16"
+  },
+  "dateCreation": "2025-09-02T14:15:45.678Z",
+  "version": "1.0"
+}
+
+{
+  "id": 1756822007890,
+  "nom": "Impôt Foncier",
+  "description": "Impôt annuel appliqué sur les propriétés bâties et non bâties. Le montant est calculé sur la base de la valeur locative cadastrale.",
+  "periode": "annuelle",
+  "delaiAccord": 30,
+  "penalites": {
+    "type": "pourcentage",
+    "valeur": 5
+  },
+  "formulaire": [
+    {
+      "champ": "Nom du propriétaire",
+      "type": "texte"
+    },
+    {
+      "champ": "Numéro fiscal",
+      "type": "texte"
+    },
+    {
+      "champ": "Adresse du bien",
+      "type": "texte"
+    },
+    {
+      "champ": "Superficie du terrain (m²)",
+      "type": "nombre"
+    },
+    {
+      "champ": "Valeur locative cadastrale annuelle",
+      "type": "nombre"
+    },
+    {
+      "champ": "Nature du bien",
+      "type": "liste",
+      "options": ["Bâti", "Non Bâti"]
+    },
+    {
+      "champ": "Usage du bien",
+      "type": "liste",
+      "options": ["Résidentiel", "Commercial", "Industriel", "Agricole"]
+    }
+  ],
+  "calcul": {
+    "formule": "Valeur locative cadastrale annuelle * 0.10",
+    "parametres": {
+      "taux": 0.10,
+      "exonerations": [
+        {
+          "cas": "Biens appartenant à l'État ou aux collectivités publiques",
+          "valeur": "Exonération totale"
+        },
+        {
+          "cas": "Organisations caritatives",
+          "valeur": "Exonération totale"
+        },
+        {
+          "cas": "Petites propriétés rurales à usage agricole",
+          "valeur": "Exonération partielle selon la loi"
+        }
+      ]
+    }
+  },
+  "dateCreation": "2025-09-02T14:32:45.890Z",
+  "version": "1.0"
+}

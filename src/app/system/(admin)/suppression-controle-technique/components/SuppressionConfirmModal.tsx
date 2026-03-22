@@ -1,0 +1,282 @@
+"use client";
+
+import { useState } from "react";
+import {
+  X,
+  Trash2,
+  Loader2,
+  AlertTriangle,
+  User,
+  Bike,
+  Hash,
+  Calendar,
+  AlertCircle,
+  ListChecks,
+} from "lucide-react";
+import { ControleTechnique, SuppressionData } from "./types";
+import { supprimerControleTechnique } from "@/app/services/controle-technique/controleTechniqueService";
+
+interface SuppressionConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (data: SuppressionData) => void;
+  controle: ControleTechnique | null;
+}
+
+export default function SuppressionConfirmModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  controle,
+}: SuppressionConfirmModalProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  if (!isOpen || !controle) return null;
+
+  const handleSuppression = async () => {
+    if (confirmationText !== "SUPPRIMER") return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    const response = await supprimerControleTechnique(controle.id);
+
+    if (response.status === "success") {
+      const suppressionData: SuppressionData = {
+        controle_supprime: {
+          id: response.data.id,
+          reference: response.data.reference,
+          date_controle: response.data.date_controle,
+          decision_finale: response.data.decision_finale,
+          statut: response.data.statut,
+          nombre_elements: response.data.nombre_elements,
+          elements_bons: response.data.elements_bons,
+          elements_mauvais: response.data.elements_mauvais,
+        },
+        assujetti_nom: controle.assujetti.nom_complet,
+        numero_plaque: controle.engin.numero_plaque,
+        date_suppression: new Date()
+          .toISOString()
+          .replace("T", " ")
+          .substring(0, 19),
+      };
+
+      setIsProcessing(false);
+      setConfirmationText("");
+      onSuccess(suppressionData);
+    } else {
+      setError(response.message || "Erreur lors de la suppression");
+      setIsProcessing(false);
+    }
+  };
+
+  const isConfirmEnabled = confirmationText === "SUPPRIMER";
+
+  // Statistiques des résultats
+  const statsResultats = {
+    bon: controle.resultats.filter((r) => r.statut === "bon").length,
+    mauvais: controle.resultats.filter((r) => r.statut === "mauvais").length,
+    total: controle.resultats.length,
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        {/* Overlay avec opacité */}
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm transition-opacity" />
+
+        <span className="hidden sm:inline-block sm:align-middle sm:h-screen">
+          &#8203;
+        </span>
+
+        <div className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+          {/* En-tête - Rouge pour la suppression */}
+          <div className="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-xl">
+                <Trash2 className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white">
+                Confirmation de suppression
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Corps */}
+          <div className="px-6 py-6">
+            {/* Message d'avertissement */}
+            <div className="text-center mb-6">
+              <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-4">
+                <AlertTriangle className="h-10 w-10 text-red-600" />
+              </div>
+              <p className="text-lg font-semibold text-gray-900 mb-2">
+                Êtes-vous absolument sûr ?
+              </p>
+              <p className="text-sm text-gray-500">
+                Cette action est irréversible. Le contrôle technique et tous ses
+                résultats seront définitivement supprimés. Les données du
+                véhicule et de l&apos;assujetti seront conservées.
+              </p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-sm text-red-700">
+                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                {error}
+              </div>
+            )}
+
+            {/* Résumé des informations à supprimer */}
+            <div className="bg-red-50 rounded-xl p-4 mb-6 border border-red-200">
+              <p className="text-xs font-medium text-red-800 mb-3 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                Éléments qui seront supprimés
+              </p>
+
+              <div className="space-y-3">
+                {/* Référence */}
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-white rounded-lg">
+                    <Hash className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-red-700">Référence</p>
+                    <p className="text-sm font-medium text-red-900">
+                      {controle.reference}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Assujetti */}
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-white rounded-lg">
+                    <User className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-red-700">Assujetti</p>
+                    <p className="text-sm font-medium text-red-900">
+                      {controle.assujetti.nom_complet}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Véhicule */}
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-white rounded-lg">
+                    <Bike className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-red-700">Véhicule</p>
+                    <p className="text-sm font-medium text-red-900">
+                      {controle.engin.marque} -{" "}
+                      {controle.engin.numero_plaque}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Date */}
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-white rounded-lg">
+                    <Calendar className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-red-700">Date</p>
+                    <p className="text-sm font-medium text-red-900">
+                      {controle.date_controle
+                        ? new Date(controle.date_controle).toLocaleDateString(
+                            "fr-FR",
+                          )
+                        : "Pas encore réalisé"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Résultats */}
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-white rounded-lg">
+                    <ListChecks className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-red-700">Résultats</p>
+                    <p className="text-sm font-medium text-red-900">
+                      {statsResultats.total} éléments contrôlés
+                    </p>
+                    <div className="flex space-x-2 mt-1">
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                        {statsResultats.bon} bons
+                      </span>
+                      <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
+                        {statsResultats.mauvais} mauvais
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Confirmation par texte */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tapez <span className="font-bold text-red-600">SUPPRIMER</span>{" "}
+                pour confirmer
+              </label>
+              <input
+                type="text"
+                value={confirmationText}
+                onChange={(e) => setConfirmationText(e.target.value)}
+                placeholder="SUPPRIMER"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-center font-bold"
+                disabled={isProcessing}
+              />
+            </div>
+
+            {/* Note finale */}
+            <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
+              <p>
+                En confirmant, vous acceptez que toutes les données associées à
+                ce contrôle technique soient définitivement effacées du système.
+                Cette action ne peut pas être annulée.
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              disabled={isProcessing}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleSuppression}
+              disabled={isProcessing || !isConfirmEnabled}
+              className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:from-red-700 hover:to-red-600 transition-all disabled:opacity-50 flex items-center"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Confirmer la suppression
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

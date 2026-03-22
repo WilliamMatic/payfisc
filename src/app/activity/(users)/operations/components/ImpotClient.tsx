@@ -45,28 +45,28 @@ export default function ImpotClient({ initialImpots, initialError }: ImpotClient
   };
 
   // Fonction pour revalider le cache
-  const handleRefreshCache = async () => {
-    try {
-      setRefreshing(true);
+  // const handleRefreshCache = async () => {
+  //   try {
+  //     setRefreshing(true);
       
-      // Importer dynamiquement la fonction de revalidation
-      const { revalidateImpotsCache } = await import('@/services/impots/impotService');
+  //     // Importer dynamiquement la fonction de revalidation
+  //     const { revalidateImpotsCache } = await import('@/services/impots/impotService');
       
-      // Appeler la Server Action pour revalider le cache
-      const result = await revalidateImpotsCache();
+  //     // Appeler la Server Action pour revalider le cache
+  //     const result = await revalidateImpotsCache();
       
-      if (result.status === 'success') {
-        setSuccessMessage('Cache revalidé avec succès');
-        // Recharger les données après revalidation du cache
-        await loadImpots(false);
-      } else {
-        setError(result.message || 'Erreur lors de la revalidation du cache');
-      }
-    } catch (err) {
-      setError('Erreur lors de la revalidation du cache');
-      setRefreshing(false);
-    }
-  };
+  //     if (result.status === 'success') {
+  //       setSuccessMessage('Cache revalidé avec succès');
+  //       // Recharger les données après revalidation du cache
+  //       await loadImpots(false);
+  //     } else {
+  //       setError(result.message || 'Erreur lors de la revalidation du cache');
+  //     }
+  //   } catch (err) {
+  //     setError('Erreur lors de la revalidation du cache');
+  //     setRefreshing(false);
+  //   }
+  // };
 
   // Filtrage local des impôts
   const filteredImpots = impots.filter(impot =>
@@ -100,7 +100,7 @@ export default function ImpotClient({ initialImpots, initialError }: ImpotClient
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         impotsCount={filteredImpots.length}
-        onRefresh={handleRefreshCache}
+        // onRefresh={handleRefreshCache}
         isRefreshing={refreshing}
       />
 

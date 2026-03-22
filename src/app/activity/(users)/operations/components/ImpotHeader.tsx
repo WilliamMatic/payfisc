@@ -1,19 +1,19 @@
-import { FileText, Search, RefreshCw } from 'lucide-react';
+import { FileText, Search, RefreshCw } from "lucide-react";
 
 interface ImpotHeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   impotsCount: number;
-  onRefresh?: () => void;
+  // onRefresh?: () => void;
   isRefreshing?: boolean;
 }
 
-export default function ImpotHeader({ 
-  searchTerm, 
-  onSearchChange, 
+export default function ImpotHeader({
+  searchTerm,
+  onSearchChange,
   impotsCount,
-  onRefresh,
-  isRefreshing = false
+  // onRefresh,
+  isRefreshing = false,
 }: ImpotHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -23,13 +23,15 @@ export default function ImpotHeader({
           <FileText className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">Gestion des Impôts</h2>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Gestion des Impôts
+          </h2>
           <p className="text-sm text-gray-500">
-            {impotsCount} {impotsCount <= 1 ? 'impôt trouvé' : 'impôts trouvés'}
+            {impotsCount} {impotsCount <= 1 ? "impôt trouvé" : "impôts trouvés"}
           </p>
         </div>
       </div>
-      
+
       {/* BARRE DE RECHERCHE + BOUTON RAFRAÎCHIR */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
         <div className="relative flex-1 sm:w-80">
@@ -42,9 +44,9 @@ export default function ImpotHeader({
             className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] bg-white w-full"
           />
         </div>
-        
+
         {/* BOUTON DE RAFRAÎCHISSEMENT DU CACHE */}
-        {onRefresh && (
+        {/* {onRefresh && (
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
@@ -54,7 +56,7 @@ export default function ImpotHeader({
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Actualiser</span>
           </button>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { User, Loader2, Edit, Trash2, Eye, EyeOff, Key } from 'lucide-react';
+import { User, Loader2, Edit, Trash2, Eye, EyeOff, Key, Tag } from 'lucide-react';
 import { Admin as AdminType } from '@/services/admins/adminService';
 
 interface AdminTableProps {
@@ -87,7 +87,7 @@ export default function AdminTable({
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-gray-600 text-sm">
-                    {admin.province_nom || admin.role === 'super' ? 'Toutes' : 'N/A'}
+                    {admin.province_nom || (admin.role === 'super' ? 'Toutes' : 'N/A')}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${

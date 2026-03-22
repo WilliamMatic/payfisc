@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TSC-NPS External API — Documentation v1.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+    /* ═══════════════════════════════════════════════
+       VARIABLES & RESET
+    ═══════════════════════════════════════════════ */
+    :root {
+        --bg:           #07090f;
+        --bg2:          #0d1117;
+        --bg3:          #131920;
+        --bg4:          #1a2230;
+        --border:       rgba(255,255,255,0.06);
+        --border2:      rgba(255,255,255,0.11);
+        --border3:      rgba(255,255,255,0.18);
+
+        --teal:         #2dd4bf;
+        --teal-d:       rgba(45,212,191,0.10);
+        --teal-g:       rgba(45,212,191,0.22);
+        --teal-b:       rgba(45,212,191,0.06);
+
+        --violet:       #818cf8;
+        --violet-d:     rgba(129,140,248,0.12);
+
+        --amber:        #fbbf24;
+        --amber-d:      rgba(251,191,36,0.12);
+
+        --red:          #f87171;
+        --red-d:        rgba(248,113,113,0.12);
+
+        --green:        #4ade80;
+        --green-d:      rgba(74,222,128,0.10);
+
+        --slate:        #94a3b8;
+        --text:         #e2e8f0;
+        --text-muted:   #64748b;
+        --text-faint:   #334155;
+
+        --mono: 'DM Mono', monospace;
+        --sans: 'Outfit', sans-serif;
+
+        --sidebar-w: 260px;
+        --topbar-h:  56px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9999;
+        opacity: .4;
+    }
+
+    /* ── GRID ── */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(45,212,191,.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(45,212,191,.025) 1px, transparent 1px);
+        background-size: 44px 44px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* ══════════════════════════════════════════════
+       DOC LAYOUT
+    ══════════════════════════════════════════════ */
+    #docPage { position: relative; z-index: 1; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--topbar-h);
+        z-index: 200;
+        background: rgba(7,9,15,.82);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 1.5rem;
+        gap: 1rem;
+    }
+
+    .topbar-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: .95rem;
+        letter-spacing: -.01em;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .topbar-logo .logo-icon {
+        width: 30px; height: 30px;
+        background: linear-gradient(135deg, var(--teal), var(--violet));
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .85rem;
+    }
+
+    .topbar-ver {
+        background: var(--teal-d);
+        border: 1px solid rgba(45,212,191,.2);
+        color: var(--teal);
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        padding: .15rem .55rem;
+        border-radius: 999px;
+    }
+
+    .topbar-sep {
+        flex: 1;
+    }
+
+    .topbar-crumb {
+        font-size: .78rem;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        flex: 1;
+        text-align: center;
+    }
+
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-shrink: 0;
+    }
+
+    .user-pill {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 999px;
+        padding: .3rem .9rem;
+        font-size: .78rem;
+        color: var(--slate);
+    }
+
+    .online-dot {
+        width: 6px; height: 6px;
+        background: var(--green);
+        border-radius: 50%;
+        box-shadow: 0 0 5px var(--green);
+        flex-shrink: 0;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+        position: fixed;
+        top: var(--topbar-h);
+        left: 0;
+        width: var(--sidebar-w);
+        height: calc(100vh - var(--topbar-h));
+        overflow-y: auto;
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 0 3rem;
+        background: var(--bg);
+        z-index: 100;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 2px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+    .nav-group { margin-bottom: 1.75rem; padding: 0 1rem; }
+
+    .nav-group-label {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--text-faint);
+        padding: 0 .6rem;
+        margin-bottom: .5rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: .48rem .7rem;
+        border-radius: 7px;
+        font-size: .86rem;
+        color: var(--slate);
+        cursor: pointer;
+        transition: all .15s;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        text-decoration: none;
+    }
+
+    .nav-item:hover {
+        background: var(--bg3);
+        color: var(--text);
+    }
+
+    .nav-item.active {
+        background: var(--teal-d);
+        color: var(--teal);
+        font-weight: 600;
+    }
+
+    .nav-item .nav-icon { font-size: .82rem; width: 16px; text-align: center; flex-shrink: 0; }
+
+    .nav-item .nav-method {
+        font-family: var(--mono);
+        font-size: .6rem;
+        font-weight: 500;
+        padding: .1rem .4rem;
+        border-radius: 4px;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .nm-get  { background:var(--green-d);  color:var(--green); }
+    .nm-post { background:var(--teal-d);   color:var(--teal);  }
+
+    /* ── MAIN ── */
+    .doc-main {
+        margin-left: var(--sidebar-w);
+        padding-top: var(--topbar-h);
+        min-height: 100vh;
+    }
+
+    .doc-content {
+        max-width: 820px;
+        padding: 3rem 3rem 6rem;
+    }
+
+    /* ── SECTIONS (pour les ancres) ── */
+    .doc-section {
+        scroll-margin-top: calc(var(--topbar-h) + 20px);
+        margin-bottom: 4rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .doc-section:last-child { border-bottom: none; }
+
+    /* ── HERO ── */
+    .hero { margin-bottom: 3.5rem; scroll-margin-top: calc(var(--topbar-h) + 20px); }
+
+    .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--green-d);
+        border: 1px solid rgba(74,222,128,.25);
+        color: var(--green);
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        padding: .3rem .85rem;
+        border-radius: 999px;
+        margin-bottom: 1.4rem;
+    }
+
+    .hero h1 {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: -.02em;
+        color: #fff;
+        margin-bottom: .8rem;
+    }
+
+    .hero h1 span {
+        background: linear-gradient(135deg, var(--teal), var(--violet));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .hero-desc {
+        color: var(--slate);
+        font-size: .98rem;
+        line-height: 1.75;
+        max-width: 540px;
+        font-weight: 300;
+    }
+
+    .base-url {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: .8rem 1.1rem;
+        margin-top: 1.5rem;
+    }
+
+    .base-url-lbl {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+
+    .base-url-val {
+        font-family: var(--mono);
+        font-size: .87rem;
+        color: var(--teal);
+        flex: 1;
+        word-break: break-all;
+    }
+
+    /* ── SECTION HEADER ── */
+    .sec-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1.4rem;
+    }
+
+    .sec-icon {
+        width: 38px; height: 38px;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .sec-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        color: #fff;
+    }
+
+    /* ── AUTH GRID ── */
+    .auth-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .auth-cell {
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 9px;
+        padding: .85rem 1rem;
+    }
+
+    .auth-cell-lbl {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: .35rem;
+    }
+
+    .auth-cell-val {
+        font-family: var(--mono);
+        font-size: .86rem;
+        color: var(--teal);
+        word-break: break-all;
+    }
+
+    /* ── ENDPOINT CARD ── */
+    .ep-card {
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 13px;
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+        transition: border-color .2s;
+    }
+
+    .ep-card:hover { border-color: var(--border3); }
+    .ep-card.open  { border-color: rgba(45,212,191,.25); }
+
+    .ep-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: .9rem 1.2rem;
+        background: var(--bg3);
+        cursor: pointer;
+        user-select: none;
+        transition: background .15s;
+    }
+
+    .ep-toggle:hover { background: var(--bg4); }
+
+    .m-badge {
+        font-family: var(--mono);
+        font-size: .68rem;
+        font-weight: 500;
+        padding: .22rem .6rem;
+        border-radius: 5px;
+        letter-spacing: .04em;
+        flex-shrink: 0;
+    }
+
+    .m-get  { background:var(--green-d); color:var(--green); border:1px solid rgba(74,222,128,.25); }
+    .m-post { background:var(--teal-d);  color:var(--teal);  border:1px solid rgba(45,212,191,.25); }
+
+    .ep-path {
+        font-family: var(--mono);
+        font-size: .86rem;
+        color: var(--text);
+        flex: 1;
+    }
+
+    .ep-path .p-param { color: var(--amber); }
+
+    .ep-label {
+        font-size: .75rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+
+    .ep-chevron {
+        color: var(--text-faint);
+        font-size: .75rem;
+        transition: transform .22s;
+        flex-shrink: 0;
+    }
+
+    .ep-card.open .ep-chevron { transform: rotate(90deg); }
+
+    .ep-body {
+        padding: 1.4rem;
+        border-top: 1px solid var(--border);
+        display: none;
+    }
+
+    .ep-card.open .ep-body { display: block; }
+
+    /* ── SUB LABELS ── */
+    .sub-label {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: .6rem;
+        margin-top: 1.2rem;
+    }
+
+    .sub-label:first-child { margin-top: 0; }
+
+    .ep-desc {
+        color: var(--slate);
+        font-size: .9rem;
+        line-height: 1.7;
+        font-weight: 300;
+        margin-bottom: 1.1rem;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-wrap { position: relative; margin-bottom: .9rem; }
+
+    .code-block {
+        background: #040609;
+        border: 1px solid var(--border2);
+        border-radius: 9px;
+        padding: 1.1rem 1.3rem;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: .8rem;
+        line-height: 1.85;
+        color: #cbd5e1;
+    }
+
+    .code-block::-webkit-scrollbar { height: 3px; }
+    .code-block::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+    .c-k  { color: #7dd3fc; }   /* key */
+    .c-s  { color: #86efac; }   /* string */
+    .c-n  { color: var(--amber); }  /* number */
+    .c-nl { color: var(--red); }    /* null */
+    .c-cm { color: #475569; font-style: italic; }  /* comment */
+    .c-meth { color: var(--teal); font-weight: 500; }
+    .c-url  { color: #c084fc; }
+    .c-hdr  { color: #7dd3fc; }
+
+    .btn-copy {
+        position: absolute;
+        top: .5rem; right: .5rem;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        color: var(--text-muted);
+        font-size: .68rem;
+        padding: .22rem .6rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: var(--sans);
+        font-weight: 600;
+        letter-spacing: .03em;
+        transition: all .15s;
+    }
+
+    .btn-copy:hover { color: var(--teal); border-color: var(--teal); }
+    .btn-copy.copied { color: var(--green); border-color: var(--green); }
+
+    /* ── TABS ── */
+    .tabs-nav {
+        display: flex;
+        gap: .4rem;
+        margin-bottom: .75rem;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: .32rem .8rem;
+        border-radius: 6px;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border2);
+        color: var(--text-muted);
+        background: none;
+        font-family: var(--sans);
+        transition: all .15s;
+    }
+
+    .tab-btn:hover { border-color: var(--border3); color: var(--text); }
+
+    .tab-btn.active-ok  { background:var(--green-d); border-color:rgba(74,222,128,.3);  color:var(--green); }
+    .tab-btn.active-err { background:var(--red-d);   border-color:rgba(248,113,113,.3); color:var(--red);   }
+    .tab-btn.active-auth{ background:var(--teal-d);  border-color:rgba(45,212,191,.3);  color:var(--teal);  }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── STATUS CHIP ── */
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: .75rem;
+    }
+
+    .s-badge {
+        font-family: var(--mono);
+        font-size: .72rem;
+        font-weight: 600;
+        padding: .18rem .6rem;
+        border-radius: 5px;
+    }
+
+    .s-2xx { background:var(--green-d);  color:var(--green);  border:1px solid rgba(74,222,128,.25); }
+    .s-4xx { background:var(--red-d);    color:var(--red);    border:1px solid rgba(248,113,113,.25); }
+    .s-5xx { background:var(--amber-d);  color:var(--amber);  border:1px solid rgba(251,191,36,.25); }
+
+    .s-desc { font-size: .8rem; color: var(--text-muted); }
+
+    /* ── PARAMS TABLE ── */
+    .tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .84rem;
+        border-radius: 9px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+
+    .tbl th {
+        text-align: left;
+        padding: .55rem .9rem;
+        background: var(--bg3);
+        color: var(--text-muted);
+        font-size: .67rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    .tbl td {
+        padding: .6rem .9rem;
+        border-top: 1px solid var(--border);
+        vertical-align: middle;
+    }
+
+    .tbl tr:last-child td { border-bottom: none; }
+
+    .td-param { font-family:var(--mono); font-size:.8rem; color:var(--amber); }
+    .td-type  { font-family:var(--mono); font-size:.75rem; color:var(--text-muted); }
+    .td-req   { color:var(--red);   font-size:.72rem; font-weight:700; }
+    .td-opt   { color:var(--text-faint); font-size:.72rem; }
+    .td-desc  { color:var(--slate); font-size:.84rem; line-height:1.5; }
+
+    /* Error table */
+    .err-tbl { width:100%; border-collapse:collapse; font-size:.84rem; border-radius:9px; overflow:hidden; border:1px solid var(--border); }
+    .err-tbl th { text-align:left; padding:.55rem .9rem; background:var(--bg3); color:var(--text-muted); font-size:.67rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    .err-tbl td { padding:.6rem .9rem; border-top:1px solid var(--border); vertical-align:top; }
+    .err-tbl tr:last-child td { border-bottom:none; }
+    .td-http  { font-family:var(--mono); font-size:.78rem; color:var(--amber); white-space:nowrap; }
+    .td-msg   { font-family:var(--mono); font-size:.78rem; color:var(--red); }
+    .td-cause { color:var(--slate); font-size:.83rem; line-height:1.5; }
+
+    /* Security table */
+    .sec-tbl { width:100%; border-collapse:collapse; font-size:.84rem; border-radius:9px; overflow:hidden; border:1px solid var(--border); }
+    .sec-tbl th { text-align:left; padding:.55rem .9rem; background:var(--bg3); color:var(--text-muted); font-size:.67rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    .sec-tbl td { padding:.6rem .9rem; border-top:1px solid var(--border); vertical-align:top; }
+    .sec-tbl tr:last-child td { border-bottom:none; }
+    .td-ctrl { font-family:var(--mono); font-size:.78rem; color:var(--teal); white-space:nowrap; }
+
+    /* ── INFO BOX ── */
+    .info-box {
+        background: var(--teal-b);
+        border: 1px solid rgba(45,212,191,.2);
+        border-radius: 9px;
+        padding: .9rem 1.1rem;
+        font-size: .86rem;
+        color: rgba(45,212,191,.85);
+        line-height: 1.65;
+        margin-bottom: 1rem;
+    }
+
+    .info-box strong { color: var(--teal); }
+
+    /* ── LIMITS GRID ── */
+    .limits-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: .75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .limit-card {
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 1rem 1.1rem;
+    }
+
+    .limit-card-lbl { font-size:.65rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.35rem; }
+    .limit-card-val { font-family:var(--mono); font-size:.9rem; color:var(--amber); }
+
+    /* ── FOOTER ── */
+    .doc-footer {
+        border-top: 1px solid var(--border);
+        padding: 1.5rem 3rem;
+        margin-left: var(--sidebar-w);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: .78rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-brand { font-weight: 700; color: var(--slate); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+        :root { --sidebar-w: 0px; }
+        .sidebar { display: none; }
+        .doc-content { padding: 1.5rem 1.25rem 4rem; }
+        .auth-grid { grid-template-columns: 1fr; }
+        .limits-grid { grid-template-columns: 1fr; }
+        .topbar-crumb { display: none; }
+        .doc-footer { margin-left: 0; padding: 1.2rem; flex-direction: column; text-align: center; }
+    }
+
+    /* ── HIDDEN ── */
+    .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     DOC PAGE (suppression de la page de login)
+═══════════════════════════════════════════════════════ -->
+<div id="docPage">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-logo">
+            <div class="logo-icon">⚡</div>
+            TSC-NPS External API
+            <span class="topbar-ver">v1.0</span>
+        </div>
+        <div class="topbar-crumb" id="topCrumb"></div>
+        <div class="topbar-right">
+            <div class="user-pill">
+                <span class="online-dot"></span>
+                <span>Documentation publique</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="nav-group">
+            <div class="nav-group-label">Démarrage</div>
+            <a class="nav-item active" data-target="s-intro"      onclick="navClick(this)"><span class="nav-icon">🏠</span> Introduction</a>
+            <a class="nav-item"        data-target="s-auth"        onclick="navClick(this)"><span class="nav-icon">🔐</span> Authentification</a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-group-label">Endpoints</div>
+            <a class="nav-item" data-target="s-health"      onclick="navClick(this)">
+                <span class="nav-icon">💚</span> Health Check
+                <span class="nav-method nm-get">GET</span>
+            </a>
+            <a class="nav-item" data-target="s-plaque"      onclick="navClick(this)">
+                <span class="nav-icon">🔍</span> Par Plaque
+                <span class="nav-method nm-get">GET</span>
+            </a>
+            <a class="nav-item" data-target="s-transaction" onclick="navClick(this)">
+                <span class="nav-icon">🔗</span> Par Transaction
+                <span class="nav-method nm-get">GET</span>
+            </a>
+        </div>
+        <div class="nav-group">
+            <div class="nav-group-label">Référence</div>
+            <a class="nav-item" data-target="s-format"  onclick="navClick(this)"><span class="nav-icon">📦</span> Format réponse</a>
+            <a class="nav-item" data-target="s-errors"  onclick="navClick(this)"><span class="nav-icon">⚠️</span> Codes d'erreur</a>
+            <a class="nav-item" data-target="s-security"onclick="navClick(this)"><span class="nav-icon">🛡️</span> Sécurité</a>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="doc-main">
+        <div class="doc-content">
+
+            <!-- ── INTRO ───────────────────────────────────────── -->
+            <section class="hero doc-section" id="s-intro">
+                <div class="hero-chip">
+                    <span style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;"></span>
+                    API Opérationnelle · Production
+                </div>
+                <h1>Documentation<br><span>TSC-NPS External API</span></h1>
+                <p class="hero-desc">API de consultation des paiements d'immatriculation. Permet aux partenaires bancaires de récupérer en temps réel les informations complètes d'un paiement à partir du <strong>numéro de plaque</strong> ou du <strong>numéro de transaction</strong>.</p>
+
+                <div class="base-url">
+                    <span class="base-url-lbl">Base URL</span>
+                    <span class="base-url-val" id="baseUrlVal">https://mpako.net/Backend/external-api-php-v2/api/index.php?route=</span>
+                    <button class="btn-copy" onclick="copyEl('baseUrlVal', this)">Copier</button>
+                </div>
+            </section>
+
+            <!-- ── AUTHENTIFICATION ────────────────────────────── -->
+            <section class="doc-section" id="s-auth">
+                <div class="sec-head">
+                    <div class="sec-icon">🔐</div>
+                    <div class="sec-title">Authentification</div>
+                </div>
+
+                <p class="ep-desc">Chaque requête protégée doit inclure deux headers HTTP. Ces credentials sont fournis lors de l'onboarding partenaire et gérés dans la table <code style="font-family:var(--mono);color:var(--teal);font-size:.85em;">banques_partenaire</code>.</p>
+
+                <div class="auth-grid">
+                    <div class="auth-cell">
+                        <div class="auth-cell-lbl">Header 1</div>
+                        <div class="auth-cell-val">X-Bank-ID</div>
+                    </div>
+                    <div class="auth-cell">
+                        <div class="auth-cell-lbl">Exemple</div>
+                        <div class="auth-cell-val">BANK-TSC-TEST-001</div>
+                    </div>
+                    <div class="auth-cell">
+                        <div class="auth-cell-lbl">Header 2</div>
+                        <div class="auth-cell-val">X-API-Key</div>
+                    </div>
+                    <div class="auth-cell">
+                        <div class="auth-cell-lbl">Type</div>
+                        <div class="auth-cell-val">Clé secrète opaque</div>
+                    </div>
+                </div>
+
+                <div class="sub-label">Exemple de requête authentifiée</div>
+                <div class="code-wrap">
+                    <div class="code-block"><span class="c-meth">GET</span> <span class="c-url">https://mpako.net/Backend/external-api-php-v2/api/index.php?route=paiement/plaque&plaque=SP222</span>
+<span class="c-hdr">Host</span>: mpako.net
+<span class="c-hdr">X-Bank-ID</span>: BANK-TSC-TEST-001
+<span class="c-hdr">X-API-Key</span>: tsc-api-key-test-2024-abcdef123456</div>
+                    <button class="btn-copy" onclick="copyBlock(this)">Copier</button>
+                </div>
+
+                <div class="info-box">
+                    <strong>⚠️ Sécurité :</strong> Ne partagez jamais votre clé API dans du code client ou des dépôts publics. En cas de compromission, contactez TSC-NPS immédiatement pour une rotation des credentials.
+                </div>
+            </section>
+
+            <!-- ── HEALTH CHECK ────────────────────────────────── -->
+            <section class="doc-section" id="s-health">
+                <div class="sec-head">
+                    <div class="sec-icon">💚</div>
+                    <div class="sec-title">Health Check</div>
+                </div>
+                <p class="ep-desc">Route publique, sans authentification. Vérifie que l'API et la base de données sont opérationnelles. Idéale pour le monitoring et les checks de disponibilité.</p>
+
+                <div class="ep-card open" id="ep-health">
+                    <div class="ep-toggle" onclick="toggleCard('ep-health')">
+                        <span class="m-badge m-get">GET</span>
+                        <span class="ep-path">index.php?route=health</span>
+                        <span class="ep-label">Public · Sans auth</span>
+                        <span class="ep-chevron">▶</span>
+                    </div>
+                    <div class="ep-body">
+                        <div class="sub-label">cURL</div>
+                        <div class="code-wrap">
+                            <div class="code-block"><span class="c-meth">curl</span> -X GET \
+  "https://mpako.net/Backend/external-api-php-v2/api/index.php?route=health"</div>
+                            <button class="btn-copy" onclick="copyBlock(this)">Copier</button>
+                        </div>
+
+                        <div class="sub-label">Réponse — 200 OK</div>
+                        <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"success"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"API opérationnelle"</span>,
+  <span class="c-k">"data"</span>: {
+    <span class="c-k">"api"</span>:     <span class="c-s">"TSC-NPS External API"</span>,
+    <span class="c-k">"version"</span>: <span class="c-s">"1.0.0"</span>,
+    <span class="c-k">"db"</span>:      <span class="c-s">"ok"</span>,
+    <span class="c-k">"time"</span>:    <span class="c-s">"2026-01-19 12:36:13"</span>
+  }
+}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── PAR PLAQUE ──────────────────────────────────── -->
+            <section class="doc-section" id="s-plaque">
+                <div class="sec-head">
+                    <div class="sec-icon">🔍</div>
+                    <div class="sec-title">Recherche par Plaque</div>
+                </div>
+                <p class="ep-desc">Retourne le dernier paiement d'immatriculation <strong>complété</strong> associé à un numéro de plaque. La plaque est normalisée en majuscules automatiquement (sp222 → SP222).</p>
+
+                <div class="ep-card" id="ep-plaque">
+                    <div class="ep-toggle" onclick="toggleCard('ep-plaque')">
+                        <span class="m-badge m-get">GET</span>
+                        <span class="ep-path">index.php?route=paiement/plaque&plaque=<span class="p-param">{numero_plaque}</span></span>
+                        <span class="ep-label">🔒 Auth requise</span>
+                        <span class="ep-chevron">▶</span>
+                    </div>
+                    <div class="ep-body">
+                        <div class="sub-label">Paramètre de requête</div>
+                        <table class="tbl">
+                            <thead><tr><th>Paramètre</th><th>Type</th><th>Requis</th><th>Description</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="td-param">plaque</span></td>
+                                    <td><span class="td-type">string</span></td>
+                                    <td><span class="td-req">Oui</span></td>
+                                    <td class="td-desc">Numéro de plaque d'immatriculation (ex : SP222, KN-1234-A)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="sub-label">cURL</div>
+                        <div class="code-wrap">
+                            <div class="code-block"><span class="c-meth">curl</span> -X GET \
+  "https://mpako.net/Backend/external-api-php-v2/api/index.php?route=paiement/plaque&plaque=SP222" \
+  -H <span class="c-s">"X-Bank-ID: BANK-TSC-TEST-001"</span> \
+  -H <span class="c-s">"X-API-Key: tsc-api-key-test-2024-abcdef123456"</span></div>
+                            <button class="btn-copy" onclick="copyBlock(this)">Copier</button>
+                        </div>
+
+                        <div class="sub-label">Réponses</div>
+                        <div class="tabs-nav">
+                            <button class="tab-btn active-ok"  onclick="switchTab(this,'tg-plaque','tp-ok')">✅ 200 Succès</button>
+                            <button class="tab-btn"            onclick="switchTab(this,'tg-plaque','tp-404')">❌ 404 Introuvable</button>
+                            <button class="tab-btn"            onclick="switchTab(this,'tg-plaque','tp-401')">🔐 401 Auth</button>
+                            <button class="tab-btn"            onclick="switchTab(this,'tg-plaque','tp-403')">🚫 403 Accès</button>
+                        </div>
+
+                        <div id="tg-plaque">
+                            <div id="tp-ok" class="tab-pane active">
+                                <div class="status-chip">
+                                    <span class="s-badge s-2xx">200 OK</span>
+                                    <span class="s-desc">Paiement trouvé et retourné intégralement</span>
+                                </div>
+                                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"success"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Paiement récupéré avec succès"</span>,
+  <span class="c-k">"data"</span>: {
+    <span class="c-k">"site"</span>: {
+      <span class="c-k">"id"</span>:           <span class="c-n">358</span>,
+      <span class="c-k">"nom_site"</span>:    <span class="c-s">"LIMETE"</span>,
+      <span class="c-k">"fournisseur"</span>: <span class="c-s">"TSC-NPS"</span>
+    },
+    <span class="c-k">"assujetti"</span>: {
+      <span class="c-k">"id"</span>:          <span class="c-n">462774</span>,
+      <span class="c-k">"nom_complet"</span>: <span class="c-s">"OSONGA - ANDRE"</span>,
+      <span class="c-k">"telephone"</span>:   <span class="c-s">""</span>,
+      <span class="c-k">"adresse"</span>:     <span class="c-s">"A-038 AV. KILOSA Q. MOZINDO\nC. BARUMBU"</span>,
+      <span class="c-k">"nif"</span>:         <span class="c-s">""</span>,
+      <span class="c-k">"email"</span>:       <span class="c-s">""</span>
+    },
+    <span class="c-k">"engin"</span>: {
+      <span class="c-k">"id"</span>:                <span class="c-n">191</span>,
+      <span class="c-k">"numero_plaque"</span>:     <span class="c-s">"SP222"</span>,
+      <span class="c-k">"marque"</span>:            <span class="c-s">"TVS HLX125"</span>,
+      <span class="c-k">"modele"</span>:            <span class="c-s">""</span>,
+      <span class="c-k">"couleur"</span>:           <span class="c-s">""</span>,
+      <span class="c-k">"energie"</span>:           <span class="c-s">"1"</span>,
+      <span class="c-k">"usage_engin"</span>:       <span class="c-s">"1"</span>,
+      <span class="c-k">"puissance_fiscal"</span>:  <span class="c-s">""</span>,
+      <span class="c-k">"annee_fabrication"</span>: <span class="c-s">"2024"</span>,
+      <span class="c-k">"numero_chassis"</span>:    <span class="c-s">"09971"</span>,
+      <span class="c-k">"numero_moteur"</span>:     <span class="c-s">"*******"</span>,
+      <span class="c-k">"type_engin"</span>:        <span class="c-s">"5"</span>
+    },
+    <span class="c-k">"paiement"</span>: {
+      <span class="c-k">"id"</span>:                 <span class="c-n">444</span>,
+      <span class="c-k">"montant"</span>:            <span class="c-n">20.0</span>,
+      <span class="c-k">"montant_initial"</span>:    <span class="c-n">20.0</span>,
+      <span class="c-k">"mode_paiement"</span>:      <span class="c-s">"espece"</span>,
+      <span class="c-k">"operateur"</span>:          <span class="c-nl">null</span>,
+      <span class="c-k">"numero_transaction"</span>: <span class="c-s">"VIGN-1768822573481-3014"</span>,
+      <span class="c-k">"date_paiement"</span>:      <span class="c-s">"2026-01-19 12:36:13"</span>,
+      <span class="c-k">"statut"</span>:             <span class="c-s">"completed"</span>
+    },
+    <span class="c-k">"repartition"</span>: {
+      <span class="c-k">"total_montant"</span>:        <span class="c-n">20</span>,
+      <span class="c-k">"total_reparti"</span>:        <span class="c-n">20</span>,
+      <span class="c-k">"reste"</span>:                <span class="c-n">0</span>,
+      <span class="c-k">"details"</span>: [
+        {
+          <span class="c-k">"beneficiaire_id"</span>:       <span class="c-n">10</span>,
+          <span class="c-k">"beneficiaire_nom"</span>:      <span class="c-s">"PROV"</span>,
+          <span class="c-k">"numero_compte"</span>:         <span class="c-s">"xxx"</span>,
+          <span class="c-k">"type_part"</span>:             <span class="c-s">"pourcentage"</span>,
+          <span class="c-k">"valeur_part_originale"</span>: <span class="c-n">70</span>,
+          <span class="c-k">"valeur_part_calculee"</span>:  <span class="c-n">70</span>,
+          <span class="c-k">"montant"</span>:               <span class="c-n">14</span>
+        },
+        {
+          <span class="c-k">"beneficiaire_id"</span>:       <span class="c-n">9</span>,
+          <span class="c-k">"beneficiaire_nom"</span>:      <span class="c-s">"TSC"</span>,
+          <span class="c-k">"numero_compte"</span>:         <span class="c-s">"xx"</span>,
+          <span class="c-k">"type_part"</span>:             <span class="c-s">"pourcentage"</span>,
+          <span class="c-k">"valeur_part_originale"</span>: <span class="c-n">30</span>,
+          <span class="c-k">"valeur_part_calculee"</span>:  <span class="c-n">30</span>,
+          <span class="c-k">"montant"</span>:               <span class="c-n">6</span>
+        }
+      ],
+      <span class="c-k">"nombre_beneficiaires"</span>: <span class="c-n">2</span>
+    },
+    <span class="c-k">"utilisateur"</span>: {
+      <span class="c-k">"id"</span>:  <span class="c-n">20</span>,
+      <span class="c-k">"nom"</span>: <span class="c-s">"Bekeya"</span>
+    }
+  }
+}</div>
+                            </div>
+
+                            <div id="tp-404" class="tab-pane">
+                                <div class="status-chip">
+                                    <span class="s-badge s-4xx">404 Not Found</span>
+                                    <span class="s-desc">Aucun paiement complété pour cette plaque</span>
+                                </div>
+                                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"error"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Paiement introuvable"</span>,
+  <span class="c-k">"error"</span>:   <span class="c-s">"Aucun paiement complété trouvé pour la plaque 'XYZ999'"</span>
+}</div>
+                            </div>
+
+                            <div id="tp-401" class="tab-pane">
+                                <div class="status-chip">
+                                    <span class="s-badge s-4xx">401 Unauthorized</span>
+                                    <span class="s-desc">Headers absents ou credentials incorrects</span>
+                                </div>
+                                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"error"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Authentification échouée"</span>,
+  <span class="c-k">"error"</span>:   <span class="c-s">"Credentials invalides"</span>
+}</div>
+                            </div>
+
+                            <div id="tp-403" class="tab-pane">
+                                <div class="status-chip">
+                                    <span class="s-badge s-4xx">403 Forbidden</span>
+                                    <span class="s-desc">Compte suspendu, expiré ou IP non autorisée</span>
+                                </div>
+                                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"error"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Compte suspendu"</span>,
+  <span class="c-k">"error"</span>:   <span class="c-s">"Raison : Non-paiement des frais partenaires"</span>
+}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── PAR TRANSACTION ─────────────────────────────── -->
+            <section class="doc-section" id="s-transaction">
+                <div class="sec-head">
+                    <div class="sec-icon">🔗</div>
+                    <div class="sec-title">Recherche par Transaction</div>
+                </div>
+                <p class="ep-desc">Retrouve un paiement via son numéro de référence de transaction unique. Utile pour le rapprochement bancaire après qu'un paiement a été effectué dans votre système.</p>
+
+                <div class="ep-card" id="ep-transaction">
+                    <div class="ep-toggle" onclick="toggleCard('ep-transaction')">
+                        <span class="m-badge m-get">GET</span>
+                        <span class="ep-path">index.php?route=paiement/transaction&ref=<span class="p-param">{numero_transaction}</span></span>
+                        <span class="ep-label">🔒 Auth requise</span>
+                        <span class="ep-chevron">▶</span>
+                    </div>
+                    <div class="ep-body">
+                        <div class="sub-label">Paramètre de requête</div>
+                        <table class="tbl">
+                            <thead><tr><th>Paramètre</th><th>Type</th><th>Requis</th><th>Description</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="td-param">ref</span></td>
+                                    <td><span class="td-type">string</span></td>
+                                    <td><span class="td-req">Oui</span></td>
+                                    <td class="td-desc">Référence unique du paiement (ex : VIGN-1768822573481-3014)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="sub-label">cURL</div>
+                        <div class="code-wrap">
+                            <div class="code-block"><span class="c-meth">curl</span> -X GET \
+  "https://mpako.net/Backend/external-api-php-v2/api/index.php?route=paiement/transaction&ref=VIGN-1768822573481-3014" \
+  -H <span class="c-s">"X-Bank-ID: BANK-TSC-TEST-001"</span> \
+  -H <span class="c-s">"X-API-Key: tsc-api-key-test-2024-abcdef123456"</span></div>
+                            <button class="btn-copy" onclick="copyBlock(this)">Copier</button>
+                        </div>
+
+                        <div class="sub-label">Réponses</div>
+                        <div class="tabs-nav">
+                            <button class="tab-btn active-ok" onclick="switchTab(this,'tg-tr','tt-ok')">✅ 200 Succès</button>
+                            <button class="tab-btn"           onclick="switchTab(this,'tg-tr','tt-404')">❌ 404 Introuvable</button>
+                        </div>
+                        <div id="tg-tr">
+                            <div id="tt-ok" class="tab-pane active">
+                                <div class="status-chip">
+                                    <span class="s-badge s-2xx">200 OK</span>
+                                    <span class="s-desc">Structure identique à la réponse par plaque</span>
+                                </div>
+                                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"success"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Paiement récupéré avec succès"</span>,
+  <span class="c-k">"data"</span>: { <span class="c-cm">/* objet complet — voir endpoint par plaque */</span> }
+}</div>
+                            </div>
+                            <div id="tt-404" class="tab-pane">
+                                <div class="status-chip">
+                                    <span class="s-badge s-4xx">404 Not Found</span>
+                                    <span class="s-desc">Référence de transaction inconnue</span>
+                                </div>
+                                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"error"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Paiement introuvable"</span>,
+  <span class="c-k">"error"</span>:   <span class="c-s">"Aucun paiement trouvé pour la référence 'VIGN-XXXX'"</span>
+}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── FORMAT RÉPONSE ──────────────────────────────── -->
+            <section class="doc-section" id="s-format">
+                <div class="sec-head">
+                    <div class="sec-icon">📦</div>
+                    <div class="sec-title">Format des réponses</div>
+                </div>
+                <p class="ep-desc">Toutes les réponses partagent la même enveloppe JSON. Les champs <code style="font-family:var(--mono);color:var(--teal);font-size:.85em;">data</code> et <code style="font-family:var(--mono);color:var(--red);font-size:.85em;">error</code> sont mutuellement exclusifs selon le statut.</p>
+
+                <div class="code-block">{
+  <span class="c-k">"status"</span>:  <span class="c-s">"success"</span> <span class="c-cm">| "error"</span>,
+  <span class="c-k">"message"</span>: <span class="c-s">"Message lisible par l'humain"</span>,
+  <span class="c-k">"data"</span>:    { <span class="c-cm">/* présent UNIQUEMENT si status = "success" */</span> },
+  <span class="c-k">"error"</span>:   <span class="c-s">"Détail technique"</span> <span class="c-cm">/* présent UNIQUEMENT si status = "error" */</span>
+}</div>
+
+                <div class="sub-label" style="margin-top:1.25rem;">Objets contenus dans data</div>
+                <table class="tbl">
+                    <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="td-param">site</span></td>        <td><span class="td-type">object</span></td><td class="td-desc">Informations du site TSC-NPS (id, nom_site, fournisseur)</td></tr>
+                        <tr><td><span class="td-param">assujetti</span></td>   <td><span class="td-type">object</span></td><td class="td-desc">Propriétaire du véhicule (nom, téléphone, adresse, nif, email)</td></tr>
+                        <tr><td><span class="td-param">engin</span></td>       <td><span class="td-type">object</span></td><td class="td-desc">Données du véhicule (plaque, marque, châssis, moteur…)</td></tr>
+                        <tr><td><span class="td-param">paiement</span></td>    <td><span class="td-type">object</span></td><td class="td-desc">Détails du paiement (montant, mode, transaction, date, statut)</td></tr>
+                        <tr><td><span class="td-param">repartition</span></td> <td><span class="td-type">object</span></td><td class="td-desc">Répartition entre bénéficiaires (PROV, TSC…) avec montants</td></tr>
+                        <tr><td><span class="td-param">utilisateur</span></td> <td><span class="td-type">object</span></td><td class="td-desc">Agent TSC-NPS ayant enregistré le paiement</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ── CODES D'ERREUR ──────────────────────────────── -->
+            <section class="doc-section" id="s-errors">
+                <div class="sec-head">
+                    <div class="sec-icon">⚠️</div>
+                    <div class="sec-title">Codes d'erreur</div>
+                </div>
+                <p class="ep-desc">L'API retourne des codes HTTP standards accompagnés d'un message et d'un détail explicite dans le corps JSON.</p>
+
+                <table class="err-tbl">
+                    <thead><tr><th>HTTP</th><th>Message</th><th>Cause</th></tr></thead>
+                    <tbody>
+                        <tr><td class="td-http">400</td><td class="td-msg">Paramètre manquant</td>      <td class="td-cause">Numéro de plaque ou de transaction absent ou vide dans l'URL</td></tr>
+                        <tr><td class="td-http">401</td><td class="td-msg">Headers manquants</td>       <td class="td-cause">X-Bank-ID ou X-API-Key absent du header de la requête</td></tr>
+                        <tr><td class="td-http">401</td><td class="td-msg">Authentification échouée</td><td class="td-cause">Bank ID ou API Key incorrect(e) — vérifier vos credentials</td></tr>
+                        <tr><td class="td-http">403</td><td class="td-msg">Accès refusé</td>            <td class="td-cause">Compte partenaire désactivé (actif = 0 en base)</td></tr>
+                        <tr><td class="td-http">403</td><td class="td-msg">Compte suspendu</td>         <td class="td-cause">Compte suspendu — la raison est incluse dans le champ error</td></tr>
+                        <tr><td class="td-http">403</td><td class="td-msg">Credentials expirés</td>     <td class="td-cause">La date d'expiration des credentials est dépassée</td></tr>
+                        <tr><td class="td-http">403</td><td class="td-msg">IP non autorisée</td>        <td class="td-cause">L'IP source n'est pas dans la whitelist configurée du partenaire</td></tr>
+                        <tr><td class="td-http">403</td><td class="td-msg">Montant hors limites</td>    <td class="td-cause">Montant du paiement en dehors des bornes min/max du partenaire</td></tr>
+                        <tr><td class="td-http">404</td><td class="td-msg">Paiement introuvable</td>    <td class="td-cause">Aucun paiement avec statut "completed" trouvé pour ce critère</td></tr>
+                        <tr><td class="td-http">404</td><td class="td-msg">Route introuvable</td>       <td class="td-cause">L'URL demandée n'existe pas dans l'API</td></tr>
+                        <tr><td class="td-http">500</td><td class="td-msg">Erreur interne</td>           <td class="td-cause">Erreur serveur inattendue — contacter le support TSC-NPS</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ── SÉCURITÉ ────────────────────────────────────── -->
+            <section class="doc-section" id="s-security">
+                <div class="sec-head">
+                    <div class="sec-icon">🛡️</div>
+                    <div class="sec-title">Limites &amp; Sécurité</div>
+                </div>
+                <p class="ep-desc">Chaque partenaire dispose de limites individuelles configurées en base. Les contrôles de sécurité sont appliqués à chaque requête, dans l'ordre indiqué.</p>
+
+                <div class="limits-grid">
+                    <div class="limit-card">
+                        <div class="limit-card-lbl">Limite journalière</div>
+                        <div class="limit-card-val">Configurée par partenaire</div>
+                    </div>
+                    <div class="limit-card">
+                        <div class="limit-card-lbl">Limite mensuelle</div>
+                        <div class="limit-card-val">Configurée par partenaire</div>
+                    </div>
+                    <div class="limit-card">
+                        <div class="limit-card-lbl">Montant minimum</div>
+                        <div class="limit-card-val">Défini par partenaire</div>
+                    </div>
+                    <div class="limit-card">
+                        <div class="limit-card-lbl">Montant maximum</div>
+                        <div class="limit-card-val">Défini par partenaire</div>
+                    </div>
+                </div>
+
+                <table class="sec-tbl">
+                    <thead><tr><th>Contrôle (ordre d'exécution)</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td class="td-ctrl">1. Headers obligatoires</td><td class="td-desc">X-Bank-ID + X-API-Key présents et non vides</td></tr>
+                        <tr><td class="td-ctrl">2. Credentials en base</td> <td class="td-desc">Vérification temps réel dans banques_partenaire</td></tr>
+                        <tr><td class="td-ctrl">3. Compte actif</td>        <td class="td-desc">Champ actif = 1 obligatoire</td></tr>
+                        <tr><td class="td-ctrl">4. Non suspendu</td>        <td class="td-desc">Champ suspendu = 0 obligatoire</td></tr>
+                        <tr><td class="td-ctrl">5. Expiration</td>          <td class="td-desc">Credentials vérifiés contre date_expiration</td></tr>
+                        <tr><td class="td-ctrl">6. IP whitelist</td>        <td class="td-desc">Si ip_autorisees est renseigné, l'IP source est contrôlée</td></tr>
+                        <tr><td class="td-ctrl">7. Montant min/max</td>     <td class="td-desc">Montant du paiement vérifié contre les bornes du partenaire</td></tr>
+                        <tr><td class="td-ctrl">8. Anti injection SQL</td>  <td class="td-desc">100 % requêtes préparées PDO — aucune concaténation SQL</td></tr>
+                        <tr><td class="td-ctrl">9. Audit trail</td>         <td class="td-desc">Chaque connexion enregistrée dans connexions_bancaires</td></tr>
+                        <tr><td class="td-ctrl">10. Fichiers protégés</td>  <td class="td-desc">Accès direct à /classes/, .env, .sql bloqué par Nginx (404)</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </div><!-- /doc-content -->
+    </main>
+
+    <footer class="doc-footer">
+        <span class="footer-brand">TSC-NPS External API</span>
+        <span>PHP 8.1 · MySQL · Zéro dépendance externe</span>
+        <span>Production : <strong>https://mpako.net/Backend/external-api-php-v2/api/index.php?route=...</strong></span>
+    </footer>
+
+</div><!-- /docPage -->
+
+<script>
+/* ═══════════════════════════════════════════
+   CANVAS STARS
+═══════════════════════════════════════════ */
+(function () {
+    const cv = document.createElement('canvas');
+    cv.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;';
+    document.body.prepend(cv);
+    const ctx = cv.getContext('2d');
+    let W, H;
+    const stars = Array.from({length:100}, () => ({
+        x: Math.random(), y: Math.random(),
+        r: Math.random() * 1.1 + .2,
+        a: Math.random(), da: (Math.random() - .5) * .004
+    }));
+    function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+    resize(); addEventListener('resize', resize);
+    (function loop() {
+        ctx.clearRect(0, 0, W, H);
+        stars.forEach(s => {
+            s.a = Math.max(.05, Math.min(1, s.a + s.da));
+            if (s.a <= .05 || s.a >= 1) s.da *= -1;
+            ctx.beginPath();
+            ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(45,212,191,${s.a * .35})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(loop);
+    })();
+})();
+
+/* ═══════════════════════════════════════════
+   NAVIGATION — ancres avec scroll-spy
+═══════════════════════════════════════════ */
+
+const SECTIONS = ['s-intro','s-auth','s-health','s-plaque','s-transaction','s-format','s-errors','s-security'];
+const SECTION_LABELS = {
+    's-intro':       'Introduction',
+    's-auth':        'Authentification',
+    's-health':      'Health Check',
+    's-plaque':      'Par Plaque',
+    's-transaction': 'Par Transaction',
+    's-format':      'Format des réponses',
+    's-errors':      'Codes d\'erreur',
+    's-security':    'Sécurité',
+};
+
+let observer = null;
+
+function initScrollSpy() {
+    if (observer) observer.disconnect();
+
+    const topbarH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 56;
+
+    observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    document.querySelectorAll('.nav-item').forEach(n => {
+                        n.classList.toggle('active', n.dataset.target === id);
+                    });
+                    document.getElementById('topCrumb').textContent = SECTION_LABELS[id] || '';
+                }
+            });
+        },
+        {
+            root: null,
+            rootMargin: `-${topbarH + 10}px 0px -60% 0px`,
+            threshold: 0
+        }
+    );
+
+    SECTIONS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+    });
+}
+
+function navClick(el) {
+    const targetId = el.dataset.target;
+    const target   = document.getElementById(targetId);
+    if (!target) return;
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('topCrumb').textContent = SECTION_LABELS[targetId] || '';
+
+    const topbarH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 56;
+    const y = target.getBoundingClientRect().top + window.scrollY - topbarH - 20;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════════
+   ENDPOINT CARDS
+═══════════════════════════════════════════ */
+function toggleCard(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+function switchTab(btn, groupId, paneId) {
+    document.getElementById(groupId).querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById(paneId).classList.add('active');
+
+    btn.closest('.tabs-nav').querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active-ok', 'active-err', 'active-auth');
+    });
+
+    if (btn.textContent.includes('✅'))      btn.classList.add('active-ok');
+    else if (btn.textContent.includes('❌')) btn.classList.add('active-err');
+    else if (btn.textContent.includes('🔐')) btn.classList.add('active-auth');
+    else if (btn.textContent.includes('🚫')) btn.classList.add('active-err');
+    else                                     btn.classList.add('active-ok');
+}
+
+/* ═══════════════════════════════════════════
+   COPY HELPERS
+═══════════════════════════════════════════ */
+function copyEl(id, btn) {
+    const txt = document.getElementById(id).textContent.trim();
+    navigator.clipboard.writeText(txt).then(() => {
+        if (!btn) return;
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copié !';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+    });
+}
+
+function copyBlock(btn) {
+    const block = btn.closest('.code-wrap')?.querySelector('.code-block') || btn.previousElementSibling;
+    if (!block) return;
+    navigator.clipboard.writeText(block.innerText.trim()).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copié !';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+    });
+}
+
+/* Lancement du scroll spy une fois la page chargée */
+window.addEventListener('DOMContentLoaded', initScrollSpy);
+</script>
+</body>
+</html>
