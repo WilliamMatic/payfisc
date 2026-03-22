@@ -56,10 +56,10 @@ export default function VentesContent() {
   }, [sites]);
 
   // Fonction pour afficher les messages
-  const showMessage = (type: "success" | "error" | "info" | "warning", title: string, message: string) => {
+  const showMessage = useCallback((type: "success" | "error" | "info" | "warning", title: string, message: string) => {
     setMessageModalProps({ type, title, message });
     setShowMessageModal(true);
-  };
+  }, []);
 
   // Fonction pour rafraîchir toutes les données
   const refreshAllData = useCallback(async () => {

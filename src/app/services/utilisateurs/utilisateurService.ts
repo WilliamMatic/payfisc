@@ -97,8 +97,8 @@ async function invalidateUtilisateursCache(utilisateurId?: number) {
   }
 }
 
-// Nettoyer les données
-export async function cleanUtilisateurData(data: any): Promise<Utilisateur> {
+// Nettoyer les données (synchrone — pas de I/O)
+function cleanUtilisateurData(data: any): Utilisateur {
   return {
     id: data.id || 0,
     nom_complet: data.nom_complet || "",
@@ -121,7 +121,7 @@ export async function cleanUtilisateurData(data: any): Promise<Utilisateur> {
   };
 }
 
-export async function cleanSiteData(data: any): Promise<Site> {
+function cleanSiteData(data: any): Site {
   return {
     id: data.id || 0,
     nom: data.nom || "",
@@ -156,7 +156,7 @@ export async function getUtilisateurs(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanUtilisateurData(item)))
+      ? data.data.map((item: any) => cleanUtilisateurData(item))
       : [];
 
     return {
@@ -199,7 +199,7 @@ export async function getUtilisateursActifs(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanUtilisateurData(item)))
+      ? data.data.map((item: any) => cleanUtilisateurData(item))
       : [];
 
     return {
@@ -418,9 +418,12 @@ export async function searchUtilisateurs(searchTerm: string): Promise<ApiRespons
 }
 
 /**
- * 💾 Récupère la liste des sites actifs (PAS DE CACHE)
+ * 💾 Récupère la liste des sites actifs (CACHED 2h)
  */
 export async function getSitesActifs(): Promise<ApiResponse> {
+  'use cache';
+  cacheTag(CACHE_TAGS.SITES_LIST);
+  cacheLife('hours');
 
   try {
     const response = await fetch(`${API_BASE_URL}/utilisateurs/lister_sites_actifs.php`, {
@@ -441,7 +444,7 @@ export async function getSitesActifs(): Promise<ApiResponse> {
     }
 
     const cleanedData = Array.isArray(data.data)
-      ? await Promise.all(data.data.map(async (item: any) => await cleanSiteData(item)))
+      ? data.data.map((item: any) => cleanSiteData(item))
       : [];
 
     return {

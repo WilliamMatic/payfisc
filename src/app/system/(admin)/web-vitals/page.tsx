@@ -55,7 +55,7 @@ async function getAnalyticsStats(startDate: string | null = null, endDate: strin
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'no-store'
+      next: { revalidate: 15 }
     });
 
     if (!response.ok) {
@@ -96,12 +96,13 @@ function getDefaultStats(): AnalyticsStats {
 }
 
 interface AnalyticsPageProps {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
-  const startDate = searchParams.start_date || null;
-  const endDate = searchParams.end_date || null;
+  const resolvedParams = await searchParams;
+  const startDate = resolvedParams.start_date || null;
+  const endDate = resolvedParams.end_date || null;
   
   const statsData = await getAnalyticsStats(startDate, endDate);
   

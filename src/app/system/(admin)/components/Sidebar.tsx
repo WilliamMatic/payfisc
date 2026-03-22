@@ -28,7 +28,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set<string>()
+    new Set<string>(),
   );
 
   // Ouvrir toutes les catégories par défaut au premier rendu
@@ -139,6 +139,16 @@ export default function Sidebar({
           icon: "🗑️",
           label: "Suppression Délivrance",
           href: "/system/suppression-delivrance",
+        },
+        {
+          icon: "🏍️",
+          label: "Suppression Vignette",
+          href: "/system/suppression-vignette",
+        },
+        {
+          icon: "🛠️",
+          label: "Suppression Contrôle Technique",
+          href: "/system/suppression-controle-technique",
         },
         // {
         //   icon: "♻️",

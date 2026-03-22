@@ -57,14 +57,14 @@ export default function CommandesContent() {
   );
 
   // Fonction pour afficher les messages
-  const showMessage = (
+  const showMessage = useCallback((
     type: "success" | "error" | "info" | "warning",
     title: string,
     message: string,
   ) => {
     setMessageModalProps({ type, title, message });
     setShowMessageModal(true);
-  };
+  }, []);
 
   // Fonction pour rafraîchir toutes les données
   const refreshAllData = useCallback(async () => {
@@ -193,7 +193,7 @@ export default function CommandesContent() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && refreshAllData()}
-                placeholder="Rechercher par nom, téléphone, NIF..."
+                placeholder="Rechercher par nom, téléphone, NIF, numéro plaque..."
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>

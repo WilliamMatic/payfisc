@@ -1,5 +1,6 @@
 import { Edit, X, Save, Loader2 } from 'lucide-react';
 import { Admin as AdminType, Province as ProvinceType } from '@/services/admins/adminService';
+import TaxesSection from '../TaxesSection';
 
 interface EditAdminModalProps {
   admin: AdminType;
@@ -41,13 +42,13 @@ export default function EditAdminModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4 overflow-y-auto">
       <div 
-        className="bg-white rounded-xl shadow-xl w-full max-w-md animate-in fade-in-90 zoom-in-90 duration-200"
+        className="bg-white rounded-xl shadow-xl w-full max-w-2xl animate-in fade-in-90 zoom-in-90 duration-200 my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* EN-TÊTE MODALE */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
           <div className="flex items-center">
             <div className="bg-[#2D5B7A] p-2 rounded-lg mr-3">
               <Edit className="w-5 h-5 text-white" />
@@ -66,8 +67,8 @@ export default function EditAdminModal({
           </button>
         </div>
         
-        {/* CORPS DE LA MODALE */}
-        <div className="p-5">
+        {/* CORPS DE LA MODALE - AVEC SCROLL */}
+        <div className="p-5 max-h-[calc(100vh-200px)] overflow-y-auto">
           <div className="space-y-4">
             {/* CHAMP NOM COMPLET */}
             <div>
@@ -168,36 +169,39 @@ export default function EditAdminModal({
                 </select>
               </div>
             )}
+
+            {/* SECTION TAXES */}
+            <TaxesSection adminId={admin.id} adminName={admin.nom_complet} />
           </div>
-          
-          {/* PIED DE PAGE */}
-          <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
-              disabled={processing}
-            >
-              Annuler
-            </button>
-            <button
-              onClick={onEditAdmin}
-              disabled={
-                !formData.nom_complet.trim() || 
-                !formData.email.trim() || 
-                !formData.role || 
-                (formData.role === 'partenaire' && !formData.province_id) ||
-                processing
-              }
-              className="flex items-center space-x-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-            >
-              {processing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              <span>{processing ? 'Enregistrement...' : 'Modifier'}</span>
-            </button>
-          </div>
+        </div>
+        
+        {/* PIED DE PAGE */}
+        <div className="flex items-center justify-end space-x-3 p-5 border-t border-gray-100 sticky bottom-0 bg-white">
+          <button
+            onClick={onClose}
+            className="px-4 py-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
+            disabled={processing}
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onEditAdmin}
+            disabled={
+              !formData.nom_complet.trim() || 
+              !formData.email.trim() || 
+              !formData.role || 
+              (formData.role === 'partenaire' && !formData.province_id) ||
+              processing
+            }
+            className="flex items-center space-x-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          >
+            {processing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            <span>{processing ? 'Enregistrement...' : 'Modifier'}</span>
+          </button>
         </div>
       </div>
     </div>

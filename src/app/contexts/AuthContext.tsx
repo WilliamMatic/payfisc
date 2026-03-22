@@ -29,6 +29,7 @@ interface UtilisateurSession {
   adresse: string;
   site_nom: string;
   site_code: string;
+  site_id?: number;
   extension_site?: any;
   formule?: string;
   privileges?: any;

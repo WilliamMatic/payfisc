@@ -421,6 +421,7 @@ export default function ReproductionServicesClient({
 
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
+  console.log("Utilisateur connecté:", utilisateur);
 
   // Parser les privilèges quand utilisateur change
   useEffect(() => {

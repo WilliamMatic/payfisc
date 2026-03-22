@@ -1,7 +1,6 @@
-'use server';
-
 /**
- * Server Actions pour l'authentification - Interface avec l'API backend
+ * Service d'authentification - Interface avec l'API backend
+ * Ces fonctions s'exécutent côté client pour envoyer les cookies PHP de session
  */
 
 // Interface pour les données d'un agent connecté
@@ -20,6 +19,7 @@ export interface UtilisateurSession {
   adresse: string;
   site_nom: string;
   site_code: string;
+  site_id?: number;
   formule: string;
   privileges: any;
 }

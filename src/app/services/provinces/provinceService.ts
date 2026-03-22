@@ -59,6 +59,8 @@ async function invalidateProvincesCache(provinceId?: number) {
   revalidateTag(CACHE_TAGS.PROVINCES_LIST, "max");
   revalidateTag(CACHE_TAGS.PROVINCES_ACTIVES, "max");
   revalidateTag(CACHE_TAGS.PROVINCES_SEARCH, "max");
+  // Invalider aussi le combo provinces dans /system/sites
+  revalidateTag('provinces-list-sites', "max");
   
   if (provinceId) {
     revalidateTag(CACHE_TAGS.PROVINCE_DETAILS(provinceId), "max");
