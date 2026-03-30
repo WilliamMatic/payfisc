@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   X,
   User,
@@ -23,14 +24,19 @@ import {
   CheckCircle,
   AlertCircle,
   Trash2,
+  Pencil,
+  Save,
+  Loader2,
 } from "lucide-react";
-import { Vignette } from "./types";
+import { Vignette, Assujetti } from "./types";
+import { updateAssujettiSimple } from "@/services/particuliers/particulierService";
 
 interface VignetteDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   vignette: Vignette | null;
   onDelete: () => void;
+  onAssujettiUpdate?: (id: number, data: Assujetti) => void;
 }
 
 export default function VignetteDetailsModal({
@@ -38,8 +44,67 @@ export default function VignetteDetailsModal({
   onClose,
   vignette,
   onDelete,
+  onAssujettiUpdate,
 }: VignetteDetailsModalProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editData, setEditData] = useState({
+    nom_complet: "",
+    telephone: "",
+    adresse: "",
+    nif: "",
+    email: "",
+  });
+
   if (!isOpen || !vignette) return null;
+
+  const startEditing = () => {
+    setEditData({
+      nom_complet: vignette.assujetti.nom_complet,
+      telephone: vignette.assujetti.telephone || "",
+      adresse: vignette.assujetti.adresse || "",
+      nif: vignette.assujetti.nif || "",
+      email: vignette.assujetti.email || "",
+    });
+    setEditError(null);
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditError(null);
+  };
+
+  const handleSaveAssujetti = async () => {
+    if (!editData.nom_complet.trim()) {
+      setEditError("Le nom complet est requis");
+      return;
+    }
+    setIsSaving(true);
+    setEditError(null);
+    try {
+      const result = await updateAssujettiSimple(vignette.assujetti.id, editData);
+      if (result.status === "success") {
+        const updated: Assujetti = {
+          ...vignette.assujetti,
+          nom_complet: editData.nom_complet,
+          telephone: editData.telephone,
+          adresse: editData.adresse,
+          nif: editData.nif,
+          email: editData.email,
+        };
+        onAssujettiUpdate?.(vignette.id, updated);
+        setIsEditing(false);
+      } else {
+        setEditError(result.message || "Erreur lors de la modification");
+      }
+    } catch {
+      setEditError("Erreur réseau");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -165,64 +230,153 @@ export default function VignetteDetailsModal({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Informations Assujetti */}
               <div className="bg-gray-50 rounded-xl p-5">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <User className="w-5 h-5 text-blue-600" />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <h4 className="font-bold text-gray-900">
+                      Informations Assujetti
+                    </h4>
                   </div>
-                  <h4 className="font-bold text-gray-900">
-                    Informations Assujetti
-                  </h4>
+                  {!isEditing ? (
+                    <button
+                      onClick={startEditing}
+                      className="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Modifier</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={cancelEditing}
+                        disabled={isSaving}
+                        className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={handleSaveAssujetti}
+                        disabled={isSaving}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Save className="w-3.5 h-3.5" />
+                        )}
+                        <span>Enregistrer</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <User className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Nom complet</p>
-                      <p className="text-sm font-medium">
-                        {vignette.assujetti.nom_complet}
-                      </p>
-                    </div>
+                {editError && (
+                  <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+                    {editError}
                   </div>
+                )}
 
-                  <div className="flex items-start space-x-3">
-                    <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                {isEditing ? (
+                  <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-gray-500">Téléphone</p>
-                      <p className="text-sm">
-                        {vignette.assujetti.telephone || "Non renseigné"}
-                      </p>
+                      <label className="text-xs text-gray-500 mb-1 block">Nom complet *</label>
+                      <input
+                        type="text"
+                        value={editData.nom_complet}
+                        onChange={(e) => setEditData({ ...editData, nom_complet: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Téléphone</label>
+                      <input
+                        type="tel"
+                        value={editData.telephone}
+                        onChange={(e) => setEditData({ ...editData, telephone: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Adresse</label>
+                      <input
+                        type="text"
+                        value={editData.adresse}
+                        onChange={(e) => setEditData({ ...editData, adresse: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">NIF</label>
+                      <input
+                        type="text"
+                        value={editData.nif}
+                        onChange={(e) => setEditData({ ...editData, nif: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Email</label>
+                      <input
+                        type="email"
+                        value={editData.email}
+                        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
                     </div>
                   </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Nom complet</p>
+                        <p className="text-sm font-medium">
+                          {vignette.assujetti.nom_complet}
+                        </p>
+                      </div>
+                    </div>
 
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Adresse</p>
-                      <p className="text-sm">{vignette.assujetti.adresse}</p>
+                    <div className="flex items-start space-x-3">
+                      <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Téléphone</p>
+                        <p className="text-sm">
+                          {vignette.assujetti.telephone || "Non renseigné"}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-start space-x-3">
-                    <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">NIF</p>
-                      <p className="text-sm">
-                        {vignette.assujetti.nif || "Non renseigné"}
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Adresse</p>
+                        <p className="text-sm">{vignette.assujetti.adresse}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-start space-x-3">
-                    <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Email</p>
-                      <p className="text-sm">
-                        {vignette.assujetti.email || "Non renseigné"}
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">NIF</p>
+                        <p className="text-sm">
+                          {vignette.assujetti.nif || "Non renseigné"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                      <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Email</p>
+                        <p className="text-sm">
+                          {vignette.assujetti.email || "Non renseigné"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Informations Véhicule */}

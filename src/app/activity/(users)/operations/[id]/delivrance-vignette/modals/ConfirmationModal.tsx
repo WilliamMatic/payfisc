@@ -11,7 +11,14 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
-import { Assujetti, Engin, Paiement } from "../components/types";
+import { Assujetti, Engin } from "../components/types";
+
+interface ReferenceInfo {
+  reference_bancaire: string;
+  nombre_declarations: number;
+  livres: number;
+  restant: number;
+}
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -19,7 +26,8 @@ interface ConfirmationModalProps {
   onSuccess: () => void;
   assujetti?: Assujetti;
   engin?: Engin;
-  paiement?: Paiement;
+  numeroVignette?: string;
+  referenceInfo?: ReferenceInfo | null;
 }
 
 export default function ConfirmationModal({
@@ -28,7 +36,8 @@ export default function ConfirmationModal({
   onSuccess,
   assujetti,
   engin,
-  paiement,
+  numeroVignette,
+  referenceInfo,
 }: ConfirmationModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -121,12 +130,12 @@ export default function ConfirmationModal({
                     <Hash className="w-4 h-4 text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500">Référence paiement</p>
+                    <p className="text-xs text-gray-500">Référence bancaire</p>
                     <p className="text-sm font-mono font-medium">
-                      {paiement?.numero_transaction}
+                      {referenceInfo?.reference_bancaire}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Payé le {paiement?.date_paiement}
+                      N° vignette: {numeroVignette} &middot; Délivrance {(referenceInfo?.livres ?? 0) + 1}/{referenceInfo?.nombre_declarations}
                     </p>
                   </div>
                 </div>

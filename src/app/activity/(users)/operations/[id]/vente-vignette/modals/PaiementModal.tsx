@@ -38,6 +38,7 @@ export default function PaiementModal({
 }: PaiementModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [numeroVignette, setNumeroVignette] = useState("");
 
   if (!isOpen) return null;
 
@@ -48,6 +49,10 @@ export default function PaiementModal({
     }
     if (!assujetti || !engin) {
       setError("Données assujetti/engin manquantes");
+      return;
+    }
+    if (!numeroVignette.trim()) {
+      setError("Le numéro de vignette physique est obligatoire");
       return;
     }
 
@@ -104,6 +109,7 @@ export default function PaiementModal({
         site_id: utilisateur.site_id || 0,
         nombre_plaques: 1,
         taux_cdf: tauxCdf,
+        numero_vignette: numeroVignette.trim(),
       });
 
       if (result.status === 'success') {
@@ -194,6 +200,24 @@ export default function PaiementModal({
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Numéro de vignette physique (obligatoire) */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Numéro de vignette physique <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={numeroVignette}
+                onChange={(e) => setNumeroVignette(e.target.value)}
+                placeholder="Saisir le numéro physique de la vignette"
+                required
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${!numeroVignette.trim() ? 'border-red-300' : 'border-gray-300'}`}
+              />
+              {!numeroVignette.trim() && (
+                <p className="mt-1 text-xs text-red-500">Ce champ est obligatoire</p>
+              )}
             </div>
 
             {/* Informations supplémentaires */}

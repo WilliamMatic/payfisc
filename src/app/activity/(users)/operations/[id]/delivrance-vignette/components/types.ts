@@ -5,6 +5,7 @@ export interface Assujetti {
   adresse: string;
   nif?: string;
   email?: string;
+  particulier_id?: number;
 }
 
 export interface Engin {

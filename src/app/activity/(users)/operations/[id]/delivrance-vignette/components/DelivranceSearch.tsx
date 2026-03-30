@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
   AlertCircle,
@@ -8,15 +8,24 @@ import {
   Ticket,
   CheckCircle,
   XCircle,
+  ShieldCheck,
+  RefreshCw,
+  Package,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AssujettiInfo from "./AssujettiInfo";
 import EnginInfo from "./EnginInfo";
 import ConfirmationModal from "../modals/ConfirmationModal";
-import InscriptionModal from "../modals/InscriptionModal";
-import SuccessModal from "../modals/SuccessModal";
-import { verifierPaiementBancaire, delivrerVignetteBancaire, inscrireAssujetti } from "@/services/vente-vignette/venteVignetteService";
+import SuccessDelivranceModal from "../modals/SuccessDelivranceModal";
+import {
+  verifierReferenceBancaire,
+  verifierDGRK,
+  rechercherToutesBasesExternes,
+  verifierVignetteExistante,
+  delivrerVignetteGroupee,
+} from "@/services/vente-vignette/venteVignetteService";
 import { useAuth } from "@/contexts/AuthContext";
-import { Assujetti, Engin, Paiement } from "./types";
+import { Assujetti, Engin } from "./types";
 
 interface Impot {
   id: number;
@@ -26,256 +35,419 @@ interface Impot {
   prix?: number;
 }
 
-interface DelivranceSearchProps {
-  impot: Impot;
+interface ReferenceInfo {
+  paiement_bancaire_id: number;
+  reference_bancaire: string;
+  id_paiement: number;
+  nombre_declarations: number;
+  livres: number;
+  restant: number;
+  impot_id: number | null;
+  montant_total: number;
+  date_creation: string;
 }
 
-export default function DelivranceSearch({ impot }: DelivranceSearchProps) {
-  const { utilisateur } = useAuth();
-  const [reference, setReference] = useState("");
-  const [plaque, setPlaque] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchPerformed, setSearchPerformed] = useState(false);
+interface DelivranceSearchProps {
+  impot: Impot;
+  initialRef?: string;
+  initialPlaque?: string;
+}
 
+export default function DelivranceSearch({ impot, initialRef, initialPlaque }: DelivranceSearchProps) {
+  const { utilisateur } = useAuth();
+  const router = useRouter();
+
+  // Étape 1: Référence
+  const [reference, setReference] = useState("");
+  const [referenceVerifiee, setReferenceVerifiee] = useState(false);
+  const [referenceInfo, setReferenceInfo] = useState<ReferenceInfo | null>(null);
+  const [isLoadingRef, setIsLoadingRef] = useState(false);
+
+  // Étape 2: Plaque
+  const [plaque, setPlaque] = useState("");
+  const [isLoadingPlaque, setIsLoadingPlaque] = useState(false);
+  const [searchStep, setSearchStep] = useState<string | null>(null);
   const [resultat, setResultat] = useState<{
     assujetti: Assujetti;
     engin: Engin;
-    paiement: Paiement;
   } | null>(null);
 
-  // États des modaux
+  // Étape 3: Numéro vignette + vérification existante
+  const [numeroVignette, setNumeroVignette] = useState("");
+  const [vignetteExistante, setVignetteExistante] = useState(false);
+  const [vignetteExpiree, setVignetteExpiree] = useState(false);
+  const [vignetteMessage, setVignetteMessage] = useState<string | null>(null);
+
+  // Global
+  const [error, setError] = useState<string | null>(null);
+  const [isDelivering, setIsDelivering] = useState(false);
+
+  // Modaux
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [showInscriptionModal, setShowInscriptionModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [delivranceData, setDelivranceData] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [paiementBackend, setPaiementBackend] = useState<any>(null);
+  const [successData, setSuccessData] = useState<any>(null);
 
-  const validatePlaque = (value: string): boolean => {
-    const regex = /^[A-Za-z]{2}\d{3}$/;
-    return regex.test(value);
-  };
+  const validatePlaque = (value: string): boolean => /^[A-Za-z]{2}\d{3}$/.test(value);
+  const autoFillDone = useRef(false);
 
-  const validateReference = (value: string): boolean => {
-    return value.length > 0 && value.trim() !== "";
-  };
+  // ─── Auto-fill depuis URL params (retour inscription) ───
+  useEffect(() => {
+    if (autoFillDone.current) return;
+    if (initialRef && !referenceVerifiee) {
+      autoFillDone.current = true;
+      setReference(initialRef);
+      // Auto-verify the reference
+      (async () => {
+        setIsLoadingRef(true);
+        try {
+          const result = await verifierReferenceBancaire(initialRef, impot.id);
+          if (result.status === "success" && result.data) {
+            setReferenceVerifiee(true);
+            setReferenceInfo(result.data);
+            // If plaque was also passed, pre-fill it
+            if (initialPlaque) {
+              setPlaque(initialPlaque);
+            }
+          }
+        } catch {
+          setError("Erreur lors de la vérification de la référence");
+        } finally {
+          setIsLoadingRef(false);
+        }
+      })();
+    }
+  }, [initialRef, initialPlaque]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearch = async () => {
-    const referenceUpper = reference.toUpperCase().trim();
-    const plaqueUpper = plaque.toUpperCase();
-
-    if (!validateReference(referenceUpper)) {
+  // ─── Étape 1: Vérifier la référence ───
+  const handleVerifierReference = async () => {
+    const ref = reference.toUpperCase().trim();
+    if (!ref) {
       setError("Veuillez entrer un numéro de référence");
       return;
     }
 
+    setError(null);
+    setIsLoadingRef(true);
+    setReferenceVerifiee(false);
+    setReferenceInfo(null);
+    resetPlaqueState();
+
+    try {
+      const result = await verifierReferenceBancaire(ref, impot.id);
+      if (result.status === "success" && result.data) {
+        setReferenceVerifiee(true);
+        setReferenceInfo(result.data);
+      } else {
+        setError(result.message || "Référence non trouvée");
+      }
+    } catch {
+      setError("Erreur lors de la vérification de la référence");
+    } finally {
+      setIsLoadingRef(false);
+    }
+  };
+
+  // ─── Étape 2: Rechercher la plaque ───
+  const handleSearchPlaque = async () => {
+    const plaqueUpper = plaque.toUpperCase();
     if (!validatePlaque(plaqueUpper)) {
-      setError(
-        "Format de plaque invalide. Utilisez le format: AA256 (2 lettres + 3 chiffres)",
-      );
+      setError("Format de plaque invalide. Utilisez: AA256 (2 lettres + 3 chiffres)");
       return;
     }
 
     setError(null);
-    setIsLoading(true);
-    setSearchPerformed(true);
+    setResultat(null);
+    setVignetteExistante(false);
+    setVignetteExpiree(false);
+    setVignetteMessage(null);
+    setNumeroVignette("");
+    setIsLoadingPlaque(true);
+
+    const mapResult = (data: { assujetti: Record<string, string | number>; engin: Record<string, string | number> }) => ({
+      assujetti: {
+        id: Number(data.assujetti.id) || 0,
+        nom_complet: String(data.assujetti.nom_complet || ""),
+        telephone: String(data.assujetti.telephone || ""),
+        adresse: String(data.assujetti.adresse || ""),
+        nif: String(data.assujetti.nif || ""),
+        email: String(data.assujetti.email || ""),
+        particulier_id: Number(data.assujetti.particulier_id || data.assujetti.id || 0),
+      } as Assujetti,
+      engin: {
+        id: Number(data.engin.id) || 0,
+        numero_plaque: String(data.engin.numero_plaque || plaqueUpper),
+        marque: String(data.engin.marque || ""),
+        modele: String(data.engin.modele || ""),
+        couleur: String(data.engin.couleur || ""),
+        energie: String(data.engin.energie || ""),
+        usage_engin: String(data.engin.usage || data.engin.usage_engin || ""),
+        puissance_fiscal: String(data.engin.puissance_fiscal || ""),
+        annee_fabrication: String(data.engin.annee_fabrication || ""),
+        annee_circulation: String(data.engin.annee_circulation || ""),
+        numero_chassis: String(data.engin.numero_chassis || ""),
+        numero_moteur: String(data.engin.numero_moteur || ""),
+        type_engin: String(data.engin.type_engin || ""),
+      } as Engin,
+    });
 
     try {
-      const result = await verifierPaiementBancaire(referenceUpper, plaqueUpper);
+      // Local search
+      setSearchStep("Vérification dans la base locale...");
+      const siteCode = utilisateur?.site_code || "";
+      const extensionSite = utilisateur?.extension_site ?? 0;
+      const localResult = await verifierDGRK(plaqueUpper, siteCode, extensionSite);
 
-      if (result.status === 'success' && result.data) {
-        // Référence et plaque correspondent → afficher les infos
-        const d = result.data;
-        setPaiementBackend(d);
-        setResultat({
-          assujetti: {
-            id: d.assujetti?.id || 0,
-            nom_complet: d.assujetti?.nom_complet || '',
-            telephone: d.assujetti?.telephone || '',
-            adresse: d.assujetti?.adresse || '',
-            nif: d.assujetti?.nif || '',
-            email: d.assujetti?.email || '',
-          },
-          engin: {
-            id: d.engin?.id || 0,
-            numero_plaque: d.engin?.numero_plaque || plaqueUpper,
-            marque: d.engin?.marque || '',
-            modele: d.engin?.modele || '',
-            couleur: d.engin?.couleur || '',
-            energie: d.engin?.energie || '',
-            usage_engin: d.engin?.usage_engin || '',
-            puissance_fiscal: d.engin?.puissance_fiscal || '',
-            annee_fabrication: d.engin?.annee_fabrication || '',
-            annee_circulation: d.engin?.annee_circulation || '',
-            numero_chassis: d.engin?.numero_chassis || '',
-            numero_moteur: d.engin?.numero_moteur || '',
-            type_engin: d.engin?.type_engin || '',
-          },
-          paiement: {
-            id: d.paiement?.id || 0,
-            montant: d.paiement?.montant || 0,
-            montant_initial: d.paiement?.montant || 0,
-            mode_paiement: d.paiement?.mode_paiement || '',
-            operateur: null,
-            numero_transaction: d.paiement_bancaire?.reference_bancaire || referenceUpper,
-            date_paiement: d.paiement?.date_paiement || '',
-            statut: d.paiement?.statut || 'completed',
-          },
-        });
-        setShowConfirmationModal(false);
-      } else if (result.status === 'inscription_required' && result.data) {
-        // Référence trouvée mais plaque pas enregistrée → inscription
-        setPaiementBackend(result.data);
-        setShowInscriptionModal(true);
-      } else {
-        // Référence non trouvée
-        setError(result.message || "Aucun paiement trouvé avec cette référence. Vérifiez le numéro et réessayez.");
-        setResultat(null);
+      if (localResult.status === "success" && localResult.data) {
+        const mapped = mapResult(localResult.data as unknown as { assujetti: Record<string, string | number>; engin: Record<string, string | number> });
+        setResultat(mapped);
+        await checkVignetteStatus(plaqueUpper);
+        setSearchStep(null);
+        setIsLoadingPlaque(false);
+        return;
       }
+
+      // External search
+      setSearchStep("Recherche dans les bases externes...");
+      const externeResult = await rechercherToutesBasesExternes(
+        plaqueUpper,
+        (nomBase) => setSearchStep(`Recherche dans ${nomBase}...`)
+      );
+
+      if (externeResult.status === "success" && externeResult.data) {
+        const mapped = mapResult(externeResult.data as unknown as { assujetti: Record<string, string | number>; engin: Record<string, string | number> });
+        setResultat(mapped);
+        await checkVignetteStatus(plaqueUpper);
+        setSearchStep(null);
+        setIsLoadingPlaque(false);
+        return;
+      }
+
+      // Not found → redirect to inscription page
+      setSearchStep(null);
+      setIsLoadingPlaque(false);
+      router.push(
+        `/activity/operations/${impot.id}/delivrance-vignette/inscription?plaque=${encodeURIComponent(plaque.toUpperCase())}&reference=${encodeURIComponent(reference)}`
+      );
     } catch {
-      setError("Erreur lors de la recherche. Veuillez réessayer.");
-      setResultat(null);
-    } finally {
-      setIsLoading(false);
+      setError("Erreur lors de la recherche de plaque");
+      setSearchStep(null);
+      setIsLoadingPlaque(false);
     }
   };
 
-  const handleDelivrerVignette = () => {
+  const checkVignetteStatus = async (plaqueUpper: string) => {
+    const verifResult = await verifierVignetteExistante(plaqueUpper);
+    if (verifResult.status === "success" && verifResult.existe) {
+      if (verifResult.vignette_active) {
+        setVignetteExistante(true);
+        setVignetteMessage(verifResult.message || "Une vignette valide existe déjà pour cette plaque.");
+      } else {
+        setVignetteExpiree(true);
+        setVignetteMessage(verifResult.message || "La vignette de cette plaque a expiré.");
+      }
+    }
+  };
+
+  // ─── Étape 3: Délivrer ───
+  const handleDelivrerClick = () => {
+    if (!numeroVignette.trim()) {
+      setError("Veuillez entrer le numéro de vignette physique");
+      return;
+    }
+    setError(null);
     setShowConfirmationModal(true);
   };
 
-  const handleConfirmationSuccess = async () => {
+  const handleConfirmDelivrance = async () => {
     setShowConfirmationModal(false);
+    if (!resultat || !referenceInfo) return;
 
-    if (!resultat || !paiementBackend) return;
+    setIsDelivering(true);
+    setError(null);
 
     try {
-      const result = await delivrerVignetteBancaire({
-        id_paiement: paiementBackend.paiement?.id || resultat.paiement.id,
+      const result = await delivrerVignetteGroupee({
+        reference_bancaire: referenceInfo.reference_bancaire,
+        numero_vignette: numeroVignette.trim(),
         engin_id: resultat.engin.id,
-        particulier_id: resultat.assujetti.id,
+        particulier_id: resultat.assujetti.particulier_id || resultat.assujetti.id,
         utilisateur_id: utilisateur?.id || 0,
-        utilisateur_name: utilisateur?.nom_complet || '',
-        site_id: paiementBackend.paiement?.site_id || 0,
-        impot_id: paiementBackend.paiement?.impot_id || impot.id,
-        type_mouvement: 'delivrance',
-        duree_mois: 6,
+        utilisateur_name: utilisateur?.nom_complet || "",
+        impot_id: referenceInfo.impot_id,
       });
 
-      if (result.status === 'success' && result.data) {
-        setDelivranceData({
-          site: result.data.site,
+      if (result.status === "success" && result.data) {
+        setSuccessData({
+          ...result.data,
           assujetti: resultat.assujetti,
           engin: resultat.engin,
-          paiement: resultat.paiement,
-          delivrance: result.data.delivrance,
         });
         setShowSuccessModal(true);
+
+        // Update counter
+        setReferenceInfo((prev) =>
+          prev
+            ? {
+                ...prev,
+                livres: result.data!.compteur.livres,
+                restant: result.data!.compteur.restant,
+              }
+            : prev
+        );
       } else {
         setError(result.message || "Erreur lors de la délivrance");
       }
     } catch {
-      setError("Erreur lors de la délivrance. Veuillez réessayer.");
+      setError("Erreur réseau lors de la délivrance");
+    } finally {
+      setIsDelivering(false);
     }
   };
 
-  const handleInscriptionSuccess = async (data: {
-    assujetti: Assujetti;
-    engin: Engin;
-  }) => {
-    setShowInscriptionModal(false);
+  // ─── Succès → reset plaque, garder référence, refresh compteur ───
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    setSuccessData(null);
+    resetPlaqueState();
 
-    // Après inscription réussie, faire une nouvelle recherche pour récupérer les données complètes
-    try {
-      const result = await verifierPaiementBancaire(reference.toUpperCase().trim(), plaque.toUpperCase());
-
-      if (result.status === 'success' && result.data) {
-        const d = result.data;
-        setPaiementBackend(d);
-        setResultat({
-          assujetti: data.assujetti,
-          engin: data.engin,
-          paiement: {
-            id: d.paiement?.id || 0,
-            montant: d.paiement?.montant || 0,
-            montant_initial: d.paiement?.montant || 0,
-            mode_paiement: d.paiement?.mode_paiement || '',
-            operateur: null,
-            numero_transaction: d.paiement_bancaire?.reference_bancaire || reference,
-            date_paiement: d.paiement?.date_paiement || '',
-            statut: d.paiement?.statut || 'completed',
-          },
-        });
-        // Ouvrir la confirmation directement
-        setTimeout(() => {
-          setShowConfirmationModal(true);
-        }, 100);
-      }
-    } catch {
-      // Si la re-vérification échoue, on utilise les données d'inscription
-      setResultat({
-        assujetti: data.assujetti,
-        engin: data.engin,
-        paiement: {
-          id: paiementBackend?.paiement?.id || 0,
-          montant: paiementBackend?.paiement?.montant || 0,
-          montant_initial: paiementBackend?.paiement?.montant || 0,
-          mode_paiement: paiementBackend?.paiement?.mode_paiement || '',
-          operateur: null,
-          numero_transaction: paiementBackend?.paiement_bancaire?.reference_bancaire || reference,
-          date_paiement: paiementBackend?.paiement?.date_paiement || '',
-          statut: 'completed',
-        },
+    // Si tout est livré, reset tout
+    if (referenceInfo && referenceInfo.restant <= 0) {
+      setReference("");
+      setReferenceVerifiee(false);
+      setReferenceInfo(null);
+    } else if (referenceInfo) {
+      // Refresh compteur en arrière-plan
+      verifierReferenceBancaire(referenceInfo.reference_bancaire, impot.id).then((res) => {
+        if (res.status === "success" && res.data) {
+          setReferenceInfo(res.data);
+        }
       });
     }
   };
 
-  const handleInscriptionClose = () => {
-    setShowInscriptionModal(false);
-    // Réinitialiser la recherche
-    setSearchPerformed(false);
+  const resetPlaqueState = () => {
+    setPlaque("");
+    setResultat(null);
+    setNumeroVignette("");
+    setVignetteExistante(false);
+    setVignetteExpiree(false);
+    setVignetteMessage(null);
+    setError(null);
   };
 
-  const handleSuccessClose = () => {
-    setShowSuccessModal(false);
-    setResultat(null);
+  // ─── Reset complet ───
+  const handleResetAll = () => {
     setReference("");
-    setPlaque("");
-    setSearchPerformed(false);
+    setReferenceVerifiee(false);
+    setReferenceInfo(null);
+    resetPlaqueState();
   };
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8">
-        {/* Barre de recherche double */}
-        <div className="flex flex-col gap-4">
-          {/* Ligne 1: Référence */}
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={reference}
-                onChange={(e) => {
-                  setReference(e.target.value.toUpperCase());
-                  setError(null);
-                  setSearchPerformed(false);
-                }}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && plaque && handleSearch()
+      {/* ═══ Étape 1: Référence bancaire ═══ */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
+            1
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">Référence bancaire</h3>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={reference}
+              onChange={(e) => {
+                setReference(e.target.value.toUpperCase());
+                setError(null);
+                if (referenceVerifiee) {
+                  setReferenceVerifiee(false);
+                  setReferenceInfo(null);
+                  resetPlaqueState();
                 }
-                placeholder="Numéro de référence paiement"
-                className="block w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                disabled={isLoading}
-              />
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleVerifierReference()}
+              placeholder="Numéro de référence (ex: VIGN-123456789-123)"
+              className="block w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+              disabled={isLoadingRef}
+            />
+          </div>
+          <button
+            onClick={handleVerifierReference}
+            disabled={isLoadingRef || !reference.trim()}
+            className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-emerald-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-200/50 flex items-center justify-center min-w-[160px]"
+          >
+            {isLoadingRef ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                Vérification...
+              </>
+            ) : (
+              <>
+                <Search className="w-5 h-5 mr-2" />
+                Vérifier
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Compteur de référence vérifiée */}
+        {referenceVerifiee && referenceInfo && (
+          <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-emerald-600 mr-3" />
+                <div>
+                  <p className="text-emerald-800 font-semibold text-sm">
+                    Référence vérifiée: {referenceInfo.reference_bancaire}
+                  </p>
+                  <p className="text-emerald-600 text-xs mt-1">
+                    Montant total: {referenceInfo.montant_total}$ &middot; Créée le{" "}
+                    {new Date(referenceInfo.date_creation).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center bg-white rounded-lg px-4 py-2 border border-emerald-200">
+                  <Package className="w-4 h-4 text-emerald-600 mr-2" />
+                  <span className="text-sm font-bold text-emerald-800">
+                    {referenceInfo.livres}/{referenceInfo.nombre_declarations}
+                  </span>
+                  <span className="text-xs text-emerald-600 ml-1">livrées</span>
+                </div>
+                <div className="bg-emerald-600 text-white rounded-lg px-3 py-2 text-sm font-bold">
+                  {referenceInfo.restant} restante{referenceInfo.restant > 1 ? "s" : ""}
+                </div>
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Ligne 2: Plaque */}
+        {/* Erreur globale (uniquement si pas de plaque search en cours) */}
+        {error && !resultat && !isLoadingPlaque && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start">
+            <XCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ Étape 2: Recherche plaque (visible après vérification réf.) ═══ */}
+      {referenceVerifiee && referenceInfo && referenceInfo.restant > 0 && (
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
+              2
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">Recherche plaque</h3>
+          </div>
+
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -287,15 +459,12 @@ export default function DelivranceSearch({ impot }: DelivranceSearchProps) {
                 onChange={(e) => {
                   setPlaque(e.target.value.toUpperCase());
                   setError(null);
-                  setSearchPerformed(false);
                 }}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && reference && handleSearch()
-                }
+                onKeyDown={(e) => e.key === "Enter" && !isLoadingPlaque && handleSearchPlaque()}
                 placeholder="Entrez la plaque (ex: AA256)"
-                className="block w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                className="block w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 maxLength={5}
-                disabled={isLoading}
+                disabled={isLoadingPlaque}
               />
               {plaque && !validatePlaque(plaque) && (
                 <div className="absolute inset-y-0 right-4 flex items-center">
@@ -303,20 +472,12 @@ export default function DelivranceSearch({ impot }: DelivranceSearchProps) {
                 </div>
               )}
             </div>
-
             <button
-              onClick={handleSearch}
-              disabled={isLoading || !reference || !plaque}
-              className={`
-                px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 
-                text-white font-semibold rounded-xl
-                hover:from-emerald-700 hover:to-emerald-600
-                transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
-                shadow-lg shadow-emerald-200/50 hover:shadow-xl
-                flex items-center justify-center min-w-[140px]
-              `}
+              onClick={handleSearchPlaque}
+              disabled={isLoadingPlaque || !plaque}
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200/50 flex items-center justify-center min-w-[140px]"
             >
-              {isLoading ? (
+              {isLoadingPlaque ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
                   Recherche...
@@ -329,107 +490,145 @@ export default function DelivranceSearch({ impot }: DelivranceSearchProps) {
               )}
             </button>
           </div>
-        </div>
 
-        {/* Message d'erreur */}
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start">
-            <XCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Message d'info sur la recherche */}
-        {!resultat && !error && searchPerformed && !isLoading && (
-          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start">
-            <AlertCircle className="w-5 h-5 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
-            <p className="text-amber-700 text-sm">
-              Référence trouvée mais véhicule non enregistré. Veuillez compléter
-              les informations.
-            </p>
-          </div>
-        )}
-
-        {/* Indication format */}
-        <div className="mt-3 text-xs text-gray-500 flex flex-col gap-1">
-          <div className="flex items-center">
-            <div className="w-2 h-2 rounded-full bg-gray-300 mr-2"></div>
-            Format référence: Numéro de transaction (ex: VIGN-123456789-123)
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 rounded-full bg-gray-300 mr-2"></div>
-            Format plaque: 2 lettres + 3 chiffres (ex: AA256, AR784, EC012)
-          </div>
-        </div>
-      </div>
-
-      {/* Résultats de recherche */}
-      {resultat && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Informations assujetti */}
-          <div className="lg:col-span-1">
-            <AssujettiInfo assujetti={resultat.assujetti} />
-          </div>
-
-          {/* Informations engin */}
-          <div className="lg:col-span-2">
-            <EnginInfo engin={resultat.engin} />
-
-            {/* Informations paiement */}
-            <div className="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-blue-600">Statut paiement</p>
-                  <p className="text-sm font-bold text-blue-800 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
-                    Payé le {resultat.paiement.date_paiement}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-blue-600">Référence</p>
-                  <p className="text-sm font-mono font-bold text-blue-800">
-                    {resultat.paiement.numero_transaction}
-                  </p>
-                </div>
-              </div>
+          {/* Étape de recherche */}
+          {isLoadingPlaque && searchStep && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center">
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin mr-3 flex-shrink-0" />
+              <p className="text-blue-700 text-sm font-medium">{searchStep}</p>
             </div>
+          )}
 
-            {/* Bouton d'action */}
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={handleDelivrerVignette}
-                className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-emerald-600 transition-all duration-300 shadow-lg shadow-emerald-200/50 hover:shadow-xl flex items-center"
-              >
-                <Ticket className="w-5 h-5 mr-2" />
-                Délivrer la vignette
-              </button>
-            </div>
+          <div className="mt-3 text-xs text-gray-500 flex items-center">
+            <div className="w-2 h-2 rounded-full bg-gray-300 mr-2"></div>
+            Format: 2 lettres + 3 chiffres (ex: AA256, AR784, EC012)
           </div>
         </div>
       )}
 
-      {/* Modaux */}
+      {/* ═══ Étape 3: Résultats + Délivrance ═══ */}
+      {resultat && referenceVerifiee && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-1">
+            <AssujettiInfo assujetti={resultat.assujetti} />
+          </div>
+
+          <div className="lg:col-span-2">
+            <EnginInfo engin={resultat.engin} />
+
+            {/* Vignette active banner */}
+            {vignetteExistante && (
+              <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-emerald-800 text-sm font-semibold">Vignette active</p>
+                  <p className="text-emerald-600 text-xs">{vignetteMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Vignette expirée banner */}
+            {vignetteExpiree && (
+              <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center">
+                <AlertCircle className="w-5 h-5 text-amber-600 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-amber-800 text-sm font-semibold">Vignette expirée</p>
+                  <p className="text-amber-600 text-xs">{vignetteMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Bloc numéro vignette + bouton délivrer (si pas vignette active) */}
+            {!vignetteExistante && (
+              <div className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs">
+                    3
+                  </div>
+                  <h4 className="font-semibold text-gray-900 text-sm">Numéro de vignette physique</h4>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={numeroVignette}
+                      onChange={(e) => {
+                        setNumeroVignette(e.target.value);
+                        setError(null);
+                      }}
+                      placeholder="Entrez le N° de vignette physique"
+                      className="block w-full px-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                      disabled={isDelivering}
+                    />
+                    {error && resultat && (
+                      <p className="text-red-600 text-xs mt-1">{error}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleDelivrerClick}
+                    disabled={isDelivering || !numeroVignette.trim()}
+                    className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-emerald-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-200/50 hover:shadow-xl flex items-center justify-center"
+                  >
+                    {isDelivering ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        Délivrance...
+                      </>
+                    ) : (
+                      <>
+                        <Ticket className="w-5 h-5 mr-2" />
+                        Délivrer (0$)
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Bouton renouveler si expiré */}
+            {vignetteExpiree && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => router.push(`/activity/operations/${impot.id}/renouvellement-vignette`)}
+                  className="px-8 py-3 font-semibold rounded-xl transition-all duration-300 flex items-center bg-gradient-to-r from-amber-500 to-amber-400 text-white hover:from-amber-600 hover:to-amber-500 shadow-lg shadow-amber-200/50 hover:shadow-xl"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  Renouveler la vignette
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bouton reset */}
+      {referenceVerifiee && (
+        <div className="flex justify-center">
+          <button
+            onClick={handleResetAll}
+            className="text-sm text-gray-500 hover:text-gray-700 underline"
+          >
+            Nouvelle référence
+          </button>
+        </div>
+      )}
+
+      {/* ═══ Modaux ═══ */}
       <ConfirmationModal
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
-        onSuccess={handleConfirmationSuccess}
+        onSuccess={handleConfirmDelivrance}
         assujetti={resultat?.assujetti}
         engin={resultat?.engin}
-        paiement={resultat?.paiement}
+        numeroVignette={numeroVignette}
+        referenceInfo={referenceInfo}
       />
 
-      <InscriptionModal
-        isOpen={showInscriptionModal}
-        onClose={handleInscriptionClose}
-        onSuccess={handleInscriptionSuccess}
-        reference={reference}
-        plaque={plaque}
-      />
-
-      <SuccessModal
+      <SuccessDelivranceModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        data={delivranceData}
+        data={successData}
       />
     </>
   );

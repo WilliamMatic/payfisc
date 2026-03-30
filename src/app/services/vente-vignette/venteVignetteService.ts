@@ -110,7 +110,14 @@ export const verifierDGRK = async (
       body: formData,
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error('Réponse non-JSON de verifier_dgrk:', text.substring(0, 200));
+      return { status: 'error' as const, message: 'Erreur serveur (réponse invalide)' };
+    }
 
     if (!response.ok || data.status !== 'success' || !data.data) {
       return {
@@ -187,7 +194,14 @@ export const rechercherPlaque = async (
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error('Réponse non-JSON de rechercher_plaque:', text.substring(0, 200));
+      return { status: 'error' as const, message: 'Erreur de connexion à la base externe' };
+    }
 
     if (!response.ok || data.status === 'error') {
       return {
@@ -289,6 +303,8 @@ export const enregistrerPaiementVignette = async (
     site_id: number;
     nombre_plaques?: number;
     taux_cdf: number;
+    numero_vignette: string;
+    reference_bancaire?: string;
   }
 ): Promise<TransactionResponse> => {
   try {
@@ -328,7 +344,15 @@ export const enregistrerPaiementVignette = async (
  */
 export const verifierVignetteExistante = async (
   plaque: string
-): Promise<{ status: 'success' | 'error'; existe: boolean; message?: string }> => {
+): Promise<{
+  status: 'success' | 'error';
+  existe: boolean;
+  vignette_active?: boolean;
+  date_validite?: string;
+  code_vignette?: string;
+  numero_vignette?: string;
+  message?: string;
+}> => {
   try {
     const response = await fetch(
       `${API_BASE_URL}/vente-vignette/verifier_vignette.php`,
@@ -355,6 +379,10 @@ export const verifierVignetteExistante = async (
     return {
       status: 'success',
       existe: data.existe || false,
+      vignette_active: data.vignette_active || false,
+      date_validite: data.date_validite,
+      code_vignette: data.code_vignette,
+      numero_vignette: data.numero_vignette,
       message: data.message,
     };
   } catch (error) {
@@ -877,6 +905,131 @@ export const renouvelerVignette = async (
     return {
       status: 'error',
       message: 'Erreur réseau lors du renouvellement',
+    };
+  }
+};
+
+/**
+ * Vérifie une référence bancaire pour la délivrance groupée
+ * Retourne le nombre total, livré, et restant
+ */
+export const verifierReferenceBancaire = async (
+  reference: string,
+  impotId?: number
+): Promise<{
+  status: 'success' | 'error';
+  message?: string;
+  data?: {
+    paiement_bancaire_id: number;
+    reference_bancaire: string;
+    id_paiement: number;
+    statut: string;
+    nombre_declarations: number;
+    livres: number;
+    restant: number;
+    impot_id: number | null;
+    montant_total: number;
+    date_creation: string;
+  };
+}> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/vente-vignette/verifier_reference.php`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference, impot_id: impotId }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== 'success') {
+      return {
+        status: 'error',
+        message: data.message || 'Référence non trouvée',
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Vérification référence bancaire error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la vérification',
+    };
+  }
+};
+
+/**
+ * Délivre une vignette dans le cadre d'une délivrance groupée (paiement bancaire)
+ */
+export const delivrerVignetteGroupee = async (
+  data: {
+    reference_bancaire: string;
+    numero_vignette: string;
+    engin_id: number;
+    particulier_id: number;
+    utilisateur_id: number;
+    utilisateur_name: string;
+    impot_id?: number | null;
+  }
+): Promise<{
+  status: 'success' | 'error';
+  message?: string;
+  data?: {
+    delivrance: {
+      id: number;
+      code_vignette: string;
+      numero_vignette: string;
+      date_delivrance: string;
+      date_validite: string;
+      utilisateur_delivrance: string;
+    };
+    compteur: {
+      total: number;
+      livres: number;
+      restant: number;
+    };
+    engin: {
+      numero_plaque: string;
+      marque: string;
+    };
+    assujetti: {
+      nom_complet: string;
+      telephone: string;
+    };
+    reference_bancaire: string;
+    tout_livre: boolean;
+  };
+}> => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/vente-vignette/delivrer_vignette_groupee.php`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.status !== 'success') {
+      return {
+        status: 'error',
+        message: result.message || 'Erreur lors de la délivrance',
+      };
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Délivrance vignette groupée error:', error);
+    return {
+      status: 'error',
+      message: 'Erreur réseau lors de la délivrance',
     };
   }
 };

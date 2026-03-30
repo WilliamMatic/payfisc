@@ -118,28 +118,28 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`fixed lg:static lg:translate-x-0 z-30 w-64 h-full bg-white shadow-sm transition-transform duration-300 ease-in-out border-r border-gray-100 flex flex-col ${
+        className={`fixed lg:static lg:translate-x-0 z-30 w-64 h-full bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 ease-in-out border-r border-gray-100 dark:border-gray-700 flex flex-col ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="p-5 border-b border-gray-100 bg-white flex justify-between items-center">
+        <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 bg-gradient-to-r from-[#2D5B7A] to-[#3A7A5F] rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-lg">P</span>
             </div>
             <div>
-              <span className="text-gray-800 font-semibold text-lg">
+              <span className="text-gray-800 dark:text-gray-100 font-semibold text-lg">
                 PayFisc
               </span>
-              <p className="text-xs text-gray-500">Système fiscal</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Système fiscal</p>
             </div>
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 text-gray-600" />
+            <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
@@ -151,20 +151,20 @@ export default function Sidebar({
                 <>
                   <button
                     onClick={() => toggleCategory(item.category)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                   >
-                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                       {item.category}
                     </span>
                     {isCategoryOpen(item.category) ? (
-                      <ChevronDown className="w-4 h-4 text-gray-500" />
+                      <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-gray-500" />
+                      <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     )}
                   </button>
 
                   {isCategoryOpen(item.category) && (
-                    <div className="ml-3 mt-1 space-y-1 border-l-2 border-gray-200 pl-3">
+                    <div className="ml-3 mt-1 space-y-1 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
                       {item.items.map((subItem) => (
                         <Link
                           key={subItem.href}
@@ -173,7 +173,7 @@ export default function Sidebar({
                           className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                             isActive(subItem.href)
                               ? "bg-[#2D5B7A] text-white shadow-sm"
-                              : "text-gray-700 hover:text-[#2D5B7A] hover:bg-gray-50"
+                              : "text-gray-700 dark:text-gray-300 hover:text-[#2D5B7A] dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                           }`}
                         >
                           <span className="text-base">{subItem.icon}</span>
@@ -190,7 +190,7 @@ export default function Sidebar({
                   className={`flex items-center space-x-2 px-3 py-2.5 rounded-lg transition-colors text-sm ${
                     isActive(item.href)
                       ? "bg-[#2D5B7A] text-white shadow-sm"
-                      : "text-gray-700 hover:text-[#2D5B7A] hover:bg-gray-50"
+                      : "text-gray-700 dark:text-gray-300 hover:text-[#2D5B7A] dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   <span className="text-base">{item.icon}</span>
@@ -202,10 +202,10 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <div className="text-center">
-            <p className="text-xs text-gray-500">Version 1.2</p>
-            <p className="text-xs text-gray-400 mt-1">© 2026 PayFisc</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Version 1.2</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">© 2026 PayFisc</p>
           </div>
         </div>
       </aside>

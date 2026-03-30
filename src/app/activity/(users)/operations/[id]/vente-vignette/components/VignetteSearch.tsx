@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { Search, AlertCircle, Loader2, Ticket } from "lucide-react";
+import { Search, AlertCircle, Loader2, Ticket, RefreshCw, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AssujettiInfo from "./AssujettiInfo";
 import EnginInfo from "./EnginInfo";
 import PaiementModal from "../modals/PaiementModal";
-import InscriptionModal from "../modals/InscriptionModal";
 import SuccessModal from "../modals/SuccessModal";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -32,6 +32,7 @@ interface VignetteSearchProps {
 
 export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchProps) {
   const { utilisateur } = useAuth();
+  const router = useRouter();
   const [plaque, setPlaque] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [searchStep, setSearchStep] = useState<string | null>(null);
@@ -43,10 +44,10 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
 
   // États des modaux
   const [showPaiementModal, setShowPaiementModal] = useState(false);
-  const [showInscriptionModal, setShowInscriptionModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paiementData, setPaiementData] = useState<any>(null);
   const [vignetteExistante, setVignetteExistante] = useState(false);
+  const [vignetteExpiree, setVignetteExpiree] = useState(false);
 
   const validatePlaque = (value: string): boolean => {
     const regex = /^[A-Za-z]{2}\d{3}$/;
@@ -66,6 +67,7 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
     setError(null);
     setResultat(null);
     setVignetteExistante(false);
+    setVignetteExpiree(false);
     setIsLoading(true);
 
     const mapResult = (data: any) => {
@@ -108,8 +110,13 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
         // Vérifier si une vignette valide existe déjà pour cette plaque
         const verifResult = await verifierVignetteExistante(plaqueUpper);
         if (verifResult.status === "success" && verifResult.existe) {
-          setVignetteExistante(true);
-          setError("Une vignette valide existe déjà pour cette plaque. Impossible d'en délivrer une autre.");
+          if (verifResult.vignette_active) {
+            setVignetteExistante(true);
+            setError(verifResult.message || "Une vignette valide existe déjà pour cette plaque.");
+          } else {
+            setVignetteExpiree(true);
+            setError(verifResult.message || "La vignette de cette plaque a expiré. Veuillez procéder au renouvellement.");
+          }
         }
         setSearchStep(null);
         setIsLoading(false);
@@ -128,18 +135,23 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
         // Vérifier si une vignette valide existe déjà pour cette plaque
         const verifResult = await verifierVignetteExistante(plaqueUpper);
         if (verifResult.status === "success" && verifResult.existe) {
-          setVignetteExistante(true);
-          setError("Une vignette valide existe déjà pour cette plaque. Impossible d'en délivrer une autre.");
+          if (verifResult.vignette_active) {
+            setVignetteExistante(true);
+            setError(verifResult.message || "Une vignette valide existe déjà pour cette plaque.");
+          } else {
+            setVignetteExpiree(true);
+            setError(verifResult.message || "La vignette de cette plaque a expiré. Veuillez procéder au renouvellement.");
+          }
         }
         setSearchStep(null);
         setIsLoading(false);
         return;
       }
 
-      // Étape 3 : Plaque introuvable → formulaire d'inscription
+      // Étape 3 : Plaque introuvable → redirection vers le formulaire d'inscription
       setSearchStep(null);
       setIsLoading(false);
-      setShowInscriptionModal(true);
+      router.push(`/activity/operations/${impot.id}/vente-vignette/inscription?plaque=${encodeURIComponent(plaqueUpper)}`);
     } catch (err) {
       console.error("Erreur recherche plaque:", err);
       setError("Erreur lors de la recherche. Veuillez réessayer.");
@@ -168,24 +180,7 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
     setResultat(null);
     setPlaque("");
     setVignetteExistante(false);
-  };
-
-  const handleInscriptionSuccess = (data: {
-    assujetti: Assujetti;
-    engin: Engin;
-  }) => {
-    console.log("Inscription réussie", data);
-    setShowInscriptionModal(false);
-    setResultat(data);
-    // Petit délai pour éviter les conflits d'animation
-    setTimeout(() => {
-      setShowPaiementModal(true);
-    }, 100);
-  };
-
-  const handleInscriptionClose = () => {
-    setShowInscriptionModal(false);
-    // Ne pas réinitialiser la plaque pour permettre une nouvelle recherche
+    setVignetteExpiree(false);
   };
 
   return (
@@ -251,8 +246,8 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
           </div>
         )}
 
-        {/* Message d'erreur */}
-        {error && (
+        {/* Message d'erreur / vignette active */}
+        {error && !vignetteExistante && !vignetteExpiree && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start">
             <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
             <p className="text-red-700 text-sm">{error}</p>
@@ -279,20 +274,48 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
             <EnginInfo engin={resultat.engin} />
 
             {/* Bouton d'action */}
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={handleDelivrerVignette}
-                disabled={vignetteExistante}
-                className={`
-                  px-8 py-4 font-semibold rounded-xl transition-all duration-300 flex items-center
-                  ${vignetteExistante 
-                    ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' 
-                    : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-200/50 hover:shadow-xl'}
-                `}
-              >
-                <Ticket className="w-5 h-5 mr-2" />
-                {vignetteExistante ? "Vignette déjà délivrée" : `Délivrer la vignette (${prix}$)`}
-              </button>
+            <div className="mt-6 flex justify-end gap-3">
+              {vignetteExistante && (
+                <div className="flex-1 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600 mr-3 flex-shrink-0" />
+                  <div>
+                    <p className="text-emerald-800 text-sm font-semibold">Vignette active</p>
+                    <p className="text-emerald-600 text-xs">{error}</p>
+                  </div>
+                </div>
+              )}
+              {vignetteExpiree && (
+                <div className="flex-1 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mr-3 flex-shrink-0" />
+                  <div>
+                    <p className="text-amber-800 text-sm font-semibold">Vignette expirée</p>
+                    <p className="text-amber-600 text-xs">{error}</p>
+                  </div>
+                </div>
+              )}
+              {vignetteExpiree ? (
+                <button
+                  onClick={() => router.push(`/activity/operations/${impot.id}/renouvellement-vignette`)}
+                  className="px-8 py-4 font-semibold rounded-xl transition-all duration-300 flex items-center bg-gradient-to-r from-amber-500 to-amber-400 text-white hover:from-amber-600 hover:to-amber-500 shadow-lg shadow-amber-200/50 hover:shadow-xl"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  Renouveler la vignette
+                </button>
+              ) : (
+                <button
+                  onClick={handleDelivrerVignette}
+                  disabled={vignetteExistante}
+                  className={`
+                    px-8 py-4 font-semibold rounded-xl transition-all duration-300 flex items-center
+                    ${vignetteExistante 
+                      ? 'bg-gray-400 text-white cursor-not-allowed opacity-60' 
+                      : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-200/50 hover:shadow-xl'}
+                  `}
+                >
+                  <Ticket className="w-5 h-5 mr-2" />
+                  {vignetteExistante ? "Vignette déjà délivrée" : `Délivrer la vignette (${prix}$)`}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -309,14 +332,6 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
         impotId={impot.id}
         utilisateur={utilisateur}
         tauxCdf={tauxCdf}
-      />
-
-      <InscriptionModal
-        isOpen={showInscriptionModal}
-        onClose={handleInscriptionClose}
-        onSuccess={handleInscriptionSuccess}
-        plaque={plaque}
-        utilisateur={utilisateur}
       />
 
       <SuccessModal
