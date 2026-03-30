@@ -1,9 +1,10 @@
 "use client";
 
-import { Maximize, Minimize, ChevronDown, LogOut, Menu } from "lucide-react";
+import { Maximize, Minimize, ChevronDown, LogOut, Menu, Sun, Moon } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface HeaderProps {
   isFullscreen: boolean;
@@ -20,6 +21,7 @@ export default function Header({
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { agent, utilisateur, userType } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +82,7 @@ export default function Header({
   const displayInfo = getDisplayInfo();
 
   return (
-    <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 z-50 sticky top-0">
+    <header className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-700 z-50 sticky top-0">
       <div className="px-5 py-3 flex justify-between items-center">
         {/* Logo et menu burger */}
         <div className="flex items-center space-x-3">
@@ -88,7 +90,7 @@ export default function Header({
             onClick={() => setIsSidebarOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <Menu className="w-5 h-5 text-gray-600" />
+            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
 
           <div className="flex items-center space-x-3">
@@ -114,7 +116,7 @@ export default function Header({
               ) : null}
             </div>
 
-            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+            <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs rounded-full font-medium">
               {utilisateur?.site_code}
             </span>
           </div>
@@ -122,15 +124,28 @@ export default function Header({
 
         {/* Actions */}
         <div className="flex items-center space-x-2">
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-5 h-5 text-amber-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600" />
+            )}
+          </button>
+
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
-            className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             {isFullscreen ? (
-              <Minimize className="w-5 h-5 text-gray-600" />
+              <Minimize className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             ) : (
-              <Maximize className="w-5 h-5 text-gray-600" />
+              <Maximize className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             )}
           </button>
 
@@ -146,34 +161,34 @@ export default function Header({
                 {displayInfo.initial}
               </div>
               <div className="text-left hidden md:block">
-                <p className="text-sm font-medium text-gray-800 truncate max-w-32">
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate max-w-32">
                   {displayInfo.name}
                 </p>
-                <p className="text-xs text-gray-500 truncate max-w-32">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-32">
                   {displayInfo.detail}
                 </p>
               </div>
               <ChevronDown
-                className={`w-4 h-4 text-gray-500 transition-transform ${
+                className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${
                   showUserMenu ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
-                <div className="p-3 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-800">
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-50">
+                <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                     {displayInfo.name}
                   </p>
-                  <p className="text-xs text-gray-500">{displayInfo.detail}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{displayInfo.detail}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                     {displayInfo.badge}
                   </p>
                 </div>
                 <button
                   onClick={onLogout}
-                  className="w-full flex items-center px-3 py-3 text-red-600 hover:bg-red-50 transition-colors text-sm"
+                  className="w-full flex items-center px-3 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-sm"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Déconnexion

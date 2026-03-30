@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 
 export default function MouvementsLayoutClient({
@@ -11,7 +12,7 @@ export default function MouvementsLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { isAuthenticated, isLoading, logout, userType, utilisateur } = useAuth();
@@ -42,7 +43,7 @@ export default function MouvementsLayoutClient({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -55,10 +56,10 @@ export default function MouvementsLayoutClient({
   return (
     <div
       className={`min-h-screen transition-all duration-500 ${
-        isDarkMode ? "dark" : ""
+        theme === "dark" ? "dark" : ""
       }`}
     >
-      <div className="flex h-screen">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Sidebar */}
         <Sidebar
           isSidebarOpen={isSidebarOpen}
@@ -85,7 +86,7 @@ export default function MouvementsLayoutClient({
 
           {/* Section principale avec défilement */}
           <main className="flex-1 overflow-auto">
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 m-6 h-[calc(100%-3rem)]">
+            <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 m-6 h-[calc(100%-3rem)]">
               <div className="p-8 h-full overflow-auto">{children}</div>
             </div>
           </main>

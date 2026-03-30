@@ -141,7 +141,6 @@ class RefactorCarte extends Connexion
                     LEFT JOIN puissances_fiscales pf ON e.puissance_fiscal = pf.libelle
                     WHERE s.province_id = :province_id 
                     AND e.numero_plaque = :numero_plaque
-                    AND pm.impot_id = 11
                     LIMIT 1";
 
                 $stmt = $this->pdo->prepare($sql);

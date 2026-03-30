@@ -755,3 +755,47 @@ export async function searchParticuliersByTelephone(
     };
   }
 }
+
+/**
+ * Modification simplifiée d'un assujetti (nom_complet, telephone, adresse, nif, email)
+ * Utilisé depuis les modals de détails (suppression-vignette, suppression-controle-technique)
+ */
+export async function updateAssujettiSimple(
+  id: number,
+  data: {
+    nom_complet: string;
+    telephone: string;
+    adresse: string;
+    nif?: string;
+    email?: string;
+  }
+): Promise<ApiResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/particuliers/modifier_assujetti_simple.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...data }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        message: result.message || "Échec de la modification",
+      };
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Update assujetti simple error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la modification",
+    };
+  }
+}

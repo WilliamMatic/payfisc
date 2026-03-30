@@ -1,6 +1,7 @@
 // C:\laragon\www\Impot\Front\payfisc\src\app\activity\(users)\layout.tsx
 import type { Metadata } from "next";
 import MouvementsLayoutClient from "./UserLayoutClient";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export const metadata: Metadata = {
   title: "Gestion des Mouvements",
@@ -13,5 +14,9 @@ export default function MouvementsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <MouvementsLayoutClient>{children}</MouvementsLayoutClient>;
+  return (
+    <ThemeProvider>
+      <MouvementsLayoutClient>{children}</MouvementsLayoutClient>
+    </ThemeProvider>
+  );
 }

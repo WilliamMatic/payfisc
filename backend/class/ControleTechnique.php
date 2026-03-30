@@ -79,7 +79,7 @@ class ControleTechnique extends Connexion
         $countStmt->execute();
         $total = intval($countStmt->fetch(PDO::FETCH_ASSOC)['total']);
 
-        // Statistiques globales (non filtrées)
+        // Statistiques filtrées
         $statsSql = "
             SELECT
                 COUNT(*) as total,
@@ -87,8 +87,14 @@ class ControleTechnique extends Connexion
                 SUM(CASE WHEN ct.decision_finale = 0 THEN 1 ELSE 0 END) as defavorables,
                 SUM(CASE WHEN ct.status = 0 THEN 1 ELSE 0 END) as en_cours
             FROM controle_technique ct
+            JOIN particuliers p ON ct.particulier_id = p.id
+            JOIN engins e ON ct.engin_id = e.id
+            {$whereClause}
         ";
         $statsStmt = $this->pdo->prepare($statsSql);
+        foreach ($bindings as $key => $val) {
+            $statsStmt->bindValue($key, $val);
+        }
         $statsStmt->execute();
         $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 

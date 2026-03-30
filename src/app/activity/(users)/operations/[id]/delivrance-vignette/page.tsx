@@ -3,7 +3,6 @@ import { ArrowLeft, AlertTriangle } from "lucide-react";
 import DelivranceSearch from "./components/DelivranceSearch";
 import React from "react";
 import { getImpotById } from "@/services/impots/impotService";
-import { getTauxActif } from "@/services/taux/tauxService";
 
 export function generateStaticParams() {
   return [{ id: "0" }];
@@ -13,10 +12,15 @@ interface PageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    ref?: string;
+    plaque?: string;
+  }>;
 }
 
-export default async function DelivranceVignettePage({ params }: PageProps) {
+export default async function DelivranceVignettePage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { ref, plaque } = await searchParams;
 
   const impotResult = await getImpotById(id);
   const impot = impotResult.status === "success" ? impotResult.data : null;
@@ -44,13 +48,6 @@ export default async function DelivranceVignettePage({ params }: PageProps) {
     );
   }
 
-  const prix = Number(impot.prix) || 0;
-
-  const tauxResult = await getTauxActif({ impot_id: impot.id });
-  const tauxCdf = tauxResult.status === "success" && tauxResult.data
-    ? Number(tauxResult.data.valeur) || 0
-    : 0;
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -70,24 +67,14 @@ export default async function DelivranceVignettePage({ params }: PageProps) {
                 Délivrance de Vignette
               </h1>
               <p className="text-gray-600 mt-1">
-                Recherchez un paiement par référence et plaque
+                Vérifiez la référence bancaire puis recherchez la plaque pour délivrer
               </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-4 py-2 rounded-xl">
-                <span className="text-sm font-medium">Montant: {prix}$</span>
-              </div>
-              {tauxCdf > 0 && (
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl">
-                  <span className="text-sm font-medium">Taux: {tauxCdf.toLocaleString()} CDF</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
         {/* Composant de recherche */}
-        <DelivranceSearch impot={impot} />
+        <DelivranceSearch impot={impot} initialRef={ref} initialPlaque={plaque} />
       </div>
     </div>
   );

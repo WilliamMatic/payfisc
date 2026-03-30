@@ -39,6 +39,8 @@ interface Filtres {
   dateFin: string;
 }
 
+const getTodayString = () => new Date().toISOString().split('T')[0];
+
 export default function SuppressionList() {
   const [vignettes, setVignettes] = useState<Vignette[]>([]);
   const [filteredVignettes, setFilteredVignettes] = useState<Vignette[]>([]);
@@ -51,13 +53,13 @@ export default function SuppressionList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  // États pour les filtres
+  // États pour les filtres — par défaut aujourd'hui
   const [filtres, setFiltres] = useState<Filtres>({
     statut: "tous",
     type: "tous",
     site: "tous",
-    dateDebut: "",
-    dateFin: "",
+    dateDebut: getTodayString(),
+    dateFin: getTodayString(),
   });
 
   // États pour les modaux
@@ -116,7 +118,10 @@ export default function SuppressionList() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const result = await listerVignettes();
+      const result = await listerVignettes({
+        date_debut: filtres.dateDebut || undefined,
+        date_fin: filtres.dateFin || undefined,
+      });
       if (result.status === 'success' && result.data) {
         const converted = result.data.vignettes.map(convertToVignette);
         setVignettes(converted);
@@ -222,8 +227,8 @@ export default function SuppressionList() {
       statut: "tous",
       type: "tous",
       site: "tous",
-      dateDebut: "",
-      dateFin: "",
+      dateDebut: getTodayString(),
+      dateFin: getTodayString(),
     });
     setSearchTerm("");
   };
@@ -325,12 +330,12 @@ export default function SuppressionList() {
     }
   };
 
-  // Statistiques
+  // Statistiques basées sur les données filtrées
   const stats = {
-    total: vignettes.length,
-    achat: vignettes.filter((v) => v.type === "achat").length,
-    delivrance: vignettes.filter((v) => v.type === "delivrance").length,
-    renouvellement: vignettes.filter((v) => v.type === "renouvellement").length,
+    total: filteredVignettes.length,
+    achat: filteredVignettes.filter((v) => v.type === "achat").length,
+    delivrance: filteredVignettes.filter((v) => v.type === "delivrance").length,
+    renouvellement: filteredVignettes.filter((v) => v.type === "renouvellement").length,
   };
 
   return (
@@ -593,6 +598,18 @@ export default function SuppressionList() {
                   </span>
                 )}
               </div>
+
+              {/* Bouton Valider */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => loadData()}
+                  disabled={isLoading}
+                  className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2 font-medium"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  Valider
+                </button>
+              </div>
             </div>
           )}
 
@@ -844,6 +861,16 @@ export default function SuppressionList() {
         onDelete={() => {
           setShowDetailsModal(false);
           setTimeout(() => setShowSuppressionModal(true), 100);
+        }}
+        onAssujettiUpdate={(vignetteId, updatedAssujetti) => {
+          setVignettes((prev) =>
+            prev.map((v) =>
+              v.id === vignetteId ? { ...v, assujetti: updatedAssujetti } : v
+            )
+          );
+          if (selectedVignette?.id === vignetteId) {
+            setSelectedVignette({ ...selectedVignette, assujetti: updatedAssujetti });
+          }
         }}
       />
 

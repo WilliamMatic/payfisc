@@ -291,7 +291,7 @@ class CarteRose extends Connexion
             $serie = $stmtSerie->fetch(PDO::FETCH_ASSOC);
 
             // Si série logistique → vérifier qu'elle existe dans plaques_attribuees
-            if ($serie && $serie['id'] > 1144 && $serie['id'] < 3897) {
+            if ($serie && $serie['id'] > 1041 && $serie['id'] < 3897) {
 
                 $sqlCheckPlaque = "SELECT id 
                                    FROM plaques_attribuees 

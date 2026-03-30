@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   X,
   User,
@@ -24,9 +25,12 @@ import {
   AlertCircle,
   Trash2,
   ListChecks,
+  Save,
+  Loader2,
 } from "lucide-react";
-import { ControleTechnique } from "./types";
+import { ControleTechnique, Assujetti } from "./types";
 import ResultatsControle from "./ResultatsControle";
+import { updateAssujettiSimple } from "@/services/particuliers/particulierService";
 
 interface ControleDetailsModalProps {
   isOpen: boolean;
@@ -34,6 +38,7 @@ interface ControleDetailsModalProps {
   controle: ControleTechnique | null;
   onDelete: () => void;
   onEdit: () => void;
+  onAssujettiUpdate?: (id: number, data: Assujetti) => void;
 }
 
 export default function ControleDetailsModal({
@@ -42,8 +47,67 @@ export default function ControleDetailsModal({
   controle,
   onDelete,
   onEdit,
+  onAssujettiUpdate,
 }: ControleDetailsModalProps) {
+  const [isEditingAssujetti, setIsEditingAssujetti] = useState(false);
+  const [isSavingAssujetti, setIsSavingAssujetti] = useState(false);
+  const [editAssujettiError, setEditAssujettiError] = useState<string | null>(null);
+  const [editAssujettiData, setEditAssujettiData] = useState({
+    nom_complet: "",
+    telephone: "",
+    adresse: "",
+    nif: "",
+    email: "",
+  });
+
   if (!isOpen || !controle) return null;
+
+  const startEditingAssujetti = () => {
+    setEditAssujettiData({
+      nom_complet: controle.assujetti.nom_complet,
+      telephone: controle.assujetti.telephone || "",
+      adresse: controle.assujetti.adresse || "",
+      nif: controle.assujetti.nif || "",
+      email: controle.assujetti.email || "",
+    });
+    setEditAssujettiError(null);
+    setIsEditingAssujetti(true);
+  };
+
+  const cancelEditingAssujetti = () => {
+    setIsEditingAssujetti(false);
+    setEditAssujettiError(null);
+  };
+
+  const handleSaveAssujetti = async () => {
+    if (!editAssujettiData.nom_complet.trim()) {
+      setEditAssujettiError("Le nom complet est requis");
+      return;
+    }
+    setIsSavingAssujetti(true);
+    setEditAssujettiError(null);
+    try {
+      const result = await updateAssujettiSimple(controle.assujetti.id, editAssujettiData);
+      if (result.status === "success") {
+        const updated: Assujetti = {
+          ...controle.assujetti,
+          nom_complet: editAssujettiData.nom_complet,
+          telephone: editAssujettiData.telephone,
+          adresse: editAssujettiData.adresse,
+          nif: editAssujettiData.nif,
+          email: editAssujettiData.email,
+        };
+        onAssujettiUpdate?.(controle.id, updated);
+        setIsEditingAssujetti(false);
+      } else {
+        setEditAssujettiError(result.message || "Erreur lors de la modification");
+      }
+    } catch {
+      setEditAssujettiError("Erreur réseau");
+    } finally {
+      setIsSavingAssujetti(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -229,64 +293,153 @@ export default function ControleDetailsModal({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Assujetti */}
               <div className="bg-gray-50 rounded-xl p-5">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <User className="w-5 h-5 text-blue-600" />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <h4 className="font-bold text-gray-900">
+                      Informations Assujetti
+                    </h4>
                   </div>
-                  <h4 className="font-bold text-gray-900">
-                    Informations Assujetti
-                  </h4>
+                  {!isEditingAssujetti ? (
+                    <button
+                      onClick={startEditingAssujetti}
+                      className="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Modifier</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={cancelEditingAssujetti}
+                        disabled={isSavingAssujetti}
+                        className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={handleSaveAssujetti}
+                        disabled={isSavingAssujetti}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {isSavingAssujetti ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Save className="w-3.5 h-3.5" />
+                        )}
+                        <span>Enregistrer</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <User className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Nom complet</p>
-                      <p className="text-sm font-medium">
-                        {controle.assujetti.nom_complet}
-                      </p>
-                    </div>
+                {editAssujettiError && (
+                  <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+                    {editAssujettiError}
                   </div>
+                )}
 
-                  <div className="flex items-start space-x-3">
-                    <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                {isEditingAssujetti ? (
+                  <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-gray-500">Téléphone</p>
-                      <p className="text-sm">
-                        {controle.assujetti.telephone || "Non renseigné"}
-                      </p>
+                      <label className="text-xs text-gray-500 mb-1 block">Nom complet *</label>
+                      <input
+                        type="text"
+                        value={editAssujettiData.nom_complet}
+                        onChange={(e) => setEditAssujettiData({ ...editAssujettiData, nom_complet: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Téléphone</label>
+                      <input
+                        type="tel"
+                        value={editAssujettiData.telephone}
+                        onChange={(e) => setEditAssujettiData({ ...editAssujettiData, telephone: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Adresse</label>
+                      <input
+                        type="text"
+                        value={editAssujettiData.adresse}
+                        onChange={(e) => setEditAssujettiData({ ...editAssujettiData, adresse: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">NIF</label>
+                      <input
+                        type="text"
+                        value={editAssujettiData.nif}
+                        onChange={(e) => setEditAssujettiData({ ...editAssujettiData, nif: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Email</label>
+                      <input
+                        type="email"
+                        value={editAssujettiData.email}
+                        onChange={(e) => setEditAssujettiData({ ...editAssujettiData, email: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
                     </div>
                   </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Nom complet</p>
+                        <p className="text-sm font-medium">
+                          {controle.assujetti.nom_complet}
+                        </p>
+                      </div>
+                    </div>
 
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Adresse</p>
-                      <p className="text-sm">{controle.assujetti.adresse}</p>
+                    <div className="flex items-start space-x-3">
+                      <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Téléphone</p>
+                        <p className="text-sm">
+                          {controle.assujetti.telephone || "Non renseigné"}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-start space-x-3">
-                    <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">NIF</p>
-                      <p className="text-sm">
-                        {controle.assujetti.nif || "Non renseigné"}
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Adresse</p>
+                        <p className="text-sm">{controle.assujetti.adresse}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-start space-x-3">
-                    <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Email</p>
-                      <p className="text-sm">
-                        {controle.assujetti.email || "Non renseigné"}
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">NIF</p>
+                        <p className="text-sm">
+                          {controle.assujetti.nif || "Non renseigné"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                      <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">Email</p>
+                        <p className="text-sm">
+                          {controle.assujetti.email || "Non renseigné"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Véhicule */}

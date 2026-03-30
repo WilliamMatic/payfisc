@@ -1,5 +1,5 @@
 <?php
-class Connexion_tvs {
+class Connexion_haoujue_ngaliema {
 
     private $host = "localhost";
     private $dbname = "haojue_ngaliema";
@@ -12,7 +12,7 @@ class Connexion_tvs {
             $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            die("Erreur de connexion à la base de données : " . $e->getMessage());
+            throw new Exception("Erreur de connexion à la base Haojue Ngaliema : " . $e->getMessage());
         }
     }
 }

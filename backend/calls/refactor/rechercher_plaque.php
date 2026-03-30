@@ -4,6 +4,9 @@
 // CORS headers
 require '../headers/head.php';
 
+// Toujours envoyer le Content-Type JSON en premier
+header('Content-Type: application/json; charset=utf-8');
+
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);
     exit;
@@ -31,7 +34,7 @@ $plaque = trim($_POST['plaque']);
 $classePrincipale = null;
 $classeFallback = null;
 
-if (empty($extension) || $extension === '0' || $extension === '0') {
+if (empty($extension) || $extension === '0') {
     // TSC - Pas d'extension ou extension = 0
     require_once __DIR__ . '/../../class/RecherchePlaqueTsc.php';
     $classePrincipale = 'RecherchePlaque';
@@ -53,9 +56,10 @@ if (empty($extension) || $extension === '0' || $extension === '0') {
     exit;
 }
 
-header('Content-Type: application/json');
-
 try {
+    // Capturer toute sortie parasite (die, echo, warnings PHP)
+    ob_start();
+
     // Première recherche avec la classe principale
     $recherche = new $classePrincipale();
     $resultat = $recherche->rechercherParPlaque($plaque);
@@ -65,6 +69,9 @@ try {
         $rechercheFallback = new $classeFallback();
         $resultat = $rechercheFallback->rechercherParPlaque($plaque);
     }
+
+    // Vider le buffer parasite
+    ob_end_clean();
     
     // Déterminer le code HTTP en fonction du résultat
     if ($resultat['status'] === 'success') {
@@ -76,8 +83,17 @@ try {
     echo json_encode($resultat);
     
 } catch (Exception $e) {
+    // Vider le buffer parasite en cas d'erreur
+    if (ob_get_level() > 0) ob_end_clean();
+
     error_log("Erreur recherche plaque (extension: $extension, plaque: $plaque): " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Erreur système"]);
+    echo json_encode(["status" => "error", "message" => "Erreur de connexion à la base de données externe"]);
+} catch (\Error $e) {
+    if (ob_get_level() > 0) ob_end_clean();
+
+    error_log("Erreur fatale recherche plaque (extension: $extension, plaque: $plaque): " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Erreur de connexion à la base de données externe"]);
 }
 ?>

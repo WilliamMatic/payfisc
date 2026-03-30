@@ -18,6 +18,7 @@ import {
   ThumbsDown,
   Clock,
   Wrench,
+  Loader2,
 } from "lucide-react";
 import ControleDetailsModal from "./ControleDetailsModal";
 import SuppressionConfirmModal from "./SuppressionConfirmModal";
@@ -56,12 +57,15 @@ export default function SuppressionControleList() {
     en_cours: 0,
   });
 
-  // Filtres
-  const [filtres, setFiltres] = useState<Filtres>({
-    decision: "tous",
-    statut: "tous",
-    dateDebut: "",
-    dateFin: "",
+  // Filtres — par défaut aujourd'hui
+  const [filtres, setFiltres] = useState<Filtres>(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return {
+      decision: "tous",
+      statut: "tous",
+      dateDebut: today,
+      dateFin: today,
+    };
   });
 
   // Modaux
@@ -110,11 +114,12 @@ export default function SuppressionControleList() {
   };
 
   const resetFilters = () => {
+    const today = new Date().toISOString().split('T')[0];
     setFiltres({
       decision: "tous",
       statut: "tous",
-      dateDebut: "",
-      dateFin: "",
+      dateDebut: today,
+      dateFin: today,
     });
     setSearchTerm("");
     setCurrentPage(1);
@@ -415,6 +420,18 @@ export default function SuppressionControleList() {
                   </span>
                 )}
               </div>
+
+              {/* Bouton Valider */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => loadData()}
+                  disabled={isLoading}
+                  className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2 font-medium"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  Valider
+                </button>
+              </div>
             </div>
           )}
 
@@ -674,6 +691,16 @@ export default function SuppressionControleList() {
         onEdit={() => {
           setShowDetailsModal(false);
           setTimeout(() => setShowEditModal(true), 100);
+        }}
+        onAssujettiUpdate={(controleId, updatedAssujetti) => {
+          setControles((prev) =>
+            prev.map((c) =>
+              c.id === controleId ? { ...c, assujetti: updatedAssujetti } : c
+            )
+          );
+          if (selectedControle?.id === controleId) {
+            setSelectedControle({ ...selectedControle, assujetti: updatedAssujetti });
+          }
         }}
       />
 

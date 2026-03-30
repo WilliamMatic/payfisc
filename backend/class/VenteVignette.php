@@ -341,19 +341,32 @@ class VenteVignette extends Connexion
                     str_pad($paiementId, 6, '0', STR_PAD_LEFT);
                 $dateValidite = date('Y-m-d', strtotime('+6 months'));
 
+                $numeroVignettePhysique = $paiementData['numero_vignette'] ?? null;
+
+                // Vérifier unicité du numéro de vignette
+                if (!empty($numeroVignettePhysique)) {
+                    $sqlCheckVignette = "SELECT id FROM vignettes_delivrees WHERE numero_vignette = :numero_vignette AND etat = 1 LIMIT 1";
+                    $stmtCheckVignette = $this->pdo->prepare($sqlCheckVignette);
+                    $stmtCheckVignette->bindValue(':numero_vignette', $numeroVignettePhysique, PDO::PARAM_STR);
+                    $stmtCheckVignette->execute();
+                    if ($stmtCheckVignette->fetch(PDO::FETCH_ASSOC)) {
+                        throw new Exception("Le numéro de vignette '$numeroVignettePhysique' est déjà utilisé");
+                    }
+                }
+
                 $sqlVignette = "
                     INSERT INTO vignettes_delivrees (
                         id_paiement, impot_id, type_mouvement, duree_mois,
                         engin_id, particulier_id, code_vignette,
                         date_delivrance, date_validite,
                         utilisateur_delivrance_id, utilisateur_delivrance_nom,
-                        site_id, etat, date_creation
+                        site_id, etat, date_creation, numero_vignette
                     ) VALUES (
                         :id_paiement, :impot_id, 'achat', 6,
                         :engin_id, :particulier_id, :code_vignette,
                         NOW(), :date_validite,
                         :utilisateur_id, :utilisateur_name,
-                        :site_id, 1, NOW()
+                        :site_id, 1, NOW(), :numero_vignette
                     )
                 ";
                 $stmtVignette = $this->pdo->prepare($sqlVignette);
@@ -366,7 +379,50 @@ class VenteVignette extends Connexion
                 $stmtVignette->bindValue(':utilisateur_id', (int)$paiementData['utilisateur_id'], PDO::PARAM_INT);
                 $stmtVignette->bindValue(':utilisateur_name', $paiementData['utilisateur_name'] ?? 'Caissier', PDO::PARAM_STR);
                 $stmtVignette->bindValue(':site_id', (int)$siteData['id'], PDO::PARAM_INT);
+                $stmtVignette->bindValue(':numero_vignette', $numeroVignettePhysique, $numeroVignettePhysique ? PDO::PARAM_STR : PDO::PARAM_NULL);
                 $stmtVignette->execute();
+            }
+
+            // Si une référence bancaire est fournie, incrémenter livres dans donnees_confirmation
+            $referenceBancaire = trim($paiementData['reference_bancaire'] ?? '');
+            if (!empty($referenceBancaire)) {
+                $sqlPB = "
+                    SELECT id, donnees_initiation, donnees_confirmation
+                    FROM paiements_bancaires
+                    WHERE reference_bancaire = :reference
+                      AND statut IN ('complete', 'livre')
+                    LIMIT 1
+                    FOR UPDATE
+                ";
+                $stmtPB = $this->pdo->prepare($sqlPB);
+                $stmtPB->bindValue(':reference', $referenceBancaire, PDO::PARAM_STR);
+                $stmtPB->execute();
+                $pb = $stmtPB->fetch(PDO::FETCH_ASSOC);
+
+                if ($pb) {
+                    $donneesInitiation = json_decode($pb['donnees_initiation'] ?? '{}', true);
+                    $donneesConfirmation = json_decode($pb['donnees_confirmation'] ?? '{}', true);
+                    $nombreDeclarations = (int)($donneesInitiation['nombre_declarations'] ?? 1);
+                    $livres = (int)($donneesConfirmation['livres'] ?? 0);
+
+                    $livres++;
+                    $donneesConfirmation['livres'] = $livres;
+                    $donneesConfirmationJson = json_encode($donneesConfirmation);
+
+                    $nouveauStatut = ($livres >= $nombreDeclarations) ? 'livre' : 'complete';
+
+                    $sqlUpdatePB = "
+                        UPDATE paiements_bancaires
+                        SET donnees_confirmation = :donnees_confirmation,
+                            statut = :statut
+                        WHERE id = :id
+                    ";
+                    $stmtUpdatePB = $this->pdo->prepare($sqlUpdatePB);
+                    $stmtUpdatePB->bindValue(':donnees_confirmation', $donneesConfirmationJson, PDO::PARAM_STR);
+                    $stmtUpdatePB->bindValue(':statut', $nouveauStatut, PDO::PARAM_STR);
+                    $stmtUpdatePB->bindValue(':id', $pb['id'], PDO::PARAM_INT);
+                    $stmtUpdatePB->execute();
+                }
             }
 
             // Récupérer les détails
@@ -398,31 +454,61 @@ class VenteVignette extends Connexion
         try {
             $this->beginTransactionSafe();
 
+            // Chercher la dernière vignette délivrée pour cette plaque
             $sql = "
-                SELECT COUNT(*) as count 
-                FROM paiements_immatriculation pi
-                INNER JOIN engins e ON pi.engin_id = e.id
+                SELECT vd.id, vd.code_vignette, vd.numero_vignette,
+                       vd.date_delivrance, vd.date_validite, vd.etat,
+                       vd.type_mouvement
+                FROM vignettes_delivrees vd
+                INNER JOIN engins e ON vd.engin_id = e.id
                 WHERE e.numero_plaque = :plaque
-                  AND pi.statut = 'completed'
-                  AND pi.etat = 1
+                  AND vd.etat = 1
+                ORDER BY vd.date_delivrance DESC
+                LIMIT 1
             ";
             
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(':plaque', $plaque, PDO::PARAM_STR);
             $stmt->execute();
             
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $existe = ($result['count'] > 0);
+            $vignette = $stmt->fetch(PDO::FETCH_ASSOC);
             
             $this->commitSafe();
 
-            return [
-                "status" => "success",
-                "existe" => $existe,
-                "message" => $existe 
-                    ? "Une vignette valide existe déjà pour cette plaque." 
-                    : "Aucune vignette valide trouvée pour cette plaque."
-            ];
+            if (!$vignette) {
+                // Aucune vignette délivrée → autoriser la vente
+                return [
+                    "status" => "success",
+                    "existe" => false,
+                    "vignette_active" => false,
+                    "message" => "Aucune vignette trouvée pour cette plaque."
+                ];
+            }
+
+            // Comparer la date de validité avec aujourd'hui
+            $dateValidite = $vignette['date_validite'];
+            $estActive = (strtotime($dateValidite) >= strtotime(date('Y-m-d')));
+
+            if ($estActive) {
+                return [
+                    "status" => "success",
+                    "existe" => true,
+                    "vignette_active" => true,
+                    "date_validite" => $dateValidite,
+                    "code_vignette" => $vignette['code_vignette'],
+                    "numero_vignette" => $vignette['numero_vignette'],
+                    "message" => "Une vignette valide existe déjà pour cette plaque (valide jusqu'au " . date('d/m/Y', strtotime($dateValidite)) . ")."
+                ];
+            } else {
+                return [
+                    "status" => "success",
+                    "existe" => true,
+                    "vignette_active" => false,
+                    "date_validite" => $dateValidite,
+                    "code_vignette" => $vignette['code_vignette'],
+                    "message" => "La vignette de cette plaque a expiré le " . date('d/m/Y', strtotime($dateValidite)) . ". Veuillez procéder au renouvellement."
+                ];
+            }
 
         } catch (Exception $e) {
             $this->rollbackSafe();
@@ -914,8 +1000,9 @@ class VenteVignette extends Connexion
                 $serieId = 0;
                 $serieItemId = 0;
                 if (!empty($plaque)) {
-                    // Séparer le préfixe (lettres) et le numéro (chiffres)
-                    if (preg_match('/^([A-Za-z]+)(\d+)$/', $plaque, $matches)) {
+                    // Retirer tous les espaces et tirets pour extraire préfixe/numéro
+                    $plaqueNettoyee = preg_replace('/[\s\-]+/', '', $plaque);
+                    if (preg_match('/^([A-Za-z]+)(\d+)$/', $plaqueNettoyee, $matches)) {
                         $prefixe = strtoupper($matches[1]);
                         $numero = (int)$matches[2];
                         $sqlSerie = "SELECT si.id as serie_item_id, si.serie_id 
@@ -969,6 +1056,13 @@ class VenteVignette extends Connexion
                     ':site_id' => $siteId ?? 0
                 ]);
                 $enginId = (int)$this->pdo->lastInsertId();
+
+                // Marquer le serie_item comme délivré (statut = 1)
+                if ($serieItemId > 0) {
+                    $sqlUpdateSerieItem = "UPDATE serie_items SET statut = '1' WHERE id = :id AND statut = '0'";
+                    $stmtUpdateSerieItem = $this->pdo->prepare($sqlUpdateSerieItem);
+                    $stmtUpdateSerieItem->execute([':id' => $serieItemId]);
+                }
             }
 
             $this->commitSafe();
@@ -1071,6 +1165,8 @@ class VenteVignette extends Connexion
             $impotId = $delivranceData['impot_id'] ?? $paiement['impot_id'] ?? null;
             
             // Insérer dans la table des vignettes délivrées
+            $numeroVignettePhysique = $delivranceData['numero_vignette'] ?? null;
+
             $sqlInsert = "
                 INSERT INTO vignettes_delivrees (
                     id_paiement,
@@ -1086,7 +1182,8 @@ class VenteVignette extends Connexion
                     utilisateur_delivrance_nom,
                     site_id,
                     etat,
-                    date_creation
+                    date_creation,
+                    numero_vignette
                 ) VALUES (
                     :id_paiement,
                     :impot_id,
@@ -1101,7 +1198,8 @@ class VenteVignette extends Connexion
                     :utilisateur_name,
                     :site_id,
                     1,
-                    NOW()
+                    NOW(),
+                    :numero_vignette
                 )
             ";
             
@@ -1117,6 +1215,7 @@ class VenteVignette extends Connexion
             $stmtInsert->bindValue(':utilisateur_id', $delivranceData['utilisateur_id'], PDO::PARAM_INT);
             $stmtInsert->bindValue(':utilisateur_name', $delivranceData['utilisateur_name'], PDO::PARAM_STR);
             $stmtInsert->bindValue(':site_id', $delivranceData['site_id'], PDO::PARAM_INT);
+            $stmtInsert->bindValue(':numero_vignette', $numeroVignettePhysique, $numeroVignettePhysique ? PDO::PARAM_STR : PDO::PARAM_NULL);
             
             if (!$stmtInsert->execute()) {
                 $errorInfo = $stmtInsert->errorInfo();
@@ -1326,11 +1425,50 @@ class VenteVignette extends Connexion
             $stmtDelRepartition->bindValue(':paiement_id', $paiementId, PDO::PARAM_INT);
             $stmtDelRepartition->execute();
 
-            // 2. Supprimer les paiements bancaires liés
-            $sqlDelBancaire = "DELETE FROM paiements_bancaires WHERE id_paiement = :paiement_id";
-            $stmtDelBancaire = $this->pdo->prepare($sqlDelBancaire);
-            $stmtDelBancaire->bindValue(':paiement_id', $paiementId, PDO::PARAM_INT);
-            $stmtDelBancaire->execute();
+            // 2. Gérer les paiements bancaires liés (décrémenter ou supprimer)
+            $sqlFindBancaire = "
+                SELECT id, donnees_initiation, donnees_confirmation, statut
+                FROM paiements_bancaires
+                WHERE id_paiement = :paiement_id
+                LIMIT 1
+                FOR UPDATE
+            ";
+            $stmtFindBancaire = $this->pdo->prepare($sqlFindBancaire);
+            $stmtFindBancaire->bindValue(':paiement_id', $paiementId, PDO::PARAM_INT);
+            $stmtFindBancaire->execute();
+            $paiementBancaire = $stmtFindBancaire->fetch(PDO::FETCH_ASSOC);
+
+            if ($paiementBancaire) {
+                $donneesInitiation = json_decode($paiementBancaire['donnees_initiation'] ?? '{}', true);
+                $donneesConfirmation = json_decode($paiementBancaire['donnees_confirmation'] ?? '{}', true);
+                $nombreDeclarations = (int)($donneesInitiation['nombre_declarations'] ?? 1);
+                $livres = (int)($donneesConfirmation['livres'] ?? 0);
+
+                if ($nombreDeclarations > 1 && $livres > 0) {
+                    // Paiement groupé → décrémenter le compteur
+                    $livres--;
+                    $donneesConfirmation['livres'] = $livres;
+                    $nouveauStatut = ($livres >= $nombreDeclarations) ? 'livre' : 'complete';
+
+                    $sqlUpdateBancaire = "
+                        UPDATE paiements_bancaires
+                        SET donnees_confirmation = :donnees_confirmation,
+                            statut = :statut
+                        WHERE id = :id
+                    ";
+                    $stmtUpdateBancaire = $this->pdo->prepare($sqlUpdateBancaire);
+                    $stmtUpdateBancaire->bindValue(':donnees_confirmation', json_encode($donneesConfirmation), PDO::PARAM_STR);
+                    $stmtUpdateBancaire->bindValue(':statut', $nouveauStatut, PDO::PARAM_STR);
+                    $stmtUpdateBancaire->bindValue(':id', $paiementBancaire['id'], PDO::PARAM_INT);
+                    $stmtUpdateBancaire->execute();
+                } else {
+                    // Paiement simple → supprimer
+                    $sqlDelBancaire = "DELETE FROM paiements_bancaires WHERE id = :id";
+                    $stmtDelBancaire = $this->pdo->prepare($sqlDelBancaire);
+                    $stmtDelBancaire->bindValue(':id', $paiementBancaire['id'], PDO::PARAM_INT);
+                    $stmtDelBancaire->execute();
+                }
+            }
 
             // 3. Supprimer la vignette délivrée
             $sqlDelVignette = "DELETE FROM vignettes_delivrees WHERE id = :id";
@@ -1547,19 +1685,21 @@ class VenteVignette extends Connexion
                 str_pad($paiementId, 6, '0', STR_PAD_LEFT);
             $dateValidite = date('Y-m-d', strtotime("+{$dureeMois} months"));
 
+            $numeroVignettePhysique = $data['numero_vignette'] ?? null;
+
             $sqlInsert = "
                 INSERT INTO vignettes_delivrees (
                     id_paiement, impot_id, type_mouvement, duree_mois,
                     engin_id, particulier_id, code_vignette,
                     date_delivrance, date_validite,
                     utilisateur_delivrance_id, utilisateur_delivrance_nom,
-                    site_id, etat, date_creation
+                    site_id, etat, date_creation, numero_vignette
                 ) VALUES (
                     :id_paiement, :impot_id, 'renouvellement', :duree_mois,
                     :engin_id, :particulier_id, :code_vignette,
                     NOW(), :date_validite,
                     :utilisateur_id, :utilisateur_name,
-                    :site_id, 1, NOW()
+                    :site_id, 1, NOW(), :numero_vignette
                 )
             ";
 
@@ -1574,6 +1714,7 @@ class VenteVignette extends Connexion
             $stmtInsert->bindValue(':utilisateur_id', (int)$data['utilisateur_id'], PDO::PARAM_INT);
             $stmtInsert->bindValue(':utilisateur_name', $data['utilisateur_name'] ?? 'Caissier', PDO::PARAM_STR);
             $stmtInsert->bindValue(':site_id', $siteId, PDO::PARAM_INT);
+            $stmtInsert->bindValue(':numero_vignette', $numeroVignettePhysique, $numeroVignettePhysique ? PDO::PARAM_STR : PDO::PARAM_NULL);
 
             if (!$stmtInsert->execute()) {
                 throw new Exception("Erreur insertion renouvellement");
@@ -1603,6 +1744,289 @@ class VenteVignette extends Connexion
             return [
                 "status" => "error",
                 "message" => "Erreur système: " . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Vérifie une référence bancaire pour la délivrance groupée
+     * Retourne le nombre total de déclarations, le nombre déjà livré, et le restant
+     */
+    public function verifierReferenceBancaire($reference, $impotIdAttendu = null)
+    {
+        try {
+            $sql = "
+                SELECT 
+                    pb.id,
+                    pb.reference_bancaire,
+                    pb.statut,
+                    pb.id_paiement,
+                    pb.donnees_initiation,
+                    pb.donnees_confirmation,
+                    pb.date_creation,
+                    pi.impot_id AS impot_id_paiement
+                FROM paiements_bancaires pb
+                INNER JOIN paiements_immatriculation pi ON pi.id = pb.id_paiement
+                WHERE pb.reference_bancaire = :reference
+                  AND pb.statut IN ('complete', 'livre')
+                LIMIT 1
+            ";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':reference', $reference, PDO::PARAM_STR);
+            $stmt->execute();
+            
+            $paiementBancaire = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$paiementBancaire) {
+                return [
+                    "status" => "error",
+                    "message" => "Aucun paiement bancaire trouvé avec cette référence"
+                ];
+            }
+
+            // Vérification de la taxe : l'impot_id du paiement doit correspondre à celui attendu
+            $impotIdReel = (int)$paiementBancaire['impot_id_paiement'];
+            if ($impotIdAttendu !== null && $impotIdReel !== (int)$impotIdAttendu) {
+                return [
+                    "status" => "error",
+                    "message" => "Cette référence correspond à une autre taxe (taxe n°$impotIdReel). Elle ne peut pas être utilisée pour cette opération."
+                ];
+            }
+
+            // Décoder les données d'initiation pour récupérer nombre_declarations
+            $donneesInitiation = json_decode($paiementBancaire['donnees_initiation'] ?? '{}', true);
+            $nombreDeclarations = (int)($donneesInitiation['nombre_declarations'] ?? 1);
+            $impotId = $impotIdReel;
+            $montant = $donneesInitiation['montant'] ?? 0;
+
+            // Décoder les données de confirmation pour récupérer le nombre livré
+            $donneesConfirmation = json_decode($paiementBancaire['donnees_confirmation'] ?? '{}', true);
+            $livres = (int)($donneesConfirmation['livres'] ?? 0);
+
+            $restant = $nombreDeclarations - $livres;
+
+            if ($restant <= 0) {
+                return [
+                    "status" => "error",
+                    "message" => "Toutes les vignettes de cette référence ont déjà été délivrées ($livres/$nombreDeclarations)"
+                ];
+            }
+
+            return [
+                "status" => "success",
+                "message" => "Référence vérifiée. $restant vignette(s) restante(s) à délivrer.",
+                "data" => [
+                    "paiement_bancaire_id" => $paiementBancaire['id'],
+                    "reference_bancaire" => $paiementBancaire['reference_bancaire'],
+                    "id_paiement" => $paiementBancaire['id_paiement'],
+                    "statut" => $paiementBancaire['statut'],
+                    "nombre_declarations" => $nombreDeclarations,
+                    "livres" => $livres,
+                    "restant" => $restant,
+                    "impot_id" => $impotId,
+                    "montant_total" => $montant,
+                    "date_creation" => $paiementBancaire['date_creation']
+                ]
+            ];
+
+        } catch (Exception $e) {
+            error_log("Erreur vérification référence bancaire: " . $e->getMessage());
+            return [
+                "status" => "error",
+                "message" => "Erreur système: " . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Délivre une vignette dans le cadre d'une délivrance groupée (paiement bancaire)
+     * Incrémente le compteur livres dans donnees_confirmation
+     * Marque comme 'livre' quand toutes les vignettes sont délivrées
+     */
+    public function delivrerVignetteGroupee($data)
+    {
+        try {
+            $this->beginTransactionSafe();
+
+            $referenceBancaire = trim($data['reference_bancaire'] ?? '');
+            $numeroVignette = trim($data['numero_vignette'] ?? '');
+            $enginId = (int)($data['engin_id'] ?? 0);
+            $particulierId = (int)($data['particulier_id'] ?? 0);
+            $utilisateurId = (int)($data['utilisateur_id'] ?? 0);
+            $utilisateurName = $data['utilisateur_name'] ?? '';
+            $impotId = $data['impot_id'] ?? null;
+
+            if (empty($referenceBancaire)) {
+                throw new Exception("Référence bancaire requise");
+            }
+            if (empty($numeroVignette)) {
+                throw new Exception("Numéro de vignette requis");
+            }
+            if ($enginId <= 0 || $particulierId <= 0) {
+                throw new Exception("Engin et particulier requis");
+            }
+
+            // Vérifier unicité du numéro de vignette
+            $sqlCheckVignette = "SELECT id FROM vignettes_delivrees WHERE numero_vignette = :numero_vignette AND etat = 1 LIMIT 1";
+            $stmtCheckVignette = $this->pdo->prepare($sqlCheckVignette);
+            $stmtCheckVignette->bindValue(':numero_vignette', $numeroVignette, PDO::PARAM_STR);
+            $stmtCheckVignette->execute();
+            if ($stmtCheckVignette->fetch(PDO::FETCH_ASSOC)) {
+                throw new Exception("Le numéro de vignette '$numeroVignette' est déjà utilisé");
+            }
+
+            // 1. Récupérer le paiement bancaire avec verrouillage
+            $sqlPB = "
+                SELECT id, reference_bancaire, statut, id_paiement, donnees_initiation, donnees_confirmation
+                FROM paiements_bancaires
+                WHERE reference_bancaire = :reference
+                  AND statut IN ('complete', 'livre')
+                LIMIT 1
+                FOR UPDATE
+            ";
+            $stmtPB = $this->pdo->prepare($sqlPB);
+            $stmtPB->bindValue(':reference', $referenceBancaire, PDO::PARAM_STR);
+            $stmtPB->execute();
+            $pb = $stmtPB->fetch(PDO::FETCH_ASSOC);
+
+            if (!$pb) {
+                throw new Exception("Paiement bancaire non trouvé ou déjà terminé");
+            }
+
+            $donneesInitiation = json_decode($pb['donnees_initiation'] ?? '{}', true);
+            $donneesConfirmation = json_decode($pb['donnees_confirmation'] ?? '{}', true);
+            $nombreDeclarations = (int)($donneesInitiation['nombre_declarations'] ?? 1);
+            $livres = (int)($donneesConfirmation['livres'] ?? 0);
+
+            if ($livres >= $nombreDeclarations) {
+                throw new Exception("Toutes les vignettes ont déjà été délivrées ($livres/$nombreDeclarations)");
+            }
+
+            // 2. Récupérer le site de l'utilisateur
+            $siteId = 0;
+            if ($utilisateurId > 0) {
+                $sqlSite = "SELECT s.id FROM sites s INNER JOIN utilisateurs u ON s.id = u.site_affecte_id WHERE u.id = :uid AND s.actif = 1 LIMIT 1";
+                $stmtSite = $this->pdo->prepare($sqlSite);
+                $stmtSite->bindValue(':uid', $utilisateurId, PDO::PARAM_INT);
+                $stmtSite->execute();
+                $siteData = $stmtSite->fetch(PDO::FETCH_ASSOC);
+                $siteId = $siteData ? (int)$siteData['id'] : 0;
+            }
+
+            // 3. Générer le code vignette et calculer la date de validité
+            $codeVignette = "VGN-" . date('Y') . "-" . 
+                           strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8)) . "-" . 
+                           str_pad($pb['id_paiement'], 6, '0', STR_PAD_LEFT);
+            $dureeMois = 6;
+            $dateValidite = date('Y-m-d', strtotime("+{$dureeMois} months"));
+
+            // 4. Insérer dans vignettes_delivrees
+            $sqlInsert = "
+                INSERT INTO vignettes_delivrees (
+                    id_paiement, impot_id, type_mouvement, duree_mois,
+                    engin_id, particulier_id, code_vignette,
+                    date_delivrance, date_validite,
+                    utilisateur_delivrance_id, utilisateur_delivrance_nom,
+                    site_id, etat, date_creation, numero_vignette
+                ) VALUES (
+                    :id_paiement, :impot_id, 'delivrance', :duree_mois,
+                    :engin_id, :particulier_id, :code_vignette,
+                    NOW(), :date_validite,
+                    :utilisateur_id, :utilisateur_name,
+                    :site_id, 1, NOW(), :numero_vignette
+                )
+            ";
+            $stmtInsert = $this->pdo->prepare($sqlInsert);
+            $stmtInsert->bindValue(':id_paiement', $pb['id_paiement'], PDO::PARAM_INT);
+            $stmtInsert->bindValue(':impot_id', $impotId, $impotId ? PDO::PARAM_INT : PDO::PARAM_NULL);
+            $stmtInsert->bindValue(':duree_mois', $dureeMois, PDO::PARAM_INT);
+            $stmtInsert->bindValue(':engin_id', $enginId, PDO::PARAM_INT);
+            $stmtInsert->bindValue(':particulier_id', $particulierId, PDO::PARAM_INT);
+            $stmtInsert->bindValue(':code_vignette', $codeVignette, PDO::PARAM_STR);
+            $stmtInsert->bindValue(':date_validite', $dateValidite, PDO::PARAM_STR);
+            $stmtInsert->bindValue(':utilisateur_id', $utilisateurId, PDO::PARAM_INT);
+            $stmtInsert->bindValue(':utilisateur_name', $utilisateurName, PDO::PARAM_STR);
+            $stmtInsert->bindValue(':site_id', $siteId, PDO::PARAM_INT);
+            $stmtInsert->bindValue(':numero_vignette', $numeroVignette, PDO::PARAM_STR);
+
+            if (!$stmtInsert->execute()) {
+                throw new Exception("Erreur insertion vignette délivrée");
+            }
+
+            $idDelivrance = $this->pdo->lastInsertId();
+
+            // 5. Incrémenter livres dans donnees_confirmation
+            $livres++;
+            $donneesConfirmation['livres'] = $livres;
+            $donneesConfirmationJson = json_encode($donneesConfirmation);
+
+            // Déterminer le nouveau statut
+            $nouveauStatut = ($livres >= $nombreDeclarations) ? 'livre' : 'complete';
+
+            $sqlUpdate = "
+                UPDATE paiements_bancaires
+                SET donnees_confirmation = :donnees_confirmation,
+                    statut = :statut
+                WHERE id = :id
+            ";
+            $stmtUpdate = $this->pdo->prepare($sqlUpdate);
+            $stmtUpdate->bindValue(':donnees_confirmation', $donneesConfirmationJson, PDO::PARAM_STR);
+            $stmtUpdate->bindValue(':statut', $nouveauStatut, PDO::PARAM_STR);
+            $stmtUpdate->bindValue(':id', $pb['id'], PDO::PARAM_INT);
+            $stmtUpdate->execute();
+
+            // 6. Récupérer les infos pour la réponse
+            $sqlEngin = "SELECT numero_plaque, marque FROM engins WHERE id = :id LIMIT 1";
+            $stmtE = $this->pdo->prepare($sqlEngin);
+            $stmtE->bindValue(':id', $enginId, PDO::PARAM_INT);
+            $stmtE->execute();
+            $enginInfo = $stmtE->fetch(PDO::FETCH_ASSOC) ?: ['numero_plaque' => '', 'marque' => ''];
+
+            $sqlPart = "SELECT CONCAT(nom, ' ', prenom) AS nom_complet, telephone FROM particuliers WHERE id = :id LIMIT 1";
+            $stmtP = $this->pdo->prepare($sqlPart);
+            $stmtP->bindValue(':id', $particulierId, PDO::PARAM_INT);
+            $stmtP->execute();
+            $partInfo = $stmtP->fetch(PDO::FETCH_ASSOC) ?: ['nom_complet' => '', 'telephone' => ''];
+
+            $this->commitSafe();
+
+            return [
+                "status" => "success",
+                "message" => "Vignette délivrée avec succès ($livres/$nombreDeclarations)",
+                "data" => [
+                    "delivrance" => [
+                        "id" => $idDelivrance,
+                        "code_vignette" => $codeVignette,
+                        "numero_vignette" => $numeroVignette,
+                        "date_delivrance" => date('Y-m-d H:i:s'),
+                        "date_validite" => $dateValidite,
+                        "utilisateur_delivrance" => $utilisateurName
+                    ],
+                    "compteur" => [
+                        "total" => $nombreDeclarations,
+                        "livres" => $livres,
+                        "restant" => $nombreDeclarations - $livres
+                    ],
+                    "engin" => [
+                        "numero_plaque" => $enginInfo['numero_plaque'],
+                        "marque" => $enginInfo['marque']
+                    ],
+                    "assujetti" => [
+                        "nom_complet" => $partInfo['nom_complet'],
+                        "telephone" => $partInfo['telephone']
+                    ],
+                    "reference_bancaire" => $referenceBancaire,
+                    "tout_livre" => ($livres >= $nombreDeclarations)
+                ]
+            ];
+
+        } catch (Exception $e) {
+            $this->rollbackSafe();
+            error_log("Erreur délivrance vignette groupée: " . $e->getMessage());
+            return [
+                "status" => "error",
+                "message" => "Erreur: " . $e->getMessage()
             ];
         }
     }

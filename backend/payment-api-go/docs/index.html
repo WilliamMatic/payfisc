@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayFisc API — Documentation v1.0</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2035;
+            --bg-code: #0d1117;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-alt: #8b5cf6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --border: #1e293b;
+            --border-light: #334155;
+            --gradient-1: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --gradient-2: linear-gradient(135deg, #06b6d4, #3b82f6);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden;
+        }
+        .bg-animation .star {
+            position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15);
+            animation: twinkle var(--dur) ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.1; transform: scale(0.8); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* Layout */
+        .wrapper {
+            display: flex; min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+            background: var(--bg-secondary); border-right: 1px solid var(--border);
+            overflow-y: auto; z-index: 100; padding: 0 0 2rem;
+        }
+        .sidebar-header {
+            padding: 1.5rem; border-bottom: 1px solid var(--border);
+            background: var(--gradient-1); text-align: center;
+        }
+        .sidebar-header h1 { font-size: 1.3rem; font-weight: 800; color: #fff; }
+        .sidebar-header .version {
+            display: inline-block; background: rgba(255,255,255,0.2); color: #fff;
+            padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; margin-top: 0.3rem;
+        }
+        .sidebar nav { padding: 1rem 0; }
+        .sidebar nav a {
+            display: block; padding: 0.6rem 1.5rem; color: var(--text-secondary);
+            text-decoration: none; font-size: 0.9rem; transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            color: var(--accent); background: rgba(59,130,246,0.06);
+            border-left-color: var(--accent);
+        }
+        .sidebar nav .section-label {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); padding: 1rem 1.5rem 0.3rem; font-weight: 700;
+        }
+
+        .main {
+            margin-left: 280px; flex: 1; padding: 2rem 3rem 4rem;
+            max-width: 960px;
+        }
+
+        /* Sections */
+        section { margin-bottom: 3rem; }
+        section h2 {
+            font-size: 1.6rem; font-weight: 700; margin-bottom: 1rem;
+            padding-bottom: 0.5rem; border-bottom: 2px solid var(--border);
+            background: var(--gradient-1); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        section h3 {
+            font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.5rem;
+            color: var(--text-primary);
+        }
+        section p { color: var(--text-secondary); margin-bottom: 0.8rem; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .card-header {
+            display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;
+        }
+
+        /* Method badges */
+        .method {
+            display: inline-block; padding: 3px 12px; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 800; letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .method-post { background: rgba(59,130,246,0.15); color: var(--accent); }
+        .method-get { background: rgba(34,197,94,0.15); color: var(--success); }
+
+        .endpoint-path {
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.95rem; color: var(--text-primary); font-weight: 600;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--bg-code); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.2rem; overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; line-height: 1.6; margin: 0.8rem 0;
+            position: relative;
+        }
+        pre .copy-btn {
+            position: absolute; top: 8px; right: 8px; background: var(--border-light);
+            border: none; color: var(--text-secondary); padding: 4px 10px;
+            border-radius: 6px; cursor: pointer; font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        pre .copy-btn:hover { background: var(--accent); color: #fff; }
+        code { font-family: inherit; }
+        .inline-code {
+            background: rgba(59,130,246,0.1); color: var(--accent);
+            padding: 2px 6px; border-radius: 4px; font-size: 0.85em;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+        }
+
+        /* Table */
+        table {
+            width: 100%; border-collapse: collapse; margin: 1rem 0;
+            font-size: 0.88rem;
+        }
+        th, td {
+            text-align: left; padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--bg-secondary); color: var(--text-muted);
+            font-weight: 600; text-transform: uppercase; font-size: 0.72rem;
+            letter-spacing: 0.05em;
+        }
+        td { color: var(--text-secondary); }
+        tr:hover td { background: rgba(59,130,246,0.03); }
+
+        /* Status badges */
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: 600;
+        }
+        .badge-success { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-error { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-info { background: rgba(6,182,212,0.15); color: var(--info); }
+
+        /* Alert boxes */
+        .alert {
+            padding: 1rem 1.2rem; border-radius: 8px; margin: 1rem 0;
+            border-left: 4px solid; font-size: 0.88rem;
+        }
+        .alert-info { background: rgba(6,182,212,0.06); border-color: var(--info); color: var(--info); }
+        .alert-warning { background: rgba(245,158,11,0.06); border-color: var(--warning); color: var(--warning); }
+        .alert-danger { background: rgba(239,68,68,0.06); border-color: var(--danger); color: var(--danger); }
+        .alert-success { background: rgba(34,197,94,0.06); border-color: var(--success); color: var(--success); }
+
+        /* Flow diagram */
+        .flow {
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .flow-step {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.82rem;
+            color: var(--text-primary); font-weight: 500;
+        }
+        .flow-arrow { color: var(--accent); font-size: 1.2rem; }
+
+        /* Param list */
+        .param-list { list-style: none; margin: 0.5rem 0; }
+        .param-list li {
+            padding: 0.5rem 0; border-bottom: 1px solid rgba(30,41,59,0.5);
+            display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap;
+        }
+        .param-name {
+            font-family: monospace; font-weight: 600; color: var(--accent);
+            font-size: 0.88rem;
+        }
+        .param-type {
+            font-size: 0.72rem; color: var(--text-muted); background: var(--bg-secondary);
+            padding: 1px 6px; border-radius: 3px;
+        }
+        .param-required {
+            font-size: 0.68rem; color: var(--danger); font-weight: 700;
+        }
+        .param-desc { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; margin-bottom: 0; }
+        .tab-btn {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-bottom: none; padding: 0.5rem 1.2rem; cursor: pointer;
+            color: var(--text-muted); font-size: 0.8rem; font-weight: 600;
+            border-radius: 8px 8px 0 0; transition: all 0.2s;
+        }
+        .tab-btn.active { background: var(--bg-code); color: var(--accent); border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-content pre { border-radius: 0 8px 8px 8px; margin-top: 0; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 1.5rem; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        .highlight { color: var(--accent); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>PayFisc API</h1>
+                <span class="version">v1.0 — Go Fiber</span>
+            </div>
+            <nav>
+                <div class="section-label">Introduction</div>
+                <a href="#overview">Vue d'ensemble</a>
+                <a href="#architecture">Architecture</a>
+                <a href="#authentication">Authentification</a>
+
+                <div class="section-label">Endpoints</div>
+                <a href="#login">POST /api/auth/login</a>
+                <a href="#init-payment">POST /initialiser-paiement</a>
+                <a href="#process-payment">POST /traiter-paiement-impot</a>
+                <a href="#cancel-payment">POST /annuler-paiement-impot</a>
+                <a href="#health">GET /health</a>
+
+                <div class="section-label">Référence</div>
+                <a href="#error-codes">Codes d'erreur</a>
+                <a href="#security">Sécurité</a>
+                <a href="#rate-limiting">Rate Limiting</a>
+                <a href="#changelog">Changelog</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <!-- Overview -->
+            <section id="overview">
+                <h2>Vue d'ensemble</h2>
+                <p>
+                    L'API <span class="highlight">PayFisc</span> permet aux banques et partenaires financiers
+                    d'intégrer le système de paiement des impôts et taxes. Elle est construite avec
+                    <span class="highlight">Go (Fiber v3)</span> pour offrir des performances élevées,
+                    une sécurité maximale et une fiabilité de niveau production.
+                </p>
+
+                <div class="card">
+                    <h3>Informations clés</h3>
+                    <table>
+                        <tr><td>URL de base</td><td><span class="inline-code">https://votre-domaine.com</span></td></tr>
+                        <tr><td>Protocole</td><td>HTTPS (obligatoire en production)</td></tr>
+                        <tr><td>Format</td><td>JSON (Content-Type: application/json)</td></tr>
+                        <tr><td>Authentification</td><td>JWT Bearer Token (HS256)</td></tr>
+                        <tr><td>Encoding</td><td>UTF-8</td></tr>
+                        <tr><td>Rate Limit</td><td>100 requêtes / minute par IP</td></tr>
+                    </table>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Note :</strong> Tous les endpoints de paiement nécessitent un token JWT valide
+                    obtenu via <span class="inline-code">/api/auth/login</span>.
+                </div>
+            </section>
+
+            <!-- Architecture -->
+            <section id="architecture">
+                <h2>Architecture & Technologies</h2>
+                <p>L'API est construite sur une architecture moderne et performante :</p>
+                <div class="card">
+                    <table>
+                        <tr><td><strong>Langage</strong></td><td>Go 1.22+ (multi-cœurs natif)</td></tr>
+                        <tr><td><strong>Framework</strong></td><td>Fiber v3 (basé sur fasthttp)</td></tr>
+                        <tr><td><strong>Base de données</strong></td><td>MySQL 8+ avec pool de connexions</td></tr>
+                        <tr><td><strong>Auth</strong></td><td>JWT HS256 (golang-jwt/jwt/v5)</td></tr>
+                        <tr><td><strong>Validation</strong></td><td>go-playground/validator/v10</td></tr>
+                        <tr><td><strong>Sécurité</strong></td><td>Comparaison timing-safe, rate limiter, headers sécurisés</td></tr>
+                        <tr><td><strong>Concurrence</strong></td><td>Goroutines, pool de connexions DB, GOMAXPROCS auto</td></tr>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Authentication -->
+            <section id="authentication">
+                <h2>Authentification</h2>
+                <p>L'API utilise un système d'authentification à deux étapes basé sur JWT :</p>
+
+                <div class="flow">
+                    <div class="flow-step">1. Obtenir un token</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">2. Utiliser le token</div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">3. Rafraîchir si expiré</div>
+                </div>
+
+                <h3>Étape 1 — Obtenir un JWT</h3>
+                <p>Envoyez vos identifiants partenaire à <span class="inline-code">POST /api/auth/login</span> :</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>{
+  "bank_id": "VOTRE_BANK_ID",
+  "api_key": "VOTRE_CLE_API"
+}</code></pre>
+
+                <h3>Étape 2 — Utiliser le token</h3>
+                <p>Ajoutez le token dans le header <span class="inline-code">Authorization</span> de chaque requête :</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</code></pre>
+
+                <div class="alert alert-warning">
+                    <strong>Sécurité :</strong> Le token expire après 60 minutes. Obtenez un nouveau token
+                    avant l'expiration. Ne stockez jamais le token côté client dans le localStorage.
+                </div>
+            </section>
+
+            <!-- LOGIN -->
+            <section id="login">
+                <h2>Authentification Partenaire</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/auth/login</span>
+                    </div>
+                    <p>Authentifie un partenaire bancaire et retourne un token JWT.</p>
+
+                    <h3>Paramètres (Body JSON)</h3>
+                    <ul class="param-list">
+                        <li>
+                            <span class="param-name">bank_id</span>
+                            <span class="param-type">string</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— Identifiant unique de la banque partenaire</span>
+                        </li>
+                        <li>
+                            <span class="param-name">api_key</span>
+                            <span class="param-type">string</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— Clé API secrète fournie lors de l'inscription</span>
+                        </li>
+                    </ul>
+
+                    <h3>Vérifications effectuées</h3>
+                    <table>
+                        <tr><td>1</td><td>IP autorisée (whitelist)</td></tr>
+                        <tr><td>2</td><td>User-Agent autorisé</td></tr>
+                        <tr><td>3</td><td>Identifiants valides (comparaison timing-safe)</td></tr>
+                        <tr><td>4</td><td>Compte actif et non suspendu</td></tr>
+                        <tr><td>5</td><td>Partenaire non en maintenance</td></tr>
+                        <tr><td>6</td><td>Permissions suffisantes</td></tr>
+                        <tr><td>7</td><td>Limites de transactions respectées</td></tr>
+                    </table>
+
+                    <h3>Réponse succès <span class="badge badge-success">200</span></h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>{
+  "status": "success",
+  "message": "Authentification réussie",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expires_at": "2025-01-15T15:30:00Z",
+    "bank_name": "Rawbank",
+    "bank_id": "RAWBANK_001",
+    "permissions": ["process_payments", "view_reports"],
+    "limits": {
+      "daily": 50000000,
+      "monthly": 500000000,
+      "min_amount": 500,
+      "max_amount": 10000000
+    }
+  }
+}</code></pre>
+
+                    <h3>Erreurs possibles</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">INVALID_REQUEST</span></td><td>400</td><td>Corps de la requête invalide</td></tr>
+                            <tr><td><span class="inline-code">VALIDATION_ERROR</span></td><td>400</td><td>Champs manquants ou invalides</td></tr>
+                            <tr><td><span class="inline-code">AUTH_FAILED</span></td><td>401</td><td>Identifiants invalides</td></tr>
+                            <tr><td><span class="inline-code">IP_NOT_AUTHORIZED</span></td><td>403</td><td>Adresse IP non autorisée</td></tr>
+                            <tr><td><span class="inline-code">UA_NOT_AUTHORIZED</span></td><td>403</td><td>User-Agent non autorisé</td></tr>
+                            <tr><td><span class="inline-code">PARTNER_MAINTENANCE</span></td><td>503</td><td>Partenaire en maintenance</td></tr>
+                            <tr><td><span class="inline-code">LIMIT_EXCEEDED</span></td><td>429</td><td>Limites de transactions atteintes</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Exemple cURL</h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>curl -X POST https://votre-domaine.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bank_id": "RAWBANK_001",
+    "api_key": "votre-cle-api-secrete"
+  }'</code></pre>
+                </div>
+            </section>
+
+            <!-- INITIALISER PAIEMENT -->
+            <section id="init-payment">
+                <h2>Initialiser un Paiement</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/paiement/initialiser-paiement</span>
+                        <span class="badge badge-warning">JWT requis</span>
+                    </div>
+                    <p>
+                        Initialise un nouveau paiement d'impôt. Crée un enregistrement temporaire
+                        valide pendant <strong>1 heure</strong> avec la répartition automatique entre bénéficiaires.
+                    </p>
+
+                    <h3>Paramètres (Body JSON)</h3>
+                    <ul class="param-list">
+                        <li>
+                            <span class="param-name">impot_id</span>
+                            <span class="param-type">integer</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— ID de l'impôt/taxe à payer (doit exister et être actif)</span>
+                        </li>
+                        <li>
+                            <span class="param-name">nombre_declarations</span>
+                            <span class="param-type">integer</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— Nombre de déclarations (1 à 10 000)</span>
+                        </li>
+                    </ul>
+
+                    <h3>Réponse succès <span class="badge badge-success">201</span></h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>{
+  "status": "success",
+  "message": "Paiement initialisé avec succès",
+  "data": {
+    "reference_paiement": "IMP20250115143025AXBF7",
+    "impot": {
+      "id": 1,
+      "nom": "Taxe Spéciale de Circulation",
+      "description": "Taxe annuelle sur les véhicules",
+      "prix_unitaire": 25000,
+      "periode": "annuel"
+    },
+    "details": {
+      "nombre_declarations": 2,
+      "montant_total": 50000,
+      "montant_unitaire": 25000
+    },
+    "repartition": [
+      {
+        "beneficiaire_id": 1,
+        "nom": "Trésor Public",
+        "telephone": "+243...",
+        "numero_compte": "CD001...",
+        "type_part": "percentage",
+        "valeur_part_originale": 60,
+        "montant": 30000
+      },
+      {
+        "beneficiaire_id": 2,
+        "nom": "Province",
+        "telephone": "+243...",
+        "numero_compte": "CD002...",
+        "type_part": "percentage",
+        "valeur_part_originale": 40,
+        "montant": 20000
+      }
+    ],
+    "callback_url": "https://partenaire.com/callback?ref=IMP20250115143025AXBF7",
+    "date_expiration": "2025-01-15T15:30:25Z"
+  }
+}</code></pre>
+
+                    <h3>Erreurs possibles</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">TAX_NOT_FOUND</span></td><td>404</td><td>Impôt introuvable ou inactif</td></tr>
+                            <tr><td><span class="inline-code">AMOUNT_TOO_LOW</span></td><td>400</td><td>Montant inférieur au minimum autorisé</td></tr>
+                            <tr><td><span class="inline-code">AMOUNT_TOO_HIGH</span></td><td>400</td><td>Montant supérieur au maximum autorisé</td></tr>
+                            <tr><td><span class="inline-code">NO_BENEFICIARIES</span></td><td>500</td><td>Aucun bénéficiaire configuré</td></tr>
+                            <tr><td><span class="inline-code">LIMIT_EXCEEDED</span></td><td>429</td><td>Limites de transactions atteintes</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Exemple cURL</h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>curl -X POST https://votre-domaine.com/api/paiement/initialiser-paiement \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+  -d '{
+    "impot_id": 1,
+    "nombre_declarations": 2
+  }'</code></pre>
+                </div>
+            </section>
+
+            <!-- TRAITER PAIEMENT -->
+            <section id="process-payment">
+                <h2>Traiter un Paiement</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/paiement/traiter-paiement-impot</span>
+                        <span class="badge badge-warning">JWT requis</span>
+                    </div>
+                    <p>
+                        Confirme et traite un paiement préalablement initialisé. Convertit
+                        l'enregistrement temporaire en paiement permanent dans une
+                        <strong>transaction atomique</strong> (tout ou rien).
+                    </p>
+
+                    <h3>Paramètres (Body JSON)</h3>
+                    <ul class="param-list">
+                        <li>
+                            <span class="param-name">reference_paiement</span>
+                            <span class="param-type">string</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— Référence obtenue lors de l'initialisation</span>
+                        </li>
+                        <li>
+                            <span class="param-name">methode_paiement</span>
+                            <span class="param-type">string</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— Méthode : <span class="inline-code">mobile_money</span> | <span class="inline-code">carte</span> | <span class="inline-code">virement</span> | <span class="inline-code">especes</span></span>
+                        </li>
+                    </ul>
+
+                    <h3>Flux de traitement</h3>
+                    <div class="flow">
+                        <div class="flow-step">Valider la référence</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Vérifier l'expiration</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">BEGIN TX</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Créer paiement</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Répartir</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">COMMIT</div>
+                    </div>
+
+                    <h3>Réponse succès <span class="badge badge-success">200</span></h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>{
+  "status": "success",
+  "message": "Paiement traité avec succès",
+  "data": {
+    "paiement_id": "42",
+    "paiement_bancaire_id": "38",
+    "reference_bancaire": "BANK2025011514302589012",
+    "reference_paiement": "IMP20250115143025AXBF7",
+    "montant": "50000.00",
+    "nombre_declarations": 2,
+    "methode_paiement": "mobile_money",
+    "date_paiement": "2025-01-15T14:30:58Z"
+  }
+}</code></pre>
+
+                    <h3>Erreurs possibles</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">PAYMENT_NOT_FOUND</span></td><td>404</td><td>Paiement temporaire introuvable</td></tr>
+                            <tr><td><span class="inline-code">PAYMENT_EXPIRED</span></td><td>410</td><td>Paiement expiré (>1h depuis l'initialisation)</td></tr>
+                            <tr><td><span class="inline-code">UNAUTHORIZED_PAYMENT</span></td><td>403</td><td>Le paiement appartient à un autre partenaire</td></tr>
+                            <tr><td><span class="inline-code">TRANSACTION_ERROR</span></td><td>500</td><td>Erreur lors de la transaction en base</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Exemple cURL</h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>curl -X POST https://votre-domaine.com/api/paiement/traiter-paiement-impot \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+  -d '{
+    "reference_paiement": "IMP20250115143025AXBF7",
+    "methode_paiement": "mobile_money"
+  }'</code></pre>
+                </div>
+            </section>
+
+            <!-- ANNULER PAIEMENT -->
+            <section id="cancel-payment">
+                <h2>Annuler un Paiement</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="method method-post">POST</span>
+                        <span class="endpoint-path">/api/paiement/annuler-paiement-impot</span>
+                        <span class="badge badge-warning">JWT requis</span>
+                    </div>
+                    <p>
+                        Annule un paiement confirmé. Supprime atomiquement tous les enregistrements associés
+                        (paiement bancaire, répartitions, paiement principal).
+                        <strong>Un paiement déjà servi (état = 0) ne peut pas être annulé.</strong>
+                    </p>
+
+                    <h3>Paramètres (Body JSON)</h3>
+                    <ul class="param-list">
+                        <li>
+                            <span class="param-name">reference_paiement</span>
+                            <span class="param-type">string</span>
+                            <span class="param-required">requis</span>
+                            <span class="param-desc">— Référence bancaire du paiement à annuler</span>
+                        </li>
+                    </ul>
+
+                    <h3>Réponse succès <span class="badge badge-success">200</span></h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>{
+  "status": "success",
+  "message": "Paiement annulé avec succès",
+  "data": {
+    "reference": "BANK2025011514302589012",
+    "type": "annulation"
+  }
+}</code></pre>
+
+                    <h3>Erreurs possibles</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">PAYMENT_NOT_FOUND</span></td><td>404</td><td>Aucun paiement trouvé avec cette référence</td></tr>
+                            <tr><td><span class="inline-code">PAYMENT_ALREADY_SERVED</span></td><td>409</td><td>Paiement déjà servi, annulation impossible</td></tr>
+                            <tr><td><span class="inline-code">CANCEL_ERROR</span></td><td>500</td><td>Erreur lors de l'annulation</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Exemple cURL</h3>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>curl -X POST https://votre-domaine.com/api/paiement/annuler-paiement-impot \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+  -d '{
+    "reference_paiement": "BANK2025011514302589012"
+  }'</code></pre>
+                </div>
+            </section>
+
+            <!-- HEALTH CHECK -->
+            <section id="health">
+                <h2>Health Check</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-path">/health</span>
+                    </div>
+                    <p>Vérifie l'état de l'API et de la connexion à la base de données.</p>
+                    <pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code>{
+  "status": "ok",
+  "service": "PayFisc API",
+  "version": "1.0.0",
+  "database": "ok",
+  "uptime": "2025-01-15T14:30:00Z"
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- ERROR CODES -->
+            <section id="error-codes">
+                <h2>Codes d'erreur</h2>
+                <p>Toutes les réponses suivent le format unifié :</p>
+                <pre><code>{
+  "status": "error",
+  "code": "CODE_ERREUR",
+  "message": "Description lisible de l'erreur"
+}</code></pre>
+
+                <div class="card">
+                    <h3>Codes d'authentification</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">MISSING_TOKEN</span></td><td>401</td><td>Header Authorization absent</td></tr>
+                            <tr><td><span class="inline-code">INVALID_TOKEN_FORMAT</span></td><td>401</td><td>Format invalide (attendu: Bearer &lt;token&gt;)</td></tr>
+                            <tr><td><span class="inline-code">INVALID_TOKEN</span></td><td>401</td><td>Token invalide ou expiré</td></tr>
+                            <tr><td><span class="inline-code">AUTH_FAILED</span></td><td>401</td><td>Identifiants incorrects</td></tr>
+                            <tr><td><span class="inline-code">IP_NOT_AUTHORIZED</span></td><td>403</td><td>Adresse IP bloquée</td></tr>
+                            <tr><td><span class="inline-code">UA_NOT_AUTHORIZED</span></td><td>403</td><td>User-Agent non reconnu</td></tr>
+                            <tr><td><span class="inline-code">INSUFFICIENT_PERMISSIONS</span></td><td>403</td><td>Permission manquante</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Codes de paiement</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">TAX_NOT_FOUND</span></td><td>404</td><td>Impôt introuvable</td></tr>
+                            <tr><td><span class="inline-code">AMOUNT_TOO_LOW</span></td><td>400</td><td>Montant en dessous du minimum</td></tr>
+                            <tr><td><span class="inline-code">AMOUNT_TOO_HIGH</span></td><td>400</td><td>Montant au dessus du maximum</td></tr>
+                            <tr><td><span class="inline-code">PAYMENT_NOT_FOUND</span></td><td>404</td><td>Paiement introuvable</td></tr>
+                            <tr><td><span class="inline-code">PAYMENT_EXPIRED</span></td><td>410</td><td>Paiement expiré</td></tr>
+                            <tr><td><span class="inline-code">PAYMENT_ALREADY_SERVED</span></td><td>409</td><td>Déjà servi</td></tr>
+                            <tr><td><span class="inline-code">UNAUTHORIZED_PAYMENT</span></td><td>403</td><td>Paiement d'un autre partenaire</td></tr>
+                            <tr><td><span class="inline-code">NO_BENEFICIARIES</span></td><td>500</td><td>Configuration bénéficiaires manquante</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Codes système</h3>
+                    <table>
+                        <thead><tr><th>Code</th><th>HTTP</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="inline-code">INVALID_REQUEST</span></td><td>400</td><td>Requête malformée</td></tr>
+                            <tr><td><span class="inline-code">VALIDATION_ERROR</span></td><td>400</td><td>Champs invalides</td></tr>
+                            <tr><td><span class="inline-code">RATE_LIMITED</span></td><td>429</td><td>Trop de requêtes</td></tr>
+                            <tr><td><span class="inline-code">PARTNER_MAINTENANCE</span></td><td>503</td><td>Partenaire en maintenance</td></tr>
+                            <tr><td><span class="inline-code">INTERNAL_ERROR</span></td><td>500</td><td>Erreur serveur interne</td></tr>
+                            <tr><td><span class="inline-code">NOT_FOUND</span></td><td>404</td><td>Endpoint inexistant</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECURITY -->
+            <section id="security">
+                <h2>Sécurité</h2>
+                <div class="card">
+                    <h3>Mesures de protection</h3>
+                    <table>
+                        <tr>
+                            <td><strong>JWT HS256</strong></td>
+                            <td>Tokens signés avec algorithme HMAC-SHA256. Vérification stricte de l'algorithme pour prévenir les attaques « none algorithm ».</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Comparaison Timing-Safe</strong></td>
+                            <td>Les clés API sont comparées avec <span class="inline-code">crypto/subtle.ConstantTimeCompare</span> pour empêcher les attaques par timing.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Références crypto-sûres</strong></td>
+                            <td>Toutes les références sont générées avec <span class="inline-code">crypto/rand</span> (CSPRNG) au lieu de <span class="inline-code">math/rand</span>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SQL Injection</strong></td>
+                            <td>100% de requêtes paramétrées (<span class="inline-code">?</span> placeholders). Aucune concaténation de SQL.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rate Limiting</strong></td>
+                            <td>Limitation par IP avec nettoyage automatique des entrées expirées. Protection DDoS de base.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IP Whitelist</strong></td>
+                            <td>Chaque partenaire peut restreindre l'accès à des adresses IP spécifiques.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>User-Agent Check</strong></td>
+                            <td>Vérification optionnelle du User-Agent pour protéger contre les outils non autorisés.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Headers sécurisés</strong></td>
+                            <td>X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, CSP, Referrer-Policy activés automatiquement.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Transactions atomiques</strong></td>
+                            <td>Toutes les opérations multi-étapes utilisent des transactions SQL avec ROLLBACK automatique.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pool de connexions</strong></td>
+                            <td>Max 25 connexions ouvertes, 10 idle, durée de vie 5 min. Prévient l'épuisement des connexions.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Body Limit</strong></td>
+                            <td>Corps de requête limité à 1 Mo pour prévenir les attaques par payload surdimensionné.</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="alert alert-danger">
+                    <strong>Production :</strong> Configurez absolument <span class="inline-code">JWT_SECRET</span>
+                    avec une clé aléatoire d'au moins 64 caractères. Utilisez HTTPS exclusivement.
+                    Restreignez les IP autorisées pour chaque partenaire via la base de données.
+                </div>
+            </section>
+
+            <!-- RATE LIMITING -->
+            <section id="rate-limiting">
+                <h2>Rate Limiting</h2>
+                <div class="card">
+                    <p>L'API applique des limites à plusieurs niveaux :</p>
+                    <table>
+                        <thead><tr><th>Niveau</th><th>Limite par défaut</th><th>Fenêtre</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Global (par IP)</strong></td><td>100 requêtes</td><td>1 minute</td></tr>
+                            <tr><td><strong>Journalier (par banque)</strong></td><td>Configurable en DB</td><td>24h glissantes</td></tr>
+                            <tr><td><strong>Mensuel (par banque)</strong></td><td>Configurable en DB</td><td>30j glissants</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Réponse quand limité</h3>
+                    <pre><code>HTTP/1.1 429 Too Many Requests
+
+{
+  "status": "error",
+  "code": "RATE_LIMITED",
+  "message": "Trop de requêtes. Veuillez réessayer dans 45 secondes."
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- CHANGELOG -->
+            <section id="changelog">
+                <h2>Changelog</h2>
+                <div class="card">
+                    <h3>v1.0.0 — Janvier 2025</h3>
+                    <ul style="list-style: disc; padding-left: 1.5rem; color: var(--text-secondary);">
+                        <li>Migration complète de PHP vers Go (Fiber v3)</li>
+                        <li>Authentification JWT HS256 avec token Bearer</li>
+                        <li>Comparaison timing-safe des clés API</li>
+                        <li>Références générées avec crypto/rand (CSPRNG)</li>
+                        <li>Rate limiting par IP avec nettoyage automatique</li>
+                        <li>Transactions SQL atomiques (READ COMMITTED)</li>
+                        <li>Pool de connexions MySQL optimisé</li>
+                        <li>Goroutines pour logging non-bloquant</li>
+                        <li>Arrêt gracieux avec propagation de signaux</li>
+                        <li>Documentation API professionnelle intégrée</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Animated stars background
+        (function() {
+            const bg = document.getElementById('bgAnimation');
+            for (let i = 0; i < 60; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 1;
+                star.style.cssText = `
+                    width: ${size}px; height: ${size}px;
+                    top: ${Math.random() * 100}%; left: ${Math.random() * 100}%;
+                    --dur: ${Math.random() * 4 + 3}s;
+                    animation-delay: ${Math.random() * 5}s;
+                `;
+                bg.appendChild(star);
+            }
+        })();
+
+        // Copy button
+        function copyCode(btn) {
+            const code = btn.parentElement.querySelector('code');
+            navigator.clipboard.writeText(code.textContent.trim()).then(() => {
+                btn.textContent = 'Copié!';
+                setTimeout(() => { btn.textContent = 'Copier'; }, 1500);
+            });
+        }
+
+        // Active sidebar link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                if (window.scrollY >= section.offsetTop - 120) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+            });
+        });
+    </script>
+</body>
+</html>

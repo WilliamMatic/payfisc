@@ -12,7 +12,7 @@ class Connexion_tsc {
             $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            die("Erreur de connexion à la base de données : " . $e->getMessage());
+            throw new Exception("Erreur de connexion à la base TSC : " . $e->getMessage());
         }
     }
 }
