@@ -46,7 +46,7 @@ export default function Filtres({
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setViewMode(viewMode === "grouped" ? "list" : "grouped")}
-            className="flex items-center space-x-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 text-sm bg-[#2D5B7A]/10 text-[#2D5B7A] hover:bg-[#2D5B7A]/20 rounded-xl transition-colors"
           >
             <ArrowUpDown className="w-4 h-4" />
             <span>Vue {viewMode === "grouped" ? "Liste" : "Groupée"}</span>
@@ -54,7 +54,7 @@ export default function Filtres({
           <button
             onClick={exporterDonnees}
             disabled={isPending || loading}
-            className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center space-x-2 px-4 py-2 text-sm bg-[#2D5B7A]/10 text-[#2D5B7A] hover:bg-[#2D5B7A]/20 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
             <span>{isPending ? "Exportation..." : "Exporter"}</span>
@@ -73,7 +73,7 @@ export default function Filtres({
               type="date"
               value={dateDebut}
               onChange={(e) => setDateDebut(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/40 focus:border-[#2D5B7A]"
             />
           </div>
         </div>
@@ -88,7 +88,7 @@ export default function Filtres({
               type="date"
               value={dateFin}
               onChange={(e) => setDateFin(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/40 focus:border-[#2D5B7A]"
             />
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function Filtres({
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
               placeholder="Rechercher..."
-              className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/40 focus:border-[#2D5B7A]"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           </div>
@@ -120,7 +120,7 @@ export default function Filtres({
             value={selectedPlaque}
             onChange={(e) => setSelectedPlaque(e.target.value)}
             placeholder="Ex: AA001, CD500..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/40 focus:border-[#2D5B7A]"
           />
         </div>
       </div>
@@ -129,14 +129,14 @@ export default function Filtres({
         <button
           onClick={reinitialiserFiltres}
           disabled={isPending || loading}
-          className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Réinitialisation..." : "Réinitialiser"}
         </button>
         <button
           onClick={appliquerFiltres}
           disabled={isPending || loading}
-          className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-[#2D5B7A] text-white hover:bg-[#244D68] rounded-xl transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Application..." : "Appliquer les filtres"}
         </button>

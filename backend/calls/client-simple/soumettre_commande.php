@@ -18,7 +18,6 @@ header('Content-Type: application/json');
 
 // Vérification de la méthode HTTP
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -27,7 +26,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $requiredFields = ['impot_id', 'utilisateur_id', 'site_id', 'nom', 'prenom', 'telephone', 'adresse', 'nombre_plaques'];
 foreach ($requiredFields as $field) {
     if (!isset($_POST[$field]) || empty($_POST[$field])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le champ $field est obligatoire."]);
         exit;
     }
@@ -35,7 +33,6 @@ foreach ($requiredFields as $field) {
 
 // Validation des types de données
 if (!is_numeric($_POST['nombre_plaques']) || (int)$_POST['nombre_plaques'] <= 0) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le nombre de plaques doit être un nombre positif."]);
     exit;
 }
@@ -51,7 +48,6 @@ try {
     if ($result['status'] === 'success') {
         http_response_code(200);
     } else {
-        http_response_code(400);
     }
     
     echo json_encode($result);
@@ -59,7 +55,6 @@ try {
 } catch (PDOException $e) {
     // Erreur de base de données
     error_log("Erreur PDO lors du traitement de la commande : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système de base de données. L'opération a été annulée.",
@@ -68,7 +63,6 @@ try {
 } catch (Exception $e) {
     // Erreur générale
     error_log("Erreur générale lors du traitement de la commande : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système. L'opération a été annulée."

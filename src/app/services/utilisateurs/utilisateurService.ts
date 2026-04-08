@@ -7,15 +7,34 @@ import { revalidateTag } from 'next/cache';
  * Server Actions pour la gestion des utilisateurs avec Cache Components Next.js 16
  */
 
-// Interface pour les privilèges d'un utilisateur
-export interface Privileges {
+// Interface pour les privilèges d'un utilisateur - groupés par catégorie
+export interface PrivilegesPlaque {
   simple: boolean;
   special: boolean;
   delivrance: boolean;
+  correctionErreur: boolean;
   plaque: boolean;
   reproduction: boolean;
   series: boolean;
   autresTaxes: boolean;
+}
+
+export interface PrivilegesVignette {
+  venteDirecte: boolean;
+  delivrance: boolean;
+  renouvellement: boolean;
+}
+
+export interface PrivilegesAssurance {
+  venteDirecte: boolean;
+  delivrance: boolean;
+  renouvellement: boolean;
+}
+
+export interface Privileges {
+  ventePlaque: PrivilegesPlaque;
+  vignette: PrivilegesVignette;
+  assurance: PrivilegesAssurance;
 }
 
 // Interface pour les données d'un utilisateur
@@ -148,7 +167,7 @@ export async function getUtilisateurs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des utilisateurs',
@@ -191,7 +210,7 @@ export async function getUtilisateursActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des utilisateurs actifs',
@@ -235,7 +254,7 @@ export async function addUtilisateur(utilisateurData: UtilisateurFormData): Prom
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout de l\'utilisateur',
@@ -278,7 +297,7 @@ export async function updateUtilisateur(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification de l\'utilisateur',
@@ -313,7 +332,7 @@ export async function deleteUtilisateur(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression de l\'utilisateur',
@@ -352,7 +371,7 @@ export async function toggleUtilisateurStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut de l\'utilisateur',
@@ -393,7 +412,7 @@ export async function searchUtilisateurs(searchTerm: string): Promise<ApiRespons
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des utilisateurs',
@@ -436,7 +455,7 @@ export async function getSitesActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des sites',
@@ -478,7 +497,7 @@ export async function checkUtilisateurByTelephone(telephone: string): Promise<Ap
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification de l\'utilisateur',
@@ -520,7 +539,7 @@ export async function getUtilisateurById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération de l\'utilisateur',
@@ -570,7 +589,7 @@ export async function searchUtilisateursBySite(siteId: number, searchTerm?: stri
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des utilisateurs par site',
@@ -625,7 +644,7 @@ export async function getUtilisateursPaginees(page: number = 1, limit: number = 
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des utilisateurs paginés',
@@ -677,7 +696,7 @@ export async function updatePrivilegesUtilisateur(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification des privilèges',

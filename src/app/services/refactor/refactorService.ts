@@ -139,7 +139,7 @@ export const traiterRefactor = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du traitement du refactor",
@@ -190,7 +190,7 @@ export const verifierPlaqueExterne = async (
 
     const data = await response.json();
 
-    if (!response.ok || data.status === "error") {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Plaque non trouvée dans la base externe",

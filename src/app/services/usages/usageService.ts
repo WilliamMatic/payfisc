@@ -81,7 +81,7 @@ export async function getUsages(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des usages',
@@ -124,7 +124,7 @@ export async function getUsagesActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des usages actifs',
@@ -172,7 +172,7 @@ export async function addUsage(usageData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout de l\'usage',
@@ -220,7 +220,7 @@ export async function updateUsage(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification de l\'usage',
@@ -256,7 +256,7 @@ export async function deleteUsage(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression de l\'usage',
@@ -296,7 +296,7 @@ export async function toggleUsageStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut de l\'usage',
@@ -338,7 +338,7 @@ export async function searchUsages(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des usages',
@@ -380,7 +380,7 @@ export async function checkUsageByCode(code: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification de l\'usage',
@@ -418,7 +418,7 @@ export async function checkUsageByLibelle(libelle: string): Promise<ApiResponse>
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification de l\'usage par libellé',
@@ -460,7 +460,7 @@ export async function getUsageById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération de l\'usage',

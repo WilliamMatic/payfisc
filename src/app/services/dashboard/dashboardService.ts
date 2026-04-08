@@ -108,11 +108,11 @@ export const getDashboardStats = async (
       },
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get dashboard stats error:", error);
@@ -154,11 +154,11 @@ export const getVerificationData = async (
       },
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get verification data error:", error);
@@ -183,11 +183,11 @@ export const getUniqueTaxNames = async (): Promise<ApiResponse> => {
       },
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get tax names error:", error);
@@ -216,11 +216,11 @@ export const getDeclarationDetails = async (
       }
     );
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get declaration details error:", error);
@@ -249,11 +249,11 @@ export const getRapportDeclaration = async (
       }
     );
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get rapport declaration error:", error);
@@ -295,11 +295,11 @@ export const getRapportGeneral = async (
       },
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get rapport general error:", error);

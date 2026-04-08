@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Données JSON invalides."]);
     exit;
 }
@@ -49,7 +47,6 @@ $requiredFields = [
 
 foreach ($requiredFields as $field) {
     if (empty($input[$field])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le champ $field est obligatoire."]);
         exit;
     }
@@ -57,20 +54,17 @@ foreach ($requiredFields as $field) {
 
 // Validation des nouveaux champs obligatoires
 if (empty($input['utilisateur_id'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'ID du particulier est obligatoire."]);
     exit;
 }
 
 if (empty($input['province_nom'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le nom de la province est obligatoire."]);
     exit;
 }
 
 // Validation spécifique pour mobile_money
 if ($input['modePaiement'] === 'mobile_money' && empty($input['operateur'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'opérateur est obligatoire pour le paiement mobile."]);
     exit;
 }
@@ -80,19 +74,16 @@ $anneeFab = intval($input['anneeFabrication']);
 $anneeCirc = intval($input['anneeCirculation']);
 
 if ($anneeFab < 2000 || $anneeFab > 2025) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'année de fabrication doit être entre 2000 et 2025."]);
     exit;
 }
 
 if ($anneeCirc < 2000 || $anneeCirc > 2025) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'année de circulation doit être entre 2000 et 2025."]);
     exit;
 }
 
 if ($anneeCirc < $anneeFab) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'année de circulation ne peut pas être antérieure à l'année de fabrication."]);
     exit;
 }
@@ -151,7 +142,6 @@ try {
         http_response_code(201);
         echo json_encode($result);
     } else {
-        http_response_code(400);
         echo json_encode($result);
     }
 
@@ -160,7 +150,6 @@ try {
     error_log("Erreur lors du traitement de la transaction : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: L'opération a échoué.",

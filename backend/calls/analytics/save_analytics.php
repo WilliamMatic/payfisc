@@ -29,7 +29,6 @@ function validateApiToken() {
     $receivedToken = $_SERVER['HTTP_X_API_TOKEN'] ?? '';
     
     if (empty($receivedToken) || $receivedToken !== $expectedToken) {
-        http_response_code(401);
         echo json_encode([
             "status" => "error", 
             "message" => "Token API invalide ou manquant"
@@ -56,7 +55,6 @@ try {
             break;
 
         default:
-            http_response_code(405);
             echo json_encode([
                 "status" => "error", 
                 "message" => "Méthode non autorisée"
@@ -66,7 +64,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur API Analytics: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: L'opération a échoué."
@@ -86,7 +83,6 @@ function handlePostRequest($analyticsManager) {
     $metricData = json_decode($jsonInput, true);
 
     if (!$metricData) {
-        http_response_code(400);
         echo json_encode([
             "status" => "error", 
             "message" => "Données JSON invalides"
@@ -105,7 +101,6 @@ function handlePostRequest($analyticsManager) {
     if ($result['status'] === 'success') {
         http_response_code(200);
     } else {
-        http_response_code(400);
     }
     
     echo json_encode($result);

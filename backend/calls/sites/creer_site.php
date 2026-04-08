@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -32,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 // ======================================================================
 
 if (!isset($_POST['nom'], $_POST['code'], $_POST['province_id'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le nom, le code et la province sont requis."]);
     exit;
 }
@@ -42,6 +40,7 @@ $nom = trim(htmlspecialchars($_POST['nom'], ENT_QUOTES, 'UTF-8'));
 $code = trim(htmlspecialchars($_POST['code'], ENT_QUOTES, 'UTF-8'));
 $description = isset($_POST['description']) ? trim(htmlspecialchars($_POST['description'], ENT_QUOTES, 'UTF-8')) : '';
 $formule = isset($_POST['formule']) ? trim(htmlspecialchars($_POST['formule'], ENT_QUOTES, 'UTF-8')) : '';
+$templateCarteActuel = isset($_POST['template_carte_actuel']) ? filter_var($_POST['template_carte_actuel'], FILTER_VALIDATE_INT) : 0;
 $provinceId = filter_var($_POST['province_id'], FILTER_VALIDATE_INT);
 
 if ($provinceId === false || $provinceId <= 0) {
@@ -58,7 +57,7 @@ try {
     $siteManager = new Site();
     
     // Tentative d'ajout du nouveau site
-    $result = $siteManager->ajouterSite($nom, $code, $description, $formule, $provinceId);
+    $result = $siteManager->ajouterSite($nom, $code, $description, $formule, $provinceId, $templateCarteActuel);
     echo json_encode($result);
 
 } catch (Exception $e) {
@@ -66,6 +65,5 @@ try {
     error_log("Erreur lors de l'ajout d'un site : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

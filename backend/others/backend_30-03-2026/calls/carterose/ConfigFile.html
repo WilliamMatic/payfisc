@@ -1,0 +1,225 @@
+const printContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Immatriculation - ${data.numero_plaque}</title>
+            <style>
+              @page { 
+                size: auto; 
+                margin: 0; 
+              }
+              body { 
+                margin: 0; 
+                padding: 10mm; 
+                background: #fff; 
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 70vh;
+                box-sizing: border-box;
+              }
+              
+              /* TAILLE EXACTE 86mm × 54mm pour l'impression */
+              .card {
+                width: 86mm;
+                border-radius: 1mm;
+                padding: 2.5mm;
+                box-sizing: border-box;
+                position: relative;
+                top: 38px;
+                background: #fff;
+              }
+              
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: 2.2mm; 
+              }
+              
+              td, th { 
+                padding: 0.8mm; 
+                text-align: left; 
+                vertical-align: middle; 
+                border-bottom: 0.15mm solid #eee;
+              }
+              
+              th { 
+                width: 45%; 
+                font-weight: 700; 
+                font-size: 2.4mm; 
+              }
+              
+              td { 
+                width: 55%; 
+                font-weight: bolder; 
+              }
+
+              .plaque-number {
+                font-weight: bold;
+                font-size: 2.6mm;
+                color: #dc2626;
+              }
+
+              .qr { 
+                position: absolute; 
+                right: 7mm; 
+                bottom: 8mm; 
+                width: 13mm; 
+                height: 13mm; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                border: none;
+                padding: 0;
+                background: transparent;
+              }
+
+              .qr img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+              }
+
+              .sig-wrap { 
+                position: absolute; 
+                right: 2mm; 
+                bottom: -2mm; 
+                width: 25mm; 
+                height: 9mm; 
+                display: flex; 
+                align-items: flex-end; 
+                justify-content: center; 
+              }
+              
+              .signature-box { 
+                width: 100%; 
+                border-top: 0.15mm dashed rgba(0,0,0,0.6); 
+                padding-top: 1mm; 
+                font-size: 2mm; 
+                text-align: center; 
+              }
+
+              /* Force le saut de page après le recto */
+              .page-break {
+                page-break-after: always;
+                break-after: page;
+              }
+
+              .instruction {
+                width: 86mm;
+                text-align: center;
+                font-size: 2.5mm;
+                color: #666;
+                margin: 3mm 0;
+                padding: 1.5mm;
+                border: 0.15mm dashed #999;
+                background: #f9f9f9;
+              }
+
+              @media print {
+                body {
+                  padding: 5mm;
+                }
+                .instruction {
+                  display: none;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <!-- RECTO (PAGE 1) -->
+            <div class="card" style="height: 40mm !important;">
+              <table>
+                <tbody>
+                  <tr>
+                    <th></th>
+                    <td style="position: relative; top: 1px;">${data.nom} ${data.prenom}</td>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <td style="position: relative; top: 1px;">${data.adresse}</td>
+                  </tr>
+                  <tr style="position: relative; top: 8px;">
+                    <th></th>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <th style="position: relative; top: 9px;"></th>
+                    <td style="position: relative; top: 24px;">${data.annee_circulation}</td>
+                  </tr>
+                  <tr style="position: relative; top: 23px;">
+                    <th></th>
+                    <td style="position: relative; top: 14px;" class="plaque-number">${data.numero_plaque}</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div class="qr">
+                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ''}
+              </div>
+            </div>
+
+            <div class="instruction">
+              ↑ RECTO - Imprimez cette face en premier
+            </div>
+            
+            <!-- SAUT DE PAGE FORCÉ -->
+            <div class="page-break"></div>
+            
+            <div class="instruction">
+              ↓ VERSO - Retournez la feuille et réinsérez-la pour imprimer le verso
+            </div>
+
+            <!-- VERSO (PAGE 2) -->
+            <div class="card" style="height: 40mm;">
+              <table>
+                <tbody>
+                  <tr style="position: relative; top: -11px;">
+                    <th></th>
+                    <td>${data.marque} - ${data.type_engin}</td>
+                  </tr>
+                  <tr style="position: relative; top: -17px;">
+                    <th></th>
+                    <td>${data.usage}</td>
+                  </tr>
+                  <tr style="position: relative; top: -23px;">
+                    <th></th>
+                    <td>${data.numero_chassis || '-'}</td>
+                  </tr>
+                  <tr style="position: relative; top: -29px;">
+                    <th></th>
+                    <td>${data.numero_moteur || '-'}</td>
+                  </tr>
+                  <tr style="position: relative; top: -33px;">
+                    <th></th>
+                    <td>${data.annee_fabrication || '-'}</td>
+                  </tr>
+                  <tr style="position: relative; top: -38px;">
+                    <th></th>
+                    <td>${data.couleur || '-'}</td>
+                  </tr>
+                  <tr style="position: relative; top: -43px;">
+                    <th></th>
+                    <td>${data.puissance_fiscal || '-'}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="sig-wrap">
+                <div class="signature-box">Signature</div>
+              </div>
+            </div>
+            
+            <script>
+              window.onload = function() {
+                // Attendre un peu pour s'assurer que tout est chargé
+                setTimeout(() => {
+                  window.print();
+                }, 300);
+              };
+            </script>
+          </body>
+        </html>
+      `;

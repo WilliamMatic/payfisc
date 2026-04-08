@@ -3,13 +3,9 @@ import { getImpots, Impot } from "@/services/impots/impotService";
 import ImpotServicesClient from "../components/ImpotServicesClient";
 import ReproductionServicesClient from "../components/ReproductionServicesClient";
 import VignetteServicesClient from "../components/VignetteServicesClient";
+import AssuranceMotoServicesClient from "../components/AssuranceMotoServicesClient";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
-
-// Required for dynamic routes - no prerender
-export function generateStaticParams() {
-  return [{ id: "0" }];
-}
 
 interface ImpotPageProps {
   params: Promise<{ id: string }>;
@@ -40,7 +36,7 @@ async function ImpotContent({ params }: ImpotPageProps) {
   const impotsResult = await getImpots();
   
   if (impotsResult.status === "error") {
-    throw new Error(impotsResult.message);
+    return <ImpotIntrouvable id={id} />;
   }
   
   const impots: Impot[] = impotsResult.data || [];
@@ -58,6 +54,8 @@ async function ImpotContent({ params }: ImpotPageProps) {
     return <VignetteServicesClient impot={impot} />;
   } else if (parsedId === 11) {
     return <ImpotServicesClient impot={impot} />;
+  } else if (parsedId === 19) {
+    return <AssuranceMotoServicesClient impot={impot} />;
   } else {
     return <ImpotIntrouvable id={id} />;
   }

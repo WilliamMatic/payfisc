@@ -56,23 +56,6 @@ export const loginUtilisateur = async (
 
     console.log("Statut HTTP login utilisateur:", response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP login utilisateur:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: "Échec de l'authentification" };
-      }
-      
-      return {
-        status: "error",
-        message: errorData.message || "Échec de l'authentification",
-      };
-    }
-
     const data = await response.json();
     console.log("Réponse login utilisateur:", data);
     console.log("=== FIN AUTHENTIFICATION UTILISATEUR ===");
@@ -103,23 +86,6 @@ export const logoutUtilisateur = async (): Promise<{
     });
 
     console.log("Statut HTTP déconnexion utilisateur:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP déconnexion utilisateur:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: "Échec de la déconnexion" };
-      }
-      
-      return {
-        status: "error",
-        message: errorData.message || "Échec de la déconnexion",
-      };
-    }
 
     const data = await response.json();
     console.log("Réponse déconnexion utilisateur:", data);
@@ -154,23 +120,6 @@ export const checkSessionUtilisateur = async (): Promise<UserSessionCheckRespons
     );
 
     console.log("Statut HTTP check session utilisateur:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP check session utilisateur:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: "Session invalide" };
-      }
-      
-      return {
-        status: "error",
-        message: errorData.message || "Session invalide",
-      };
-    }
 
     const data = await response.json();
     console.log("Réponse check session utilisateur:", data);

@@ -11,13 +11,11 @@ require_once __DIR__ . '/../../class/Taux.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
 
 if (!isset($_POST['id'], $_POST['nom'], $_POST['valeur'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Tous les champs sont requis."]);
     exit;
 }
@@ -40,7 +38,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la modification d'un taux : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }
 ?>

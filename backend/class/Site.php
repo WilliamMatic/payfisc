@@ -106,7 +106,7 @@ class Site extends Connexion
      * @return array Tableau avec statut et message
      * @throws PDOException En cas d'erreur de base de données
      */
-    public function ajouterSite($nom, $code, $description, $formule, $provinceId)
+    public function ajouterSite($nom, $code, $description, $formule, $provinceId, $templateCarteActuel = 0)
     {
         // ============ VALIDATION DES DONNÉES ============
         if (empty($nom) || empty($code) || empty($provinceId)) {
@@ -131,15 +131,16 @@ class Site extends Connexion
             $this->pdo->beginTransaction();
 
             // Insertion du site
-            $sql = "INSERT INTO sites (nom, code, description, formule, province_id) 
-                    VALUES (:nom, :code, :description, :formule, :province_id)";
+            $sql = "INSERT INTO sites (nom, code, description, formule, province_id, template_carte_actuel) 
+                    VALUES (:nom, :code, :description, :formule, :province_id, :template_carte_actuel)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':nom' => $nom,
                 ':code' => strtoupper($code),
                 ':description' => $description,
                 ':formule' => $formule,
-                ':province_id' => $provinceId
+                ':province_id' => $provinceId,
+                ':template_carte_actuel' => intval($templateCarteActuel) ? 1 : 0
             ]);
 
             $siteId = $this->pdo->lastInsertId();
@@ -175,7 +176,7 @@ class Site extends Connexion
      * @return array Tableau avec statut et message
      * @throws PDOException En cas d'erreur de base de données
      */
-    public function modifierSite($id, $nom, $code, $description, $formule, $provinceId)
+    public function modifierSite($id, $nom, $code, $description, $formule, $provinceId, $templateCarteActuel = 0)
     {
         // Validation des champs obligatoires
         if (empty($nom) || empty($code) || empty($provinceId)) {
@@ -213,6 +214,7 @@ class Site extends Connexion
                         description = :description,
                         formule = :formule,
                         province_id = :province_id,
+                        template_carte_actuel = :template_carte_actuel,
                         date_modification = CURRENT_TIMESTAMP
                     WHERE id = :id";
             $stmt = $this->pdo->prepare($sql);
@@ -222,6 +224,7 @@ class Site extends Connexion
                 ':description' => $description,
                 ':formule' => $formule,
                 ':province_id' => $provinceId,
+                ':template_carte_actuel' => intval($templateCarteActuel) ? 1 : 0,
                 ':id' => $id
             ]);
 
@@ -318,7 +321,7 @@ class Site extends Connexion
     public function listerSites()
     {
         try {
-            $sql = "SELECT s.id, s.nom, s.code, s.description, s.formule, s.actif, 
+            $sql = "SELECT s.id, s.nom, s.code, s.description, s.formule, s.actif, s.template_carte_actuel,
                     p.nom as province_nom, p.id as province_id,
                     DATE_FORMAT(s.date_creation, '%d/%m/%Y') as date_creation 
                     FROM sites s 
@@ -345,7 +348,7 @@ class Site extends Connexion
     public function rechercherSites($searchTerm)
     {
         try {
-            $sql = "SELECT s.id, s.nom, s.code, s.description, s.formule, s.actif, 
+            $sql = "SELECT s.id, s.nom, s.code, s.description, s.formule, s.actif, s.template_carte_actuel,
                     p.nom as province_nom, p.id as province_id,
                     DATE_FORMAT(s.date_creation, '%d/%m/%Y') as date_creation 
                     FROM sites s 

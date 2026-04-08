@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background: #fff; 
+            color: #000;
+            line-height: 1.3;
+            font-size: 9px;
+        }
+        .container { 
+            max-width: 80mm; 
+            margin: 0 auto; 
+            padding: 8px;
+        }
+        
+        /* Nouvel en-tête amélioré */
+        .header {
+            text-align: center;
+            border-bottom: 3px double #2c5282;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2c5282, #1a365d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 14px;
+        }
+        .institution-info {
+            text-align: left;
+            flex-grow: 1;
+        }
+        .institution-name {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #1a365d;
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+        .institution-sub {
+            font-size: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1px;
+        }
+        .institution-contact {
+            font-size: 7px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        .contact-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 2px;
+        }
+        .document-title {
+            background: #1a365d;
+            color: white;
+            padding: 6px;
+            margin: 6px -8px 8px -8px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Sections existantes améliorées */
+        .section {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .section-title {
+            font-size: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #1a365d, #2c5282);
+            color: #fff;
+            padding: 4px 6px;
+            margin-bottom: 6px;
+            border-radius: 2px;
+            letter-spacing: 0.5px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 8px;
+        }
+        .label {
+            font-weight: 700;
+            color: #2d3748;
+            min-width: 40%;
+        }
+        .value {
+            font-weight: 600;
+            text-align: right;
+            max-width: 58%;
+            color: #1a202c;
+            word-break: break-word;
+        }
+        
+        /* Section entreprise assujetti améliorée */
+        .entreprise-info {
+            background: #f7fafc;
+            border: 1px solid #cbd5e0;
+            border-radius: 3px;
+            padding: 6px;
+            margin-top: 4px;
+        }
+        .entreprise-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        
+        /* Boîte résultat améliorée */
+        .result-box {
+            background: ${receiptData.resultat === "FAVORABLE" ? "linear-gradient(135deg, #d4edda, #c3e6cb)" : "linear-gradient(135deg, #f8d7da, #f5c6cb)"};
+            border: 2px solid ${receiptData.resultat === "FAVORABLE" ? "#28a745" : "#dc3545"};
+            padding: 10px;
+            text-align: center;
+            margin: 12px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-text {
+            font-size: 13px;
+            font-weight: 900;
+            color: ${receiptData.resultat === "FAVORABLE" ? "#155724" : "#721c24"};
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .result-sub {
+            font-size: 8px;
+            font-weight: 600;
+            margin-top: 3px;
+            color: #4a5568;
+        }
+        
+        /* Section expiration améliorée */
+        .expiration {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 2px solid #f6c23e;
+            padding: 8px;
+            text-align: center;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .expiration strong {
+            display: block;
+            font-size: 10px;
+            color: #856404;
+            margin-bottom: 3px;
+            font-weight: 900;
+        }
+        .expiration-date {
+            font-size: 9px;
+            font-weight: 700;
+            color: #d39e00;
+            background: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 3px;
+        }
+        
+        /* QR code amélioré */
+        .qr-section {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .qr-section img {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 5px;
+        }
+        .reference-code {
+            font-family: monospace;
+            font-size: 9px;
+            font-weight: 700;
+            color: #2d3748;
+            letter-spacing: 1px;
+            margin-top: 5px;
+            background: white;
+            padding: 3px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+        
+        /* Pied de page amélioré */
+        .footer {
+            text-align: center;
+            border-top: 2px solid #2c5282;
+            padding-top: 10px;
+            margin-top: 12px;
+        }
+        .footer-text {
+            font-size: 7.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            color: #1a365d;
+            line-height: 1.2;
+        }
+        .company-info {
+            background: #edf2f7;
+            padding: 6px;
+            border-radius: 3px;
+            margin: 8px 0;
+            font-size: 7px;
+            line-height: 1.3;
+        }
+        .company-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 5px;
+            text-align: left;
+        }
+        .footer-sub {
+            font-size: 7px;
+            color: #718096;
+            font-weight: 600;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e0;
+        }
+        
+        /* Timestamp */
+        .timestamp {
+            font-size: 7px;
+            color: #718096;
+            text-align: right;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête amélioré -->
+        <div class="header">
+            <div class="header-logo">
+                <div class="logo-placeholder">RDC</div>
+                <div class="institution-info">
+                    <div class="institution-name">République Démocratique du Congo</div>
+                    <div class="institution-sub">Direction Urbaine de Transport</div>
+                    <div class="institution-sub">Ville de Kinshasa</div>
+                    <div class="contact-row">
+                        <div class="institution-contact">📞 +243 81 234 5678</div>
+                        <div class="institution-contact">🌐 www.transport-kinshasa.cd</div>
+                    </div>
+                </div>
+            </div>
+            <div class="document-title">QUITTANCE DE CONTRÔLE TECHNIQUE</div>
+        </div>
+
+        <!-- Section Assujetti avec RCCM et ID NAT -->
+        <div class="section">
+            <div class="section-title">Informations de l'assujetti</div>
+            <div class="row">
+                <span class="label">Nom complet:</span>
+                <span class="value">${receiptData.assujetti.nom}</span>
+            </div>
+            <div class="row">
+                <span class="label">Téléphone:</span>
+                <span class="value">${receiptData.assujetti.telephone}</span>
+            </div>
+            <div class="row">
+                <span class="label">ID National:</span>
+                <span class="value">${receiptData.assujetti.idNational || 'N/A'}</span>
+            </div>
+            ${receiptData.assujetti.rccm ? `
+            <div class="row">
+                <span class="label">RCCM:</span>
+                <span class="value">${receiptData.assujetti.rccm}</span>
+            </div>
+            ` : ''}
+            ${receiptData.assujetti.nif ? `
+            <div class="row">
+                <span class="label">NIF:</span>
+                <span class="value">${receiptData.assujetti.nif}</span>
+            </div>
+            ` : ''}
+        </div>
+
+        <!-- Informations de l'engin -->
+        <div class="section">
+            <div class="section-title">Informations de l'engin</div>
+            <div class="row">
+                <span class="label">Marque/Modèle:</span>
+                <span class="value">${receiptData.engin.marqueModel}</span>
+            </div>
+            <div class="row">
+                <span class="label">Immatriculation:</span>
+                <span class="value">${receiptData.engin.plaque}</span>
+            </div>
+            <div class="row">
+                <span class="label">Couleur:</span>
+                <span class="value">${receiptData.engin.couleur}</span>
+            </div>
+            <div class="row">
+                <span class="label">N° Châssis:</span>
+                <span class="value">${receiptData.engin.chassis}</span>
+            </div>
+            ${receiptData.engin.type ? `
+            <div class="row">
+                <span class="label">Type véhicule:</span>
+                <span class="value">${receiptData.engin.type}</span>
+            </div>
+            ` : ''}
+        </div>
+
+        <!-- Avertissement expiration -->
+        <div class="expiration">
+            <strong>⚠️ VALIDITÉ LIMITÉE - 72 HEURES</strong>
+            Présentez ce reçu au centre de contrôle technique<br>
+            <div class="expiration-date">Expire le: ${formatDateShort(receiptData.dateExpiration)}</div>
+        </div>
+
+        <!-- Résultat du contrôle -->
+        <div class="result-box">
+            <div class="result-text">${receiptData.resultat}</div>
+            <div class="result-sub">Résultat du contrôle préliminaire</div>
+        </div>
+
+        <!-- Paiement -->
+        <div class="section" style="border-bottom: none;">
+            <div class="section-title">Détails du paiement</div>
+            <div class="row">
+                <span class="label">Référence:</span>
+                <span class="value">${receiptData.reference}</span>
+            </div>
+            <div class="row">
+                <span class="label">Montant payé:</span>
+                <span class="value"><strong>${receiptData.montant} CDF</strong></span>
+            </div>
+            <div class="row">
+                <span class="label">Mode de paiement:</span>
+                <span class="value">${receiptData.modePaiement}</span>
+            </div>
+            <div class="row">
+                <span class="label">Date de paiement:</span>
+                <span class="value">${formatDate(receiptData.dateControle)}</span>
+            </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-section">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${receiptData.reference}|${receiptData.assujetti.nom}|${receiptData.engin.plaque}|${receiptData.dateControle}`)}" alt="QR Code" />
+            <div class="reference-code">${receiptData.reference}</div>
+            <div style="font-size: 7px; margin-top: 3px; color: #718096;">Scanner pour vérifier l'authenticité</div>
+        </div>
+
+        <!-- Timestamp -->
+        <div class="timestamp">
+            Généré le: ${new Date().toLocaleDateString('fr-FR')} ${new Date().toLocaleTimeString('fr-FR')}
+        </div>
+
+        <!-- Pied de page -->
+        <div class="footer">
+            <div class="footer-text">
+                Ce document prouve l'éligibilité au contrôle technique<br>
+                et doit être présenté avec les documents originaux
+            </div>
+            
+            <div class="company-info">
+                <strong>TECHNICAL SERVICE CONTROL N.P.S</strong><br>
+                <div class="company-details">
+                    <div>
+                        <strong>RCCM:</strong> CD/KIN/RCCM/22-B-9123<br>
+                        <strong>ID NAT:</strong> 01-923-N34567<br>
+                        <strong>NIF:</strong> A1234567890
+                    </div>
+                    <div>
+                        <strong>Adresse:</strong> Av. du Commerce N°123<br>
+                        <strong>Tél:</strong> +243 97 000 0000<br>
+                        <strong>Email:</strong> contact@tsc-nps.cd
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-sub">
+                Document sécurisé • Système certifié • © 2024<br>
+                Powered by SMART HELP SOLUTIONS • Version 2.1
+            </div>
+        </div>
+    </div>
+</body>
+</html>

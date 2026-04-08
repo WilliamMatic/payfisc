@@ -1,0 +1,201 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-02-13T10:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2025.1.0",
+  "resources": [
+    {
+      "_id": "wrk_payfisc",
+      "_type": "workspace",
+      "name": "API Paiement - Payfisc",
+      "description": "Test complet de l'API de paiement d'impôts"
+    },
+    {
+      "_id": "env_payfisc",
+      "_type": "environment",
+      "parentId": "wrk_payfisc",
+      "name": "Payfisc API",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "bank_id": "BICIS_PROD_001",
+        "api_key": "bicis_prod_key_e490668e6ba8abace50e4013a5849294b0cc62fa47755c96bc2b6a9570e41d51",
+        "reference_paiement": "",
+        "reference_bancaire": ""
+      }
+    },
+    {
+      "_id": "req_racine",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "00 - 🏠 Accueil",
+      "method": "GET",
+      "url": "{{base_url}}/",
+      "headers": [],
+      "description": "Vérifier que le serveur répond"
+    },
+    {
+      "_id": "req_auth",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "01 - 🔐 Authentification",
+      "method": "POST",
+      "url": "{{base_url}}/api/authentifier-partenaire",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"bank_id\": \"{{bank_id}}\",\n  \"api_key\": \"{{api_key}}\"\n}"
+      },
+      "description": "Authentifier la banque partenaire"
+    },
+    {
+      "_id": "req_init",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "02 - 💰 Initialiser Paiement",
+      "method": "POST",
+      "url": "{{base_url}}/api/paiement/initialiser-paiement",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-Key",
+          "value": "{{api_key}}"
+        },
+        {
+          "name": "X-Bank-ID",
+          "value": "{{bank_id}}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"impot_id\": 1,\n  \"nombre_declarations\": 2\n}"
+      },
+      "description": "Étape 1: Initialiser un paiement"
+    },
+    {
+      "_id": "req_traiter",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "03 - 💳 Traiter Paiement",
+      "method": "POST",
+      "url": "{{base_url}}/api/paiement/traiter-paiement-impot",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-Key",
+          "value": "{{api_key}}"
+        },
+        {
+          "name": "X-Bank-ID",
+          "value": "{{bank_id}}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"reference_paiement\": \"{{reference_paiement}}\",\n  \"methode_paiement\": \"mobile_money\"\n}"
+      },
+      "description": "Étape 2: Traiter le paiement"
+    },
+    {
+      "_id": "req_annuler",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "04 - ❌ Annuler Paiement",
+      "method": "POST",
+      "url": "{{base_url}}/api/paiement/annuler-paiement-impot",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-Key",
+          "value": "{{api_key}}"
+        },
+        {
+          "name": "X-Bank-ID",
+          "value": "{{bank_id}}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"reference_paiement\": \"{{reference_bancaire}}\"\n}"
+      },
+      "description": "Étape 3: Annuler le paiement"
+    },
+    {
+      "_id": "req_test_ip",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "05 - 🌐 Test IP Bloquée",
+      "method": "POST",
+      "url": "{{base_url}}/api/paiement/initialiser-paiement",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-Key",
+          "value": "{{api_key}}"
+        },
+        {
+          "name": "X-Bank-ID",
+          "value": "BANK_BLOQUEE"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"impot_id\": 1,\n  \"nombre_declarations\": 2\n}"
+      },
+      "description": "Tester IP non autorisée"
+    },
+    {
+      "_id": "req_test_montant",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "06 - 📉 Test Montant Trop Bas",
+      "method": "POST",
+      "url": "{{base_url}}/api/paiement/initialiser-paiement",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-API-Key",
+          "value": "{{api_key}}"
+        },
+        {
+          "name": "X-Bank-ID",
+          "value": "{{bank_id}}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"impot_id\": 1,\n  \"nombre_declarations\": 1\n}"
+      },
+      "description": "Test avec montant < minimum (ex: 1 déclaration)"
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "wrk_payfisc",
+      "name": "07 - ❤️ Health Check",
+      "method": "GET",
+      "url": "{{base_url}}/",
+      "headers": [],
+      "description": "Vérifier que l'API est en vie"
+    }
+  ]
+}

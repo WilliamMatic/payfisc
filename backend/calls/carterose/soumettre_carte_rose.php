@@ -34,7 +34,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405); // Method Not Allowed
     echo json_encode([
         "status" => "error", 
         "message" => "Méthode non autorisée. Veuillez utiliser POST."
@@ -68,7 +67,6 @@ foreach ($champsObligatoires as $champ) {
 
 // Si des erreurs sont détectées, on les retourne
 if (!empty($erreurs)) {
-    http_response_code(400); // Bad Request
     echo json_encode([
         "status" => "error", 
         "message" => implode(" ", $erreurs)
@@ -102,7 +100,6 @@ $_POST = nettoyerInput($_POST);
 
 // Validation de l'utilisateur_id
 if (!is_numeric($_POST['utilisateur_id']) || (int)$_POST['utilisateur_id'] <= 0) {
-    http_response_code(400);
     echo json_encode([
         "status" => "error", 
         "message" => "L'identifiant de l'utilisateur est invalide."
@@ -112,7 +109,6 @@ if (!is_numeric($_POST['utilisateur_id']) || (int)$_POST['utilisateur_id'] <= 0)
 
 // Validation du site_id
 if (!is_numeric($_POST['site_id']) || (int)$_POST['site_id'] <= 0) {
-    http_response_code(400);
     echo json_encode([
         "status" => "error", 
         "message" => "L'identifiant du site est invalide."
@@ -133,7 +129,6 @@ $serieItemId = isset($_POST['serie_item_id']) ? (int)$_POST['serie_item_id'] : 0
 
 $numeroPlaque = strtoupper(trim($_POST['numero_plaque']));
 if (!preg_match('/^[A-Z0-9\s\-]{2,15}$/', $numeroPlaque)) {
-    http_response_code(400);
     echo json_encode([
         "status" => "error", 
         "message" => "Le format du numéro de plaque est invalide. Utilisez 2 à 15 caractères alphanumériques."
@@ -148,7 +143,6 @@ if (!preg_match('/^[A-Z0-9\s\-]{2,15}$/', $numeroPlaque)) {
 $telephone = $_POST['telephone'] ?? '';
 if (!empty($telephone) && $telephone !== '-') {
     if (!preg_match('/^[\+\d\s\-\(\)]{8,20}$/', $telephone)) {
-        http_response_code(400);
         echo json_encode([
             "status" => "error", 
             "message" => "Le format du numéro de téléphone est invalide."
@@ -218,7 +212,6 @@ try {
             // Si l'erreur est "carte non trouvée", c'est normal, on continue
             if ($verifExistante['type'] !== 'carte_rose_non_trouvee') {
                 // Pour toute autre erreur, on bloque le processus
-                http_response_code(400);
                 echo json_encode([
                     "status" => "error",
                     "message" => $verifExistante['message']
@@ -227,7 +220,6 @@ try {
             }
         } elseif ($verifExistante && isset($verifExistante['statut']) && $verifExistante['statut'] == 1) {
             // Une carte rose active existe déjà pour cette plaque
-            http_response_code(409); // Conflict
             echo json_encode([
                 "status" => "error", 
                 "message" => "Une carte rose active existe déjà pour ce numéro de plaque.",
@@ -265,7 +257,6 @@ try {
         
     } else {
         // Erreur métier retournée par la méthode
-        http_response_code(400);
         echo json_encode($resultat);
     }
     
@@ -282,7 +273,6 @@ try {
         ? "Erreur de base de données: " . $e->getMessage()
         : "Une erreur technique est survenue. Veuillez réessayer ultérieurement.";
     
-    http_response_code(500); // Internal Server Error
     echo json_encode([
         "status" => "error", 
         "message" => $message
@@ -301,7 +291,6 @@ try {
         ? "Erreur: " . $e->getMessage()
         : "Une erreur inattendue est survenue. Veuillez réessayer ultérieurement.";
     
-    http_response_code(500); // Internal Server Error
     echo json_encode([
         "status" => "error", 
         "message" => $message

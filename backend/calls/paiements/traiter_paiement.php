@@ -27,7 +27,6 @@ header('Content-Type: application/json');
 
 // Vérifier que la requête est bien en POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -38,7 +37,6 @@ $data = json_decode($input, true);
 
 // Vérifier si le JSON est valide
 if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Données JSON invalides."]);
     exit;
 }
@@ -47,7 +45,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 $required_fields = ['id_declaration', 'methode_paiement'];
 foreach ($required_fields as $field) {
     if (!isset($data[$field])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le paramètre $field est requis."]);
         exit;
     }
@@ -72,7 +69,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors du traitement du paiement : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: Impossible de traiter le paiement." . $e]);
 }
 ?>

@@ -109,12 +109,15 @@ class RefactorCarte extends Connexion
                     LEFT JOIN puissances_fiscales pf ON e.puissance_fiscal = pf.libelle
                     WHERE s.province_id = :province_id 
                     AND pm.id = :id_dgrk
+                    AND s.id = :site_id
+                    ORDER BY s.id ASC, pm.id DESC
                     LIMIT 1";
 
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
                     ':province_id' => $provinceId, 
-                    ':id_dgrk' => (int) $identifiant
+                    ':id_dgrk' => (int) $identifiant,
+                    ':site_id' => $parent
                 ]);
             } else {
                 // Recherche par numéro de plaque
@@ -141,12 +144,15 @@ class RefactorCarte extends Connexion
                     LEFT JOIN puissances_fiscales pf ON e.puissance_fiscal = pf.libelle
                     WHERE s.province_id = :province_id 
                     AND e.numero_plaque = :numero_plaque
+                    AND s.id = :site_id
+                    ORDER BY s.id ASC, pm.id DESC
                     LIMIT 1";
 
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
                     ':province_id' => $provinceId, 
-                    ':numero_plaque' => $identifiant
+                    ':numero_plaque' => $identifiant,
+                    ':site_id' => $parent
                 ]);
             }
             
@@ -406,8 +412,7 @@ class RefactorCarte extends Connexion
                                     site_id,
                                     status,
                                     id_paiement,
-                                    date_creation,
-                                    date_modification
+                                    date_creation
                                     ) VALUES (
                                     :nom_proprietaire,
                                     :adresse_proprietaire,
@@ -425,7 +430,6 @@ class RefactorCarte extends Connexion
                                     :site_id,
                                     :status,
                                     :id_paiement,
-                                    NOW(),
                                     NOW()
                                     )";
 

@@ -11,13 +11,11 @@ require_once __DIR__ . '/../../class/Taux.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
 
 if (!isset($_POST['taux_id'], $_POST['impot_id'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le taux et l'impôt sont requis."]);
     exit;
 }
@@ -33,7 +31,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors du retrait de l'attribution : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }
 ?>

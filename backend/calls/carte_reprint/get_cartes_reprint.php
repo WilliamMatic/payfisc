@@ -21,7 +21,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (GET requis)."]);
     exit;
 }
@@ -37,7 +36,6 @@ $statut = isset($_GET['statut']) ? $_GET['statut'] : 'all';
 $site_nom = isset($_GET['site_nom']) ? trim($_GET['site_nom']) : '';
 
 if (empty($site_nom)) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le nom du site est requis."]);
     exit;
 }
@@ -53,7 +51,6 @@ try {
     $siteId = $manager->getSiteIdByName($site_nom);
     
     if (!$siteId) {
-        http_response_code(404);
         echo json_encode(["status" => "error", "message" => "Site non trouvé."]);
         exit;
     }
@@ -82,7 +79,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération des cartes à réimprimer: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: " . $e->getMessage()

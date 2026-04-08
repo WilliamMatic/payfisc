@@ -39,10 +39,6 @@ export const getDashboardStats = async (startDate?: string, endDate?: string): P
 
     const response = await fetch(`/api/dashboard-immatriculation.php?${params}`);
     
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des statistiques');
-    }
-    
     return await response.json();
   } catch (error) {
     console.error('Erreur getDashboardStats:', error);
@@ -64,10 +60,6 @@ export const getPaiementsDetails = async (filters: any): Promise<ApiResponse> =>
 
     const response = await fetch(`/api/dashboard-immatriculation.php?type=paiements&${params}`);
     
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des paiements');
-    }
-    
     return await response.json();
   } catch (error) {
     console.error('Erreur getPaiementsDetails:', error);
@@ -81,10 +73,6 @@ export const getPaiementsDetails = async (filters: any): Promise<ApiResponse> =>
 export const getSeriesPopulaires = async (limit: number = 10): Promise<ApiResponse> => {
   try {
     const response = await fetch(`/api/dashboard-immatriculation.php?type=series&limit=${limit}`);
-    
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des séries');
-    }
     
     return await response.json();
   } catch (error) {
@@ -104,10 +92,6 @@ export const getBeneficiairesStats = async (startDate?: string, endDate?: string
 
     const response = await fetch(`/api/dashboard-immatriculation.php?type=beneficiaires&${params}`);
     
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des bénéficiaires');
-    }
-    
     return await response.json();
   } catch (error) {
     console.error('Erreur getBeneficiairesStats:', error);
@@ -121,10 +105,6 @@ export const getBeneficiairesStats = async (startDate?: string, endDate?: string
 export const getTendances = async (periode: string = 'month', limit: number = 12): Promise<ApiResponse> => {
   try {
     const response = await fetch(`/api/dashboard-immatriculation.php?type=tendances&periode=${periode}&limit=${limit}`);
-    
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des tendances');
-    }
     
     return await response.json();
   } catch (error) {
@@ -143,10 +123,6 @@ export const getDataForIA = async (startDate?: string, endDate?: string): Promis
     if (endDate) params.append('end_date', endDate);
 
     const response = await fetch(`/api/dashboard-immatriculation.php?type=data-ia&${params}`);
-    
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des données pour IA');
-    }
     
     return await response.json();
   } catch (error) {

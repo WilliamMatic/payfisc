@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 // Fonction pour récupérer les notifications côté serveur
 async function getNotifications() {
+  'use cache';
   try {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = `${API_BASE_URL}/notifications/recuperer-notifications.php?limit=3`;
@@ -20,7 +21,6 @@ async function getNotifications() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 120 }, // Revalider toutes les 2 minutes
     });
 
     if (!response.ok) {
@@ -47,6 +47,7 @@ async function getNotifications() {
 
 // Fonction pour récupérer les logs d'audit côté serveur
 async function getAuditLogs() {
+  'use cache';
   try {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = `${API_BASE_URL}/notifications/get-audit-logs.php?limit=10`;
@@ -56,7 +57,6 @@ async function getAuditLogs() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 120 }, // Revalider toutes les 2 minutes
     });
 
     if (!response.ok) {

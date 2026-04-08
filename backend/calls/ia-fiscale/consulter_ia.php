@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($input['question']) || empty(trim($input['question']))) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "La question est requise."]);
     exit;
 }
@@ -65,7 +63,6 @@ try {
     error_log("Erreur lors de la consultation de l'IA fiscale : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: L'IA fiscale n'a pas pu répondre à votre question."

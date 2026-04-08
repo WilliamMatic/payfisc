@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -32,13 +31,11 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 // ======================================================================
 
 if (!isset($_POST['id']) || empty(trim($_POST['id']))) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'ID du particulier est requis."]);
     exit;
 }
 
 if (!isset($_POST['actif'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le statut (actif) est requis."]);
     exit;
 }
@@ -63,6 +60,5 @@ try {
     error_log("Erreur lors du changement de statut d'un particulier : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

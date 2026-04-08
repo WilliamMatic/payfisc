@@ -10,7 +10,6 @@ try {
     $nif = $data['nif'] ?? '';
     
     if (empty($nif)) {
-        http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'NIF requis']);
         exit;
     }
@@ -19,7 +18,6 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
 }
 ?>

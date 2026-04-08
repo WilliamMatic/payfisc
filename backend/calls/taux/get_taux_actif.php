@@ -11,7 +11,6 @@ require_once __DIR__ . '/../../class/Taux.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (GET requis)."]);
     exit;
 }
@@ -31,7 +30,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération du taux actif : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }
 ?>

@@ -151,7 +151,7 @@ export async function getMarquesEngins(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -200,7 +200,7 @@ export async function getMarquesEnginsActives(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -259,7 +259,7 @@ export async function rechercherMarques(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des marques",
@@ -310,7 +310,7 @@ export async function addMarqueEngin(marqueData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de la marque",
@@ -360,7 +360,7 @@ export async function updateMarqueEngin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de la marque",
@@ -400,7 +400,7 @@ export async function deleteMarqueEngin(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de la marque",
@@ -444,7 +444,7 @@ export async function toggleMarqueEnginStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut de la marque",
@@ -483,7 +483,7 @@ export async function getMarqueEnginById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération de la marque",
@@ -524,7 +524,7 @@ export async function checkMarqueEnginExists(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de la marque",
@@ -572,7 +572,7 @@ export async function getModelesEngins(
     const data = await response.json();
     console.log("Modeles response:", data); // Pour déboguer
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -620,7 +620,7 @@ export async function getModelesEnginsActifs(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -674,7 +674,7 @@ export async function addModeleEngin(modeleData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout du modèle",
@@ -724,7 +724,7 @@ export async function updateModeleEngin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification du modèle",
@@ -764,7 +764,7 @@ export async function deleteModeleEngin(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression du modèle",
@@ -808,7 +808,7 @@ export async function toggleModeleEnginStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut du modèle",
@@ -847,7 +847,7 @@ export async function getModeleEnginById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération du modèle",
@@ -888,7 +888,7 @@ export async function checkModeleEnginExists(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du modèle",
@@ -935,7 +935,7 @@ export async function searchModelesEngins(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des modèles",

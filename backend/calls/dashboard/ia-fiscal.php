@@ -23,7 +23,6 @@ header('Content-Type: application/json');
 
 // Vérifier la méthode
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -32,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($input['question'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Question manquante."]);
     exit;
 }
@@ -62,7 +60,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur API IA Fiscal: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: " . $e->getMessage()

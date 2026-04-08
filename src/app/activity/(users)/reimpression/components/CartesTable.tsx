@@ -75,7 +75,7 @@ export default function CartesTable({
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         <div className="p-8 text-center">
           <div className="inline-flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2D5B7A]"></div>
             <span className="ml-3 text-gray-600">
               Chargement des données...
             </span>
@@ -110,7 +110,7 @@ export default function CartesTable({
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-[#2D5B7A]/5">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Propriétaire
@@ -141,8 +141,8 @@ export default function CartesTable({
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
+                      <div className="flex-shrink-0 h-10 w-10 bg-[#2D5B7A]/10 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-[#2D5B7A]" />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -155,7 +155,7 @@ export default function CartesTable({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-50 text-red-700 border border-red-200">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-[#2D5B7A]/10 text-[#2D5B7A] border border-[#2D5B7A]/20">
                       <Bike className="w-4 h-4 mr-2" />
                       {formatPlaque(carte.numero_plaque)}
                     </div>
@@ -191,7 +191,7 @@ export default function CartesTable({
                     {carte.status === 0 && (
                       <button
                         onClick={(e) => handlePrintClick(carte, e)}
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-2"
+                        className="inline-flex items-center px-4 py-2 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-colors mr-2"
                       >
                         <Printer className="w-4 h-4 mr-2" />
                         Imprimer
@@ -255,7 +255,7 @@ export default function CartesTable({
                         onClick={() => onPageChange(pageNum)}
                         className={`px-3 py-1 text-sm rounded ${
                           pagination.page === pageNum
-                            ? "bg-blue-600 text-white"
+                            ? "bg-[#2D5B7A] text-white"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >

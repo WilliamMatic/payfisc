@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Save,
   User,
@@ -148,33 +148,36 @@ export default function ClientSimpleForm({
     : 32;
   const nombrePlaques = parseInt(formData.nombrePlaques) || 1;
 
-  // Calcul de la réduction
-  const reductionValeur = parseFloat(formData.reductionValeur) || 0;
-  const montantInitial = montantUnitaire * nombrePlaques;
-  let montantReduit = montantInitial;
-  let reductionMontant = 0;
+  // Calculs financiers mémorisés
+  const { reductionValeur, montantInitial, montantReduit, reductionMontant, montantFrancs, montantInitialFrancs, montantAPayer, montantEnFrancs, formuleCalcul } = useMemo(() => {
+    const reductionValeur = parseFloat(formData.reductionValeur) || 0;
+    const montantInitial = montantUnitaire * nombrePlaques;
+    let montantReduit = montantInitial;
+    let reductionMontant = 0;
 
-  if (formData.reductionType === "pourcentage" && reductionValeur > 0) {
-    reductionMontant = (montantInitial * reductionValeur) / 100;
-    montantReduit = montantInitial - reductionMontant;
-  } else if (formData.reductionType === "montant_fixe" && reductionValeur > 0) {
-    reductionMontant = reductionValeur * nombrePlaques;
-    montantReduit = Math.max(0, montantInitial - reductionMontant);
-  }
+    if (formData.reductionType === "pourcentage" && reductionValeur > 0) {
+      reductionMontant = (montantInitial * reductionValeur) / 100;
+      montantReduit = montantInitial - reductionMontant;
+    } else if (formData.reductionType === "montant_fixe" && reductionValeur > 0) {
+      reductionMontant = reductionValeur * nombrePlaques;
+      montantReduit = Math.max(0, montantInitial - reductionMontant);
+    }
 
-  // Calcul des montants en francs
-  const montantFrancs = tauxActif
-    ? (montantReduit * tauxActif.valeur).toLocaleString("fr-FR")
-    : "Calcul en cours...";
-  const montantInitialFrancs = tauxActif
-    ? (montantInitial * tauxActif.valeur).toLocaleString("fr-FR")
-    : "Calcul en cours...";
+    const montantFrancs = tauxActif
+      ? (montantReduit * tauxActif.valeur).toLocaleString("fr-FR")
+      : "Calcul en cours...";
+    const montantInitialFrancs = tauxActif
+      ? (montantInitial * tauxActif.valeur).toLocaleString("fr-FR")
+      : "Calcul en cours...";
 
-  const montantAPayer = `${montantReduit.toFixed(2)} $`;
-  const montantEnFrancs = `${montantFrancs} CDF`;
-  const formuleCalcul = utilisateur?.formule
-    ? `Montant = ${utilisateur.formule} × ${nombrePlaques} plaque(s)`
-    : `Montant = 32 × ${nombrePlaques} plaque(s)`;
+    const montantAPayer = `${montantReduit.toFixed(2)} $`;
+    const montantEnFrancs = `${montantFrancs} CDF`;
+    const formuleCalcul = utilisateur?.formule
+      ? `Montant = ${utilisateur.formule} × ${nombrePlaques} plaque(s)`
+      : `Montant = 32 × ${nombrePlaques} plaque(s)`;
+
+    return { reductionValeur, montantInitial, montantReduit, reductionMontant, montantFrancs, montantInitialFrancs, montantAPayer, montantEnFrancs, formuleCalcul };
+  }, [formData.reductionValeur, formData.reductionType, montantUnitaire, nombrePlaques, tauxActif, utilisateur?.formule]);
 
   // Chargement du taux actif
   useEffect(() => {
@@ -196,13 +199,15 @@ export default function ClientSimpleForm({
     };
 
     chargerTaux();
-  }, []);
+  }, [impotId]);
 
   // Recherche des plaques en temps réel
   useEffect(() => {
     if (rechercheTimeoutRef.current) {
       clearTimeout(rechercheTimeoutRef.current);
     }
+
+    let cancelled = false;
 
     if (formData.numeroPlaqueDebut.length >= 2) {
       setRechercheEnCours(true);
@@ -213,6 +218,8 @@ export default function ClientSimpleForm({
             utilisateur
           );
 
+          if (cancelled) return;
+
           if (result.status === "success" && result.data?.suggestions) {
             setSuggestionsPlaques(result.data.suggestions);
             setShowSuggestions(true);
@@ -221,10 +228,11 @@ export default function ClientSimpleForm({
             setShowSuggestions(false);
           }
         } catch (error) {
+          if (cancelled) return;
           console.error("Erreur recherche plaques:", error);
           setSuggestionsPlaques([]);
         } finally {
-          setRechercheEnCours(false);
+          if (!cancelled) setRechercheEnCours(false);
         }
       }, 300);
     } else {
@@ -236,6 +244,7 @@ export default function ClientSimpleForm({
     }
 
     return () => {
+      cancelled = true;
       if (rechercheTimeoutRef.current) {
         clearTimeout(rechercheTimeoutRef.current);
       }
@@ -259,6 +268,8 @@ export default function ClientSimpleForm({
       clearTimeout(rechercheAssujettiTimeoutRef.current);
     }
 
+    let cancelled = false;
+
     if (formData.telephone.length >= 8) {
       setRechercheAssujettiEnCours(true);
       rechercheAssujettiTimeoutRef.current = setTimeout(async () => {
@@ -267,6 +278,8 @@ export default function ClientSimpleForm({
             formData.telephone,
             utilisateur
           );
+
+          if (cancelled) return;
 
           if (result.status === "success" && result.data?.assujetti) {
             const assujetti = result.data.assujetti;
@@ -282,14 +295,16 @@ export default function ClientSimpleForm({
             }));
           }
         } catch (error) {
+          if (cancelled) return;
           console.error("Erreur recherche assujetti:", error);
         } finally {
-          setRechercheAssujettiEnCours(false);
+          if (!cancelled) setRechercheAssujettiEnCours(false);
         }
       }, 500);
     }
 
     return () => {
+      cancelled = true;
       if (rechercheAssujettiTimeoutRef.current) {
         clearTimeout(rechercheAssujettiTimeoutRef.current);
       }
@@ -324,27 +339,27 @@ export default function ClientSimpleForm({
     }
   };
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
 
-    if (errors[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: undefined,
-      }));
-    }
-  };
+    setErrors((prev) => {
+      if (prev[field]) {
+        return { ...prev, [field]: undefined };
+      }
+      return prev;
+    });
+  }, []);
 
-  const selectPlaque = (plaque: string) => {
+  const selectPlaque = useCallback((plaque: string) => {
     setFormData((prev) => ({
       ...prev,
       numeroPlaqueDebut: plaque,
     }));
     setShowSuggestions(false);
-  };
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
@@ -529,22 +544,22 @@ export default function ClientSimpleForm({
     <>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* SECTION ASSUJETTI */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <User className="w-5 h-5 text-blue-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-base font-bold text-gray-900">
                 Informations de l'Assujetti
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className="text-xs text-gray-500">
                 Renseignez les informations personnelles du propriétaire
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* TÉLÉPHONE */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -806,22 +821,22 @@ export default function ClientSimpleForm({
         </div>
 
         {/* SECTION PLAQUES (inchangée) */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="bg-green-100 p-2 rounded-lg">
-              <Car className="w-5 h-5 text-green-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Car className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-base font-bold text-gray-900">
                 Commande de Plaques
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className="text-xs text-gray-500">
                 Spécifiez le numéro de plaque de début et la quantité
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* NUMERO PLAQUE DEBUT */}
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -946,22 +961,22 @@ export default function ClientSimpleForm({
         </div>
 
         {/* CALCUL ET SOUMISSION */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="bg-orange-100 p-2 rounded-lg">
-              <Calculator className="w-5 h-5 text-orange-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Calculator className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-base font-bold text-gray-900">
                 Calcul et Validation
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className="text-xs text-gray-500">
                 Montant à payer et soumission de la demande
               </p>
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
+          <div className="p-5 bg-[#2D5B7A]/5 rounded-xl border border-[#2D5B7A]/15 mb-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="text-sm text-blue-600 font-medium mb-2">
@@ -1027,7 +1042,7 @@ export default function ClientSimpleForm({
             <button
               type="submit"
               disabled={isSubmitting || !sequenceValide}
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               {isSubmitting ? (
                 <>

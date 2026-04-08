@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (GET requis)."]);
     exit;
 }
@@ -55,7 +54,6 @@ try {
     $result = $plaqueManager->listerSeriesPagination($page, $limit, $utilisateurId);
     
     if ($result['status'] === 'error') {
-        http_response_code(400);
         echo json_encode($result);
         exit;
     }
@@ -67,6 +65,5 @@ try {
     error_log("Erreur lors du listing des séries : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

@@ -251,6 +251,36 @@ export default function ImpotsClient({ initialImpots, initialError }: ImpotsClie
   };
 
   /**
+   * Met à jour le prix d'un impôt directement depuis le tableau
+   */
+  const handleUpdatePrix = async (impot: ImpotType, newPrix: number) => {
+    try {
+      setError(null);
+      const { updateImpot } = await import('@/services/impots/impotService');
+      const result = await updateImpot(impot.id, {
+        nom: impot.nom,
+        description: impot.description,
+        jsonData: JSON.stringify({
+          periode: impot.periode,
+          delaiAccord: impot.delai_accord,
+          penalites: impot.penalites,
+          prix: newPrix
+        }, null, 2)
+      });
+
+      if (result.status === 'success') {
+        setSuccessMessage('Prix mis à jour avec succès');
+        await loadImpots();
+      } else {
+        setError(result.message || 'Erreur lors de la mise à jour du prix');
+      }
+    } catch (err) {
+      console.error('Erreur mise à jour prix:', err);
+      setError('Erreur de connexion au serveur lors de la mise à jour du prix');
+    }
+  };
+
+  /**
    * Change le statut d'un impôt
    */
   const handleToggleStatus = async () => {
@@ -368,6 +398,7 @@ export default function ImpotsClient({ initialImpots, initialError }: ImpotsClie
           onViewDetails={openDetailsModal}
           onGenerateQR={openQRModal}
           onManageBeneficiaires={openBeneficiairesModal}
+          onUpdatePrix={handleUpdatePrix}
         />
       </div>
 

@@ -1,4 +1,6 @@
-import { FileText, Loader2, Edit, Trash2, Eye, EyeOff, Calendar, Clock, QrCode, DollarSign, Users } from 'lucide-react';
+'use client';
+import { useState } from 'react';
+import { FileText, Loader2, Edit, Trash2, Eye, EyeOff, Calendar, Clock, QrCode, DollarSign, Users, Check, X } from 'lucide-react';
 import { Impot as ImpotType } from '@/services/impots/impotService';
 
 interface ImpotsTableProps {
@@ -11,6 +13,7 @@ interface ImpotsTableProps {
   onViewDetails: (impot: ImpotType) => void;
   onGenerateQR: (impot: ImpotType) => void;
   onManageBeneficiaires: (impot: ImpotType) => void;
+  onUpdatePrix?: (impot: ImpotType, newPrix: number) => Promise<void>;
   onResetSearch?: () => void; // Optionnel : pour réinitialiser la recherche
 }
 
@@ -24,8 +27,12 @@ export default function ImpotsTable({
   onViewDetails,
   onGenerateQR,
   onManageBeneficiaires,
+  onUpdatePrix,
   onResetSearch
 }: ImpotsTableProps) {
+  const [editingPrixId, setEditingPrixId] = useState<number | null>(null);
+  const [editPrixValue, setEditPrixValue] = useState<string>('');
+  const [savingPrix, setSavingPrix] = useState(false);
   if (loading) {
     return (
       <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -36,23 +43,6 @@ export default function ImpotsTable({
       </div>
     );
   }
-
-  // Fonction pour calculer le montant basé sur le type de pénalité
-  const getMontant = (impot: ImpotType) => {
-    if (!impot.penalites) return 'N/A';
-    
-    const { type, valeur } = impot.penalites;
-    
-    if (type === 'fixe') {
-      return `${valeur} $`;
-    } else if (type === 'pourcentage') {
-      return `${valeur}%`;
-    } else if (type === 'aucune') {
-      return 'Aucune';
-    }
-    
-    return 'N/A';
-  };
 
   // Fonction pour réinitialiser la recherche
   const handleResetSearch = () => {
@@ -70,7 +60,7 @@ export default function ImpotsTable({
           <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
             <tr>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nom</th>
-              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Montant/Pénalité</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Prix</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Période</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -89,13 +79,70 @@ export default function ImpotsTable({
                     )}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-gray-600 text-sm">
-                      <DollarSign className="w-4 h-4 mr-1 text-green-500" />
-                      {getMontant(impot)}
-                    </div>
-                    {impot.penalites && impot.penalites.type !== 'aucune' && (
-                      <div className="text-gray-400 text-xs mt-1 capitalize">
-                        {impot.penalites.type}
+                    {editingPrixId === impot.id ? (
+                      <div className="flex items-center space-x-1">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editPrixValue}
+                          onChange={(e) => setEditPrixValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const val = parseFloat(editPrixValue);
+                              if (!isNaN(val) && val >= 0 && onUpdatePrix) {
+                                setSavingPrix(true);
+                                onUpdatePrix(impot, val).finally(() => {
+                                  setSavingPrix(false);
+                                  setEditingPrixId(null);
+                                });
+                              }
+                            } else if (e.key === 'Escape') {
+                              setEditingPrixId(null);
+                            }
+                          }}
+                          className="w-24 px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          autoFocus
+                          disabled={savingPrix}
+                        />
+                        <button
+                          disabled={savingPrix}
+                          onClick={() => {
+                            const val = parseFloat(editPrixValue);
+                            if (!isNaN(val) && val >= 0 && onUpdatePrix) {
+                              setSavingPrix(true);
+                              onUpdatePrix(impot, val).finally(() => {
+                                setSavingPrix(false);
+                                setEditingPrixId(null);
+                              });
+                            }
+                          }}
+                          className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
+                          title="Valider"
+                        >
+                          {savingPrix ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                        </button>
+                        <button
+                          onClick={() => setEditingPrixId(null)}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Annuler"
+                          disabled={savingPrix}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className="flex items-center text-gray-600 text-sm cursor-pointer hover:text-blue-600 group/prix"
+                        onClick={() => {
+                          setEditingPrixId(impot.id);
+                          setEditPrixValue(String(impot.prix || 0));
+                        }}
+                        title="Cliquer pour modifier le prix"
+                      >
+                        <DollarSign className="w-4 h-4 mr-1 text-green-500" />
+                        <span className="font-medium">{impot.prix != null ? `${Number(impot.prix).toLocaleString()} $` : 'N/A'}</span>
+                        <Edit className="w-3 h-3 ml-1 opacity-0 group-hover/prix:opacity-100 text-blue-400 transition-opacity" />
                       </div>
                     )}
                   </td>

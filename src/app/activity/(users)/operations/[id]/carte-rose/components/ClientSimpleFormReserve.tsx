@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Save,
   User,
@@ -837,74 +837,93 @@ export default function ClientSimpleForm({
     );
   };
 
-  // Générer les options d'années
-  const anneeOptions = Array.from({ length: 30 }, (_, i) =>
-    (2026 - i).toString(),
+  // Générer les options d'années (memoized)
+  const anneeOptions = useMemo(
+    () => Array.from({ length: 30 }, (_, i) => (new Date().getFullYear() - i).toString()),
+    [],
   );
 
-  // Chargement des données initiales
+  // Cleanup all timeout refs on unmount
   useEffect(() => {
+    return () => {
+      if (rechercheModeleTimeoutRef.current) clearTimeout(rechercheModeleTimeoutRef.current);
+      if (recherchePuissanceTimeoutRef.current) clearTimeout(recherchePuissanceTimeoutRef.current);
+      if (verificationTelephoneTimeoutRef.current) clearTimeout(verificationTelephoneTimeoutRef.current);
+      if (couleurTimerRef.current) clearTimeout(couleurTimerRef.current);
+      if (marqueTimerRef.current) clearTimeout(marqueTimerRef.current);
+    };
+  }, []);
+
+  // Chargement des données initiales avec AbortController
+  useEffect(() => {
+    let cancelled = false;
+
     const loadInitialData = async () => {
       try {
         // Charger les types d'engins
         setLoading((prev) => ({ ...prev, typeEngins: true }));
         const typeEnginsResponse = await getTypeEnginsActifs();
-        if (typeEnginsResponse.status === "success") {
+        if (!cancelled && typeEnginsResponse.status === "success") {
           setTypeEngins(typeEnginsResponse.data || []);
         }
 
         // Charger les énergies
         setLoading((prev) => ({ ...prev, energies: true }));
         const energiesResponse = await getEnergies();
-        if (energiesResponse.status === "success") {
+        if (!cancelled && energiesResponse.status === "success") {
           setEnergies(energiesResponse.data || []);
         }
 
         // Charger les couleurs
         setLoading((prev) => ({ ...prev, couleurs: true }));
         const couleursResponse = await getCouleursActives();
-        if (couleursResponse.status === "success") {
+        if (!cancelled && couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
 
         // Charger les usages
         setLoading((prev) => ({ ...prev, usages: true }));
         const usagesResponse = await getUsagesActifs();
-        if (usagesResponse.status === "success") {
+        if (!cancelled && usagesResponse.status === "success") {
           setUsages(usagesResponse.data || []);
         }
 
         // Charger toutes les puissances fiscales
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
-        if (puissancesResponse.status === "success") {
+        if (!cancelled && puissancesResponse.status === "success") {
           setPuissancesFiscales(puissancesResponse.data || []);
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des données:", error);
-        showMessage(
-          "error",
-          "Erreur de chargement",
-          "Impossible de charger les données initiales. Veuillez rafraîchir la page.",
-        );
+        if (!cancelled) {
+          console.error("Erreur lors du chargement des données:", error);
+          showMessage(
+            "error",
+            "Erreur de chargement",
+            "Impossible de charger les données initiales. Veuillez rafraîchir la page.",
+          );
+        }
       } finally {
-        setLoading({
-          typeEngins: false,
-          energies: false,
-          couleurs: false,
-          usages: false,
-          puissances: false,
-          verificationTelephone: false,
-          rechercheModeles: false,
-          recherchePuissances: false,
-          rechercheCouleurs: false,
-          ajoutCouleur: false,
-          rechercheMarques: false,
-        });
+        if (!cancelled) {
+          setLoading({
+            typeEngins: false,
+            energies: false,
+            couleurs: false,
+            usages: false,
+            puissances: false,
+            verificationTelephone: false,
+            rechercheModeles: false,
+            recherchePuissances: false,
+            rechercheCouleurs: false,
+            ajoutCouleur: false,
+            rechercheMarques: false,
+          });
+        }
       }
     };
 
     loadInitialData();
+    return () => { cancelled = true; };
   }, []);
 
   // Réinitialiser l'année de circulation si l'année de fabrication change
@@ -1650,14 +1669,19 @@ export default function ClientSimpleForm({
     setIsSubmitting(true);
 
     try {
+      // Track local copies for modeleId/puissanceValeur (avoid direct mutation)
+      let resolvedModeleId = formData.modeleId;
+      let resolvedPuissanceValeur = formData.puissanceFiscalValeur;
+
       // Vérifier et créer le modèle si nécessaire
-      if (formData.modele && formData.marqueId && !formData.modeleId) {
+      if (formData.modele && formData.marqueId && !resolvedModeleId) {
         const modeleResult = await creerModele(
           formData.modele,
           parseInt(formData.marqueId),
         );
         if (modeleResult.status === "success" && modeleResult.data?.[0]?.id) {
-          formData.modeleId = modeleResult.data[0].id.toString();
+          resolvedModeleId = modeleResult.data[0].id.toString();
+          setFormData(prev => ({ ...prev, modeleId: resolvedModeleId }));
         }
       }
 
@@ -1665,7 +1689,7 @@ export default function ClientSimpleForm({
       if (
         formData.puissanceFiscal &&
         formData.typeEngin &&
-        !formData.puissanceFiscalValeur
+        !resolvedPuissanceValeur
       ) {
         const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
         const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
@@ -1677,7 +1701,8 @@ export default function ClientSimpleForm({
             formData.typeEngin,
           );
           if (puissanceResult.status === "success") {
-            formData.puissanceFiscalValeur = valeur.toString();
+            resolvedPuissanceValeur = valeur.toString();
+            setFormData(prev => ({ ...prev, puissanceFiscalValeur: resolvedPuissanceValeur }));
           }
         }
       }
@@ -1718,7 +1743,7 @@ export default function ClientSimpleForm({
         formData.numeroPlaque,
         plaqueInfo?.serie_id || 0,
         plaqueInfo?.serie_item_id || 0,
-        plaqueInfo?.id || null,
+        plaqueInfo?.id ?? null,
         utilisateur,
       );
 
@@ -1740,7 +1765,7 @@ export default function ClientSimpleForm({
           numero_chassis: formData.numeroChassis,
           numero_moteur: formData.numeroMoteur,
           numero_plaque: formData.numeroPlaque,
-          paiement_id: result.data.paiement_id?.toString() || "000000",
+          paiement_id: result.data?.paiement_id?.toString() || "000000",
           email: formData.email,
           nif: formData.nif,
         };

@@ -26,11 +26,11 @@ export const getIAData = async (): Promise<IADataResponse> => {
       },
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error: any) {
     console.error("Erreur lors de la récupération des données pour l'IA:", error);

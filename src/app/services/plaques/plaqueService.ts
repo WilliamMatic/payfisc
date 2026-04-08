@@ -208,7 +208,7 @@ export async function getSeries(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des séries",
@@ -262,7 +262,7 @@ export async function getProvinces(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des provinces",
@@ -304,7 +304,7 @@ export async function getSerieItems(serieId: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des items",
@@ -356,7 +356,7 @@ export async function addSerie(serieData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de la série",
@@ -404,7 +404,7 @@ export async function updateSerie(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de la série",
@@ -443,7 +443,7 @@ export async function deleteSerie(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de la série",
@@ -486,7 +486,7 @@ export async function toggleSerieStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut de la série",
@@ -535,7 +535,7 @@ export async function searchSeries(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des séries",
@@ -595,7 +595,7 @@ export async function genererRapportSeries(params: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la génération du rapport",
@@ -639,7 +639,7 @@ export async function getSeriesActives(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des séries actives",
@@ -689,7 +689,7 @@ export async function checkSerieByNom(nomSerie: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de la série",
@@ -727,7 +727,7 @@ export async function getSerieById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération de la série",
@@ -781,7 +781,7 @@ export async function searchSeriesByProvince(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:

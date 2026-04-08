@@ -160,19 +160,6 @@ export async function getVentesNonGrossistes(
       },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP détaillée:", {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      return {
-        status: "error",
-        message: `Erreur HTTP ${response.status}: ${response.statusText || 'Pas de réponse'}`,
-      };
-    }
-
     const responseText = await response.text();
 
     let data;
@@ -236,15 +223,6 @@ export async function getStatsVentes(
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP stats:", response.status, errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des statistiques (${response.status})`,
-      };
-    }
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -278,15 +256,6 @@ export async function supprimerVenteNonGrossiste(
         'Accept': 'application/json',
       },
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP suppression:", response.status, errorText);
-      return {
-        status: "error",
-        message: `Échec de la suppression de la vente (${response.status})`,
-      };
-    }
 
     const data = await response.json();
 
@@ -332,15 +301,6 @@ export async function exporterVentesExcel(
       },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP export:", response.status, errorText);
-      return {
-        status: "error",
-        message: `Échec de l'exportation Excel (${response.status})`,
-      };
-    }
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -374,15 +334,6 @@ export async function getSitesDisponibles(): Promise<{
         'Accept': 'application/json',
       },
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP sites:", response.status, errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des sites (${response.status})`,
-      };
-    }
 
     const responseText = await response.text();
 
@@ -429,15 +380,6 @@ export async function getDetailsVente(
         },
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP détails:", response.status, errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des détails (${response.status})`,
-      };
-    }
 
     const data = await response.json();
     
@@ -486,15 +428,6 @@ export async function searchVentesByModePaiement(
         },
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP recherche par mode paiement:", response.status, errorText);
-      return {
-        status: "error",
-        message: `Échec de la recherche par mode de paiement (${response.status})`,
-      };
-    }
 
     const data = await response.json();
 

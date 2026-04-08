@@ -24,7 +24,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (GET requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 // ======================================================================
 
 if (!isset($_GET['type']) || empty(trim($_GET['type']))) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le paramètre 'type' est obligatoire."]);
     exit;
 }
@@ -52,7 +50,6 @@ try {
     // 1. Récupérer l'ID du type d'engin
     $typeInfo = $typeEnginManager->typeEnginExiste($typeEngin);
     if (!$typeInfo) {
-        http_response_code(404);
         echo json_encode(["status" => "error", "message" => "Type d'engin non trouvé."]);
         exit;
     }
@@ -70,7 +67,6 @@ try {
             "data" => $marques
         ]);
     } else {
-        http_response_code(404);
         echo json_encode([
             "status" => "error", 
             "message" => $result['message'] || "Aucune marque trouvée pour ce type d'engin."
@@ -80,7 +76,6 @@ try {
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération des marques: " . $e->getMessage());
     
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: Impossible de récupérer les marques."

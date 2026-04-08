@@ -106,7 +106,7 @@ export async function getEntreprises(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des entreprises",
@@ -153,7 +153,7 @@ export async function getEntreprisesActives(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des entreprises actives",
@@ -204,7 +204,7 @@ export async function searchEntreprises(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des entreprises",
@@ -287,7 +287,7 @@ export async function addEntreprise(entrepriseData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de l'entreprise",
@@ -357,7 +357,7 @@ export async function updateEntreprise(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de l'entreprise",
@@ -397,7 +397,7 @@ export async function deleteEntreprise(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de l'entreprise",
@@ -441,7 +441,7 @@ export async function toggleEntrepriseStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -484,7 +484,7 @@ export async function checkEntrepriseByNIF(nif: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du NIF",
@@ -527,7 +527,7 @@ export async function getEntrepriseById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération de l'entreprise",
@@ -569,7 +569,7 @@ export async function checkEntrepriseByRegistreCommerce(registre: string): Promi
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du registre de commerce",
@@ -616,7 +616,7 @@ export async function searchEntreprisesByTelephone(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche par téléphone",
@@ -676,7 +676,7 @@ export async function getEntreprisesPaginees(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des entreprises paginées",

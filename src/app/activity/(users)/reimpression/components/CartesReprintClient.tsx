@@ -149,7 +149,7 @@ export default function CartesReprintClient() {
             <button
               onClick={handleRefresh}
               disabled={isLoading}
-              className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors flex items-center space-x-2 disabled:opacity-50"
+              className="px-4 py-2 bg-[#2D5B7A]/10 text-[#2D5B7A] rounded-xl hover:bg-[#2D5B7A]/20 transition-colors flex items-center space-x-2 disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
@@ -174,7 +174,7 @@ export default function CartesReprintClient() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
               placeholder="Rechercher par nom, plaque, NIF..."
-              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/40 focus:border-[#2D5B7A] transition-all"
             />
           </div>
 
@@ -182,7 +182,7 @@ export default function CartesReprintClient() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/40 focus:border-[#2D5B7A] transition-all"
             >
               <option value="all">Tous les status</option>
               <option value="0">À imprimer</option>

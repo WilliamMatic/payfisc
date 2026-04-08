@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $champsObligatoires = ['libelle', 'valeur', 'type_engin_libelle'];
 foreach ($champsObligatoires as $champ) {
     if (!isset($_POST[$champ]) || empty($_POST[$champ])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le champ $champ est obligatoire."]);
         exit;
     }
@@ -51,7 +49,6 @@ $description = isset($_POST['description']) ? trim(htmlspecialchars($_POST['desc
 
 // Validation de la valeur (doit être numérique)
 if (!is_numeric($valeur)) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "La valeur doit être un nombre."]);
     exit;
 }
@@ -70,7 +67,6 @@ try {
     $typeEngin = $typeEnginManager->typeEnginExiste($typeEnginLibelle);
     
     if (!$typeEngin) {
-        http_response_code(400);
         echo json_encode([
             "status" => "error", 
             "message" => "Le type d'engin '$typeEnginLibelle' n'existe pas ou est inactif."
@@ -175,7 +171,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la création de la puissance fiscale: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système lors de la création de la puissance fiscale."

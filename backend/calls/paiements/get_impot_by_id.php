@@ -25,7 +25,6 @@ require_once __DIR__ . '/../../class/Paiement.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ try {
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!isset($input['id']) || empty($input['id'])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "ID d'impôt manquant."]);
         exit;
     }
@@ -45,6 +43,5 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération de l'impôt : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: Impossible de récupérer l'impôt."]);
 }

@@ -11,14 +11,12 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 // Vérifier la méthode HTTP
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée"]);
     exit;
 }
 
 // Vérifier la présence de la plaque
 if (!isset($_POST['plaque']) || empty(trim($_POST['plaque']))) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le numéro de plaque est obligatoire"]);
     exit;
 }
@@ -48,7 +46,6 @@ if (empty($extension) || $extension === '0' || $extension === '0') {
     $classePrincipale = 'RecherchePlaque';
 } else {
     // Extension non reconnue
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Extension non reconnue"]);
     exit;
 }
@@ -70,14 +67,12 @@ try {
     if ($resultat['status'] === 'success') {
         http_response_code(200);
     } else {
-        http_response_code(404);
     }
     
     echo json_encode($resultat);
     
 } catch (Exception $e) {
     error_log("Erreur recherche plaque (extension: $extension, plaque: $plaque): " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système"]);
 }
 ?>

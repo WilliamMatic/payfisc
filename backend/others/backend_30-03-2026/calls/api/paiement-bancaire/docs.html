@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Paiement Déclarations - Documentation Complète</title>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --green: #2ec4b6;
+            --orange: #ff9f1c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Saira', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-out;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--success), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+        }
+        
+        h2 i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--accent);
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .endpoint {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-family: monospace;
+        }
+        
+        .method {
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .post {
+            background: var(--primary);
+        }
+        
+        .get {
+            background: var(--success);
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            color: #e9ecef;
+        }
+        
+        .code-key {
+            color: #4cc9f0;
+        }
+        
+        .code-string {
+            color: #f72585;
+        }
+        
+        .code-number {
+            color: #9d4edd;
+        }
+        
+        .code-comment {
+            color: #6c757d;
+        }
+        
+        .code-function {
+            color: #ff9f1c;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .badge-primary {
+            background: var(--primary);
+        }
+        
+        .badge-secondary {
+            background: var(--secondary);
+        }
+        
+        .badge-accent {
+            background: var(--accent);
+        }
+        
+        .badge-success {
+            background: var(--green);
+        }
+        
+        .method-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .method-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .method-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--success);
+        }
+        
+        .method-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--success);
+        }
+        
+        .method-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+        }
+        
+        .method-desc {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .example-container {
+            margin: 2rem 0;
+        }
+        
+        .example-tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .example-tab {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .example-tab.active {
+            border-bottom-color: var(--success);
+            color: var(--success);
+        }
+        
+        .example-content {
+            display: none;
+        }
+        
+        .example-content.active {
+            display: block;
+        }
+        
+        .test-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .test-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            font-family: monospace;
+        }
+        
+        .test-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: var(--secondary);
+        }
+        
+        .response-area {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 5px;
+            min-height: 100px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 201, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+            
+            .method-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .example-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <header>
+            <h1>API Paiement Déclarations</h1>
+            <p class="subtitle">Documentation complète pour l'intégration des services de paiement des déclarations fiscales</p>
+            <div class="pulse" style="display: inline-block; padding: 0.8rem 1.5rem; background: rgba(76, 201, 240, 0.2); border-radius: 30px; margin-top: 1rem;">
+                Authentification requise: X-API-Key & X-Bank-ID
+            </div>
+        </header>
+        
+        <section class="section">
+            <h2><i>🔐</i> Authentification</h2>
+            <div class="card">
+                <p>Toutes les requêtes à l'API nécessitent les en-têtes suivants :</p>
+                <div class="code-block">
+                    <pre><span class="code-key">X-API-Key</span>: <span class="code-string">votre_cle_api_secrete</span>
+<span class="code-key">X-Bank-ID</span>: <span class="code-string">votre_bank_id</span>
+<span class="code-key">Content-Type</span>: <span class="code-string">application/json</span></pre>
+                </div>
+                
+                <div class="example-container">
+                    <div class="example-tabs">
+                        <div class="example-tab active" onclick="showExample('auth-js')">JavaScript</div>
+                        <div class="example-tab" onclick="showExample('auth-php')">PHP</div>
+                        <div class="example-tab" onclick="showExample('auth-curl')">cURL</div>
+                    </div>
+                    
+                    <div id="auth-js" class="example-content active">
+                        <div class="code-block">
+                            <pre><span class="code-comment">// Configuration de base</span>
+<span class="code-key">const</span> <span class="code-function">config</span> = {
+  <span class="code-key">apiKey</span>: <span class="code-string">'votre_cle_api_secrete'</span>,
+  <span class="code-key">bankId</span>: <span class="code-string">'votre_bank_id'</span>,
+  <span class="code-key">baseUrl</span>: <span class="code-string">'https://api.mpako.net/api/paiement'</span>
+};
+
+<span class="code-comment">// Headers pour toutes les requêtes</span>
+<span class="code-key">const</span> <span class="code-function">headers</span> = {
+  <span class="code-string">'X-API-Key'</span>: <span class="code-function">config</span>.<span class="code-key">apiKey</span>,
+  <span class="code-string">'X-Bank-ID'</span>: <span class="code-function">config</span>.<span class="code-key">bankId</span>,
+  <span class="code-string">'Content-Type'</span>: <span class="code-string">'application/json'</span>
+};</pre>
+                        </div>
+                    </div>
+                    
+                    <div id="auth-php" class="example-content">
+                        <div class="code-block">
+                            <pre><span class="code-comment">// Configuration de base</span>
+<span class="code-key">$config</span> = [
+  <span class="code-string">'api_key'</span> => <span class="code-string">'votre_cle_api_secrete'</span>,
+  <span class="code-string">'bank_id'</span> => <span class="code-string">'votre_bank_id'</span>,
+  <span class="code-string">'base_url'</span> => <span class="code-string">'https://api.mpako.net/api/paiement'</span>
+];
+
+<span class="code-comment">// Headers pour toutes les requêtes</span>
+<span class="code-key">$headers</span> = [
+  <span class="code-string">'X-API-Key: '</span> . <span class="code-key">$config</span>[<span class="code-string">'api_key'</span>],
+  <span class="code-string">'X-Bank-ID: '</span> . <span class="code-key">$config</span>[<span class="code-string">'bank_id'</span>],
+  <span class="code-string">'Content-Type: application/json'</span>
+];</pre>
+                        </div>
+                    </div>
+                    
+                    <div id="auth-curl" class="example-content">
+                        <div class="code-block">
+                            <pre><span class="code-comment"># Headers pour toutes les requêtes cURL</span>
+curl -H <span class="code-string">"X-API-Key: votre_cle_api_secrete"</span> \
+     -H <span class="code-string">"X-Bank-ID: votre_bank_id"</span> \
+     -H <span class="code-string">"Content-Type: application/json"</span> \
+     ...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2><i>🌐</i> Endpoints Principaux</h2>
+            
+            <!-- Récupérer Infos Déclaration -->
+            <div class="card">
+                <h3>1. Récupérer les Informations d'une Déclaration</h3>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span>/api/paiement/declaration-info.php?reference=DEC202412011430123456</span>
+                </div>
+                
+                <p><strong>Paramètres :</strong></p>
+                <div class="code-block">
+                    <pre><span class="code-key">reference</span>: <span class="code-string">"DEC202412011430123456"</span> <span class="code-comment">// (requis) Référence de la déclaration</span></pre>
+                </div>
+                
+                <div class="example-container">
+                    <div class="example-tabs">
+                        <div class="example-tab active" onclick="showExample('declaration-js')">JavaScript</div>
+                        <div class="example-tab" onclick="showExample('declaration-php')">PHP</div>
+                    </div>
+                    
+                    <div id="declaration-js" class="example-content active">
+                        <div class="code-block">
+                            <pre><span class="code-key">async function</span> <span class="code-function">getDeclarationInfo</span>(reference) {
+  <span class="code-key">const</span> <span class="code-function">response</span> = <span class="code-key">await</span> <span class="code-function">fetch</span>(
+    <span class="code-string">`https://api.mpako.net/api/paiement/declaration-info.php?reference=<span class="code-key">${</span><span class="code-function">encodeURIComponent</span>(reference)<span class="code-key">}</span>`</span>, 
+    {
+      <span class="code-key">method</span>: <span class="code-string">'GET'</span>,
+      <span class="code-key">headers</span>: <span class="code-function">headers</span>
+    }
+  );
+  
+  <span class="code-key">const</span> <span class="code-function">result</span> = <span class="code-key">await</span> <span class="code-function">response</span>.<span class="code-function">json</span>();
+  <span class="code-key">return</span> <span class="code-function">result</span>;
+}
+
+<span class="code-comment">// Utilisation</span>
+<span class="code-function">getDeclarationInfo</span>(<span class="code-string">'DEC202412011430123456'</span>).<span class="code-function">then</span>(<span class="code-function">result</span> => {
+  <span class="code-key">if</span> (<span class="code-function">result</span>.<span class="code-key">status</span> === <span class="code-string">'success'</span>) {
+    <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Montant total:'</span>, <span class="code-function">result</span>.<span class="code-key">data</span>.<span class="code-key">declaration</span>.<span class="code-key">montant_total</span>);
+    <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Pénalité:'</span>, <span class="code-function">result</span>.<span class="code-key">data</span>.<span class="code-key">declaration</span>.<span class="code-key">penalite</span>);
+  } <span class="code-key">else</span> {
+    <span class="code-key">console</span>.<span class="code-function">error</span>(<span class="code-string">'Erreur:'</span>, <span class="code-function">result</span>.<span class="code-key">message</span>);
+  }
+});</pre>
+                        </div>
+                    </div>
+                    
+                    <div id="declaration-php" class="example-content">
+                        <div class="code-block">
+                            <pre><span class="code-key">function</span> <span class="code-function">getDeclarationInfo</span>(reference) {
+  <span class="code-key">$url</span> = <span class="code-string">'https://api.mpako.net/api/paiement/declaration-info.php?reference='</span> . <span class="code-function">urlencode</span>(reference);
+  
+  <span class="code-key">$ch</span> = <span class="code-function">curl_init</span>();
+  <span class="code-function">curl_setopt_array</span>(<span class="code-key">$ch</span>, [
+    <span class="code-key">CURLOPT_URL</span> => <span class="code-key">$url</span>,
+    <span class="code-key">CURLOPT_HTTPHEADER</span> => <span class="code-key">$headers</span>,
+    <span class="code-key">CURLOPT_RETURNTRANSFER</span> => <span class="code-key">true</span>
+  ]);
+  
+  <span class="code-key">$response</span> = <span class="code-function">curl_exec</span>(<span class="code-key">$ch</span>);
+  <span class="code-key">$result</span> = <span class="code-function">json_decode</span>(<span class="code-key">$response</span>, <span class="code-key">true</span>);
+  <span class="code-function">curl_close</span>(<span class="code-key">$ch</span>);
+  
+  <span class="code-key">return</span> <span class="code-key">$result</span>;
+}
+
+<span class="code-comment">// Utilisation</span>
+<span class="code-key">$result</span> = <span class="code-function">getDeclarationInfo</span>(<span class="code-string">'DEC202412011430123456'</span>);
+<span class="code-key">if</span> (<span class="code-key">$result</span>[<span class="code-string">'status'</span>] === <span class="code-string">'success'</span>) {
+  <span class="code-key">echo</span> <span class="code-string">"Montant: "</span> . <span class="code-key">$result</span>[<span class="code-string">'data'</span>][<span class="code-string">'declaration'</span>][<span class="code-string">'montant_total'</span>];
+} <span class="code-key">else</span> {
+  <span class="code-key">echo</span> <span class="code-string">"Erreur: "</span> . <span class="code-key">$result</span>[<span class="code-string">'message'</span>];
+}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <p><strong>Réponse Succès :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"status"</span>: <span class="code-string">"success"</span>,
+  <span class="code-key">"message"</span>: <span class="code-string">"Déclaration récupérée avec succès"</span>,
+  <span class="code-key">"data"</span>: {
+    <span class="code-key">"declaration"</span>: {
+      <span class="code-key">"id"</span>: <span class="code-number">47</span>,
+      <span class="code-key">"reference"</span>: <span class="code-string">"DEC202412011430123456"</span>,
+      <span class="code-key">"nif_contribuable"</span>: <span class="code-string">"NIF123456789"</span>,
+      <span class="code-key">"type_contribuable"</span>: <span class="code-string">"entreprise"</span>,
+      <span class="code-key">"montant_base"</span>: <span class="code-number">15000.00</span>,
+      <span class="code-key">"penalite"</span>: {
+        <span class="code-key">"en_retard"</span>: <span class="code-key">true</span>,
+        <span class="code-key">"jours_retard"</span>: <span class="code-number">5</span>,
+        <span class="code-key">"type_penalite"</span>: <span class="code-string">"pourcentage"</span>,
+        <span class="code-key">"valeur_penalite"</span>: <span class="code-number">10</span>,
+        <span class="code-key">"montant_penalite"</span>: <span class="code-number">1500.00</span>,
+        <span class="code-key">"date_limite"</span>: <span class="code-string">"2024-11-26 14:30:00"</span>
+      },
+      <span class="code-key">"montant_total"</span>: <span class="code-number">16500.00</span>,
+      <span class="code-key">"statut"</span>: <span class="code-string">"en_attente"</span>,
+      <span class="code-key">"date_creation"</span>: <span class="code-string">"2024-11-21 14:30:00"</span>
+    },
+    <span class="code-key">"impot"</span>: {
+      <span class="code-key">"nom"</span>: <span class="code-string">"Impôt sur les Sociétés"</span>,
+      <span class="code-key">"description"</span>: <span class="code-string">"Impôt annuel sur les bénéfices des entreprises"</span>,
+      <span class="code-key">"periode"</span>: <span class="code-string">"annuel"</span>,
+      <span class="code-key">"delai_accord"</span>: <span class="code-number">10</span>,
+      <span class="code-key">"penalites"</span>: <span class="code-string">"{\"type\":\"pourcentage\",\"valeur\":10}"</span>
+    },
+    <span class="code-key">"contribuable"</span>: {
+      <span class="code-key">"id"</span>: <span class="code-number">4</span>,
+      <span class="code-key">"raison_sociale"</span>: <span class="code-string">"ENTREPRISE SARL"</span>,
+      <span class="code-key">"forme_juridique"</span>: <span class="code-string">"SARL"</span>,
+      <span class="code-key">"nif"</span>: <span class="code-string">"NIF123456789"</span>,
+      <span class="code-key">"registre_commerce"</span>: <span class="code-string">"RC123456"</span>,
+      <span class="code-key">"telephone"</span>: <span class="code-string">"+221781234567"</span>,
+      <span class="code-key">"email"</span>: <span class="code-string">"contact@entreprise.sn"</span>,
+      <span class="code-key">"representant_legal"</span>: <span class="code-string">"M. DIOP Amadou"</span>
+    }
+  }
+}</pre>
+                </div>
+            </div>
+            
+            <!-- Traiter Paiement -->
+            <div class="card">
+                <h3>2. Traiter un Paiement</h3>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span>/api/paiement/traiter-paiement.php</span>
+                </div>
+                
+                <p><strong>Body :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"reference_declaration"</span>: <span class="code-string">"DEC202412011430123456"</span>,
+  <span class="code-key">"methode_paiement"</span>: <span class="code-string">"mobile_money"</span>
+}</pre>
+                </div>
+                
+                <div class="example-container">
+                    <div class="example-tabs">
+                        <div class="example-tab active" onclick="showExample('payment-js')">JavaScript</div>
+                    </div>
+                    
+                    <div id="payment-js" class="example-content active">
+                        <div class="code-block">
+                            <pre><span class="code-key">async function</span> <span class="code-function">traiterPaiement</span>(referenceDeclaration, methodePaiement) {
+  <span class="code-key">const</span> <span class="code-function">response</span> = <span class="code-key">await</span> <span class="code-function">fetch</span>(<span class="code-string">'https://api.mpako.net/api/paiement/traiter-paiement.php'</span>, {
+    <span class="code-key">method</span>: <span class="code-string">'POST'</span>,
+    <span class="code-key">headers</span>: <span class="code-function">headers</span>,
+    <span class="code-key">body</span>: <span class="code-key">JSON</span>.<span class="code-function">stringify</span>({
+      <span class="code-key">reference_declaration</span>: <span class="code-function">referenceDeclaration</span>,
+      <span class="code-key">methode_paiement</span>: <span class="code-function">methodePaiement</span>
+    })
+  });
+  
+  <span class="code-key">return await</span> <span class="code-function">response</span>.<span class="code-function">json</span>();
+}
+
+<span class="code-comment">// Utilisation</span>
+<span class="code-function">traiterPaiement</span>(<span class="code-string">'DEC202412011430123456'</span>, <span class="code-string">'mobile_money'</span>)
+  .<span class="code-function">then</span>(<span class="code-function">result</span> => {
+    <span class="code-key">if</span> (<span class="code-function">result</span>.<span class="code-key">status</span> === <span class="code-string">'success'</span>) {
+      <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Paiement traité!'</span>);
+      <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Référence bancaire:'</span>, <span class="code-function">result</span>.<span class="code-key">data</span>.<span class="code-key">reference_bancaire</span>);
+    }
+  });</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <p><strong>Réponse Succès :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"status"</span>: <span class="code-string">"success"</span>,
+  <span class="code-key">"message"</span>: <span class="code-string">"Paiement traité avec succès"</span>,
+  <span class="code-key">"data"</span>: {
+    <span class="code-key">"paiement_id"</span>: <span class="code-number">39</span>,
+    <span class="code-key">"paiement_bancaire_id"</span>: <span class="code-number">25</span>,
+    <span class="code-key">"reference_bancaire"</span>: <span class="code-string">"BANK202412011430123456"</span>,
+    <span class="code-key">"declaration"</span>: { ... },
+    <span class="code-key">"impot"</span>: { ... },
+    <span class="code-key">"contribuable"</span>: { ... },
+    <span class="code-key">"banque"</span>: {
+      <span class="code-key">"bank_id"</span>: <span class="code-string">"BANK001"</span>,
+      <span class="code-key">"nom"</span>: <span class="code-string">"Banque de Dakar"</span>
+    }
+  }
+}</pre>
+                </div>
+            </div>
+            
+            <!-- Annuler Déclaration -->
+            <div class="card">
+                <h3>3. Annuler une Déclaration</h3>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span>/api/paiement/annuler-declaration.php</span>
+                </div>
+                
+                <p><strong>Body :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"reference_declaration"</span>: <span class="code-string">"DEC202412011430123456"</span>
+}</pre>
+                </div>
+                
+                <div class="example-container">
+                    <div class="example-tabs">
+                        <div class="example-tab active" onclick="showExample('cancel-js')">JavaScript</div>
+                    </div>
+                    
+                    <div id="cancel-js" class="example-content active">
+                        <div class="code-block">
+                            <pre><span class="code-key">async function</span> <span class="code-function">annulerDeclaration</span>(referenceDeclaration) {
+  <span class="code-key">const</span> <span class="code-function">response</span> = <span class="code-key">await</span> <span class="code-function">fetch</span>(<span class="code-string">'https://api.mpako.net/api/paiement/annuler-declaration.php'</span>, {
+    <span class="code-key">method</span>: <span class="code-string">'POST'</span>,
+    <span class="code-key">headers</span>: <span class="code-function">headers</span>,
+    <span class="code-key">body</span>: <span class="code-key">JSON</span>.<span class="code-function">stringify</span>({
+      <span class="code-key">reference_declaration</span>: <span class="code-function">referenceDeclaration</span>
+    })
+  });
+  
+  <span class="code-key">return await</span> <span class="code-function">response</span>.<span class="code-function">json</span>();
+}
+
+<span class="code-comment">// Utilisation</span>
+<span class="code-function">annulerDeclaration</span>(<span class="code-string">'DEC202412011430123456'</span>)
+  .<span class="code-function">then</span>(<span class="code-function">result</span> => {
+    <span class="code-key">if</span> (<span class="code-function">result</span>.<span class="code-key">status</span> === <span class="code-string">'success'</span>) {
+      <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Déclaration annulée!'</span>);
+    }
+  });</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <p><strong>Réponse Succès :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"status"</span>: <span class="code-string">"success"</span>,
+  <span class="code-key">"message"</span>: <span class="code-string">"Déclaration annulée avec succès"</span>,
+  <span class="code-key">"data"</span>: {
+    <span class="code-key">"declaration_id"</span>: <span class="code-number">47</span>,
+    <span class="code-key">"reference"</span>: <span class="code-string">"DEC202412011430123456"</span>,
+    <span class="code-key">"nouveau_statut"</span>: <span class="code-string">"rejeté"</span>
+  }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2><i>🧪</i> Zone de Test</h2>
+            <div class="card">
+                <h3>Tester l'API en Direct</h3>
+                
+                <div class="test-area">
+                    <h4>Test Récupération Déclaration</h4>
+                    <input type="text" class="test-input" id="test-ref" placeholder="Reference déclaration (ex: DEC202412011430123456)" value="DEC202412011430123456">
+                    <button class="test-button" onclick="testDeclarationInfo()">Tester Récupération</button>
+                    
+                    <h4 style="margin-top: 1rem;">Réponse :</h4>
+                    <div class="response-area" id="test-response">
+                        Cliquez sur le bouton pour tester...
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2><i>⚙️</i> Fonctionnalités Implémentées</h2>
+            
+            <div class="method-list">
+                <div class="method-item">
+                    <div class="method-icon">📋</div>
+                    <div class="method-name">Récupération Déclaration</div>
+                    <div class="method-desc">Infos complètes + calcul pénalités</div>
+                </div>
+                
+                <div class="method-item">
+                    <div class="method-icon">💰</div>
+                    <div class="method-name">Traitement Paiement</div>
+                    <div class="method-desc">Insertion dans toutes les tables</div>
+                </div>
+                
+                <div class="method-item">
+                    <div class="method-icon">❌</div>
+                    <div class="method-name">Annulation Déclaration</div>
+                    <div class="method-desc">Suppression paiements + statut rejeté</div>
+                </div>
+                
+                <div class="method-item">
+                    <div class="method-icon">🔐</div>
+                    <div class="method-name">Authentification</div>
+                    <div class="method-desc">Vérification API Key + Bank ID</div>
+                </div>
+                
+                <div class="method-item">
+                    <div class="method-icon">⚡</div>
+                    <div class="method-name">Calcul Pénalités</div>
+                    <div class="method-desc">Automatique selon délai accord</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2><i>🚀</i> Client JavaScript Complet</h2>
+            <div class="card">
+                <div class="code-block">
+                    <pre><span class="code-key">class</span> <span class="code-function">DeclarationPaymentClient</span> {
+  <span class="code-function">constructor</span>(apiKey, bankId, baseUrl = <span class="code-string">'https://api.mpako.net/api/paiement'</span>) {
+    <span class="code-key">this</span>.<span class="code-key">apiKey</span> = apiKey;
+    <span class="code-key">this</span>.<span class="code-key">bankId</span> = bankId;
+    <span class="code-key">this</span>.<span class="code-key">baseUrl</span> = baseUrl;
+    <span class="code-key">this</span>.<span class="code-key">headers</span> = {
+      <span class="code-string">'X-API-Key'</span>: apiKey,
+      <span class="code-string">'X-Bank-ID'</span>: bankId,
+      <span class="code-string">'Content-Type'</span>: <span class="code-string">'application/json'</span>
+    };
+  }
+
+  <span class="code-comment">// Récupérer les infos d'une déclaration</span>
+  <span class="code-key">async</span> <span class="code-function">getDeclarationInfo</span>(reference) {
+    <span class="code-key">const</span> <span class="code-function">response</span> = <span class="code-key">await</span> <span class="code-function">fetch</span>(
+      <span class="code-string">`<span class="code-key">${</span><span class="code-key">this</span>.<span class="code-key">baseUrl</span><span class="code-key">}</span>/declaration-info.php?reference=<span class="code-key">${</span><span class="code-function">encodeURIComponent</span>(reference)<span class="code-key">}</span>`</span>, 
+      {
+        <span class="code-key">method</span>: <span class="code-string">'GET'</span>,
+        <span class="code-key">headers</span>: <span class="code-key">this</span>.<span class="code-key">headers</span>
+      }
+    );
+    
+    <span class="code-key">return await</span> <span class="code-function">response</span>.<span class="code-function">json</span>();
+  }
+
+  <span class="code-comment">// Traiter un paiement</span>
+  <span class="code-key">async</span> <span class="code-function">traiterPaiement</span>(referenceDeclaration, methodePaiement) {
+    <span class="code-key">const</span> <span class="code-function">response</span> = <span class="code-key">await</span> <span class="code-function">fetch</span>(<span class="code-string">`<span class="code-key">${</span><span class="code-key">this</span>.<span class="code-key">baseUrl</span><span class="code-key">}</span>/traiter-paiement.php`</span>, {
+      <span class="code-key">method</span>: <span class="code-string">'POST'</span>,
+      <span class="code-key">headers</span>: <span class="code-key">this</span>.<span class="code-key">headers</span>,
+      <span class="code-key">body</span>: <span class="code-key">JSON</span>.<span class="code-function">stringify</span>({
+        <span class="code-key">reference_declaration</span>: referenceDeclaration,
+        <span class="code-key">methode_paiement</span>: methodePaiement
+      })
+    });
+    
+    <span class="code-key">return await</span> <span class="code-function">response</span>.<span class="code-function">json</span>();
+  }
+
+  <span class="code-comment">// Annuler une déclaration</span>
+  <span class="code-key">async</span> <span class="code-function">annulerDeclaration</span>(referenceDeclaration) {
+    <span class="code-key">const</span> <span class="code-function">response</span> = <span class="code-key">await</span> <span class="code-function">fetch</span>(<span class="code-string">`<span class="code-key">${</span><span class="code-key">this</span>.<span class="code-key">baseUrl</span><span class="code-key">}</span>/annuler-declaration.php`</span>, {
+      <span class="code-key">method</span>: <span class="code-string">'POST'</span>,
+      <span class="code-key">headers</span>: <span class="code-key">this</span>.<span class="code-key">headers</span>,
+      <span class="code-key">body</span>: <span class="code-key">JSON</span>.<span class="code-function">stringify</span>({
+        <span class="code-key">reference_declaration</span>: referenceDeclaration
+      })
+    });
+    
+    <span class="code-key">return await</span> <span class="code-function">response</span>.<span class="code-function">json</span>();
+  }
+}
+
+<span class="code-comment">// Utilisation</span>
+<span class="code-key">const</span> <span class="code-function">client</span> = <span class="code-key">new</span> <span class="code-function">DeclarationPaymentClient</span>(<span class="code-string">'votre_cle_api'</span>, <span class="code-string">'votre_bank_id'</span>);
+
+<span class="code-comment">// Exemple d'utilisation complète</span>
+<span class="code-key">async function</span> <span class="code-function">processDeclarationComplete</span>() {
+  <span class="code-comment">// 1. Récupérer les infos de la déclaration</span>
+  <span class="code-key">const</span> <span class="code-function">declarationInfo</span> = <span class="code-key">await</span> <span class="code-function">client</span>.<span class="code-function">getDeclarationInfo</span>(<span class="code-string">'DEC202412011430123456'</span>);
+  
+  <span class="code-key">if</span> (<span class="code-function">declarationInfo</span>.<span class="code-key">status</span> === <span class="code-string">'success'</span>) {
+    <span class="code-key">const</span> <span class="code-function">data</span> = <span class="code-function">declarationInfo</span>.<span class="code-key">data</span>;
+    
+    <span class="code-comment">// Afficher les informations</span>
+    <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Contribuable:'</span>, <span class="code-function">data</span>.<span class="code-key">contribuable</span>.<span class="code-key">raison_sociale</span>);
+    <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Montant total:'</span>, <span class="code-function">data</span>.<span class="code-key">declaration</span>.<span class="code-key">montant_total</span>);
+    
+    <span class="code-comment">// 2. Traiter le paiement si l'utilisateur confirme</span>
+    <span class="code-key">const</span> <span class="code-function">paiementResult</span> = <span class="code-key">await</span> <span class="code-function">client</span>.<span class="code-function">traiterPaiement</span>(
+      <span class="code-string">'DEC202412011430123456'</span>, 
+      <span class="code-string">'mobile_money'</span>
+    );
+    
+    <span class="code-key">if</span> (<span class="code-function">paiementResult</span>.<span class="code-key">status</span> === <span class="code-string">'success'</span>) {
+      <span class="code-key">console</span>.<span class="code-function">log</span>(<span class="code-string">'Paiement initié avec référence:'</span>, <span class="code-function">paiementResult</span>.<span class="code-key">data</span>.<span class="code-key">reference_bancaire</span>);
+    }
+  }
+}</pre>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>Documentation API Paiement Déclarations - Créée avec soin pour les développeurs</p>
+            <p style="margin-top: 0.5rem;">URL de production: <strong>https://api.mpako.net/api/paiement/</strong></p>
+        </footer>
+    </div>
+
+    <script>
+        // Création des étoiles animées
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 150;
+            
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Position aléatoire
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                
+                // Taille aléatoire
+                const size = Math.random() * 3;
+                
+                // Animation delay aléatoire
+                const delay = Math.random() * 5;
+                
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Animation des sections au défilement
+        function animateOnScroll() {
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (sectionTop < windowHeight * 0.85) {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }
+            });
+        }
+        
+        // Gestion des onglets d'exemples
+        function showExample(exampleId) {
+            // Cacher tous les contenus
+            document.querySelectorAll('.example-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Désactiver tous les onglets
+            document.querySelectorAll('.example-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activer le contenu sélectionné
+            document.getElementById(exampleId).classList.add('active');
+            
+            // Activer l'onglet sélectionné
+            event.target.classList.add('active');
+        }
+        
+        // Test de l'API
+        async function testDeclarationInfo() {
+            const ref = document.getElementById('test-ref').value;
+            const responseArea = document.getElementById('test-response');
+            
+            responseArea.innerHTML = 'Envoi de la requête...';
+            
+            try {
+                // Simulation d'une requête API
+                const response = await fetch(`http://localhost/SOCOFIAPP/Impot/backend/calls/api/paiement/declaration-info.php?reference=${encodeURIComponent(ref)}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-Key': 'bicis_prod_key_e490668e6ba8abace50e4013a5849294b0cc62fa47755c96bc2b6a9570e41d51',
+                        'X-Bank-ID': 'BICIS_PROD_001',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                responseArea.innerHTML = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                responseArea.innerHTML = `Erreur: ${error.message}\n\nSimulation de réponse:\n${JSON.stringify({
+                    status: "success",
+                    message: "Déclaration récupérée avec succès (simulation)",
+                    data: {
+                        declaration: {
+                            id: 47,
+                            reference: ref,
+                            nif_contribuable: "NIF123456789",
+                            type_contribuable: "entreprise",
+                            montant_base: 15000.00,
+                            penalite: {
+                                en_retard: true,
+                                jours_retard: 5,
+                                type_penalite: "pourcentage",
+                                valeur_penalite: 10,
+                                montant_penalite: 1500.00,
+                                date_limite: "2024-11-26 14:30:00"
+                            },
+                            montant_total: 16500.00,
+                            statut: "en_attente",
+                            date_creation: "2024-11-21 14:30:00"
+                        },
+                        impot: {
+                            nom: "Impôt sur les Sociétés",
+                            description: "Impôt annuel sur les bénéfices des entreprises",
+                            periode: "annuel",
+                            delai_accord: 10,
+                            penalites: "{\"type\":\"pourcentage\",\"valeur\":10}"
+                        },
+                        contribuable: {
+                            id: 4,
+                            raison_sociale: "ENTREPRISE SARL",
+                            forme_juridique: "SARL",
+                            nif: "NIF123456789",
+                            registre_commerce: "RC123456",
+                            telephone: "+221781234567",
+                            email: "contact@entreprise.sn",
+                            representant_legal: "M. DIOP Amadou"
+                        }
+                    }
+                }, null, 2)}`;
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            // Initialiser l'état des sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            });
+            
+            // Déclencher l'animation initiale
+            setTimeout(() => {
+                animateOnScroll();
+            }, 500);
+            
+            // Écouter le défilement
+            window.addEventListener('scroll', animateOnScroll);
+        });
+    </script>
+</body>
+</html>

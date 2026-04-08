@@ -19,7 +19,7 @@ interface UtilisateurModalsProps {
   onDeleteClose: () => void;
   onStatusClose: () => void;
   onFormDataChange: (data: UtilisateurFormData) => void;
-  onPrivilegeChange: (privilege: keyof Privileges, value: boolean) => void;
+  onPrivilegeChange: (category: keyof Privileges, key: string, value: boolean) => void;
   onAddUtilisateur: () => Promise<void>;
   onEditUtilisateur: () => Promise<void>;
   onDeleteUtilisateur: () => Promise<void>;

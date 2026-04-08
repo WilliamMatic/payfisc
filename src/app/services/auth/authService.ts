@@ -97,23 +97,6 @@ export const loginAgent = async (email: string, password: string): Promise<Login
 
     console.log("Statut HTTP:", response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP login agent:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Échec de l\'authentification' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Échec de l\'authentification',
-      };
-    }
-
     const data = await response.json();
     console.log("Réponse login agent:", data);
     console.log("=== FIN AUTHENTIFICATION AGENT ===");
@@ -147,23 +130,6 @@ export const loginUtilisateur = async (telephone: string, password: string): Pro
 
     console.log("Statut HTTP:", response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP login utilisateur:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Échec de l\'authentification' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Échec de l\'authentification',
-      };
-    }
-
     const data = await response.json();
     console.log("Réponse login utilisateur:", data);
     console.log("=== FIN AUTHENTIFICATION UTILISATEUR ===");
@@ -191,23 +157,6 @@ export const logoutUser = async (): Promise<{ status: 'success' | 'error'; messa
     });
 
     console.log("Statut HTTP déconnexion:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP déconnexion:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Échec de la déconnexion' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Échec de la déconnexion',
-      };
-    }
 
     const data = await response.json();
     console.log("Réponse déconnexion:", data);
@@ -240,23 +189,6 @@ export const checkSession = async (): Promise<SessionCheckResponse> => {
 
     console.log("Statut HTTP check session:", response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP check session:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Session invalide' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Session invalide',
-      };
-    }
-
     const data = await response.json();
     console.log("Réponse check session:", data);
     console.log("=== FIN VÉRIFICATION SESSION ===");
@@ -288,23 +220,6 @@ export const requestPasswordReset = async (identifiant: string): Promise<Passwor
     });
 
     console.log("Statut HTTP demande reset:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP demande reset:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Échec de la demande de réinitialisation' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Échec de la demande de réinitialisation',
-      };
-    }
 
     const data = await response.json();
     console.log("Réponse demande reset:", data);
@@ -346,23 +261,6 @@ export const checkAnySession = async (): Promise<{
 
     console.log("Statut HTTP check any session:", response.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP check any session:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Session invalide' };
-      }
-      
-      return {
-        status: "error",
-        message: errorData.message || "Session invalide",
-      };
-    }
-
     const data = await response.json();
     console.log("Réponse check any session:", data);
     console.log("=== FIN VÉRIFICATION ANY SESSION ===");
@@ -395,23 +293,6 @@ export const verifyResetCode = async (identifiant: string, code: string): Promis
     });
 
     console.log("Statut HTTP vérification code:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP vérification code:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Code invalide' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Code invalide',
-      };
-    }
 
     const data = await response.json();
     console.log("Réponse vérification code:", data);
@@ -456,23 +337,6 @@ export const resetPassword = async (
     });
 
     console.log("Statut HTTP reset password:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP reset password:", errorText);
-      
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: 'Échec de la réinitialisation' };
-      }
-      
-      return {
-        status: 'error',
-        message: errorData.message || 'Échec de la réinitialisation',
-      };
-    }
 
     const data = await response.json();
     console.log("Réponse reset password:", data);

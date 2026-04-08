@@ -1,0 +1,4875 @@
+Toi étant expert en GoLang, J'ai ce plan que j'avais appris goLang : 🏗️ PLAN SOLIDE GO (21 JOURS – 1 CHAPITRE / JOUR)
+⏱️ Rythme conseillé par jour
+30–45 min : théorie
+45–90 min : pratique
+15 min : lecture / révision
+
+🔰 SEMAINE 1 — FONDATIONS DU LANGAGE (Jour 1 → 7)
+Tu dois penser “Go = simple, explicite, performant”
+
+📘 Jour 1 — Introduction & setup (fondations)
+Objectif : Comprendre ce qu’est Go et pourquoi on l’utilise en backend
+Pourquoi Go (vs Node, PHP, Java)
+Installation Go
+go version, go env
+GOPATH vs Go Modules
+Premier programme Go
+package main, func main()
+go run, go build
+✅ Exercice
+Afficher :
+Hello Go
+Aujourd’hui j’apprends Go pour le backend
+
+
+📘 Jour 2 — Variables, types & constantes
+Objectif : Maîtriser les bases du typage Go
+var, :=
+Types : int, float64, string, bool
+Conversions de types
+Constantes & iota
+✅ Exercice
+Programme qui calcule l’âge à partir de l’année de naissance
+
+📘 Jour 3 — Conditions & logique
+Objectif : Contrôler le flux du programme
+if / else
+switch
+Comparaisons
+Bonnes pratiques Go
+✅ Exercice
+Vérifier si un utilisateur est mineur / majeur / senior
+
+📘 Jour 4 — Boucles & collections
+Objectif : Manipuler des données
+for (unique boucle Go)
+Tableaux
+Slices
+append
+range
+
+✅ Exercice
+Gérer une liste de notes et calculer la moyenne
+
+📘 Jour 5 — Maps & structs
+Objectif : Créer des données structurées (comme des objets)
+map[string]string
+struct
+Accès & modification
+Struct imbriquées
+✅ Exercice
+Struct Contact { Nom, Email, Age }
+Stocker plusieurs contacts
+
+📘 Jour 6 — Fonctions & organisation
+Objectif : Écrire du code propre et réutilisable
+Fonctions simples
+Paramètres & retours multiples
+Fonctions nommées
+Bonnes pratiques
+✅ Exercice
+Fonctions pour :
+ajouter un contact
+afficher la liste
+filtrer par âge
+
+
+📘 Jour 7 — Mini-projet 1 (CONSOLIDATION)
+🎯 Mini-projet : Gestion de contacts
+Ajouter / afficher / trier
+Struct + slice + fonctions
+Code propre et lisible
+
+⚙️ SEMAINE 2 — GO POUR LE BACKEND (Jour 8 → 14)
+Là tu passes en mode backend sérieux
+
+📘 Jour 8 — Pointeurs & mémoire
+Objectif : Comprendre comment Go gère la mémoire
+&, *
+Passage par valeur vs référence
+Cas réels backend
+✅ Exercice
+Modifier un struct via une fonction
+
+📘 Jour 9 — Méthodes & interfaces
+Objectif : Penser architecture Go
+Méthodes sur struct
+Interfaces
+Polymorphisme
+Design Go idiomatique
+
+📘 Jour 10 — Gestion des erreurs (CRUCIAL)
+Objectif : Gérer les erreurs proprement
+error
+errors.New
+fmt.Errorf
+Pattern Go backend
+✅ Exercice
+Simuler une erreur utilisateur introuvable
+
+📘 Jour 11 — Go modules & packages
+Objectif : Structurer un projet réel
+go mod init
+go mod tidy
+Organisation par packages
+Import local
+
+📘 Jour 12 — Concurrence : goroutines
+Objectif : Exploiter la force de Go
+go func()
+Concurrence vs parallélisme
+Cas backend (requêtes simultanées)
+
+
+
+
+📘 Jour 13 — Channels & context
+Objectif : Communication et contrôle
+Channels
+select
+context.Context
+Timeout, cancel
+
+📘 Jour 14 — Tests unitaires
+Objectif : Être professionnel
+testing
+Tests simples
+Coverage
+Pourquoi tester en backend
+
+🌐 SEMAINE 3 — API REST PRO (Jour 15 → 21)
+Ici tu deviens backend Go prêt prod
+
+📘 Jour 15 — net/http (base)
+Serveur HTTP
+Routes
+Handler
+JSON response
+
+
+
+📘 Jour 16 — Framework (Gin ou Fiber)
+Routing
+Middleware
+Validation
+Performance
+
+📘 Jour 17 — API REST complète
+CRUD
+Status HTTP
+DTO
+Structure propre
+
+📘 Jour 18 — Base de données
+PostgreSQL ou MongoDB
+Connexion
+Requêtes
+Repository pattern
+
+📘 Jour 19 — Authentification
+JWT
+Middleware auth
+Sécurité API
+
+
+
+
+📘 Jour 20 — Docker & déploiement
+Dockerfile
+Docker Compose
+Lancer l’API en prod
+
+📘 Jour 21 — PROJET FINAL 🎉
+🎯 Backend réel
+API complète
+Auth
+DB
+Docker
+Tests
+
+🔥 Résultat après 21 jours
+✅ Tu comprends Go
+✅ Tu codes propre
+✅ Tu fais des API rapides
+✅ Tu peux remplacer PHP / Node sur certains projets
+✅ Tu es crédible backend Go 🚀
+
+👉 Si tu veux, au prochain message je peux :
+Te générer le contenu détaillé du Jour 1
+Ou transformer ce plan en PDF / Notion
+Ou te proposer un projet fil rouge (bus / e-commerce / SaaS)
+Dis-moi 🔥
+
+Parfait reuf 🔥
+On attaque Jour 1 — Fondations solides de Go.
+Je vais jouer le rôle de formateur exigeant mais clair :
+👉 théorie complète, 👉 explications simples, 👉 pratique guidée, 👉 pièges à éviter.
+
+📘 JOUR 1 — INTRODUCTION & SETUP GO (FONDATIONS)
+🎯 Objectif du jour
+À la fin de ce chapitre, tu dois :
+Comprendre ce qu’est Go et pourquoi on l’utilise en backend
+Installer Go correctement
+Comprendre la structure minimale d’un programme Go
+Exécuter et compiler ton premier programme
+
+1️⃣ C’est quoi Go (Golang) ? (Important)
+Définition simple
+Go est un langage compilé, rapide et simple, créé par Google pour :
+Les serveurs
+Les API backend
+Les systèmes performants
+La concurrence massive (beaucoup d’utilisateurs en même temps)
+
+
+
+Pourquoi Go est très utilisé en backend ?
+Comparaison rapide avec ce que tu connais :
+Langage
+Problème principal
+Go apporte
+PHP
+Lent sur gros trafic
+Haute performance
+Node.js
+Complexité async
+Concurrence simple
+Java
+Trop verbeux
+Simplicité
+Python
+Lent
+Rapidité native
+
+👉 Go est parfait pour :
+API REST
+Microservices
+Backend pour apps mobiles (Expo / React Native)
+DevOps, Docker, Kubernetes
+
+
+
+
+
+2️⃣ Installation de Go (proprement)
+Étape 1 : Télécharger Go
+➡️ https://go.dev/dl/
+Choisis :
+Windows : .msi
+Linux : .tar.gz
+macOS : .pkg
+Installe normalement.
+
+Étape 2 : Vérifier l’installation
+Dans ton terminal :
+go version
+
+Tu dois voir quelque chose comme :
+go version go1.22.x windows/amd64
+
+✅ Si ça s’affiche → OK
+
+
+Étape 3 : Comprendre GOPATH (simplement)
+Avant :
+Go utilisait GOPATH obligatoire
+Aujourd’hui :
+Go Modules = plus besoin de se battre avec GOPATH
+Go gère les dépendances comme npm ou composer
+👉 Tu n’as rien à configurer manuellement pour commencer.
+
+3️⃣ Créer ton premier projet Go
+Étape 1 : Créer un dossier
+mkdir go-learning
+cd go-learning
+
+Étape 2 : Initialiser un module Go
+go mod init go-learning
+
+➡️ Cela crée :
+go.mod
+
+👉 C’est l’équivalent de :
+package.json
+composer.json
+
+4️⃣ Structure minimale d’un programme Go
+Crée un fichier :
+main.go
+
+Code minimal :
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello Go")
+}
+
+
+5️⃣ Explication ligne par ligne (TRÈS IMPORTANT)
+package main
+Chaque fichier Go appartient à un package
+main = point d’entrée du programme
+Sans main, ton programme ne peut pas s’exécuter
+👉 Règle Go :
+Un programme exécutable DOIT être dans package main
+
+import "fmt"
+fmt = package standard
+Sert à afficher, formater, lire des données
+Exemples :
+fmt.Println
+fmt.Printf
+fmt.Sprintf
+
+func main()
+Fonction principale
+Elle s’exécute automatiquement
+Pas de paramètres
+Pas de retour
+
+fmt.Println("Hello Go")
+Affiche du texte
+Ajoute un saut de ligne automatiquement
+
+6️⃣ Exécuter ton programme
+Méthode 1 : Exécution directe
+go run main.go
+Résultat :
+Hello Go
+
+
+Méthode 2 : Compilation
+go build
+
+➡️ Crée un fichier exécutable :
+Windows : go-learning.exe
+Linux/Mac : go-learning
+Puis :
+./go-learning
+
+👉 Différence importante :
+go run = dev
+go build = prod
+
+7️⃣ Exercice pratique (OBLIGATOIRE)
+✍️ Exercice 1
+Modifier ton programme pour afficher :
+Hello Go
+Je suis en train d'apprendre Go
+Objectif : devenir backend solide
+
+
+
+✍️ Exercice 2
+Afficher la date du jour en dur (pas encore dynamique) :
+Nous sommes le 04 janvier 2026
+
+
+8️⃣ Bonnes pratiques dès le Jour 1
+✔️ Noms de fichiers en minuscule
+✔️ Un main.go par projet
+✔️ Toujours utiliser go mod
+✔️ Ne pas copier-coller sans comprendre
+
+9️⃣ Erreurs courantes à éviter
+❌ Oublier package main
+❌ Oublier func main()
+❌ Mettre plusieurs main()
+❌ Écrire du code hors d’une fonction
+
+🔥 Résumé du Jour 1
+Go est simple et rapide
+Tu sais installer et exécuter Go
+Tu comprends la structure minimale
+Tu es prêt pour Jour 2 : Variables & types
+
+
+👉 Prochain chapitre : JOUR 2 — Variables, types & constantes
+Si tu veux, je peux :
+Te corriger ton code
+Ajouter des challenges bonus
+Te faire un quiz rapide
+Dis-moi reuf 🔥
+
+
+
+Let’s go reuf 🔥
+Jour 2 — Variables, Types & Constantes (fondations sérieuses)
+Aujourd’hui tu vas penser comme Go : typage strict, clarté, zéro magie.
+
+📘 JOUR 2 — VARIABLES, TYPES & CONSTANTES
+🎯 Objectifs du jour
+À la fin de ce chapitre, tu dois :
+Savoir déclarer correctement des variables
+Comprendre le typage fort de Go
+Savoir quand utiliser var ou :=
+Manipuler les types de base
+Comprendre et utiliser les constantes et iota
+
+1️⃣ Déclarer une variable en Go
+Méthode 1 — Avec var (explicite)
+var age int
+age = 30
+
+Ou en une ligne :
+var age int = 30
+
+👉 Utilisée quand :
+Tu veux être clair
+Tu déclares sans valeur immédiate
+Tu es dans du code “pro / lisible”
+
+Méthode 2 — Avec := (inférence de type)
+age := 30
+
+➡️ Go devine automatiquement le type (int ici)
+⚠️ Important
+:= fonctionne uniquement dans une fonction
+Pas utilisable au niveau global
+
+Comparaison (important pour toi qui viens de JS / PHP)
+Go
+JS / PHP
+age := 30
+$age = 30
+Type figé
+Type dynamique
+Plus sûr
+Plus flexible
+
+
+2️⃣ Les types de base en Go
+Types numériques
+var a int = 10
+var b int64 = 100000
+var c float64 = 3.14
+
+👉 En backend :
+int → compteurs, IDs
+float64 → montants, calculs
+
+Type string
+name := "Willyam"
+
+Concaténation :
+fmt.Println("Bonjour", name)
+
+⚠️ Go n’aime pas la concat implicite :
+// ❌ interdit
+"Age: " + 30
+
+Solution :
+fmt.Println("Age:", 30)
+
+
+Type bool
+isAdmin := true
+isActive := false
+
+Utilisé dans :
+permissions
+auth
+statuts
+
+3️⃣ Typage strict (CRUCIAL)
+En Go :
+var a int = 10
+var b float64 = 2.5
+
+// ❌ ERREUR
+fmt.Println(a + b)
+
+👉 Tu dois convertir :
+fmt.Println(float64(a) + b)
+
+🧠 Règle Go
+Aucun mélange de types sans conversion explicite
+
+4️⃣ Valeurs par défaut (zero values)
+Si tu déclares sans valeur :
+var a int
+var b string
+var c bool
+
+Valeurs automatiques :
+Type
+Valeur
+int
+0
+float
+0.0
+string
+""
+bool
+false
+
+👉 Très utile en backend (évite null partout)
+
+5️⃣ Constantes en Go
+Déclaration simple
+const PI = 3.14
+const APP_NAME = "Go Backend"
+
+✔️ Les constantes :
+Ne changent jamais
+Sont évaluées à la compilation
+
+Plusieurs constantes
+const (
+	PORT = 8080
+	ENV  = "production"
+)
+
+
+6️⃣ iota (numérotation automatique)
+iota sert à créer des valeurs incrémentales
+const (
+	ADMIN = iota
+	USER
+	GUEST
+)
+
+Valeurs :
+ADMIN = 0
+USER  = 1
+GUEST = 2
+
+👉 Cas réel backend :
+rôles
+statuts
+permissions
+
+7️⃣ Exemple complet (important)
+package main
+
+import "fmt"
+
+func main() {
+	name := "Willyam"
+	age := 28
+	isDev := true
+
+	const app = "Go API"
+
+	fmt.Println("Nom :", name)
+	fmt.Println("Age :", age)
+	fmt.Println("Développeur :", isDev)
+	fmt.Println("Application :", app)
+}
+
+
+8️⃣ Exercices pratiques (OBLIGATOIRES)
+✍️ Exercice 1 — Infos utilisateur
+Créer un programme qui affiche :
+Nom
+Prénom
+Âge
+Ville
+Est développeur ? (bool)
+
+✍️ Exercice 2 — Calcul simple
+Année actuelle : 2026
+Année de naissance
+Calculer l’âge
+
+✍️ Exercice 3 — Constantes
+Définir PORT = 3000
+Définir ENV = "dev"
+Afficher un message :
+Serveur lancé sur le port 3000 en mode dev
+
+
+9️⃣ Erreurs fréquentes à éviter
+❌ Utiliser := hors fonction
+❌ Mélanger int et float sans conversion
+❌ Modifier une constante
+❌ Penser que Go est dynamique comme JS
+
+🔥 Résumé Jour 2
+Go est strict mais sécurisé
+Tu maîtrises les variables
+Tu comprends le typage
+Tu es prêt pour Jour 3 : Conditions & logique
+
+👉 Prochain chapitre : JOUR 3 — if, else, switch
+Si tu veux :
+Envoie ton code → je corrige
+Je te fais un quiz rapide
+Ou on ajoute un mini challenge backend 💪
+
+# 📘 JOUR 11 — GO MODULES & PACKAGES  https://chat.deepseek.com/a/chat/s/0679b711-551d-4bac-962a-a42352d366c6
+## 🎯 **Objectif du jour**
+À la fin de ce chapitre, tu dois :
+- **Comprendre le système de modules** (le remplacement de GOPATH)
+- **Structurer un projet réel** avec des packages
+- **Savoir importer** des packages locaux et externes
+- **Gérer les dépendances** proprement
+
+---
+
+## 1️⃣ **Pourquoi Go Modules ?** (Contexte historique)
+
+### ❌ **L'ancien monde : GOPATH (2012-2018)**
+```bash
+# Chaque projet DOIT être dans ce chemin
+$GOPATH/src/github.com/utilisateur/projet
+
+# Problèmes :
+# - Structure imposée
+# - Versionnement difficile
+# - Copier-coller du code
+```
+
+### ✅ **Le nouveau monde : Go Modules (2019+)**
+```bash
+# Ton projet peut être N'IMPORTE OÙ
+/home/tu/projets/mon-api/
+/Users/nom/Desktop/go-app/
+```
+
+**Avantages :**
+- ✔️ **Indépendance** : chaque projet a ses propres dépendances
+- ✔️ **Version sémantique** (v1.2.3) facile à gérer
+- ✔️ **Reproduction exacte** des dépendances
+- ✔️ **Plus de $GOPATH** obligatoire
+
+---
+
+## 2️⃣ **Créer un module Go** (fondation)
+
+### Étape 1 : Initialisation
+```bash
+# Dans ton dossier de projet
+go mod init <nom-module>
+```
+
+**Convention de nommage :**
+```bash
+# Pour un projet personnel
+go mod init mon-api
+
+# Pour un projet à publier
+go mod init github.com/ton-user/mon-api
+```
+
+**Ce que ça crée :**
+```go
+// go.mod
+module mon-api
+
+go 1.22
+```
+👉 `go.mod` = `package.json` (Node) = `composer.json` (PHP)
+
+---
+
+## 3️⃣ **Structure d'un projet Go professionnel**
+
+### Structure recommandée :
+```
+mon-api/
+├── cmd/              # Points d'entrée
+│   └── server/       # Un dossier par binaire
+│       └── main.go   # main() ici seulement
+├── internal/         # Code privé (impossible à importer par d'autres)
+│   └── handlers/     # Gestionnaires HTTP
+├── pkg/              # Code public (réutilisable)
+│   └── models/       # Structures de données
+├── go.mod           # Fichier module
+└── go.sum           # Verrouillage des versions
+```
+
+**Pourquoi cette structure ?**
+- `cmd/` : un binaire = un dossier
+- `internal/` : sécurité, pas d'import externe
+- `pkg/` : bibliothèque réutilisable
+
+---
+
+## 4️⃣ **Créer et utiliser des packages**
+
+### 📁 **Exemple pratique :**
+```
+mon-api/
+├── go.mod
+├── main.go
+└── pkg/
+    └── calculator/
+        └── math.go
+```
+
+**Fichier `pkg/calculator/math.go` :**
+```go
+// Premier mot = nom du package
+package calculator
+
+// Fonction publique (majuscule)
+func Add(a, b int) int {
+    return a + b
+}
+
+// Fonction privée (minuscule)
+func subtract(a, b int) int {
+    return a - b
+}
+```
+
+**Fichier `main.go` :**
+```go
+package main
+
+import (
+    "fmt"
+    "mon-api/pkg/calculator"  // Import local
+)
+
+func main() {
+    result := calculator.Add(10, 5)
+    fmt.Println("Résultat :", result) // 15
+    
+    // ❌ IMPOSSIBLE : fonction privée
+    // calculator.subtract(10, 5)
+}
+```
+
+---
+
+## 5️⃣ **Règles CRUCIALES des packages**
+
+### Règle 1 : Visibilité (Exporter/Importer)
+```go
+// MAJUSCULE = publique (exportée)
+func PublicFunction() {}   // ✅ Importable
+
+// minuscule = privée (interne)
+func privateFunction() {}  // ❌ Non importable
+```
+
+### Règle 2 : Un dossier = un package
+```go
+// ❌ MAUVAIS
+pkg/
+├── user.go      // package user
+└── auth.go      // package auth
+
+// ✅ BON
+pkg/user/
+├── user.go      // package user
+└── types.go     // package user
+
+pkg/auth/
+├── auth.go      // package auth
+└── jwt.go       // package auth
+```
+
+### Règle 3 : Import circulaire = INTERDIT
+```go
+// pkg/a/a.go
+package a
+import "../b"  // ❌ Erreur : import circulaire
+
+// pkg/b/b.go  
+package b
+import "../a"  // ❌ Erreur : import circulaire
+```
+
+---
+
+## 6️⃣ **Gérer les dépendances externes**
+
+### Ajouter une dépendance :
+```bash
+# Ajoute automatiquement au go.mod
+go get github.com/gin-gonic/gin@v1.9.1
+
+# Ou en important dans le code d'abord
+import "github.com/gin-gonic/gin"
+# Puis :
+go mod tidy
+```
+
+**Fichier `go.mod` après :**
+```go
+module mon-api
+
+go 1.22
+
+require (
+    github.com/gin-gonic/gin v1.9.1
+)
+```
+
+### Commandes essentielles :
+```bash
+# Nettoie et télécharge les dépendances
+go mod tidy
+
+# Voir les dépendances
+go list -m all
+
+# Voir pourquoi une dépendance existe
+go mod why github.com/gin-gonic/gin
+
+# Vérifier l'intégrité
+go mod verify
+```
+
+---
+
+## 7️⃣ **go.sum : le verrouillage des versions**
+
+**Ne JAMAIS supprimer `go.sum` !**
+- C'est la preuve cryptographique
+- Garantit que les dépendances sont authentiques
+- Comparable à `package-lock.json` (Node)
+
+```bash
+# go.sum contient des checksums
+github.com/gin-gonic/gin v1.9.1 h1:4idEAncQnU5cB7BeOk5xU...
+github.com/gin-gonic/gin v1.9.1/go.mod h1:7cKq9V6Hl...
+```
+
+---
+
+## 8️⃣ **Import avec alias et _**
+
+### Alias pour éviter les conflits :
+```go
+import (
+    gintonic "github.com/gin-gonic/gin"
+    mygin "mon-api/internal/gin"
+)
+```
+
+### Import pour effets secondaires :
+```go
+import (
+    _ "github.com/lib/pq"  // Charge le driver PostgreSQL
+    "database/sql"
+)
+
+// Le driver est enregistré automatiquement
+db, err := sql.Open("postgres", "...")
+```
+
+---
+
+## 9️⃣ **Workflow professionnel**
+
+### 1. Cloner un projet existant :
+```bash
+git clone https://github.com/user/project.git
+cd project
+go mod download  # Télécharge les dépendances
+go run cmd/server/main.go
+```
+
+### 2. Mettre à jour les dépendances :
+```bash
+# Mettre à jour toutes
+go get -u ./...
+
+# Mettre à jour une seule
+go get -u github.com/gin-gonic/gin
+
+# Vérifier les mises à jour disponibles
+go list -u -m all
+```
+
+### 3. Versionner proprement :
+```bash
+# Dans .gitignore
+vendor/           # Si tu utilises vendoring
+
+# Dans le repo
+go.mod
+go.sum
+```
+
+---
+
+## 🔟 **Exercices pratiques (OBLIGATOIRES)**
+
+### ✍️ **Exercice 1 : Structure de base**
+**Objectif :** Créer la structure minimale d'un projet backend
+
+```bash
+# 1. Crée ce structure
+mon-api/
+├── cmd/
+│   └── api/
+│       └── main.go
+├── internal/
+│   └── config/
+│       └── config.go
+├── go.mod
+└── README.md
+
+# 2. Initialise le module
+go mod init mon-api
+
+# 3. Dans config.go
+package config
+
+const Port = 8080
+const Env = "development"
+
+# 4. Dans main.go
+package main
+
+import (
+    "fmt"
+    "mon-api/internal/config"
+)
+
+func main() {
+    fmt.Printf("Serveur sur port %d (%s)\n", 
+        config.Port, config.Env)
+}
+```
+
+### ✍️ **Exercice 2 : Package utilitaire**
+**Objectif :** Créer un package réutilisable
+
+```bash
+# 1. Ajoute ce dossier
+pkg/
+└── stringsutil/
+    └── strings.go
+
+# 2. Dans strings.go
+package stringsutil
+
+// Capitalize met la première lettre en majuscule
+func Capitalize(s string) string {
+    if len(s) == 0 {
+        return s
+    }
+    // À toi d'implémenter !
+}
+
+// 3. Utilise-le dans main.go
+```
+
+**Indice :**
+- Utilise `unicode.ToUpper`
+- N'oublie pas `import "unicode"`
+
+### ✍️ **Exercice 3 : Gestion des dépendances**
+**Objectif :** Ajouter et utiliser une dépendance externe
+
+```bash
+# 1. Ajoute une librairie utile
+go get github.com/gorilla/mux
+
+# 2. Vérifie go.mod et go.sum
+cat go.mod
+cat go.sum
+
+# 3. Crée un exemple minimal
+# Dans cmd/server/main.go
+package main
+
+import (
+    "net/http"
+    "github.com/gorilla/mux"
+)
+
+func main() {
+    r := mux.NewRouter()
+    r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        w.Write([]byte("Hello avec Gorilla Mux!"))
+    })
+    http.ListenAndServe(":8080", r)
+}
+```
+
+---
+
+## 🎯 **Quiz rapide (Vérifie tes connaissances)**
+
+1. **Quelle commande initialise un module Go ?**
+   - `go init mod`
+   - `go mod init` ✅
+   - `go module create`
+
+2. **Comment rendre une fonction importable depuis un autre package ?**
+   - La mettre en minuscule
+   - La mettre en majuscule ✅
+   - Ajouter `// export` en commentaire
+
+3. **Que fait `go mod tidy` ?**
+   - Supprime go.sum
+   - Nettoie et synchronise les dépendances ✅
+   - Formate tout le code
+
+4. **Où doit se trouver la fonction `main()` ?**
+   - N'importe où
+   - Dans n'importe quel fichier .go
+   - Dans un package `main` ✅
+
+---
+
+## ⚠️ **Erreurs fréquentes à éviter**
+
+### ❌ **Mauvais :**
+```bash
+# Oublier d'initialiser le module
+# Copier-coller du code sans comprendre les imports
+# Supprimer go.sum
+# Mettre tout dans le même package
+```
+
+### ✅ **Bonnes pratiques :**
+```bash
+# Toujours faire go mod init en premier
+# Un package par responsabilité
+# go mod tidy après chaque modification
+# Versionner go.mod ET go.sum
+```
+
+---
+
+## 🔥 **Résumé Jour 11**
+- **Go Modules** = indépendance et reproductibilité
+- **Structure** : `cmd/`, `internal/`, `pkg/`
+- **Visibilité** : Majuscule = publique, minuscule = privée
+- **Dépendances** : `go get`, `go mod tidy`, `go.sum`
+
+**Tu sais maintenant :**
+- ✅ Structurer un projet pro
+- ✅ Créer des packages réutilisables
+- ✅ Gérer les versions de dépendances
+- ✅ Éviter les pièges classiques
+
+---
+
+## 🚀 **Prochain chapitre : JOUR 12 — Concurrence avec goroutines**
+Tu vas découvrir la **puissance** de Go : gérer 10 000 requêtes simultanées sans transpirer !
+
+**Prêt pour le challenge ?** Envoie-moi tes solutions des exercices, je te donne un feedback personnalisé ! 💪
+# 📘 **Go Modules EXPLICATION COMPLÈTE & SIMPLE**
+
+## 🎯 **L'ESSENTIEL EN 1 PHRASE**
+**Go Modules = Le système qui remplace l'ancien GOPATH et qui permet de gérer tes dépendances comme `npm` ou `composer`.**
+
+---
+
+## 🔥 **ANALOGIE SIMPLE**
+
+| Ancien système (GOPATH) | Nouveau système (Go Modules) |
+|-------------------------|-----------------------------|
+| Comme devoir mettre TOUS tes projets dans `C:\Users\TonNom\go\src` | Comme pouvoir mettre tes projets N'IMPORTE OÙ (`Bureau`, `Documents`, etc.) |
+| Toutes les dépendances dans un seul endroit | Chaque projet a SES PROPRES dépendances |
+| Pas de versionnement clair | Version claire (`v1.2.3`) |
+| Galère pour travailler sur plusieurs projets | Isolation parfaite entre projets |
+
+---
+
+## 📁 **STRUCTURE AVANT/APRÈS**
+
+### ❌ **AVANT (GOPATH - Évite ça !)**
+```
+C:\Users\TonNom\go\           # Emplacement FIXE
+├── src\                      # TOUS tes projets ici
+│   ├── github.com\           # Structure OBLIGATOIRE
+│   │   └── tonnom\           # Sinon ça marche pas !
+│   │       └── monprojet\
+│   └── monprojetperso\       # Problème : mélange tout
+```
+
+### ✅ **APRÈS (Go Modules - Fais ça !)**
+```
+C:\Users\TonNom\Desktop\      # N'IMPORTE OÙ
+└── monprojet\                # Ton projet où tu veux
+    ├── go.mod                # Fichier principal
+    ├── go.sum                # Fichier de sécurité
+    └── main.go               # Ton code
+```
+
+---
+
+## 🚀 **COMMENT DÉMARRER EN 3 ÉTAPES**
+
+### **Étape 1 : Ouvre ton terminal**
+```bash
+# Va où tu veux !
+cd Desktop
+mkdir mon-api
+cd mon-api
+```
+
+### **Étape 2 : Initialise le module**
+```bash
+# Cette commande crée go.mod
+go mod init mon-api
+```
+
+**Résultat :**
+```go
+// go.mod créé automatiquement
+module mon-api   // Nom de ton module
+go 1.22          // Version de Go
+```
+
+### **Étape 3 : Code !**
+```go
+// main.go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Mon projet marche n'importe où !")
+}
+```
+
+---
+
+## 📦 **go.mod = Le fichier le plus important**
+
+### **À quoi il sert ?**
+```go
+// go.mod - Exemple complet
+module mon-api              // 1. Nom de ton module
+go 1.22                     // 2. Version de Go utilisée
+
+// 3. Dépendances (ajoutées automatiquement)
+require (
+    github.com/gin-gonic/gin v1.9.1
+    github.com/lib/pq v1.10.9
+)
+
+// 4. Remplacements (optionnel)
+replace github.com/vieux-paquet => ./local-paquet
+```
+
+### **Comparaison avec d'autres langages :**
+- **Node.js** : `package.json`
+- **PHP** : `composer.json`
+- **Python** : `requirements.txt`
+- **Rust** : `Cargo.toml`
+
+---
+
+## 🔐 **go.sum = Le gardien de sécurité**
+
+### **Ne JAMAIS supprimer ce fichier !**
+```bash
+# go.sum contient des empreintes cryptographiques
+github.com/gin-gonic/gin v1.9.1 h1:4idEAncQnU5cB7BeOk5xU...
+github.com/gin-gonic/gin v1.9.1/go.mod h1:7cKq9V6Hl...
+```
+
+**Pourquoi ?**
+- Empêche les attaques (quelqu'un qui modifierait la dépendance)
+- Garantit qu'on télécharge EXACTEMENT la même version
+- **Commit toujours `go.mod` ET `go.sum` dans Git !**
+
+---
+
+## 🛠️ **LES 5 COMMANDES À CONNAÎTRE**
+
+### **1. `go mod init`** - Démarrer un projet
+```bash
+go mod init nom-du-projet
+```
+
+### **2. `go get`** - Ajouter une dépendance
+```bash
+# Ajoute gin
+go get github.com/gin-gonic/gin
+
+# Version spécifique
+go get github.com/gin-gonic/gin@v1.9.1
+
+# Mettre à jour
+go get -u github.com/gin-gonic/gin
+```
+
+### **3. `go mod tidy`** - Nettoyer et synchroniser
+```bash
+# À faire après chaque modification !
+go mod tidy
+```
+
+**Ça fait :**
+- Ajoute les dépendances manquantes
+- Supprime les dépendances inutilisées
+- Met à jour `go.sum`
+
+### **4. `go list`** - Voir les dépendances
+```bash
+# Toutes les dépendances
+go list -m all
+
+# Pourquoi une dépendance existe ?
+go mod why github.com/gin-gonic/gin
+```
+
+### **5. `go mod download`** - Télécharger les dépendances
+```bash
+# Après un `git clone`
+go mod download
+```
+
+---
+
+## 🏗️ **STRUCTURE PRO RECOMMANDÉE**
+
+### **Structure simple pour commencer :**
+```
+mon-api/
+├── go.mod        # FICHIER ESSENTIEL
+├── go.sum        # FICHIER ESSENTIEL
+├── main.go       # Ton code principal
+└── README.md
+```
+
+### **Structure avancée (quand ton projet grandit) :**
+```
+mon-api/
+├── cmd/              # Points d'entrée (exécutables)
+│   └── api/          # Un exécutable = un dossier
+│       └── main.go   # SEULEMENT ici il y a func main()
+├── internal/         # Code PRIVÉ (pas importable ailleurs)
+│   ├── handlers/     # Gestionnaires HTTP
+│   └── database/     # Connexion DB
+├── pkg/              # Code PUBLIC (réutilisable)
+│   ├── models/       # Structures de données
+│   └── utils/        # Fonctions utilitaires
+├── go.mod
+├── go.sum
+└── README.md
+```
+
+---
+
+## 📚 **EXEMPLE COMPLET PAS À PAS**
+
+### **1. Crée ton projet**
+```bash
+mkdir mon-premier-api
+cd mon-premier-api
+```
+
+### **2. Initialise le module**
+```bash
+go mod init api-exemple
+```
+
+### **3. Ajoute une dépendance**
+```bash
+# Ajoute une librairie web populaire
+go get github.com/gin-gonic/gin
+```
+
+### **4. Écris ton code**
+```go
+// main.go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    r := gin.Default()
+    
+    r.GET("/", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "Bonjour avec Go Modules!",
+        })
+    })
+    
+    r.Run(":8080")
+}
+```
+
+### **5. Nettoie et exécute**
+```bash
+go mod tidy    # Synchronise les dépendances
+go run main.go # Lance ton API
+```
+
+---
+
+## ❓ **QUESTIONS FRÉQUENTES**
+
+### **Q1: Où vont les dépendances téléchargées ?**
+```bash
+# Elles vont ici (ne touche pas à ce dossier)
+C:\Users\TonNom\go\pkg\mod
+
+# Mais TU n'as pas à t'en occuper !
+# Go Modules gère tout automatiquement.
+```
+
+### **Q2: Je clone un projet existant, je fais quoi ?**
+```bash
+git clone https://github.com/user/projet.git
+cd projet
+go mod download  # Télécharge les dépendances
+go run main.go   # Lance le projet
+```
+
+### **Q3: Comment partager mon projet ?**
+```bash
+# Commit dans Git :
+go.mod   # OBLIGATOIRE
+go.sum   # OBLIGATOIRE
+*.go     # Tes fichiers code
+
+# Les autres feront simplement :
+git clone ...
+go mod download
+go run main.go
+```
+
+### **Q4: Je veux utiliser ma propre librairie locale ?**
+```go
+// Dans go.mod
+module mon-api
+
+go 1.22
+
+replace mon-lib => ../ma-librairie  # Chemin relatif
+
+require mon-lib v0.0.0
+```
+
+---
+
+## ⚠️ **LES 3 GROSSES ERREURS À ÉVITER**
+
+### **1. ❌ Oublier `go mod init`**
+```bash
+# MAUVAIS : écrire du code sans go.mod
+# BON : toujours commencer par :
+go mod init nom-projet
+```
+
+### **2. ❌ Supprimer `go.sum`**
+```bash
+# MAUVAIS : "go.sum c'est trop gros, je le supprime"
+# BON : go.sum est ESSENTIEL pour la sécurité
+```
+
+### **3. ❌ Mettre tout dans le même dossier**
+```bash
+# MAUVAIS :
+projet/
+├── main.go
+├── user.go
+├── auth.go
+└── database.go  # Tout mélangé !
+
+# BON :
+projet/
+├── cmd/
+├── internal/
+│   ├── handlers/
+│   └── database/
+└── pkg/
+```
+
+---
+
+## 🎯 **EXERCICE PRATIQUE IMMÉDIAT**
+
+### **Fais ça MAINTENANT :**
+```bash
+# 1. Ouvre ton terminal
+# 2. Crée un dossier où tu veux
+mkdir ~/Desktop/test-modules
+cd ~/Desktop/test-modules
+
+# 3. Initialise un module
+go mod init mon-test
+
+# 4. Crée un fichier main.go
+# 5. Ajoute une dépendance
+go get github.com/fatih/color
+
+# 6. Écris ce code dans main.go :
+package main
+
+import "github.com/fatih/color"
+
+func main() {
+    color.Red("Hello en rouge!")
+    color.Green("Hello en vert!")
+}
+
+# 7. Exécute
+go run main.go
+```
+
+**Si tu vois du texte coloré → FÉLICITATIONS ! Tu maîtrises Go Modules ! 🎉**
+
+---
+
+## 📝 **RÉSUMÉ ULTRA SIMPLE**
+
+1. **`go mod init`** = Je démarre un projet
+2. **`go.mod`** = La liste de mes dépendances
+3. **`go.sum`** = La preuve de sécurité (ne pas toucher)
+4. **`go get`** = J'ajoute une librairie
+5. **`go mod tidy`** = Je nettoie (à faire souvent)
+6. **Pas de GOPATH** = Liberté totale d'emplacement
+
+---
+
+**Tu as encore des questions ?** 
+- ❓ Sur la structure ?
+- ❓ Sur une commande spécifique ?
+- ❓ Sur comment gérer tes propres packages ?
+
+Dis-moi exactement ce qui n'est pas clair, je te réexplique ! 🔥
+
+
+
+
+
+
+Voilà maintenant le mini projet qu'on avait concu en golang : # 🚀 **PROJET GO BACKEND SIMPLE - GESTION D'UTILISATEURS**
+
+Je vais te guider étape par étape pour créer une application complète avec :
+- **Frontend** : HTML/CSS/JS (simple et clair)
+- **Backend** : Go (API REST)
+- **Base de données** : MySQL
+
+---
+
+## 📁 **ÉTAPE 1 : STRUCTURE DU PROJET**
+
+Créons d'abord une structure professionnelle :
+
+```bash
+# Crée le dossier principal
+mkdir user-management
+cd user-management
+
+# Structure backend Go
+mkdir -p backend/cmd/server
+mkdir -p backend/internal/handlers
+mkdir -p backend/internal/models
+mkdir -p backend/internal/database
+mkdir -p backend/pkg/utils
+
+# Structure frontend
+mkdir -p frontend/css
+mkdir -p frontend/js
+
+# Initialise le module Go
+cd backend
+go mod init user-management
+```
+
+**Pourquoi cette structure ?**
+- `cmd/server/` : Point d'entrée de l'application
+- `internal/` : Code privé (pas importable depuis l'extérieur)
+- `pkg/` : Code réutilisable (si on en a besoin plus tard)
+- Séparation claire frontend/backend
+
+---
+
+## 📦 **ÉTAPE 2 : FICHIER go.mod**
+
+```go
+// backend/go.mod
+module user-management
+
+go 1.22
+
+require (
+    github.com/go-sql-driver/mysql v1.7.1
+    github.com/gorilla/mux v1.8.1
+)
+```
+
+**Pourquoi ces dépendances ?**
+- `mysql` : Driver pour se connecter à MySQL
+- `mux` : Routeur HTTP (simple et efficace)
+
+Installe les dépendances :
+```bash
+cd backend
+go mod tidy
+```
+
+---
+
+## 🗄️ **ÉTAPE 3 : CONFIGURATION MYSQL**
+
+Crée d'abord la base de données MySQL :
+
+```sql
+-- 1. Connecte-toi à MySQL
+-- mysql -u root -p
+
+-- 2. Crée la base de données
+CREATE DATABASE user_management;
+
+-- 3. Utilise la base
+USE user_management;
+
+-- 4. Crée la table users
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Insère des données de test
+INSERT INTO users (first_name, last_name, email, address) VALUES
+('John', 'Doe', 'john@example.com', '123 Main St, Paris'),
+('Jane', 'Smith', 'jane@example.com', '456 Oak Ave, Lyon'),
+('Bob', 'Johnson', 'bob@example.com', '789 Pine Rd, Marseille');
+```
+
+**Pourquoi cette structure de table ?**
+- `id` : Identifiant unique auto-incrémenté
+- `first_name` + `last_name` = nom complet
+- `email` : Unique pour éviter les doublons
+- `address` : Adresse complète
+- `created_at` : Date de création automatique
+
+---
+
+## 🏗️ **ÉTAPE 4 : MODÈLE UTILISATEUR (models/user.go)**
+
+```go
+// backend/internal/models/user.go
+package models
+
+import "time"
+
+// User représente un utilisateur dans la base de données
+type User struct {
+    ID        int       `json:"id"`
+    FirstName string    `json:"first_name"`
+    LastName  string    `json:"last_name"`
+    Email     string    `json:"email"`
+    Address   string    `json:"address"`
+    CreatedAt time.Time `json:"created_at"`
+}
+
+// FullName retourne le nom complet
+func (u *User) FullName() string {
+    return u.FirstName + " " + u.LastName
+}
+```
+
+**Explications :**
+- `struct` : Structure de données Go (comme une classe)
+- `json:"..."` : Tags pour la sérialisation JSON
+- `FullName()` : Méthode sur la structure
+- `time.Time` : Type pour les dates (meilleur que string)
+
+---
+
+## 🗄️ **ÉTAPE 5 : CONNEXION DATABASE (database/db.go)**
+
+```go
+// backend/internal/database/db.go
+package database
+
+import (
+    "database/sql"
+    "fmt"
+    "log"
+
+    _ "github.com/go-sql-driver/mysql" // Driver MySQL
+)
+
+// DB est la connexion globale à la base de données
+var DB *sql.DB
+
+// InitDB initialise la connexion à MySQL
+func InitDB() {
+    // Configuration de la connexion
+    // Remplace user:password par tes identifiants MySQL
+    connectionString := "root:password@tcp(127.0.0.1:3306)/user_management?parseTime=true"
+
+    // Ouvrir la connexion
+    var err error
+    DB, err = sql.Open("mysql", connectionString)
+    if err != nil {
+        log.Fatal("Erreur connexion MySQL:", err)
+    }
+
+    // Vérifier la connexion
+    err = DB.Ping()
+    if err != nil {
+        log.Fatal("MySQL ne répond pas:", err)
+    }
+
+    fmt.Println("✅ Connecté à MySQL")
+}
+
+// CloseDB ferme la connexion
+func CloseDB() {
+    if DB != nil {
+        DB.Close()
+    }
+}
+```
+
+**Points importants :**
+- `sql.Open()` : Ouvre la connexion (ne la teste pas encore)
+- `DB.Ping()` : Vérifie que la connexion fonctionne
+- `parseTime=true` : Convertit les dates MySQL en `time.Time` Go
+- Variable globale `DB` : Accessible partout dans l'application
+
+---
+
+## 🎯 **ÉTAPE 6 : HANDLERS (GESTIONNAIRES HTTP)**
+
+### 6.1 handlers/users.go
+```go
+// backend/internal/handlers/users.go
+package handlers
+
+import (
+    "database/sql"
+    "encoding/json"
+    "net/http"
+    "strconv"
+    "user-management/internal/models"
+
+    "github.com/gorilla/mux"
+)
+
+// UserHandler gère les routes utilisateurs
+type UserHandler struct {
+    DB *sql.DB
+}
+
+// NewUserHandler crée un nouveau handler
+func NewUserHandler(db *sql.DB) *UserHandler {
+    return &UserHandler{DB: db}
+}
+
+// GetUsers retourne tous les utilisateurs
+func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
+    // Query SQL
+    rows, err := h.DB.Query("SELECT id, first_name, last_name, email, address, created_at FROM users ORDER BY id DESC")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
+
+    // Parcourir les résultats
+    var users []models.User
+    for rows.Next() {
+        var user models.User
+        err := rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Address, &user.CreatedAt)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        users = append(users, user)
+    }
+
+    // Retourner en JSON
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(users)
+}
+
+// CreateUser crée un nouvel utilisateur
+func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+    // Lire le corps de la requête
+    var user models.User
+    err := json.NewDecoder(r.Body).Decode(&user)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    // Validation simple
+    if user.FirstName == "" || user.LastName == "" || user.Email == "" || user.Address == "" {
+        http.Error(w, "Tous les champs sont obligatoires", http.StatusBadRequest)
+        return
+    }
+
+    // Insérer dans la base
+    result, err := h.DB.Exec(
+        "INSERT INTO users (first_name, last_name, email, address) VALUES (?, ?, ?, ?)",
+        user.FirstName, user.LastName, user.Email, user.Address,
+    )
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Récupérer l'ID généré
+    id, err := result.LastInsertId()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Retourner la réponse
+    user.ID = int(id)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(user)
+}
+
+// DeleteUser supprime un utilisateur
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+    // Récupérer l'ID depuis l'URL
+    vars := mux.Vars(r)
+    id, err := strconv.Atoi(vars["id"])
+    if err != nil {
+        http.Error(w, "ID invalide", http.StatusBadRequest)
+        return
+    }
+
+    // Supprimer de la base
+    result, err := h.DB.Exec("DELETE FROM users WHERE id = ?", id)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Vérifier si un utilisateur a été supprimé
+    rowsAffected, err := result.RowsAffected()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    if rowsAffected == 0 {
+        http.Error(w, "Utilisateur non trouvé", http.StatusNotFound)
+        return
+    }
+
+    // Retourner une réponse vide avec statut 204
+    w.WriteHeader(http.StatusNoContent)
+}
+```
+
+**Explications des handlers :**
+- `GetUsers` : SELECT + parcours avec `rows.Next()` + JSON
+- `CreateUser` : Décodage JSON + INSERT + validation
+- `DeleteUser` : Récupération paramètre URL + DELETE + vérification
+- `http.Error()` : Gestion uniforme des erreurs
+- `w.Header().Set()` : Définit le type de contenu JSON
+
+---
+
+## 🔧 **ÉTAPE 7 : SERVEUR PRINCIPAL (main.go)**
+
+```go
+// backend/cmd/server/main.go
+package main
+
+import (
+    "log"
+    "net/http"
+    "os"
+    "user-management/internal/database"
+    "user-management/internal/handlers"
+
+    "github.com/gorilla/mux"
+)
+
+func main() {
+    // Initialiser la base de données
+    database.InitDB()
+    defer database.CloseDB()
+
+    // Créer le routeur
+    router := mux.NewRouter()
+
+    // Créer le handler utilisateur
+    userHandler := handlers.NewUserHandler(database.DB)
+
+    // Routes API
+    api := router.PathPrefix("/api").Subrouter()
+    api.HandleFunc("/users", userHandler.GetUsers).Methods("GET")
+    api.HandleFunc("/users", userHandler.CreateUser).Methods("POST")
+    api.HandleFunc("/users/{id}", userHandler.DeleteUser).Methods("DELETE")
+
+    // Servir les fichiers statiques (frontend)
+    frontendDir := "../../frontend"
+    if _, err := os.Stat(frontendDir); !os.IsNotExist(err) {
+        router.PathPrefix("/").Handler(http.FileServer(http.Dir(frontendDir)))
+    } else {
+        log.Println("⚠️  Dossier frontend non trouvé, API seule disponible")
+    }
+
+    // Configuration du serveur
+    port := ":8080"
+    log.Printf("🚀 Serveur démarré sur http://localhost%s", port)
+    log.Fatal(http.ListenAndServe(port, router))
+}
+```
+
+**Points clés :**
+- `mux.NewRouter()` : Routeur avec plus de fonctionnalités que le standard
+- `Subrouter()` : Regroupe les routes API sous `/api`
+- `defer database.CloseDB()` : Ferme la DB à la fin du programme
+- Servir fichiers statiques : Permet d'avoir frontend et backend ensemble
+
+---
+
+## 🎨 **ÉTAPE 8 : FRONTEND HTML/CSS/JS**
+
+### 8.1 frontend/index.html
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Utilisateurs - Go Backend</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-users"></i> Gestion des Utilisateurs</h1>
+            <p class="subtitle">Backend Go + MySQL + Frontend simple</p>
+        </header>
+
+        <!-- Formulaire d'ajout -->
+        <div class="card">
+            <h2><i class="fas fa-user-plus"></i> Ajouter un utilisateur</h2>
+            <form id="userForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="firstName"><i class="fas fa-user"></i> Prénom</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName"><i class="fas fa-user-tag"></i> Nom</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address"><i class="fas fa-home"></i> Adresse</label>
+                        <input type="text" id="address" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Ajouter l'utilisateur
+                </button>
+            </form>
+        </div>
+
+        <!-- Liste des utilisateurs -->
+        <div class="card">
+            <h2><i class="fas fa-list"></i> Liste des Utilisateurs</h2>
+            <div id="loading">
+                <i class="fas fa-spinner fa-spin"></i> Chargement...
+            </div>
+            <div id="userList" class="user-list"></div>
+        </div>
+
+        <footer>
+            <p>Backend Go • API REST • MySQL • Frontend Vanilla</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
+```
+
+### 8.2 frontend/css/style.css
+```css
+/* Reset et base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h2 {
+    color: #333;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+/* Formulaire */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group input {
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Boutons */
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: #ff4757;
+    color: white;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.btn-danger:hover {
+    background: #ff3742;
+}
+
+/* Liste utilisateurs */
+#loading {
+    text-align: center;
+    padding: 30px;
+    color: #667eea;
+    font-size: 18px;
+}
+
+.user-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.user-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 5px solid #667eea;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.user-card:hover {
+    background: #eef2ff;
+}
+
+.user-card h3 {
+    color: #333;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-card h3 span {
+    font-size: 14px;
+    color: #666;
+    background: #e0e0e0;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.user-card p {
+    margin: 8px 0;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-card .delete-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    color: white;
+    margin-top: 40px;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+}
+```
+
+### 8.3 frontend/js/app.js
+```javascript
+// Configuration
+const API_URL = '/api/users';
+
+// DOM Elements
+const userForm = document.getElementById('userForm');
+const userList = document.getElementById('userList');
+const loading = document.getElementById('loading');
+
+// Charger les utilisateurs au démarrage
+document.addEventListener('DOMContentLoaded', loadUsers);
+
+// Gestion du formulaire
+userForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const user = {
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        address: document.getElementById('address').value
+    };
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erreur lors de l\'ajout');
+        }
+        
+        // Réinitialiser le formulaire
+        userForm.reset();
+        
+        // Recharger la liste
+        loadUsers();
+        
+        // Feedback visuel
+        showNotification('Utilisateur ajouté avec succès!', 'success');
+        
+    } catch (error) {
+        showNotification('Erreur: ' + error.message, 'error');
+        console.error('Erreur:', error);
+    }
+});
+
+// Charger la liste des utilisateurs
+async function loadUsers() {
+    try {
+        loading.style.display = 'block';
+        userList.innerHTML = '';
+        
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+            throw new Error('Erreur de chargement');
+        }
+        
+        const users = await response.json();
+        
+        if (users.length === 0) {
+            userList.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <p>Aucun utilisateur pour le moment</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Afficher les utilisateurs
+        users.forEach(user => {
+            const userCard = document.createElement('div');
+            userCard.className = 'user-card';
+            userCard.innerHTML = `
+                <h3>
+                    ${user.first_name} ${user.last_name}
+                    <span>ID: ${user.id}</span>
+                </h3>
+                <p><i class="fas fa-envelope"></i> ${user.email}</p>
+                <p><i class="fas fa-home"></i> ${user.address}</p>
+                <p><i class="fas fa-calendar"></i> Inscrit le ${formatDate(user.created_at)}</p>
+                <button class="btn btn-danger delete-btn" onclick="deleteUser(${user.id})">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            `;
+            userList.appendChild(userCard);
+        });
+        
+    } catch (error) {
+        userList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #ff4757;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <p>Erreur de chargement: ${error.message}</p>
+            </div>
+        `;
+        console.error('Erreur:', error);
+    } finally {
+        loading.style.display = 'none';
+    }
+}
+
+// Supprimer un utilisateur
+async function deleteUser(id) {
+    if (!confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erreur lors de la suppression');
+        }
+        
+        // Recharger la liste
+        loadUsers();
+        
+        // Feedback visuel
+        showNotification('Utilisateur supprimé avec succès!', 'success');
+        
+    } catch (error) {
+        showNotification('Erreur: ' + error.message, 'error');
+        console.error('Erreur:', error);
+    }
+}
+
+// Formater la date
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        ${message}
+    `;
+    
+    // Style de la notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: ${type === 'success' ? '#2ed573' : '#ff4757'};
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Supprimer après 3 secondes
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Ajouter les animations CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+```
+
+---
+
+## 🚀 **ÉTAPE 9 : LANCEMENT DE L'APPLICATION**
+
+### 1. **Démarrer MySQL**
+```bash
+# Sous Linux/Mac
+sudo service mysql start
+
+# Sous Windows
+# Démarre MySQL depuis XAMPP/WAMP ou le service Windows
+```
+
+### 2. **Lancer le backend Go**
+```bash
+cd backend
+go run cmd/server/main.go
+```
+
+### 3. **Accéder à l'application**
+Ouvre ton navigateur et va sur :
+```
+http://localhost:8080
+```
+
+---
+
+## 📝 **ÉTAPE 10 : TESTER L'API AVEC CURL**
+
+Pour vérifier que tout fonctionne :
+
+### 1. **Lister les utilisateurs**
+```bash
+curl http://localhost:8080/api/users
+```
+
+### 2. **Ajouter un utilisateur**
+```bash
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "Pierre",
+    "last_name": "Martin",
+    "email": "pierre@example.com",
+    "address": "12 Rue de la Paix, Paris"
+  }'
+```
+
+### 3. **Supprimer un utilisateur**
+```bash
+curl -X DELETE http://localhost:8080/api/users/1
+```
+
+---
+
+## 🔍 **EXPLICATION DES CONCEPTS IMPORTANTS**
+
+### **1. Architecture Client-Serveur**
+```
+Frontend (HTML/JS) → Requête HTTP → Backend (Go) → MySQL
+       ↑                                    ↓
+       ←────────── Réponse JSON ←───────────
+```
+
+### **2. Pourquoi Gorilla Mux ?**
+- Meilleur que `net/http` standard pour le routing
+- Gestion des paramètres d'URL (`/users/{id}`)
+- Middlewares facile à ajouter
+- Sous-routage pour `/api`
+
+### **3. Gestion des erreurs en Go**
+- Toujours vérifier `err != nil`
+- Retourner les codes HTTP appropriés
+- `http.Error()` pour les erreurs client/serveur
+
+### **4. Sécurité de base**
+- Validation des inputs côté serveur
+- Pas de SQL injection grâce aux `?` placeholders
+- Headers JSON définis
+
+### **5. Structure professionnelle**
+```
+backend/
+├── cmd/          # Points d'entrée (main)
+├── internal/     # Code privé au projet
+│   ├── handlers/ # Gestionnaires HTTP
+│   ├── models/   # Structures de données
+│   └── database/ # Connexion DB
+└── pkg/          # Code réutilisable
+```
+
+---
+
+## 🐛 **DÉPANNAGE COURANT**
+
+### **1. MySQL ne se connecte pas**
+```go
+// Vérifie dans database/db.go
+connectionString := "utilisateur:motdepasse@tcp(localhost:3306)/user_management"
+// ↑ Remplace avec tes identifiants MySQL
+```
+
+### **2. Port déjà utilisé**
+```go
+// Change le port dans main.go
+port := ":8081"  // Au lieu de :8080
+```
+
+### **3. Erreur CORS (si frontend séparé)**
+Ajoute dans `main.go` :
+```go
+router.Use(func(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+        next.ServeHTTP(w, r)
+    })
+})
+```
+
+---
+
+## 🎯 **CE QUE TU AS APPRIS**
+
+1. ✅ **Structure projet Go** avec modules
+2. ✅ **Connexion MySQL** avec driver officiel
+3. ✅ **API REST** avec GET/POST/DELETE
+4. ✅ **Handlers HTTP** structurés
+5. ✅ **Frontend vanilla JS** qui consomme une API
+6. ✅ **Routing** avec Gorilla Mux
+7. ✅ **Gestion erreurs** complète
+8. ✅ **Sérialisation JSON** automatique
+
+---
+
+## 📈 **PROCHAINES ÉTAPES (SI TU VEUX ALLER PLUS LOIN)**
+
+1. **Ajouter la modification** (PUT/PATCH)
+2. **Ajouter la recherche/filtrage**
+3. **Ajouter l'authentification** JWT
+4. **Ajouter des tests unitaires**
+5. **Dockeriser l'application**
+6. **Ajouter Swagger/OpenAPI**
+
+---
+
+**Lance l'application et teste-la !** 
+
+Si tu as des erreurs ou des questions sur une partie spécifique, dis-moi exactement où ça bloque, je t'aide à débugger ! 🔥
+
+Le code est prêt à être exécuté. Copie-colle chaque fichier dans la bonne structure et lance `go run cmd/server/main.go` !
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ce que nous allons faire maintenant Ce de modifier l'API paiement de mon app existant conçu avec php Le migré en golang.
+Tout est claire et précise et j'éspère que tu ne va pas taper a côté.
+
+Voilà les codes : 
+
+
+Class php : <?php
+require_once 'Connexion.php';
+
+/**
+ * Classe DeclarationPaymentAPI - Gestion complète des paiements d'impôts
+ * Version: 1.0 - Intégration complète avec paiements_bancaires et sécurité renforcée
+ * 
+ * Cette classe gère le processus complet de paiement d'impôts :
+ * 1. Authentification des banques partenaires
+ * 2. Initialisation des paiements
+ * 3. Traitement des transactions
+ * 4. Gestion des annulations
+ * 5. Sécurité et vérifications
+ */
+class DeclarationPaymentAPI extends Connexion
+{
+    // Configuration de l'API
+    private $apiConfig;
+    
+    // Données de la banque partenaire
+    private $bankData;
+    
+    // ID de la banque actuellement connectée
+    private $currentBankId;
+    
+    /**
+     * Constructeur - Initialise la connexion à la base de données
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+    
+    // =========================================================================
+    // MÉTHODES D'AUTHENTIFICATION ET CONFIGURATION
+    // =========================================================================
+    
+    /**
+     * Charge la configuration bancaire depuis la BDD
+     * 
+     * @param string $bankId Identifiant unique de la banque
+     * @throws Exception Si la banque n'est pas configurée ou inactive
+     */
+    private function loadBankConfig($bankId) {
+        try {
+            // Requête pour récupérer toutes les informations de la banque partenaire
+            $sql = "SELECT bp.*, p.nom as partenaire_nom, p.base_url_api, p.timeout_api, p.retry_attempts,
+                           p.raison_sociale, p.email AS contact_email, p.telephone AS contact_telephone,
+                           p.ip_whitelist, p.en_maintenance,
+                           bp.url_webhook_confirmation, bp.secret_webhook, bp.date_expiration,
+                           bp.ip_autorisees, bp.user_agent_autorises, bp.actif as bp_actif, bp.suspendu
+                    FROM banques_partenaire bp
+                    JOIN partenaires p ON bp.partenaire_id = p.id
+                    WHERE bp.bank_id = :bank_id AND bp.actif = 1 AND p.actif = 1";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':bank_id' => $bankId]);
+            $this->bankData = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Vérifier si la banque existe et est active
+            if (!$this->bankData) {
+                throw new Exception("Banque non configurée ou inactive");
+            }
+            
+            // Stocker l'ID de la banque actuelle
+            $this->currentBankId = $bankId;
+            
+            // Construire la configuration API complète
+            $this->apiConfig = [
+                'base_url' => $this->bankData['base_url_api'] ?? 'https://api.banque.com/v1',
+                'timeout' => $this->bankData['timeout_api'] ?? 30,
+                'max_retries' => $this->bankData['retry_attempts'] ?? 3,
+                'webhook_url' => $this->bankData['url_webhook_confirmation'],
+                'webhook_secret' => $this->bankData['secret_webhook'],
+                'frais_percentage' => $this->getFraisPercentage(),
+                'frais_minimum' => $this->getFraisMinimum(),
+                'devise' => 'USD',
+                'limite_journaliere' => $this->bankData['limite_transaction_journaliere'] ?? 10000000,
+                'limite_mensuelle' => $this->bankData['limite_transaction_mensuelle'] ?? 100000000,
+                'montant_minimum' => $this->bankData['montant_minimum'] ?? 100,
+                'montant_maximum' => $this->bankData['montant_maximum'] ?? 5000000,
+                'bank_info' => $this->bankData
+            ];
+            
+        } catch (Exception $e) {
+            error_log("Erreur chargement config banque $bankId: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Authentifie une banque via API Key avec vérifications de sécurité complètes
+     * 
+     * @param string $bankId Identifiant de la banque
+     * @param string $apiKey Clé API pour l'authentification
+     * @return array Réponse d'authentification avec statut et données
+     */
+    public function authenticateBank($bankId, $apiKey) {
+        try {
+            // ÉTAPE 1: Vérification des IPs autorisées
+            $ipCheck = $this->checkIPAuthorization($bankId);
+            if ($ipCheck !== true) {
+                return $ipCheck;
+            }
+            
+            // ÉTAPE 2: Vérification User-Agent
+            $uaCheck = $this->checkUserAgentAuthorization($bankId);
+            if ($uaCheck !== true) {
+                return $uaCheck;
+            }
+            
+            // ÉTAPE 3: Requête d'authentification dans la base de données
+            $sql = "SELECT bp.*, p.nom as partenaire_nom, p.raison_sociale,
+                           p.email AS contact_email, p.telephone AS contact_telephone,
+                           p.timeout_api, p.retry_attempts, p.ip_whitelist, p.en_maintenance,
+                           bp.date_expiration, bp.ip_autorisees, bp.user_agent_autorises,
+                           bp.actif as bp_actif, bp.suspendu
+                    FROM banques_partenaire bp
+                    JOIN partenaires p ON bp.partenaire_id = p.id
+                    WHERE bp.bank_id = :bank_id 
+                    AND bp.api_key = :api_key 
+                    AND bp.actif = 1 
+                    AND bp.suspendu = 0
+                    AND p.actif = 1
+                    AND p.en_maintenance = 0
+                    AND (bp.date_expiration IS NULL OR bp.date_expiration > NOW())";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':bank_id' => $bankId,
+                ':api_key' => $apiKey
+            ]);
+            
+            $banque = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // ÉTAPE 4: Vérifier si l'authentification a réussi
+            if (!$banque) {
+                error_log("Échec authentification - BankID: $bankId");
+                return [
+                    "status" => "error",
+                    "code" => "AUTH_FAILED",
+                    "message" => "Authentification échouée: Identifiants invalides, compte suspendu, expiré ou en maintenance"
+                ];
+            }
+            
+            // ÉTAPE 5: Vérifier si le partenaire est en maintenance
+            if ($banque['en_maintenance'] == 1) {
+                return [
+                    "status" => "error",
+                    "code" => "PARTNER_MAINTENANCE",
+                    "message" => "Le partenaire est actuellement en maintenance"
+                ];
+            }
+            
+            // ÉTAPE 6: Vérifier les permissions nécessaires
+            $permissions = json_decode($banque['permissions'] ?? '["process_payments"]', true);
+            if (!$this->checkPermissions($permissions, ['process_payments'])) {
+                return [
+                    "status" => "error",
+                    "code" => "INSUFFICIENT_PERMISSIONS",
+                    "message" => "Permissions insuffisantes pour traiter les paiements"
+                ];
+            }
+            
+            // ÉTAPE 7: Charger la configuration spécifique de cette banque
+            $this->loadBankConfig($bankId);
+            
+            // ÉTAPE 8: Vérifier les limites de transaction
+            $checkLimits = $this->checkTransactionLimits($banque['id']);
+            if ($checkLimits !== true) {
+                return $checkLimits;
+            }
+            
+            // ÉTAPE 9: Enregistrer la connexion dans les logs
+            $this->enregistrerConnexion($banque['id']);
+            
+            // ÉTAPE 10: Mettre à jour la date du dernier accès
+            $this->updateLastAccess($banque['id']);
+            
+            // Journaliser le succès de l'authentification
+            error_log("Authentification réussie - Bank: " . $banque['partenaire_nom']);
+            
+            // Retourner la réponse de succès avec toutes les informations
+            return [
+                "status" => "success",
+                "message" => "Authentification réussie",
+                "data" => [
+                    "bank_name" => $banque['partenaire_nom'],
+                    "bank_id" => $banque['bank_id'],
+                    "permissions" => $permissions,
+                    "timeout" => $banque['timeout_api'],
+                    "retry_attempts" => $banque['retry_attempts'],
+                    "limits" => [
+                        "daily" => $this->apiConfig['limite_journaliere'],
+                        "monthly" => $this->apiConfig['limite_mensuelle'],
+                        "min_amount" => $this->apiConfig['montant_minimum'],
+                        "max_amount" => $this->apiConfig['montant_maximum']
+                    ]
+                ]
+            ];
+            
+        } catch (Exception $e) {
+            error_log("Erreur authentification banque: " . $e->getMessage());
+            return [
+                "status" => "error",
+                "code" => "AUTH_ERROR",
+                "message" => "Erreur technique lors de l'authentification"
+            ];
+        }
+    }
+    
+    // =========================================================================
+    // MÉTHODES DE GESTION DES PAIEMENTS
+    // =========================================================================
+    
+    /**
+     * Initialise un paiement d'impôt
+     * 
+     * Cette méthode :
+     * 1. Vérifie l'existence de l'impôt
+     * 2. Calcule le montant total
+     * 3. Vérifie les limites de montant
+     * 4. Récupère la répartition des bénéficiaires
+     * 5. Crée un paiement temporaire
+     * 6. Retourne les détails pour l'interface bancaire
+     * 
+     * @param int $impotId ID de l'impôt à payer
+     * @param int $nombreDeclarations Nombre de déclarations (ex: nombre de plaques)
+     * @return array Réponse avec les détails du paiement initialisé
+     */
+    public function initialiserPaiement($impotId, $nombreDeclarations) {
+        try {
+            // ÉTAPE 1: Récupérer les informations de l'impôt
+            $sql = "SELECT * FROM impots WHERE id = :impot_id AND actif = 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':impot_id' => $impotId]);
+            $impot = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$impot) {
+                return [
+                    "status" => "error",
+                    "code" => "IMPOT_NOT_FOUND",
+                    "message" => "Impôt non trouvé ou inactif"
+                ];
+            }
+            
+            // ÉTAPE 2: Calculer le montant total (prix unitaire × quantité)
+            $montantTotal = $impot['prix'] * $nombreDeclarations;
+            
+            // ÉTAPE 3: Vérifier que le montant est dans les limites autorisées
+            $amountCheck = $this->checkAmountLimits($montantTotal);
+            if ($amountCheck !== true) {
+                return $amountCheck;
+            }
+            
+            // ÉTAPE 4: Récupérer la répartition des bénéficiaires
+            $repartition = $this->getRepartitionBeneficiaires($impotId, $montantTotal);
+            
+            if (!$repartition) {
+                return [
+                    "status" => "error",
+                    "code" => "NO_BENEFICIARIES",
+                    "message" => "Aucun bénéficiaire configuré pour cet impôt"
+                ];
+            }
+            
+            // ÉTAPE 5: Générer une référence unique pour ce paiement
+            $referencePaiement = $this->genererReferenceUnique();
+            
+            // ÉTAPE 6: Créer un enregistrement temporaire dans la base
+            $idTemp = $this->creerPaiementTemporaire($referencePaiement, $impotId, $nombreDeclarations, $montantTotal, $repartition);
+            
+            // ÉTAPE 7: Enregistrer une notification pour le suivi
+            $this->enregistrerNotification(
+                'paiement_initialise',
+                'Paiement initialisé',
+                "Paiement d'impôt initialisé - Référence: $referencePaiement - Montant: $montantTotal",
+                null, // NIF si disponible
+                null, // ID déclaration si applicable
+                $idTemp
+            );
+            
+            // ÉTAPE 8: Construire l'URL de callback pour le webhook
+            $callbackUrl = $this->apiConfig['webhook_url'] . '?ref=' . $referencePaiement;
+            
+            // ÉTAPE 9: Vérifier que la création temporaire a réussi
+            if (!$idTemp) {
+                return [
+                    "status" => "error",
+                    "code" => "TEMP_PAYMENT_CREATION_FAILED",
+                    "message" => "Échec de la création du paiement temporaire"
+                ];
+            }
+            
+            // ÉTAPE 10: Retourner les détails du paiement initialisé
+            return [
+                "status" => "success",
+                "message" => "Paiement initialisé avec succès",
+                "data" => [
+                    "reference_paiement" => $referencePaiement,
+                    "impot" => [
+                        "id" => $impot['id'],
+                        "nom" => $impot['nom'],
+                        "description" => $impot['description'],
+                        "prix_unitaire" => $impot['prix'],
+                        "periode" => $impot['periode']
+                    ],
+                    "details" => [
+                        "nombre_declarations" => $nombreDeclarations,
+                        "montant_total" => $montantTotal,
+                        "montant_unitaire" => $impot['prix']
+                    ],
+                    "repartition" => $repartition,
+                    "callback_url" => $callbackUrl,
+                    "date_expiration" => date('Y-m-d H:i:s', strtotime('+1 hour')) // Expire dans 1 heure
+                ]
+            ];
+            
+        } catch (Exception $e) {
+            error_log("Erreur initialisation paiement: " . $e->getMessage());
+            return [
+                "status" => "error",
+                "code" => "INIT_PAYMENT_ERROR",
+                "message" => "Erreur lors de l'initialisation du paiement"
+            ];
+        }
+    }
+    
+    /**
+     * Traite un paiement d'impôt après initialisation
+     * 
+     * Cette méthode :
+     * 1. Récupère le paiement temporaire
+     * 2. Vérifie qu'il n'a pas expiré
+     * 3. Crée les enregistrements permanents dans les tables
+     * 4. Génère une référence bancaire
+     * 5. Supprime le temporaire
+     * 
+     * @param string $referencePaiement Référence unique du paiement
+     * @param string $methodePaiement Méthode de paiement utilisée (ex: 'carte', 'virement')
+     * @return array Réponse avec les détails du paiement traité
+     */
+    public function traiterPaiementImpot($referencePaiement, $methodePaiement) {
+        try {
+            // ÉTAPE 1: Récupérer le paiement temporaire depuis la base
+            $paiementTemp = $this->getPaiementTemporaire($referencePaiement);
+            
+            if (!$paiementTemp) {
+                return [
+                    "status" => "error",
+                    "code" => "PAYMENT_NOT_FOUND",
+                    "message" => "Paiement temporaire non trouvé"
+                ];
+            }
+            
+            // ÉTAPE 2: Vérifier que le paiement n'a pas expiré (1 heure de validité)
+            if (strtotime($paiementTemp['date_creation']) < strtotime('-1 hour')) {
+                return [
+                    "status" => "error",
+                    "code" => "PAYMENT_EXPIRED",
+                    "message" => "Le paiement a expiré"
+                ];
+            }
+            
+            // ÉTAPE 3: Démarrer une transaction SQL pour garantir l'intégrité des données
+            $this->pdo->beginTransaction();
+            
+            try {
+                // ÉTAPE 4: Créer l'enregistrement principal dans paiements_immatriculation
+                $idPaiement = $this->creerPaiementImmatriculation($paiementTemp, $methodePaiement);
+                
+                if (!$idPaiement) {
+                    throw new Exception("Échec création paiement immatriculation");
+                }
+                
+                // ÉTAPE 5: Générer une référence bancaire unique pour ce paiement
+                $referenceBancaire = $this->genererReferenceBancaire();
+                
+                // ÉTAPE 6: Créer l'enregistrement dans paiements_bancaires pour le suivi bancaire
+                $idPaiementBancaire = $this->creerPaiementBancaire($idPaiement, $paiementTemp, $methodePaiement, $referenceBancaire);
+                
+                if (!$idPaiementBancaire) {
+                    throw new Exception("Échec création paiement bancaire");
+                }
+                
+                // ÉTAPE 7: Créer les enregistrements de répartition vers les bénéficiaires
+                $repartitionSuccess = $this->creerRepartitionPaiement($idPaiement, $paiementTemp);
+                
+                if (!$repartitionSuccess) {
+                    throw new Exception("Échec création répartition");
+                }
+                
+                // ÉTAPE 8: Supprimer l'enregistrement temporaire maintenant que le paiement est traité
+                $this->supprimerPaiementTemporaire($referencePaiement);
+
+                // ÉTAPE 9: Enregistrer une notification pour le suivi
+                $this->enregistrerNotification(
+                    'paiement_traite',
+                    'Paiement traité',
+                    "Paiement d'impôt traité - Référence: $referencePaiement - Montant: {$paiementTemp['montant_total']}",
+                    null,
+                    null,
+                    $idPaiement
+                );
+                
+                // ÉTAPE 10: Valider la transaction (commit) si tout s'est bien passé
+                $this->pdo->commit();
+                
+                // ÉTAPE 11: Retourner la confirmation de succès
+                return [
+                    "status" => "success",
+                    "message" => "Paiement traité avec succès",
+                    "data" => [
+                        "paiement_id" => $idPaiement,
+                        "paiement_bancaire_id" => $idPaiementBancaire,
+                        "reference_bancaire" => $referenceBancaire, // Référence unique bancaire
+                        "reference_paiement" => $referencePaiement, // Référence originale du paiement
+                        "montant" => $paiementTemp['montant_total'],
+                        "nombre_declarations" => $paiementTemp['nombre_declarations'],
+                        "methode_paiement" => $methodePaiement,
+                        "date_paiement" => date('Y-m-d H:i:s')
+                    ]
+                ];
+                
+            } catch (Exception $e) {
+                // En cas d'erreur, annuler toutes les opérations de la transaction
+                $this->pdo->rollBack();
+                throw $e;
+            }
+            
+        } catch (Exception $e) {
+            error_log("Erreur traitement paiement impot: " . $e->getMessage());
+            return [
+                "status" => "error",
+                "code" => "PAYMENT_PROCESSING_ERROR",
+                "message" => "Erreur lors du traitement du paiement: " . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Annule un paiement d'impôt déjà traité
+     * 
+     * Cette méthode :
+     * 1. Récupère le paiement existant
+     * 2. Vérifie qu'il peut être annulé (non déjà servi)
+     * 3. Supprime tous les enregistrements liés
+     * 
+     * @param string $referencePaiement Référence unique du paiement à annuler
+     * @return array Réponse de confirmation d'annulation
+     */
+    public function annulerPaiementImpot($referencePaiement) {
+        try {
+            // ÉTAPE 1: Chercher le paiement dans la table paiements_bancaire
+            $paiement = $this->getPaiementImmatriculation($referencePaiement);
+            
+            if (!$paiement) {
+                return [
+                    "status" => "error",
+                    "code" => "PAYMENT_NOT_FOUND",
+                    "message" => "Paiement non trouvé"
+                ];
+            }
+            
+            // ÉTAPE 2: Vérifier si le paiement peut être annulé (non déjà servi)
+            if ($paiement['etat'] == 0) {
+                return [
+                    "status" => "error",
+                    "code" => "PAYMENT_ALREADY_SERVED",
+                    "message" => "Impossible d'annuler un paiement déjà servi"
+                ];
+            }
+            
+            // ÉTAPE 3: Démarrer une transaction SQL
+            $this->pdo->beginTransaction();
+            
+            try {
+                // ÉTAPE 4: Mettre à jour le statut dans paiements_bancaires
+                $this->annulerPaiementBancaire($paiement['id_paiement']);
+                
+                // ÉTAPE 5: Supprimer la répartition vers les bénéficiaires
+                $this->supprimerRepartitionPaiement($paiement['id_paiement']);
+                
+                // ÉTAPE 6: Supprimer le paiement principal
+                $this->supprimerPaiementImmatriculation($paiement['id_paiement']);
+                
+                // ÉTAPE 7: Valider la transaction
+                $this->pdo->commit();
+                
+                // ÉTAPE 8: Retourner la confirmation d'annulation
+                return [
+                    "status" => "success",
+                    "message" => "Paiement annulé avec succès",
+                    "data" => [
+                        "reference" => $referencePaiement,
+                        "type" => "definitif"
+                    ]
+                ];
+                
+            } catch (Exception $e) {
+                // Annuler la transaction en cas d'erreur
+                $this->pdo->rollBack();
+                throw $e;
+            }
+            
+        } catch (Exception $e) {
+            error_log("Erreur annulation paiement: " . $e->getMessage());
+            return [
+                "status" => "error",
+                "code" => "CANCELLATION_ERROR",
+                "message" => "Erreur lors de l'annulation du paiement"
+            ];
+        }
+    }
+    
+    // =========================================================================
+    // MÉTHODES UTILITAIRES ET SÉCURITÉ
+    // =========================================================================
+    
+    /**
+     * Vérifie l'autorisation IP pour une banque donnée
+     * 
+     * @param string $bankId Identifiant de la banque
+     * @return mixed true si autorisé, array d'erreur si non autorisé
+     */
+    private function checkIPAuthorization($bankId) {
+        try {
+            // Récupérer les listes d'IP autorisées
+            $sql = "SELECT ip_whitelist, ip_autorisees 
+                    FROM banques_partenaire bp
+                    JOIN partenaires p ON bp.partenaire_id = p.id
+                    WHERE bp.bank_id = :bank_id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':bank_id' => $bankId]);
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Si pas de configuration, autoriser par défaut
+            if (!$data) {
+                return true;
+            }
+            
+            // Récupérer l'adresse IP du client
+            $clientIP = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+            
+            // Vérifier la whitelist du partenaire (niveau global)
+            $ipWhitelist = json_decode($data['ip_whitelist'] ?? '[]', true);
+            if (!empty($ipWhitelist) && !in_array($clientIP, $ipWhitelist)) {
+                return [
+                    "status" => "error",
+                    "code" => "IP_NOT_AUTHORIZED",
+                    "message" => "Adresse IP non autorisée"
+                ];
+            }
+            
+            // Vérifier les IPs autorisées spécifiques à la banque
+            $ipAutorisees = json_decode($data['ip_autorisees'] ?? '[]', true);
+            if (!empty($ipAutorisees) && !in_array($clientIP, $ipAutorisees)) {
+                return [
+                    "status" => "error",
+                    "code" => "IP_NOT_AUTHORIZED",
+                    "message" => "Adresse IP non autorisée pour cette banque"
+                ];
+            }
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Erreur vérification IP: " . $e->getMessage());
+            return true; // En cas d'erreur, autoriser par sécurité
+        }
+    }
+    
+    /**
+     * Vérifie l'autorisation User-Agent pour une banque donnée
+     * 
+     * @param string $bankId Identifiant de la banque
+     * @return mixed true si autorisé, array d'erreur si non autorisé
+     */
+    private function checkUserAgentAuthorization($bankId) {
+        try {
+            // Récupérer les User-Agents autorisés
+            $sql = "SELECT user_agent_autorises FROM banques_partenaire WHERE bank_id = :bank_id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':bank_id' => $bankId]);
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Si pas de configuration, autoriser par défaut
+            if (!$data || empty($data['user_agent_autorises'])) {
+                return true;
+            }
+            
+            // Récupérer le User-Agent du client
+            $clientUA = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $uaAutorises = json_decode($data['user_agent_autorises'], true);
+            
+            // Vérifier si le User-Agent est autorisé
+            if (!empty($uaAutorises) && !in_array($clientUA, $uaAutorises)) {
+                return [
+                    "status" => "error",
+                    "code" => "USER_AGENT_NOT_AUTHORIZED",
+                    "message" => "User-Agent non autorisé"
+                ];
+            }
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Erreur vérification User-Agent: " . $e->getMessage());
+            return true; // En cas d'erreur, autoriser par sécurité
+        }
+    }
+    
+    /**
+     * Vérifie les limites de montant pour une transaction
+     * 
+     * @param float $montant Montant à vérifier
+     * @return mixed true si OK, array d'erreur si hors limites
+     */
+    private function checkAmountLimits($montant) {
+        // Vérifier le montant minimum
+        if ($montant < $this->apiConfig['montant_minimum']) {
+            return [
+                "status" => "error",
+                "code" => "AMOUNT_TOO_LOW",
+                "message" => "Le montant est inférieur au minimum autorisé: " . $this->apiConfig['montant_minimum']
+            ];
+        }
+        
+        // Vérifier le montant maximum
+        if ($montant > $this->apiConfig['montant_maximum']) {
+            return [
+                "status" => "error",
+                "code" => "AMOUNT_TOO_HIGH",
+                "message" => "Le montant dépasse le maximum autorisé: " . $this->apiConfig['montant_maximum']
+            ];
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Récupère le pourcentage de frais bancaires depuis la base
+     * 
+     * @return float Pourcentage de frais (0.5% par défaut)
+     */
+    private function getFraisPercentage() {
+        try {
+            $sql = "SELECT valeur FROM frais_bancaires WHERE type = 'pourcentage' AND actif = 1 ORDER BY date_creation DESC LIMIT 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Retourner la valeur ou 0.5% par défaut
+            return $result ? floatval($result['valeur']) : 0.5;
+        } catch (Exception $e) {
+            error_log("Erreur récupération frais: " . $e->getMessage());
+            return 0.5;
+        }
+    }
+    
+    /**
+     * Récupère le minimum de frais depuis la base
+     * 
+     * @return float Montant minimum de frais (100 par défaut)
+     */
+    private function getFraisMinimum() {
+        try {
+            $sql = "SELECT valeur FROM frais_bancaires WHERE type = 'minimum' AND actif = 1 ORDER BY date_creation DESC LIMIT 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Retourner la valeur ou 100 par défaut
+            return $result ? floatval($result['valeur']) : 100;
+        } catch (Exception $e) {
+            error_log("Erreur récupération frais minimum: " . $e->getMessage());
+            return 100;
+        }
+    }
+    
+    /**
+     * Crée un enregistrement dans paiements_bancaires
+     * 
+     * @param int $idPaiement ID du paiement principal
+     * @param array $paiementTemp Données du paiement temporaire
+     * @param string $methodePaiement Méthode de paiement utilisée
+     * @param string|null $referenceBancaire Référence bancaire (optionnelle)
+     * @return int|false ID du paiement bancaire créé ou false en cas d'erreur
+     */
+    private function creerPaiementBancaire($idPaiement, $paiementTemp, $methodePaiement, $referenceBancaire = null) {
+        try {
+            // Générer une référence bancaire si non fournie
+            $referenceBancaire = $referenceBancaire ?? $this->genererReferenceBancaire();
+            
+            $sql = "INSERT INTO paiements_bancaires 
+                    (id_paiement, bank_id, reference_bancaire, statut, donnees_initiation, date_creation)
+                    VALUES 
+                    (:id_paiement, :bank_id, :reference_bancaire, 'complete', :donnees_initiation, NOW())";
+            
+            // Préparer les données d'initiation au format JSON
+            $donneesInitiation = json_encode([
+                'montant' => $paiementTemp['montant_total'],
+                'methode_paiement' => $methodePaiement,
+                'nombre_declarations' => $paiementTemp['nombre_declarations'],
+                'impot_id' => $paiementTemp['impot_id']
+            ]);
+            
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([
+                ':id_paiement' => $idPaiement,
+                ':bank_id' => $this->currentBankId,
+                ':reference_bancaire' => $referenceBancaire,
+                ':donnees_initiation' => $donneesInitiation
+            ]);
+            
+            // Vérifier le résultat et journaliser les erreurs SQL
+            if (!$result) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("Erreur SQL paiement bancaire: " . print_r($errorInfo, true));
+                return false;
+            }
+            
+            // Retourner l'ID du nouvel enregistrement
+            return $this->pdo->lastInsertId();
+            
+        } catch (Exception $e) {
+            error_log("Erreur création paiement bancaire: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Annule un paiement dans paiements_bancaires
+     * 
+     * @param int $idPaiement ID du paiement à annuler
+     * @return bool Succès de l'opération
+     */
+    private function annulerPaiementBancaire($idPaiement) {
+        try {
+            $sql = "DELETE FROM paiements_bancaires
+                    WHERE id_paiement = :id_paiement";
+            
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([':id_paiement' => $idPaiement]);
+            
+        } catch (Exception $e) {
+            error_log("Erreur annulation paiement bancaire: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Génère une référence bancaire unique
+     * 
+     * Format: BANK + DateHeure + Random (ex: BANK202401151430451234)
+     * 
+     * @return string Référence bancaire unique
+     */
+    private function genererReferenceBancaire() {
+        return 'BANK' . date('YmdHis') . mt_rand(1000, 9999);
+    }
+    
+    // =========================================================================
+    // MÉTHODES EXISTANTES (conservées avec améliorations)
+    // =========================================================================
+    
+    /**
+     * Récupère la répartition des bénéficiaires pour un impôt
+     * 
+     * @param int $impotId ID de l'impôt
+     * @param float $montantTotal Montant total à répartir
+     * @return array|null Liste des bénéficiaires avec leurs parts
+     */
+    private function getRepartitionBeneficiaires($impotId, $montantTotal) {
+        try {
+            $sql = "SELECT ib.*, b.nom, b.telephone, b.numero_compte
+                    FROM impot_beneficiaires ib
+                    JOIN beneficiaires b ON ib.beneficiaire_id = b.id
+                    WHERE ib.impot_id = :impot_id AND b.actif = 1
+                    ORDER BY ib.id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':impot_id' => $impotId]);
+            $beneficiaires = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (empty($beneficiaires)) {
+                return null;
+            }
+            
+            // Calculer la répartition pour chaque bénéficiaire
+            $repartition = [];
+            foreach ($beneficiaires as $benef) {
+                if ($benef['type_part'] === 'pourcentage') {
+                    $montant = ($montantTotal * $benef['valeur_part']) / 100;
+                } else {
+                    $montant = $benef['valeur_part'];
+                }
+                
+                $repartition[] = [
+                    "beneficiaire_id" => $benef['beneficiaire_id'],
+                    "nom" => $benef['nom'],
+                    "telephone" => $benef['telephone'],
+                    "numero_compte" => $benef['numero_compte'],
+                    "type_part" => $benef['type_part'],
+                    "valeur_part_originale" => $benef['valeur_part'],
+                    "montant" => $montant
+                ];
+            }
+            
+            return $repartition;
+            
+        } catch (Exception $e) {
+            error_log("Erreur récupération bénéficiaires: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Crée un paiement temporaire dans la base
+     * 
+     * @param string $reference Référence unique
+     * @param int $impotId ID de l'impôt
+     * @param int $nombreDeclarations Nombre de déclarations
+     * @param float $montantTotal Montant total
+     * @param array $repartition Répartition JSON des bénéficiaires
+     * @return int|false ID du paiement temporaire ou false
+     */
+    private function creerPaiementTemporaire($reference, $impotId, $nombreDeclarations, $montantTotal, $repartition) {
+        try {
+            // S'assurer que la table temporaire existe
+            $this->creerTableTemporaire();
+            
+            $sql = "INSERT INTO paiements_immatriculation_temp 
+                    (reference, impot_id, nombre_declarations, montant_total, repartition_json, date_creation)
+                    VALUES 
+                    (:reference, :impot_id, :nombre_declarations, :montant_total, :repartition_json, NOW())";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':reference' => $reference,
+                ':impot_id' => $impotId,
+                ':nombre_declarations' => $nombreDeclarations,
+                ':montant_total' => $montantTotal,
+                ':repartition_json' => json_encode($repartition)
+            ]);
+            
+            return $this->pdo->lastInsertId();
+            
+        } catch (Exception $e) {
+            error_log("Erreur création paiement temporaire: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Crée la table temporaire si elle n'existe pas
+     */
+    private function creerTableTemporaire() {
+        try {
+            $sql = "CREATE TABLE IF NOT EXISTS paiements_immatriculation_temp (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                reference VARCHAR(50) UNIQUE NOT NULL,
+                impot_id INT NOT NULL,
+                nombre_declarations INT NOT NULL,
+                montant_total DECIMAL(15,2) NOT NULL,
+                repartition_json JSON NOT NULL,
+                date_creation DATETIME NOT NULL,
+                INDEX idx_reference (reference),
+                INDEX idx_date_creation (date_creation)
+            )";
+            
+            $this->pdo->exec($sql);
+            
+        } catch (Exception $e) {
+            error_log("Erreur création table temporaire: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Récupère un paiement temporaire par sa référence
+     * 
+     * @param string $reference Référence unique
+     * @return array|null Données du paiement ou null
+     */
+    private function getPaiementTemporaire($reference) {
+        try {
+            $sql = "SELECT * FROM paiements_immatriculation_temp WHERE reference = :reference";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':reference' => $reference]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+            
+        } catch (Exception $e) {
+            error_log("Erreur récupération paiement temporaire: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Supprime un paiement temporaire
+     * 
+     * @param string $reference Référence unique
+     * @return bool Succès de l'opération
+     */
+    private function supprimerPaiementTemporaire($reference) {
+        try {
+            $sql = "DELETE FROM paiements_immatriculation_temp WHERE reference = :reference";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([':reference' => $reference]);
+            
+        } catch (Exception $e) {
+            error_log("Erreur suppression paiement temporaire: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Crée un paiement permanent dans paiements_immatriculation
+     * 
+     * @param array $paiementTemp Données du paiement temporaire
+     * @param string $methodePaiement Méthode de paiement
+     * @return int|false ID du paiement créé ou false
+     */
+    private function creerPaiementImmatriculation($paiementTemp, $methodePaiement) {
+        try {
+            $impotId = (string)$paiementTemp['impot_id'];
+            
+            $sql = "INSERT INTO paiements_immatriculation 
+                    (montant, montant_initial, impot_id, mode_paiement, statut, date_paiement, 
+                     utilisateur_id, site_id, nombre_plaques, etat, particulier_id)
+                    VALUES 
+                    (:montant, :montant_initial, :impot_id, :mode_paiement, 'completed', NOW(),
+                     :utilisateur_id, :site_id, :nombre_plaques, 1, :particulier_id)";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([
+                ':montant' => $paiementTemp['montant_total'],
+                ':montant_initial' => $paiementTemp['montant_total'],
+                ':impot_id' => $impotId,
+                ':mode_paiement' => $methodePaiement,
+                ':utilisateur_id' => 0,
+                ':site_id' => 0,
+                ':nombre_plaques' => $paiementTemp['nombre_declarations'],
+                ':particulier_id' => 0
+            ]);
+            
+            if (!$result) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("Erreur SQL paiement immatriculation: " . print_r($errorInfo, true));
+                return false;
+            }
+            
+            return $this->pdo->lastInsertId();
+            
+        } catch (Exception $e) {
+            error_log("Erreur création paiement immatriculation: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Récupère un paiement depuis la table paiements_immatriculation
+     * 
+     * @param string $reference Référence bancaire
+     * @return array|null Données du paiement ou null
+     */
+    private function getPaiementImmatriculation($reference) {
+        try {
+            $sql = "
+                SELECT
+                    paiements_bancaires.*,
+                    paiements_immatriculation.etat
+                FROM paiements_bancaires
+                INNER JOIN paiements_immatriculation
+                    ON paiements_immatriculation.id = paiements_bancaires.id_paiement
+                WHERE paiements_bancaires.reference_bancaire = :reference_bancaire
+            ";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':reference_bancaire' => $reference]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+            
+        } catch (Exception $e) {
+            error_log("Erreur récupération paiement immatriculation: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Supprime un paiement de paiements_immatriculation
+     * 
+     * @param int $id ID du paiement
+     * @return bool Succès de l'opération
+     */
+    private function supprimerPaiementImmatriculation($id) {
+        try {
+            $sql = "DELETE FROM paiements_immatriculation WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([':id' => $id]);
+            
+        } catch (Exception $e) {
+            error_log("Erreur suppression paiement immatriculation: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Crée les enregistrements de répartition pour un paiement
+     * 
+     * @param int $idPaiement ID du paiement principal
+     * @param array $paiementTemp Données du paiement temporaire
+     * @return bool Succès de l'opération
+     */
+    private function creerRepartitionPaiement($idPaiement, $paiementTemp) {
+        try {
+            // Décoder la répartition JSON
+            $repartition = json_decode($paiementTemp['repartition_json'], true);
+            
+            // Créer un enregistrement pour chaque bénéficiaire
+            foreach ($repartition as $benef) {
+                $sql = "INSERT INTO repartition_paiements_immatriculation 
+                        (id_paiement_immatriculation, beneficiaire_id, type_part, 
+                         valeur_part_originale, valeur_part_calculee, montant, date_creation)
+                        VALUES 
+                        (:id_paiement, :beneficiaire_id, :type_part, 
+                         :valeur_originale, :valeur_calculee, :montant, NOW())";
+                
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([
+                    ':id_paiement' => $idPaiement,
+                    ':beneficiaire_id' => $benef['beneficiaire_id'],
+                    ':type_part' => $benef['type_part'],
+                    ':valeur_originale' => $benef['valeur_part_originale'],
+                    ':valeur_calculee' => $benef['montant'],
+                    ':montant' => $benef['montant']
+                ]);
+            }
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Erreur création répartition: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Supprime les répartitions d'un paiement
+     * 
+     * @param int $idPaiement ID du paiement
+     * @return bool Succès de l'opération
+     */
+    private function supprimerRepartitionPaiement($idPaiement) {
+        try {
+            $sql = "DELETE FROM repartition_paiements_immatriculation WHERE id_paiement_immatriculation = :id_paiement";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([':id_paiement' => $idPaiement]);
+            
+        } catch (Exception $e) {
+            error_log("Erreur suppression répartition: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Génère une référence unique pour un paiement
+     * 
+     * Format: IMP + DateHeure + Random (ex: IMP20240115143045ABC12)
+     * 
+     * @return string Référence unique
+     */
+    private function genererReferenceUnique() {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $reference = '';
+        for ($i = 0; $i < 5; $i++) {
+            $reference .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return 'IMP' . date('YmdHis') . $reference;
+    }
+    
+    /**
+     * Vérifie si les permissions requises sont présentes
+     * 
+     * @param array $permissions Permissions disponibles
+     * @param array $required Permissions requises
+     * @return bool true si toutes les permissions sont présentes
+     */
+    private function checkPermissions($permissions, $required) {
+        foreach ($required as $permission) {
+            if (!in_array($permission, $permissions)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Vérifie les limites de transaction pour une banque
+     * 
+     * @param int $banqueId ID de la banque
+     * @return mixed true si OK, array d'erreur si limites dépassées
+     */
+    private function checkTransactionLimits($banqueId) {
+        try {
+            // Vérifier la limite journalière
+            $sqlDaily = "SELECT COALESCE(SUM(montant), 0) as total_journalier 
+                        FROM paiements_bancaires pb
+                        JOIN paiements_immatriculation pi ON pb.id_paiement = pi.id
+                        WHERE pb.bank_id = :bank_id 
+                        AND DATE(pb.date_creation) = CURDATE() 
+                        AND pb.statut = 'complete'";
+            
+            $stmt = $this->pdo->prepare($sqlDaily);
+            $stmt->execute([':bank_id' => $this->bankData['bank_id']]);
+            $dailyTotal = $stmt->fetch(PDO::FETCH_ASSOC)['total_journalier'];
+            
+            if ($dailyTotal >= $this->apiConfig['limite_journaliere']) {
+                return [
+                    "status" => "error",
+                    "code" => "DAILY_LIMIT_EXCEEDED",
+                    "message" => "Limite journalière de transactions atteinte"
+                ];
+            }
+            
+            // Vérifier la limite mensuelle
+            $sqlMonthly = "SELECT COALESCE(SUM(montant), 0) as total_mensuel 
+                          FROM paiements_bancaires pb
+                          JOIN paiements_immatriculation pi ON pb.id_paiement = pi.id
+                          WHERE pb.bank_id = :bank_id 
+                          AND YEAR(pb.date_creation) = YEAR(CURDATE()) 
+                          AND MONTH(pb.date_creation) = MONTH(CURDATE())
+                          AND pb.statut = 'complete'";
+            
+            $stmt = $this->pdo->prepare($sqlMonthly);
+            $stmt->execute([':bank_id' => $this->bankData['bank_id']]);
+            $monthlyTotal = $stmt->fetch(PDO::FETCH_ASSOC)['total_mensuel'];
+            
+            if ($monthlyTotal >= $this->apiConfig['limite_mensuelle']) {
+                return [
+                    "status" => "error",
+                    "code" => "MONTHLY_LIMIT_EXCEEDED",
+                    "message" => "Limite mensuelle de transactions atteinte"
+                ];
+            }
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Erreur vérification limites: " . $e->getMessage());
+            return true; // En cas d'erreur, autoriser par sécurité
+        }
+    }
+    
+    /**
+     * Met à jour la date du dernier accès pour une banque
+     * 
+     * @param int $banqueId ID de la banque
+     */
+    private function updateLastAccess($banqueId) {
+        try {
+            $sql = "UPDATE banques_partenaire SET dernier_acces = NOW() WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $banqueId]);
+        } catch (Exception $e) {
+            error_log("Erreur mise à jour dernier accès: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Enregistre une connexion bancaire dans les logs
+     * 
+     * @param int $banqueId ID de la banque
+     */
+    private function enregistrerConnexion($banqueId) {
+        try {
+            $sql = "INSERT INTO connexions_bancaires 
+                    (banque_id, ip, user_agent, date_connexion)
+                    VALUES 
+                    (:banque_id, :ip, :user_agent, NOW())";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':banque_id' => $banqueId,
+                ':ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
+            ]);
+            
+        } catch (PDOException $e) {
+            error_log("Erreur enregistrement connexion: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Enregistre une notification dans la base de données
+     *
+     * @param string $type Type de notification
+     * @param string $titre Titre de la notification
+     * @param string $message Message de la notification
+     * @param string|null $nif NIF du contribuable
+     * @param int|null $idDeclaration ID de la déclaration
+     * @param int|null $idPaiement ID du paiement
+     * @return bool Succès de l'opération
+     */
+    private function enregistrerNotification($type, $titre, $message, $nif = null, $idDeclaration = null, $idPaiement = null)
+    {
+        try {
+            $sql = "INSERT INTO notifications 
+                    (type_notification, nif_contribuable, id_declaration, id_paiement, titre, message, date_creation) 
+                    VALUES 
+                    (:type, :nif, :id_declaration, :id_paiement, :titre, :message, NOW())";
+
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([
+                ':type' => $type,
+                ':nif' => $nif,
+                ':id_declaration' => $idDeclaration,
+                ':id_paiement' => $idPaiement,
+                ':titre' => $titre,
+                ':message' => $message,
+            ]);
+        } catch (PDOException $e) {
+            error_log("Erreur lors de l'enregistrement de la notification: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Récupère le NIF d'un particulier par son ID
+     * 
+     * @param int $particulierId ID du particulier
+     * @return string|null NIF du particulier ou null
+     */
+    private function getNIFByParticulierId($particulierId)
+    {
+        try {
+            $sql = "SELECT nif FROM particuliers WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $particulierId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ? $result['nif'] : null;
+        } catch (PDOException $e) {
+            error_log("Erreur récupération NIF: " . $e->getMessage());
+            return null;
+        }
+    }
+}
+?>
+
+
+
+Les calls php : 
+
+
+<?php
+/**
+ * Endpoint: Initialisation d'un paiement d'impôt
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start([
+        'cookie_secure' => true,
+        'cookie_httponly' => true,
+        'use_strict_mode' => true
+    ]);
+}
+
+// CORS headers
+require '../../headers/head.php';
+
+// Réponse au preflight OPTIONS
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
+    exit;
+}
+
+require_once __DIR__ . '/../../../class/DeclarationPaymentAPI.php';
+
+header('Content-Type: application/json');
+
+// Vérifier l'authentification
+$apiKey = $_SERVER['HTTP_X_API_KEY'] ?? '';
+$bankId = $_SERVER['HTTP_X_BANK_ID'] ?? '';
+
+if (empty($apiKey) || empty($bankId)) {
+    http_response_code(401);
+    echo json_encode([
+        "status" => "error", 
+        "code" => "MISSING_AUTH_HEADERS",
+        "message" => "En-têtes d'authentification manquants"
+    ]);
+    exit;
+}
+
+try {
+    $paymentAPI = new DeclarationPaymentAPI();
+    
+    // Authentifier la banque
+    $auth = $paymentAPI->authenticateBank($bankId, $apiKey);
+    if ($auth['status'] !== 'success') {
+        http_response_code(401);
+        echo json_encode($auth);
+        exit;
+    }
+    
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (empty($input['impot_id']) || empty($input['nombre_declarations'])) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "code" => "MISSING_PARAMETERS", 
+                "message" => "Paramètres 'impot_id' et 'nombre_declarations' requis"
+            ]);
+            exit;
+        }
+        
+        $impotId = (int)$input['impot_id'];
+        $nombreDeclarations = (int)$input['nombre_declarations'];
+        
+        if ($nombreDeclarations <= 0) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "code" => "INVALID_NUMBER",
+                "message" => "Le nombre de déclarations doit être supérieur à 0"
+            ]);
+            exit;
+        }
+        
+        $result = $paymentAPI->initialiserPaiement($impotId, $nombreDeclarations);
+        
+        if ($result['status'] === 'success') {
+            http_response_code(201);
+            echo json_encode($result);
+        } else {
+            http_response_code(400);
+            echo json_encode($result);
+        }
+        
+    } else {
+        http_response_code(405);
+        echo json_encode([
+            "status" => "error",
+            "code" => "METHOD_NOT_ALLOWED",
+            "message" => "Méthode non autorisée (POST requis)"
+        ]);
+    }
+
+} catch (Exception $e) {
+    error_log("Erreur endpoint initialisation paiement: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "code" => "SYSTEM_ERROR",
+        "message" => "Erreur système: Impossible d'initialiser le paiement."
+    ]);
+}
+?>
+
+
+
+
+<?php
+/**
+ * Endpoint: Traitement d'un paiement d'impôt
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start([
+        'cookie_secure' => true,
+        'cookie_httponly' => true,
+        'use_strict_mode' => true
+    ]);
+}
+
+// CORS headers
+require '../../headers/head.php';
+
+// Réponse au preflight OPTIONS
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
+    exit;
+}
+
+require_once __DIR__ . '/../../../class/DeclarationPaymentAPI.php';
+
+header('Content-Type: application/json');
+
+// Vérifier l'authentification
+$apiKey = $_SERVER['HTTP_X_API_KEY'] ?? '';
+$bankId = $_SERVER['HTTP_X_BANK_ID'] ?? '';
+
+if (empty($apiKey) || empty($bankId)) {
+    http_response_code(401);
+    echo json_encode([
+        "status" => "error", 
+        "code" => "MISSING_AUTH_HEADERS",
+        "message" => "En-têtes d'authentification manquants"
+    ]);
+    exit;
+}
+
+try {
+    $paymentAPI = new DeclarationPaymentAPI();
+    
+    // Authentifier la banque
+    $auth = $paymentAPI->authenticateBank($bankId, $apiKey);
+    if ($auth['status'] !== 'success') {
+        http_response_code(401);
+        echo json_encode($auth);
+        exit;
+    }
+    
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (empty($input['reference_paiement']) || empty($input['methode_paiement'])) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "code" => "MISSING_PARAMETERS",
+                "message" => "Paramètres 'reference_paiement' et 'methode_paiement' requis"
+            ]);
+            exit;
+        }
+        
+        // Valider la méthode de paiement
+        $methodesValides = ['mobile_money', 'cheque', 'banque', 'espece'];
+        if (!in_array($input['methode_paiement'], $methodesValides)) {
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "code" => "INVALID_PAYMENT_METHOD",
+                "message" => "Méthode de paiement invalide. Valeurs acceptées: " . implode(', ', $methodesValides)
+            ]);
+            exit;
+        }
+        
+        $result = $paymentAPI->traiterPaiementImpot($input['reference_paiement'], $input['methode_paiement']);
+        
+        if ($result['status'] === 'success') {
+            http_response_code(200);
+            echo json_encode($result);
+        } else {
+            http_response_code(400);
+            echo json_encode($result);
+        }
+        
+    } else {
+        http_response_code(405);
+        echo json_encode([
+            "status" => "error",
+            "code" => "METHOD_NOT_ALLOWED", 
+            "message" => "Méthode non autorisée (POST requis)"
+        ]);
+    }
+
+} catch (Exception $e) {
+    error_log("Erreur endpoint traitement paiement: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "code" => "SYSTEM_ERROR",
+        "message" => "Erreur système: Impossible de traiter le paiement."
+    ]);
+}
+?>
+
+
+
+<?php
+/**
+ * Endpoint: Annulation d'une déclaration
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start([
+        'cookie_secure' => true,
+        'cookie_httponly' => true,
+        'use_strict_mode' => true
+    ]);
+}
+
+// CORS headers
+require '../../headers/head.php';
+
+// Réponse au preflight OPTIONS
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
+    exit;
+}
+
+require_once __DIR__ . '/../../../class/DeclarationPaymentAPI.php';
+
+header('Content-Type: application/json');
+
+// Vérifier l'authentification
+$apiKey = $_SERVER['HTTP_X_API_KEY'] ?? '';
+$bankId = $_SERVER['HTTP_X_BANK_ID'] ?? '';
+
+if (empty($apiKey) || empty($bankId)) {
+    http_response_code(401);
+    echo json_encode(["status" => "error", "message" => "En-têtes d'authentification manquants"]);
+    exit;
+}
+
+try {
+    $paymentAPI = new DeclarationPaymentAPI();
+    
+    // Authentifier la banque
+    $auth = $paymentAPI->authenticateBank($bankId, $apiKey);
+    if ($auth['status'] !== 'success') {
+        http_response_code(401);
+        echo json_encode($auth);
+        exit;
+    }
+    
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (empty($input['reference_declaration'])) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Paramètre 'reference_declaration' requis"]);
+            exit;
+        }
+        
+        $result = $paymentAPI->annulerDeclaration($input['reference_declaration']);
+        
+        if ($result['status'] === 'success') {
+            http_response_code(200);
+            echo json_encode($result);
+        } else {
+            http_response_code(400);
+            echo json_encode($result);
+        }
+        
+    } else {
+        http_response_code(405);
+        echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)"]);
+    }
+
+} catch (Exception $e) {
+    error_log("Erreur endpoint annulation: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Erreur système: Impossible d'annuler la déclaration."]);
+}
+?>
+
+
+
+
+
+La doc : <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Paiement Impôts - Connexion Banque</title>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --green: #2ec4b6;
+            --orange: #ff9f1c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Saira", sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Styles pour la page de login */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--success), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .login-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--light);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--success);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(247, 37, 133, 0.2);
+            border: 1px solid var(--warning);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: var(--light);
+            text-align: center;
+        }
+
+        .success-message {
+            background: rgba(76, 201, 240, 0.2);
+            border: 1px solid var(--success);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: var(--light);
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Styles pour la documentation (identique aux précédents) */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--success), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+        }
+
+        h2 i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--accent);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .endpoint {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-family: monospace;
+        }
+
+        .method {
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .post { background: var(--primary); }
+        .get { background: var(--success); }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        pre {
+            font-family: "Courier New", monospace;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            color: #e9ecef;
+        }
+
+        .code-key { color: #4cc9f0; }
+        .code-string { color: #f72585; }
+        .code-number { color: #9d4edd; }
+        .code-comment { color: #6c757d; }
+        .code-function { color: #ff9f1c; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-primary { background: var(--primary); }
+        .badge-secondary { background: var(--secondary); }
+        .badge-accent { background: var(--accent); }
+        .badge-success { background: var(--green); }
+
+        .method-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .method-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .method-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--success);
+        }
+
+        .method-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--success);
+        }
+
+        .method-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+        }
+
+        .method-desc {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .error-code {
+            background: rgba(247, 37, 133, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            border-left: 3px solid var(--warning);
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(247, 37, 133, 0.2);
+            color: var(--light);
+            border: 1px solid var(--warning);
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logout-btn:hover {
+            background: var(--warning);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 201, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .container { padding: 1rem; }
+            .section { padding: 1.5rem; }
+            .method-list { grid-template-columns: 1fr; }
+            .login-card { padding: 2rem; margin: 1rem; }
+            .logout-btn { top: 1rem; right: 1rem; padding: 0.6rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <!-- Page de Login -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">🏦</div>
+                <h1 class="login-title">API Paiement Impôts</h1>
+                <p class="login-subtitle">Connexion Partenaire Bancaire</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="bankId">Bank ID</label>
+                    <input type="text" id="bankId" class="form-input" placeholder="Entrez votre Bank ID" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="apiKey">Clé API</label>
+                    <input type="password" id="apiKey" class="form-input" placeholder="Entrez votre clé API" required>
+                </div>
+
+                <div id="errorMessage" class="error-message hidden"></div>
+                <div id="successMessage" class="success-message hidden"></div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span id="loginText">Se connecter</span>
+                    <span id="loadingText" class="hidden">Connexion...</span>
+                </button>
+            </form>
+
+            <div style="margin-top: 2rem; text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                <p>⚠️ Authentification requise pour accéder à la documentation</p>
+                <p style="margin-top: 0.5rem;">Headers requis: X-API-Key & X-Bank-ID</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Documentation (cachée par défaut) -->
+    <div id="docPage" class="container hidden">
+        <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
+
+        <header>
+            <h1>API Paiement Impôts v1.0</h1>
+            <p class="subtitle">Documentation complète pour l'intégration des services de paiement des impôts</p>
+            <div class="pulse" style="display: inline-block; padding: 0.8rem 1.5rem; background: rgba(76, 201, 240, 0.2); border-radius: 30px; margin-top: 1rem;">
+                Authentification requise: X-API-Key & X-Bank-ID
+            </div>
+        </header>
+
+        <section class="section">
+            <h2><i>🔐</i> Authentification</h2>
+            <div class="card">
+                <p>Toutes les requêtes à l'API nécessitent les en-têtes suivants :</p>
+                <div class="code-block">
+                    <pre><span class="code-key">X-API-Key</span>: <span class="code-string">votre_cle_api_secrete</span>
+<span class="code-key">X-Bank-ID</span>: <span class="code-string">votre_bank_id</span>
+<span class="code-key">Content-Type</span>: <span class="code-string">application/json</span></pre>
+                </div>
+                
+                <p><strong>Nouveaux codes d'erreur d'authentification :</strong></p>
+                <div class="error-code">
+                    <strong>IP_NOT_AUTHORIZED</strong> (403) - Adresse IP non autorisée
+                </div>
+                <div class="error-code">
+                    <strong>USER_AGENT_NOT_AUTHORIZED</strong> (403) - User-Agent non autorisé
+                </div>
+                <div class="error-code">
+                    <strong>PARTNER_MAINTENANCE</strong> (503) - Partenaire en maintenance
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2><i>🌐</i> Endpoints Principaux</h2>
+
+            <!-- Initialiser Paiement -->
+            <div class="card">
+                <h3>1. Initialiser un Paiement</h3>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span>/api/paiement/initialiser-paiement.php</span>
+                </div>
+
+                <p><strong>Body :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"impot_id"</span>: <span class="code-number">1</span>,
+  <span class="code-key">"nombre_declarations"</span>: <span class="code-number">5</span>
+}</pre>
+                </div>
+
+                <p><strong>Réponse Succès (201) :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"status"</span>: <span class="code-string">"success"</span>,
+  <span class="code-key">"message"</span>: <span class="code-string">"Paiement initialisé avec succès"</span>,
+  <span class="code-key">"data"</span>: {
+    <span class="code-key">"reference_paiement"</span>: <span class="code-string">"IMP20241201143012ABC12"</span>,
+    <span class="code-key">"impot"</span>: {
+      <span class="code-key">"id"</span>: <span class="code-number">1</span>,
+      <span class="code-key">"nom"</span>: <span class="code-string">"Taxe Professionnelle"</span>,
+      <span class="code-key">"description"</span>: <span class="code-string">"Taxe annuelle sur les activités professionnelles"</span>,
+      <span class="code-key">"prix_unitaire"</span>: <span class="code-number">5000.00</span>,
+      <span class="code-key">"periode"</span>: <span class="code-string">"annuel"</span>
+    },
+    <span class="code-key">"details"</span>: {
+      <span class="code-key">"nombre_declarations"</span>: <span class="code-number">5</span>,
+      <span class="code-key">"montant_total"</span>: <span class="code-number">25000.00</span>,
+      <span class="code-key">"montant_unitaire"</span>: <span class="code-number">5000.00</span>
+    },
+    <span class="code-key">"repartition"</span>: [
+      {
+        <span class="code-key">"beneficiaire_id"</span>: <span class="code-number">1</span>,
+        <span class="code-key">"nom"</span>: <span class="code-string">"Trésor Public"</span>,
+        <span class="code-key">"telephone"</span>: <span class="code-string">"+243781234567"</span>,
+        <span class="code-key">"numero_compte"</span>: <span class="code-string">"SN00123456789"</span>,
+        <span class="code-key">"type_part"</span>: <span class="code-string">"pourcentage"</span>,
+        <span class="code-key">"valeur_part_originale"</span>: <span class="code-number">70.00</span>,
+        <span class="code-key">"montant"</span>: <span class="code-number">17500.00</span>
+      }
+    ],
+    <span class="code-key">"callback_url"</span>: <span class="code-string">"https://api.banque.com/webhook?ref=IMP20241201143012ABC12"</span>,
+    <span class="code-key">"date_expiration"</span>: <span class="code-string">"2024-12-01 15:30:12"</span>
+  }
+}</pre>
+                </div>
+
+                <p><strong>Codes d'erreur :</strong></p>
+                <div class="error-code">
+                    <strong>MISSING_AUTH_HEADERS</strong> (401) - En-têtes d'authentification manquants
+                </div>
+                <div class="error-code">
+                    <strong>MISSING_PARAMETERS</strong> (400) - Paramètres requis manquants
+                </div>
+                <div class="error-code">
+                    <strong>INVALID_NUMBER</strong> (400) - Nombre de déclarations invalide
+                </div>
+                <div class="error-code">
+                    <strong>IMPOT_NOT_FOUND</strong> (400) - Impôt non trouvé
+                </div>
+                <div class="error-code">
+                    <strong>NO_BENEFICIARIES</strong> (400) - Aucun bénéficiaire configuré
+                </div>
+                <div class="error-code">
+                    <strong>AMOUNT_TOO_LOW</strong> (400) - Montant inférieur au minimum
+                </div>
+                <div class="error-code">
+                    <strong>AMOUNT_TOO_HIGH</strong> (400) - Montant supérieur au maximum
+                </div>
+                <div class="error-code">
+                    <strong>SYSTEM_ERROR</strong> (500) - Erreur système
+                </div>
+            </div>
+
+            <!-- Traiter Paiement -->
+            <div class="card">
+                <h3>2. Traiter un Paiement</h3>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span>/api/paiement/traiter-paiement-impot.php</span>
+                </div>
+
+                <p><strong>Body :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"reference_paiement"</span>: <span class="code-string">"IMP20241201143012ABC12"</span>,
+  <span class="code-key">"methode_paiement"</span>: <span class="code-string">"mobile_money"</span>
+}</pre>
+                </div>
+
+                <p><strong>Réponse Succès (200) :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"status"</span>: <span class="code-string">"success"</span>,
+      <span class="code-key">"message"</span>: <span class="code-string">"Paiement traité avec succès"</span>,
+      <span class="code-key">"data"</span>: {
+        <span class="code-key">"paiement_id"</span>: <span class="code-string">"459"</span>,
+        <span class="code-key">"paiement_bancaire_id"</span>: <span class="code-string">"13"</span>,
+        <span class="code-key">"reference_bancaire"</span>: <span class="code-string">"BANK202601191509115060"</span>,
+        <span class="code-key">"reference_paiement"</span>: <span class="code-string">"IMP202601191506077JJH7"</span>,
+        <span class="code-key">"montant"</span>: <span class="code-string">"1040.00"</span>,
+        <span class="code-key">"nombre_declarations"</span>: <span class="code-number">52</span>,
+        <span class="code-key">"methode_paiement"</span>: <span class="code-string">"mobile_money"</span>,
+        <span class="code-key">"date_paiement"</span>: <span class="code-string">"2026-01-19 15:09:11"</span>
+  }
+}</pre>
+                </div>
+
+                <p><strong>Codes d'erreur :</strong></p>
+                <div class="error-code">
+                    <strong>PAYMENT_NOT_FOUND</strong> (400) - Paiement temporaire non trouvé
+                </div>
+                <div class="error-code">
+                    <strong>PAYMENT_EXPIRED</strong> (400) - Paiement expiré
+                </div>
+                <div class="error-code">
+                    <strong>INVALID_PAYMENT_METHOD</strong> (400) - Méthode de paiement invalide
+                </div>
+                <div class="error-code">
+                    <strong>DAILY_LIMIT_EXCEEDED</strong> (429) - Limite journalière atteinte
+                </div>
+                <div class="error-code">
+                    <strong>MONTHLY_LIMIT_EXCEEDED</strong> (429) - Limite mensuelle atteinte
+                </div>
+            </div>
+
+            <!-- Annuler Paiement -->
+            <div class="card">
+                <h3>3. Annuler un Paiement</h3>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span>/api/paiement/annuler-paiement-impot.php</span>
+                </div>
+
+                <p><strong>Body :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"reference_paiement"</span>: <span class="code-string">"IMP20241201143012ABC12"</span>
+}</pre>
+                </div>
+
+                <p><strong>Réponse Succès (200) :</strong></p>
+                <div class="code-block">
+                    <pre>{
+  <span class="code-key">"status"</span>: <span class="code-string">"success"</span>,
+  <span class="code-key">"message"</span>: <span class="code-string">"Paiement annulé avec succès"</span>,
+  <span class="code-key">"data"</span>: {
+    <span class="code-key">"reference"</span>: <span class="code-string">"BANK202601191509115060"</span>,
+    <span class="code-key">"type"</span>: <span class="code-string">"definitif"</span>
+  }
+}</pre>
+                </div>
+
+                <p><strong>Codes d'erreur :</strong></p>
+                <div class="error-code">
+                    <strong>PAYMENT_NOT_FOUND</strong> (400) - Paiement non trouvé
+                </div>
+                <div class="error-code">
+                    <strong>PAYMENT_ALREADY_SERVED</strong> (400) - Paiement déjà servi
+                </div>
+                <div class="error-code">
+                    <strong>CANCELLATION_ERROR</strong> (500) - Erreur lors de l'annulation
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2><i>⚙️</i> Fonctionnalités Implémentées</h2>
+            <div class="method-list">
+                <div class="method-item">
+                    <div class="method-icon">📋</div>
+                    <div class="method-name">Initialisation Paiement</div>
+                    <div class="method-desc">Calcul montant + répartition bénéficiaires</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">💰</div>
+                    <div class="method-name">Traitement Paiement</div>
+                    <div class="method-desc">Insertion tables définitives</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">❌</div>
+                    <div class="method-name">Annulation Paiement</div>
+                    <div class="method-desc">Gestion temporaire et définitive</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">🔐</div>
+                    <div class="method-name">Authentification</div>
+                    <div class="method-desc">API Key + Bank ID sécurisés</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">📊</div>
+                    <div class="method-name">Répartition Automatique</div>
+                    <div class="method-desc">Calcul parts bénéficiaires</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">⏰</div>
+                    <div class="method-name">Expiration</div>
+                    <div class="method-desc">Paiements temporaires (1h)</div>
+                </div>
+            </div>
+
+            <div class="method-list">
+                <div class="method-item">
+                    <div class="method-icon">🛡️</div>
+                    <div class="method-name">Sécurité IP/User-Agent</div>
+                    <div class="method-desc">Vérifications de sécurité renforcées</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">💰</div>
+                    <div class="method-name">Frais Dynamiques</div>
+                    <div class="method-desc">Gestion des frais depuis table dédiée</div>
+                </div>
+                <div class="method-item">
+                    <div class="method-icon">🔍</div>
+                    <div class="method-name">Vérifications Complètes</div>
+                    <div class="method-desc">Maintenance, expiration, limites</div>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <p>Documentation API Paiement Impôts v1.0 - Sécurité et fonctionnalités étendues</p>
+            <p style="margin-top: 0.5rem;">URL de production: <strong>https://mpako.net/Backend/models/calls</strong></p>
+        </footer>
+    </div>
+
+    <script>
+        // Création des étoiles animées
+        function createStars() {
+            const starsContainer = document.getElementById("stars");
+            const starsCount = 150;
+
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement("div");
+                star.classList.add("star");
+
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 3;
+                const delay = Math.random() * 5;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Gestion du login
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bankId = document.getElementById('bankId').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const loadingText = document.getElementById('loadingText');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // Reset messages
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+
+            // Show loading
+            loginBtn.disabled = true;
+            loginText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+
+            try {
+                const response = await fetch('../authentifier-partenaire.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bank_id: bankId,
+                        api_key: apiKey
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Stocker les informations d'authentification
+                    localStorage.setItem('bank_auth', JSON.stringify({
+                        bankId: bankId,
+                        apiKey: apiKey,
+                        partenaire: data.data
+                    }));
+
+                    successMessage.textContent = 'Connexion réussie! Redirection...';
+                    successMessage.classList.remove('hidden');
+
+                    // Rediriger vers la documentation après 1 seconde
+                    setTimeout(() => {
+                        showDocumentation();
+                    }, 1000);
+                } else {
+                    errorMessage.textContent = data.message || 'Erreur d\'authentification';
+                    errorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Erreur de connexion au serveur';
+                errorMessage.classList.remove('hidden');
+            } finally {
+                // Reset button
+                loginBtn.disabled = false;
+                loginText.classList.remove('hidden');
+                loadingText.classList.add('hidden');
+            }
+        });
+
+        // Afficher la documentation
+        function showDocumentation() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('docPage').classList.remove('hidden');
+        }
+
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('bank_auth');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('docPage').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Vérifier si l'utilisateur est déjà connecté au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            const auth = localStorage.getItem('bank_auth');
+            if (auth) {
+                showDocumentation();
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+Les regles : Toutes les tables sql existes déjà.
+
+
+NB : Sois précis, professionnel et très moderne.
+
+Mets tous en place du début à la fin. Pas question des extraits, ni de sauté mais je t'exige de tout mettre en place tous les scripts de tous les fichiers.
+
+Je bien dit tout de A-Z pas des extraits

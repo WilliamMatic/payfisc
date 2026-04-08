@@ -44,7 +44,7 @@ class Utilisateur extends Connexion
     public function utilisateurExisteParId($id)
     {
         try {
-            $sql = "SELECT u.*, s.nom as site_nom, s.code as site_code, s.formule as site_formule, p.id as province_id, p.code as province_code, s.parent AS extension_site
+            $sql = "SELECT u.*, s.nom as site_nom, s.code as site_code, s.formule as site_formule, s.template_carte_actuel, p.id as province_id, p.code as province_code, s.parent AS extension_site
                     FROM utilisateurs u 
                     LEFT JOIN sites s ON u.site_affecte_id = s.id 
                     INNER JOIN provinces p ON p.id = s.province_id
@@ -325,6 +325,7 @@ class Utilisateur extends Connexion
 
         // Récupération du mot de passe hashé
         $sql = "SELECT u.*, s.nom as site_nom, s.code as site_code, s.id as site_id, s.formule as site_formule, 
+                s.template_carte_actuel,
                 p.id as province_id, p.code as province_code, s.parent as extension_site
                 FROM utilisateurs u 
                 INNER JOIN sites s ON u.site_affecte_id = s.id 
@@ -370,7 +371,8 @@ class Utilisateur extends Connexion
                     "privileges_include" => $utilisateurData['privilege_json'],
                     "province_id" => $utilisateurData['province_id'],
                     "province_code" => $utilisateurData['province_code'],
-                    "extension_site" => $utilisateurData['extension_site']
+                    "extension_site" => $utilisateurData['extension_site'],
+                    "template_carte_actuel" => (int)$utilisateurData['template_carte_actuel']
                 ]
             ]
         ];
@@ -397,11 +399,9 @@ class Utilisateur extends Connexion
             // Décodage des privilèges JSON pour chaque utilisateur
             foreach ($resultats as &$utilisateur) {
                 $utilisateur['privileges'] = json_decode($utilisateur['privilege_json'], true) ?? [
-                    'simple' => false,
-                    'special' => false,
-                    'delivrance' => false,
-                    'plaque' => false,
-                    'reproduction' => false
+                    'ventePlaque' => ['simple' => false, 'special' => false, 'delivrance' => false, 'correctionErreur' => false, 'plaque' => false, 'reproduction' => false, 'series' => false, 'autresTaxes' => false],
+                    'vignette' => ['venteDirecte' => false, 'delivrance' => false, 'renouvellement' => false],
+                    'assurance' => ['venteDirecte' => false, 'delivrance' => false, 'renouvellement' => false],
                 ];
                 unset($utilisateur['privilege_json']);
             }
@@ -441,11 +441,9 @@ class Utilisateur extends Connexion
             // Décodage des privilèges JSON pour chaque utilisateur
             foreach ($resultats as &$utilisateur) {
                 $utilisateur['privileges'] = json_decode($utilisateur['privilege_json'], true) ?? [
-                    'simple' => false,
-                    'special' => false,
-                    'delivrance' => false,
-                    'plaque' => false,
-                    'reproduction' => false
+                    'ventePlaque' => ['simple' => false, 'special' => false, 'delivrance' => false, 'correctionErreur' => false, 'plaque' => false, 'reproduction' => false, 'series' => false, 'autresTaxes' => false],
+                    'vignette' => ['venteDirecte' => false, 'delivrance' => false, 'renouvellement' => false],
+                    'assurance' => ['venteDirecte' => false, 'delivrance' => false, 'renouvellement' => false],
                 ];
                 unset($utilisateur['privilege_json']);
             }
@@ -488,19 +486,36 @@ class Utilisateur extends Connexion
     private function validerEtFormaterPrivileges($privileges)
     {
         $privilegesParDefaut = [
-            'simple' => false,
-            'special' => false,
-            'delivrance' => false,
-            'plaque' => false,
-            'reproduction' => false
+            'ventePlaque' => [
+                'simple' => false,
+                'special' => false,
+                'delivrance' => false,
+                'correctionErreur' => false,
+                'plaque' => false,
+                'reproduction' => false,
+                'series' => false,
+                'autresTaxes' => false,
+            ],
+            'vignette' => [
+                'venteDirecte' => false,
+                'delivrance' => false,
+                'renouvellement' => false,
+            ],
+            'assurance' => [
+                'venteDirecte' => false,
+                'delivrance' => false,
+                'renouvellement' => false,
+            ],
         ];
 
-        // Fusion avec les valeurs par défaut
-        $privilegesValides = array_merge($privilegesParDefaut, $privileges);
-
-        // Validation des types (doivent être booléens)
-        foreach ($privilegesValides as $key => $value) {
-            $privilegesValides[$key] = (bool)$value;
+        // Fusion profonde avec les valeurs par défaut
+        $privilegesValides = [];
+        foreach ($privilegesParDefaut as $category => $defaults) {
+            $categoryData = isset($privileges[$category]) && is_array($privileges[$category]) ? $privileges[$category] : [];
+            $privilegesValides[$category] = [];
+            foreach ($defaults as $key => $defaultValue) {
+                $privilegesValides[$category][$key] = isset($categoryData[$key]) ? (bool)$categoryData[$key] : $defaultValue;
+            }
         }
 
         return json_encode($privilegesValides);

@@ -1,0 +1,7 @@
+const typeEnginOptions = ["Moto", "Voiture", "Camion", "Bus", "Autocar"];
+  const anneeOptions = Array.from({ length: 30 }, (_, i) => (2025 - i).toString());
+  const couleurOptions = ["Beige", "Blanc", "Bleu", "Gris", "Jaune", "Marron", "Noir", "Orange", "Rose", "Rouge", "Vert", "Violet"];
+  const puissanceOptions = ["3CV", "5CV", "7CV", "10CV", "12CV", "15CV", "20CV"];
+  const usageOptions = ["TAXI", "PRIVE", "SOCIETE", "TRANSPORT", "LOCATION"];
+  const marqueOptions = ["TVS", "HAOUJUE", "HAOJIN", "BOXER", "YAMAHA", "ZONG SHEN", "HONDA", "AG", "DT", "MAX 125", "TOYOTA", "NISSAN", "RENAULT", "PEUGEOT", "MERCEDES", "BMW", "AUDI", "VOLKSWAGEN", "HYUNDAI", "KIA"];
+  const energieOptions = ["Essence", "Diesel", "Électrique", "Hybride", "GPL"];

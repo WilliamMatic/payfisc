@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (GET requis)."]);
     exit;
 }
@@ -32,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 // ======================================================================
 
 if (!isset($_GET['province']) || empty(trim($_GET['province']))) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le paramètre 'province' est obligatoire."]);
     exit;
 }
@@ -53,14 +51,12 @@ try {
     if ($result['status'] === 'success') {
         echo json_encode($result);
     } else {
-        http_response_code(404);
         echo json_encode($result);
     }
 
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération du prix: " . $e->getMessage());
     
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: Impossible de récupérer le prix."

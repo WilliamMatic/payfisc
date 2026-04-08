@@ -2,3 +2,7 @@
 ALTER TABLE vignettes_delivrees 
 ADD COLUMN numero_vignette VARCHAR(100) NULL DEFAULT NULL 
 AFTER code_vignette;
+
+
+ADD COLUMN template_carte_actuel TINYINT(1) NOT NULL DEFAULT 0 
+AFTER formule;

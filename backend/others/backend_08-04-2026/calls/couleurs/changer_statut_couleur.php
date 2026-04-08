@@ -1,0 +1,43 @@
+<?php
+/**
+ * Script de changement de statut d'une couleur (actif/inactif)
+ */
+
+// Autoriser les requêtes cross-origin
+require '../headers/head.php';
+
+// Répondre directement aux requêtes OPTIONS (preflight)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once __DIR__ . '/../../class/EnginCouleur.php';
+
+header('Content-Type: application/json');
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
+    echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
+    exit;
+}
+
+if (!isset($_POST['id'], $_POST['actif'])) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "ID et statut de la couleur requis."]);
+    exit;
+}
+
+$id = (int) $_POST['id'];
+$actif = filter_var($_POST['actif'], FILTER_VALIDATE_BOOLEAN);
+
+try {
+    $couleurManager = new EnginCouleur();
+    $result = $couleurManager->changerStatutCouleur($id, $actif);
+    echo json_encode($result);
+
+} catch (Exception $e) {
+    error_log("Erreur lors du changement de statut d'une couleur : " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
+}

@@ -32,7 +32,6 @@ header('Content-Type: application/json; charset=utf-8');
  * @return void
  */
 function send_json(int $httpCode, array $payload): void {
-    http_response_code($httpCode);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     exit;
 }

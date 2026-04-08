@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -32,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 // ======================================================================
 
 if (!isset($_POST['nom_serie'], $_POST['province_id'], $_POST['debut_numeros'], $_POST['fin_numeros'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Tous les champs obligatoires sont requis."]);
     exit;
 }
@@ -72,6 +70,5 @@ try {
     error_log("Erreur lors de l'ajout de la série : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

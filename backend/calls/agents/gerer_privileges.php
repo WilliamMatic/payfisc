@@ -17,13 +17,11 @@ require_once __DIR__ . '/../../class/Agent.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
 
 if (!isset($_POST['agent_id'], $_POST['privileges'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "ID de l'agent et privilèges requis."]);
     exit;
 }
@@ -32,7 +30,6 @@ $agentId = (int) $_POST['agent_id'];
 $privileges = json_decode($_POST['privileges'], true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Format des privilèges invalide."]);
     exit;
 }
@@ -44,6 +41,5 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la gestion des privilèges d'un agent : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

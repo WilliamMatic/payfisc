@@ -28,6 +28,7 @@ import {
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import RefactorPrint from "./RefactorPrint";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 
 // Import des services pour les types d'engins seulement
 import {
@@ -163,7 +164,7 @@ export default function RefactorCarteClient() {
   useEffect(() => {
     if (utilisateur?.privileges_include) {
       try {
-        const parsed = JSON.parse(utilisateur.privileges_include);
+        const parsed = parseAndNormalizePrivileges(utilisateur.privileges_include);
         setParsedPrivileges(parsed);
       } catch (error) {
         console.error("Erreur parsing privileges:", error);
@@ -526,8 +527,8 @@ export default function RefactorCarteClient() {
     );
   }
 
-  // Vérifier si l'utilisateur a le privilège "reproduction"
-  if (!parsedPrivileges.delivrance) {
+  // Vérifier si l'utilisateur a le privilège "correctionErreur"
+  if (!parsedPrivileges?.ventePlaque?.correctionErreur) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
@@ -581,8 +582,8 @@ export default function RefactorCarteClient() {
   const renderEtapeVerification = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-red-100 p-2 rounded-lg">
-          <Search className="w-5 h-5 text-red-600" />
+        <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
+          <Search className="w-5 h-5 text-[#2D5B7A]" />
         </div>
         <div>
           <h2 className="text-xl font-semibold text-gray-900">
@@ -609,7 +610,7 @@ export default function RefactorCarteClient() {
               setErreurVerification("");
             }}
             placeholder="Ex: AA256 ou 123456"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <p className="text-gray-500 text-sm mt-2">
             Le système récupérera automatiquement les informations depuis la
@@ -629,17 +630,17 @@ export default function RefactorCarteClient() {
           </div>
         )}
 
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-4 border border-red-200">
+        <div className="bg-[#2D5B7A]/5 rounded-lg p-4 border border-[#2D5B7A]/15">
           <div className="flex items-start space-x-3">
-            <RefreshCw className="w-5 h-5 text-red-600 mt-0.5" />
+            <RefreshCw className="w-5 h-5 text-[#2D5B7A] mt-0.5" />
             <div>
-              <h4 className="font-semibold text-red-800 text-sm">
+              <h4 className="font-semibold text-[#2D5B7A] text-sm">
                 Service de Correction
               </h4>
-              <div className="text-lg font-bold text-red-800">
+              <div className="text-lg font-bold text-[#2D5B7A]">
                 Correction des données
               </div>
-              <div className="text-md font-semibold text-red-700 mt-1">
+              <div className="text-md font-semibold text-[#2D5B7A]/80 mt-1">
                 Aucun frais supplémentaire
               </div>
             </div>
@@ -650,7 +651,7 @@ export default function RefactorCarteClient() {
           <button
             onClick={handleVerification}
             disabled={isLoading || !idDGRK.trim()}
-            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
           >
             {isLoading ? (
               <>
@@ -731,8 +732,8 @@ export default function RefactorCarteClient() {
       {/* INFORMATIONS ASSUJETTI */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="bg-red-100 p-2 rounded-lg">
-            <User className="w-5 h-5 text-red-600" />
+          <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
+            <User className="w-5 h-5 text-[#2D5B7A]" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
@@ -756,7 +757,7 @@ export default function RefactorCarteClient() {
               value={formData.nom}
               onChange={(e) => handleInputChange("nom", e.target.value)}
               placeholder="Entrez le nom"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -769,7 +770,7 @@ export default function RefactorCarteClient() {
               value={formData.prenom}
               onChange={(e) => handleInputChange("prenom", e.target.value)}
               placeholder="Entrez le prénom"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -782,7 +783,7 @@ export default function RefactorCarteClient() {
               value={formData.telephone}
               onChange={(e) => handleInputChange("telephone", e.target.value)}
               placeholder="Ex: +243 00 00 00 000"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -795,7 +796,7 @@ export default function RefactorCarteClient() {
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="exemple@email.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -808,7 +809,7 @@ export default function RefactorCarteClient() {
               value={formData.adresse}
               onChange={(e) => handleInputChange("adresse", e.target.value)}
               placeholder="Entrez l'adresse complète"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -822,10 +823,10 @@ export default function RefactorCarteClient() {
                 value={formData.nif}
                 onChange={(e) => handleInputChange("nif", e.target.value)}
                 placeholder="NIF"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-              <div className="bg-red-100 p-2 rounded-lg">
-                <Hash className="w-5 h-5 text-red-600" />
+              <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
+                <Hash className="w-5 h-5 text-[#2D5B7A]" />
               </div>
             </div>
           </div>
@@ -835,8 +836,8 @@ export default function RefactorCarteClient() {
       {/* INFORMATIONS VÉHICULE */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="bg-red-100 p-2 rounded-lg">
-            <Car className="w-5 h-5 text-red-600" />
+          <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
+            <Car className="w-5 h-5 text-[#2D5B7A]" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
@@ -858,7 +859,7 @@ export default function RefactorCarteClient() {
             <select
               value={formData.typeEngin}
               onChange={(e) => handleInputChange("typeEngin", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sélectionner le type d'engin</option>
               {typeEngins.map((option) => (
@@ -878,7 +879,7 @@ export default function RefactorCarteClient() {
               value={formData.marque}
               onChange={(e) => handleInputChange("marque", e.target.value)}
               placeholder="Entrez la marque du véhicule"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -891,7 +892,7 @@ export default function RefactorCarteClient() {
               value={formData.energie}
               onChange={(e) => handleInputChange("energie", e.target.value)}
               placeholder="Ex: Essence, Diesel, Electrique"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -906,7 +907,7 @@ export default function RefactorCarteClient() {
                 handleInputChange("anneeFabrication", e.target.value)
               }
               placeholder="Ex: 2023"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -921,7 +922,7 @@ export default function RefactorCarteClient() {
                 handleInputChange("anneeCirculation", e.target.value)
               }
               placeholder="Ex: 2023"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -934,7 +935,7 @@ export default function RefactorCarteClient() {
               value={formData.couleur}
               onChange={(e) => handleInputChange("couleur", e.target.value)}
               placeholder="Ex: Rouge, Noir, Blanc"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -949,7 +950,7 @@ export default function RefactorCarteClient() {
                 handleInputChange("puissanceFiscal", e.target.value)
               }
               placeholder="Ex: 10 CV, 15 CV"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -962,7 +963,7 @@ export default function RefactorCarteClient() {
               value={formData.usage}
               onChange={(e) => handleInputChange("usage", e.target.value)}
               placeholder="Ex: Personnel, Transport, Commerce"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -977,7 +978,7 @@ export default function RefactorCarteClient() {
                 handleInputChange("numeroChassis", e.target.value)
               }
               placeholder="Entrez le numéro de châssis"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -992,7 +993,7 @@ export default function RefactorCarteClient() {
                 handleInputChange("numeroMoteur", e.target.value)
               }
               placeholder="Entrez le numéro de moteur"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
@@ -1000,24 +1001,24 @@ export default function RefactorCarteClient() {
 
       {/* VALIDATION */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between p-6 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-200 mb-6">
+        <div className="flex items-center justify-between p-6 bg-[#2D5B7A]/5 rounded-xl border border-[#2D5B7A]/15 mb-6">
           <div>
-            <h4 className="font-semibold text-red-800 text-sm">
+            <h4 className="font-semibold text-[#2D5B7A] text-sm">
               Service de Correction
             </h4>
-            <div className="text-2xl font-bold text-red-800">
+            <div className="text-2xl font-bold text-[#2D5B7A]">
               {donneesRefactor?.source === "externe"
                 ? "Création d'un nouvel enregistrement"
                 : "Refactorisation des données"}
             </div>
-            <div className="text-lg font-semibold text-red-700 mt-2">
+            <div className="text-lg font-semibold text-[#2D5B7A]/80 mt-2">
               {donneesRefactor?.source === "externe"
                 ? "Montant: 0$ (Nouvelle création)"
                 : "Aucun frais supplémentaire"}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-red-600 font-medium">Statut</div>
+            <div className="text-sm text-[#2D5B7A] font-medium">Statut</div>
             <div className="text-xl font-bold text-green-600">
               {donneesRefactor?.source === "externe"
                 ? "Nouvelle création"
@@ -1032,7 +1033,7 @@ export default function RefactorCarteClient() {
               setEtapeActuelle("verification");
               setErreurVerification("");
             }}
-            className="flex items-center space-x-2 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium border-2 border-transparent hover:border-gray-300"
+            className="flex items-center space-x-2 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors font-semibold border-2 border-transparent hover:border-gray-300"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Retour</span>
@@ -1041,7 +1042,7 @@ export default function RefactorCarteClient() {
           <button
             onClick={traiterRefactorisation}
             disabled={isLoading}
-            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium disabled:opacity-50"
+            className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md font-semibold disabled:opacity-50"
           >
             <RefreshCw className="w-4 h-4" />
             <span>
@@ -1074,8 +1075,8 @@ export default function RefactorCarteClient() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="bg-red-100 p-3 rounded-lg">
-              <RefreshCw className="w-8 h-8 text-red-600" />
+            <div className="bg-[#2D5B7A]/10 p-3 rounded-lg">
+              <RefreshCw className="w-8 h-8 text-[#2D5B7A]" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -1088,8 +1089,8 @@ export default function RefactorCarteClient() {
           </div>
 
           {/* DESCRIPTION */}
-          <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
-            <p className="text-red-800 text-sm">
+          <div className="mt-4 p-4 bg-[#2D5B7A]/5 rounded-lg border border-[#2D5B7A]/15">
+            <p className="text-[#2D5B7A] text-sm">
               Ce service permet de corriger les informations mal saisies sur les
               cartes roses existantes. Saisissez l'identifiant DGRK pour
               récupérer automatiquement les informations du véhicule.
@@ -1105,7 +1106,7 @@ export default function RefactorCarteClient() {
                     <div
                       className={`flex items-center justify-center w-8 h-8 rounded-full ${
                         etapeActuelle === etape
-                          ? "bg-red-600 text-white"
+                          ? "bg-[#2D5B7A] text-white"
                           : index <
                               [
                                 "verification",

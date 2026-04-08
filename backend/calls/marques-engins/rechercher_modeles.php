@@ -15,13 +15,11 @@ require_once __DIR__ . '/../../class/MarqueEngin.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
 
 if (!isset($_POST['marque_id']) || !isset($_POST['search_term'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Les paramètres marque_id et search_term sont obligatoires."]);
     exit;
 }
@@ -80,7 +78,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la recherche des modèles : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }
 ?>

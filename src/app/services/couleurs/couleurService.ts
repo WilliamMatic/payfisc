@@ -85,7 +85,7 @@ export async function getCouleurs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des couleurs",
@@ -133,7 +133,7 @@ export async function getCouleursActives(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -180,7 +180,7 @@ export async function addCouleur(couleurData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de la couleur",
@@ -227,7 +227,7 @@ export async function updateCouleur(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de la couleur",
@@ -266,7 +266,7 @@ export async function deleteCouleur(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de la couleur",
@@ -309,7 +309,7 @@ export async function toggleCouleurStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut de la couleur",
@@ -351,7 +351,7 @@ export async function searchCouleurs(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des couleurs",
@@ -395,7 +395,7 @@ export async function checkCouleurExists(nom: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de la couleur",
@@ -437,7 +437,7 @@ export async function getCouleurById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération de la couleur",

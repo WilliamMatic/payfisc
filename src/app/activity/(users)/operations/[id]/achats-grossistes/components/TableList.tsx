@@ -17,7 +17,7 @@ export default function TableList({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#2D5B7A]/5">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Assujetti
@@ -64,7 +64,7 @@ export default function TableList({
                   {achat.nombre_plaques > 5 && (
                     <button
                       onClick={() => afficherToutesPlaques(achat)}
-                      className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                      className="text-xs text-[#2D5B7A] hover:text-[#244D68] mt-1"
                     >
                       Voir toutes
                     </button>

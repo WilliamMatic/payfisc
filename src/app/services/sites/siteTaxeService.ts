@@ -145,7 +145,7 @@ export async function getTaxesBySite(siteId: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des taxes du site",
@@ -188,7 +188,7 @@ export async function getTaxesDisponibles(siteId: number): Promise<ApiResponse> 
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des taxes disponibles",
@@ -226,7 +226,7 @@ export async function getSiteTaxeById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération de l'association",
@@ -266,7 +266,7 @@ export async function checkSiteTaxeExists(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de l'association",
@@ -318,7 +318,7 @@ export async function addTaxeToSite(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de la taxe au site",
@@ -359,7 +359,7 @@ export async function updateSiteTaxe(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de la taxe",
@@ -396,7 +396,7 @@ export async function deleteSiteTaxe(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de la taxe",
@@ -435,7 +435,7 @@ export async function toggleSiteTaxeStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut de la taxe",

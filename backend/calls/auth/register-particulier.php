@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -36,14 +35,12 @@ $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Données JSON invalides."]);
     exit;
 }
 
 // Validation des champs obligatoires
 if (!isset($data['nom'], $data['prenom'], $data['telephone'], $data['password'], $data['confirmPassword'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Tous les champs obligatoires doivent être remplis."]);
     exit;
 }
@@ -118,7 +115,6 @@ try {
     if ($result['status'] === 'success') {
         http_response_code(201);
     } else {
-        http_response_code(400);
     }
     
     echo json_encode($result);
@@ -128,7 +124,6 @@ try {
     error_log("Erreur lors de l'inscription d'un particulier : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération d'inscription a échoué."]);
 }
 ?>

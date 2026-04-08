@@ -12,6 +12,7 @@ import UtilisateurHeader from "./UtilisateurHeader";
 import UtilisateurTable from "./UtilisateurTable";
 import UtilisateurModals from "./UtilisateurModals";
 import AlertMessage from "./AlertMessage";
+import { normalizePrivileges, emptyPrivileges } from '@/utils/normalizePrivileges';
 
 interface UtilisateurClientProps {
   initialUtilisateurs: UtilisateurType[];
@@ -42,15 +43,7 @@ export default function UtilisateurClient({
     telephone: "",
     adresse: "",
     site_affecte_id: 0,
-    privileges: {
-      simple: false,
-      special: false,
-      delivrance: false,
-      plaque: false,
-      reproduction: false,
-      series: false,
-      autresTaxes: false,
-    },
+    privileges: emptyPrivileges,
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -113,7 +106,7 @@ export default function UtilisateurClient({
       telephone: utilisateur.telephone,
       adresse: utilisateur.adresse,
       site_affecte_id: siteId, // Utiliser l'ID trouvé
-      privileges: utilisateur.privileges,
+      privileges: normalizePrivileges(utilisateur.privileges),
     });
     setShowEditModal(true);
   };
@@ -128,13 +121,16 @@ export default function UtilisateurClient({
     setShowStatusModal(true);
   };
 
-  // Mise à jour des privilèges dans le formData
-  const updatePrivilege = (privilege: keyof Privileges, value: boolean) => {
+  // Mise à jour des privilèges dans le formData (structure imbriquée)
+  const updatePrivilege = (category: keyof Privileges, key: string, value: boolean) => {
     setFormData((prev) => ({
       ...prev,
       privileges: {
         ...prev.privileges,
-        [privilege]: value,
+        [category]: {
+          ...(prev.privileges[category] as unknown as Record<string, boolean>),
+          [key]: value,
+        },
       },
     }));
   };
@@ -190,15 +186,7 @@ export default function UtilisateurClient({
             telephone: "",
             adresse: "",
             site_affecte_id: 0,
-            privileges: {
-              simple: false,
-              special: false,
-              delivrance: false,
-              plaque: false,
-              reproduction: false,
-              series: false,
-              autresTaxes: false,
-            },
+            privileges: emptyPrivileges,
           });
         }}
         onDeleteClose={() => {
@@ -239,15 +227,7 @@ export default function UtilisateurClient({
                 telephone: "",
                 adresse: "",
                 site_affecte_id: 0,
-                privileges: {
-                  simple: false,
-                  special: false,
-                  delivrance: false,
-                  plaque: false,
-                  reproduction: false,
-                  series: false,
-                  autresTaxes: false,
-                },
+                privileges: emptyPrivileges,
               });
               setShowAddModal(false);
 
@@ -298,15 +278,7 @@ export default function UtilisateurClient({
                 telephone: "",
                 adresse: "",
                 site_affecte_id: 0,
-                privileges: {
-                  simple: false,
-                  special: false,
-                  delivrance: false,
-                  plaque: false,
-                  reproduction: false,
-                  series: false,
-                  autresTaxes: false,
-                },
+                privileges: emptyPrivileges,
               });
 
               // Recharger la liste complète des utilisateurs

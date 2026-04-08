@@ -36,7 +36,6 @@ function validateApiToken() {
     $receivedToken = $_SERVER['HTTP_X_API_TOKEN'] ?? '';
     
     if (empty($receivedToken) || $receivedToken !== $expectedToken) {
-        http_response_code(401);
         echo json_encode([
             "status" => "error", 
             "message" => "Token API invalide ou manquant"
@@ -82,7 +81,6 @@ try {
             break;
 
         default:
-            http_response_code(405);
             echo json_encode([
                 "status" => "error", 
                 "message" => "Méthode non autorisée. Utilisez GET ou POST."
@@ -92,7 +90,6 @@ try {
 
 } catch (Exception $e) {
     error_log("❌ Erreur API Analytics: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: L'opération a échoué."
@@ -112,7 +109,6 @@ function handlePostRequest($analyticsManager) {
     $metricData = json_decode($jsonInput, true);
 
     if (!$metricData || !is_array($metricData)) {
-        http_response_code(400);
         echo json_encode([
             "status" => "error", 
             "message" => "Données JSON invalides ou manquantes"
@@ -124,7 +120,6 @@ function handlePostRequest($analyticsManager) {
     $requiredFields = ['name', 'value', 'id', 'url'];
     foreach ($requiredFields as $field) {
         if (!isset($metricData[$field])) {
-            http_response_code(400);
             echo json_encode([
                 "status" => "error", 
                 "message" => "Champ obligatoire manquant: $field"
@@ -154,7 +149,6 @@ function handlePostRequest($analyticsManager) {
         error_log("✅ Métrique sauvegardée: " . $metricData['name'] . " = " . $metricData['value']);
         
     } else {
-        http_response_code(400);
         
         // Journalisation de l'erreur
         error_log("❌ Erreur sauvegarde métrique: " . $result['message']);
@@ -219,7 +213,6 @@ function handleGetRequest($analyticsManager) {
     if ($result['status'] === 'success') {
         http_response_code(200);
     } else {
-        http_response_code(400);
     }
     
     echo json_encode($result);

@@ -119,7 +119,7 @@ export const verifierDGRK = async (
       return { status: 'error' as const, message: 'Erreur serveur (réponse invalide)' };
     }
 
-    if (!response.ok || data.status !== 'success' || !data.data) {
+    if (data.status !== 'success' || !data.data) {
       return {
         status: 'error',
         message: data.message || 'Plaque non trouvée localement',
@@ -203,7 +203,7 @@ export const rechercherPlaque = async (
       return { status: 'error' as const, message: 'Erreur de connexion à la base externe' };
     }
 
-    if (!response.ok || data.status === 'error') {
+    if (data.status === 'error') {
       return {
         status: 'error',
         message: data.message || 'Plaque non trouvée',
@@ -322,7 +322,7 @@ export const enregistrerPaiementVignette = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'enregistrement du paiement',
@@ -368,7 +368,7 @@ export const verifierVignetteExistante = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         existe: false,
@@ -464,7 +464,7 @@ export const inscrireAssujetti = async (
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (result.status === "error") {
       return {
         status: 'error',
         message: result.message || 'Erreur lors de l\'inscription',
@@ -564,7 +564,7 @@ export const verifierPaiementBancaire = async (
       return data;
     }
 
-    if (!response.ok || data.status !== 'success') {
+    if (data.status !== 'success') {
       return {
         status: 'error',
         message: data.message || 'Erreur lors de la vérification',
@@ -641,7 +641,7 @@ export const delivrerVignetteBancaire = async (
 
     const result = await response.json();
 
-    if (!response.ok || result.status !== 'success') {
+    if (result.status !== 'success') {
       return {
         status: 'error',
         message: result.message || 'Erreur lors de la délivrance',
@@ -690,7 +690,7 @@ export const listerVignettes = async (
 
     const data = await response.json();
 
-    if (!response.ok || data.status !== 'success') {
+    if (data.status !== 'success') {
       return {
         status: 'error',
         message: data.message || 'Erreur lors du chargement',
@@ -772,7 +772,7 @@ export const supprimerVignette = async (
 
     const data = await response.json();
 
-    if (!response.ok || data.status !== 'success') {
+    if (data.status !== 'success') {
       return {
         status: 'error',
         message: data.message || 'Erreur lors de la suppression',
@@ -836,7 +836,7 @@ export const getVignettesARenouveler = async (
 
     const data = await response.json();
 
-    if (!response.ok || data.status !== 'success') {
+    if (data.status !== 'success') {
       return {
         status: 'error',
         message: data.message || 'Erreur lors du chargement',
@@ -892,7 +892,7 @@ export const renouvelerVignette = async (
 
     const result = await response.json();
 
-    if (!response.ok || result.status !== 'success') {
+    if (result.status !== 'success') {
       return {
         status: 'error',
         message: result.message || 'Erreur lors du renouvellement',
@@ -945,7 +945,7 @@ export const verifierReferenceBancaire = async (
 
     const data = await response.json();
 
-    if (!response.ok || data.status !== 'success') {
+    if (data.status !== 'success') {
       return {
         status: 'error',
         message: data.message || 'Référence non trouvée',
@@ -1017,7 +1017,7 @@ export const delivrerVignetteGroupee = async (
 
     const result = await response.json();
 
-    if (!response.ok || result.status !== 'success') {
+    if (result.status !== 'success') {
       return {
         status: 'error',
         message: result.message || 'Erreur lors de la délivrance',

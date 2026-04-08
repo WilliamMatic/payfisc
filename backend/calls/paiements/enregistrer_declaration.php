@@ -25,7 +25,6 @@ require_once __DIR__ . '/../../class/Paiement.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -35,7 +34,6 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 // Vérifier que l'utilisateur a bien passé l'étape 1 (NIF vérifié)
 if (!isset($_SESSION['nif']) || !isset($_SESSION['contribuable_type'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Veuillez d'abord vérifier votre NIF."]);
     exit;
 }
@@ -44,7 +42,6 @@ if (!isset($_SESSION['nif']) || !isset($_SESSION['contribuable_type'])) {
 $required_fields = ['id_impot', 'montant', 'donnees_formulaire'];
 foreach ($required_fields as $field) {
     if (!isset($data[$field])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le paramètre $field est requis."]);
         exit;
     }
@@ -75,6 +72,5 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de l'enregistrement de la déclaration : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: Impossible d'enregistrer la déclaration."]);
 }

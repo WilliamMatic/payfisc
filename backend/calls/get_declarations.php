@@ -18,7 +18,6 @@ try {
     $statut = $data['statut'] ?? ''; // Optionnel: filtrer par statut
     
     if (empty($nif)) {
-        http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'NIF manquant']);
         exit;
     }
@@ -56,10 +55,8 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur de base de données: ' . $e->getMessage()]);
 } catch (Exception $e) {
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
 }
 ?>

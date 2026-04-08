@@ -34,14 +34,12 @@ try {
     if ($result['status'] === 'success') {
         http_response_code(200);
     } else {
-        http_response_code(400);
     }
     
     echo json_encode($result);
 
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération des commandes : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }
 ?>

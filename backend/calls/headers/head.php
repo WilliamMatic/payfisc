@@ -3,7 +3,8 @@
 	// CORS headers
 	$allowedOrigins = [
 		"http://localhost:3000",
-		"http://192.168.204.182:3000"
+		"http://192.168.204.182:3000",
+		"https://payfisc.vercel.app"
 	];
 
 	// Vérifier si le header Origin existe et est dans la liste autorisée

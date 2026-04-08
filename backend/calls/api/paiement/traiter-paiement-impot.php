@@ -29,7 +29,6 @@ $apiKey = $_SERVER['HTTP_X_API_KEY'] ?? '';
 $bankId = $_SERVER['HTTP_X_BANK_ID'] ?? '';
 
 if (empty($apiKey) || empty($bankId)) {
-    http_response_code(401);
     echo json_encode([
         "status" => "error", 
         "code" => "MISSING_AUTH_HEADERS",
@@ -44,7 +43,6 @@ try {
     // Authentifier la banque
     $auth = $paymentAPI->authenticateBank($bankId, $apiKey);
     if ($auth['status'] !== 'success') {
-        http_response_code(401);
         echo json_encode($auth);
         exit;
     }
@@ -53,7 +51,6 @@ try {
         $input = json_decode(file_get_contents('php://input'), true);
         
         if (empty($input['reference_paiement']) || empty($input['methode_paiement'])) {
-            http_response_code(400);
             echo json_encode([
                 "status" => "error",
                 "code" => "MISSING_PARAMETERS",
@@ -65,7 +62,6 @@ try {
         // Valider la méthode de paiement
         $methodesValides = ['mobile_money', 'cheque', 'banque', 'espece'];
         if (!in_array($input['methode_paiement'], $methodesValides)) {
-            http_response_code(400);
             echo json_encode([
                 "status" => "error",
                 "code" => "INVALID_PAYMENT_METHOD",
@@ -80,12 +76,10 @@ try {
             http_response_code(200);
             echo json_encode($result);
         } else {
-            http_response_code(400);
             echo json_encode($result);
         }
         
     } else {
-        http_response_code(405);
         echo json_encode([
             "status" => "error",
             "code" => "METHOD_NOT_ALLOWED", 
@@ -95,7 +89,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur endpoint traitement paiement: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode([
         "status" => "error",
         "code" => "SYSTEM_ERROR",

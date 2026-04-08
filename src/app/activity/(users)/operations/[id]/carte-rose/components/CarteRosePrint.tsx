@@ -1,8 +1,16 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { formatPlaque } from "../../../utils/formatPlaque";
 import { useAuth } from "@/contexts/AuthContext";
+
+// Utility to escape HTML entities and prevent XSS in print templates
+const escapeHtml = (text: string | undefined | null): string => {
+  if (!text) return "";
+  return String(text).replace(/[&<>"']/g, (char) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char)
+  );
+};
 
 interface PrintData {
   nom: string;
@@ -43,37 +51,61 @@ export default function CarteRosePrint({
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // QR Code : infos Assujetti + Engin
+  const qrValue = data ? JSON.stringify({
+    assujetti: { nom: data.nom, prenom: data.prenom, adresse: data.adresse, nif: data.nif },
+    engin: { plaque: data.numero_plaque, marque: data.marque, modele: data.modele, usage: data.usage_engin, chassis: data.numero_chassis, moteur: data.numero_moteur, annee_fab: data.annee_fabrication, couleur: data.couleur, puissance: data.puissance_fiscal }
+  }) : "";
+
   // Fonction pour formater la date actuelle
-  const getCurrentDate = () => {
+  const getCurrentDate = useCallback(() => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, "0");
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
     return `${day}/${month}/${year}`;
-  };
+  }, []);
 
-  // Fonction pour générer le code DGRK
-  const generateDGRKCode = () => {
+  // Fonction pour générer le code DGRK — memoized
+  const dgrkCode = useMemo(() => {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = now.getFullYear();
     const paiementId = data.paiement_id || "000000";
     const element = utilisateur?.site_code || "Carte";
     return `${element}/${month}/${year}/${paiementId}`;
-  };
+  }, [data.paiement_id, utilisateur?.site_code]);
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     if (printRef.current) {
       const printWindow = window.open("", "_blank");
       if (!printWindow) return;
 
-      // Récupérer le QR Code SVG
+      // Récupérer le QR Code canvas
       const qrElement = document.querySelector(".qr-code-canvas canvas");
       const qrDataUrl = qrElement
         ? (qrElement as HTMLCanvasElement).toDataURL()
         : "";
 
-      const printContent = `
+      // Escape all user data for safe HTML injection
+      const safeNom = escapeHtml(data.nom);
+      const safePrenom = escapeHtml(data.prenom);
+      const safeAdresse = escapeHtml(data.adresse);
+      const safeAnneeCirculation = escapeHtml(data.annee_circulation);
+      const safeNumeroPlaque = escapeHtml(data.numero_plaque);
+      const safeMarque = escapeHtml(data.marque);
+      const safeModele = escapeHtml(data.modele);
+      const safeUsageEngin = escapeHtml(data.usage_engin);
+      const safeNumeroChassis = escapeHtml(data.numero_chassis);
+      const safeNumeroMoteur = escapeHtml(data.numero_moteur);
+      const safeAnneeFab = escapeHtml(data.annee_fabrication);
+      const safeCouleur = escapeHtml(data.couleur);
+      const safePuissance = escapeHtml(data.puissance_fiscal);
+      const safeProvinceCode = escapeHtml(utilisateur?.province_code);
+      const safePlaqueFmt = escapeHtml(formatPlaque(data.numero_plaque));
+
+      // Si Template Carte Actuel n'est pas activé
+      const printContentSansTemplate = `
         <!DOCTYPE html>
         <html>
           <head>
@@ -206,7 +238,7 @@ export default function CarteRosePrint({
             <!-- RECTO (PAGE 1) -->
             <div class="card" style="height: 40mm !important;">
               <div style="position: absolute;top: 0;left: 0;right: 0;display: flex;justify-content: center;align-items: center;">
-                <span style="font-size: .5em;">${generateDGRKCode()}</span>
+                <span style="font-size: .5em;">${dgrkCode}</span>
               </div>
               <table>
                 <tbody>
@@ -299,7 +331,7 @@ export default function CarteRosePrint({
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img src="https://willyaminsi.com/signature-fixe.jpg" width="70" height="50" style="position: relative;top: 0px;"></div>
+                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             
@@ -315,21 +347,265 @@ export default function CarteRosePrint({
         </html>
       `;
 
-      printWindow.document.write(printContent);
+      // Si Template Carte Actuel est activé
+      const printContentAvecTemplate = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Immatriculation - ${data.numero_plaque}</title>
+            <style>
+              @page { 
+                size: auto; 
+                margin: 0; 
+              }
+              body { 
+                margin: 0; 
+                padding: 10mm; 
+                background: #fff; 
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 70vh;
+                box-sizing: border-box;
+              }
+              
+              /* TAILLE EXACTE 86mm × 54mm pour l'impression */
+              .card {
+                width: 86mm;
+                border-radius: 1mm;
+                padding: 2.5mm;
+                box-sizing: border-box;
+                position: relative;
+                top: 38px;
+                background: #fff;
+              }
+              
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: 2.2mm; 
+              }
+              
+              td, th { 
+                padding: 0.8mm; 
+                text-align: left; 
+                vertical-align: middle; 
+                border-bottom: 0.15mm solid #eee;
+              }
+              
+              th { 
+                width: 45%; 
+                font-weight: 700; 
+                font-size: 2.4mm; 
+              }
+              
+              td { 
+                width: 55%; 
+                font-weight: bolder; 
+              }
+
+              .plaque-number {
+                font-weight: bold;
+                font-size: 2.6mm;
+                color: #dc2626;
+              }
+
+              .qr { 
+                position: absolute; 
+                right: 7mm; 
+                bottom: 8mm; 
+                width: 13mm; 
+                height: 13mm; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                border: none;
+                padding: 0;
+                background: transparent;
+              }
+
+              .qr img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+              }
+
+              .sig-wrap { 
+                position: absolute; 
+                right: 2mm; 
+                bottom: -2mm; 
+                width: 25mm; 
+                height: 9mm; 
+                display: flex; 
+                align-items: flex-end; 
+                justify-content: center; 
+              }
+              
+              .signature-box { 
+                width: 100%; 
+                border-top: 0.15mm dashed rgba(255,255,255,0.0); 
+                padding-top: 1mm; 
+                font-size: 2mm; 
+                text-align: center; 
+              }
+
+              /* Force le saut de page après le recto */
+              .page-break {
+                page-break-after: always;
+                break-after: page;
+              }
+
+              .instruction {
+                width: 86mm;
+                text-align: center;
+                font-size: 2.5mm;
+                color: #666;
+                margin: 3mm 0;
+                padding: 1.5mm;
+                background: #f9f9f9;
+              }
+
+              @media print {
+                body {
+                  padding: 5mm;
+                }
+                .instruction {
+                  display: none;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <!-- RECTO (PAGE 1) -->
+            <div class="card" style="height: 40mm !important;">
+              <div style="position: absolute;top: 0;left: 0;right: 0;display: flex;justify-content: center;align-items: center;">
+                <span style="font-size: .5em;">${dgrkCode}</span>
+              </div>
+              <table>
+                <tbody>
+                  <tr>
+                    <th></th>
+                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${
+                      data.nom
+                    } ${data.prenom}</td>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${
+                      data.adresse
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: 8px;">
+                    <th></th>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td>
+                  </tr>
+
+                  <tr>
+                    <th style="position: relative; top: 9px;"></th>
+                    <td style="position: relative; top: ${
+                      data.adresse && data.adresse.length > 33 ? "13px" : "24px"
+                    };text-transform: uppercase;left: 10px;">${data.annee_circulation}</td>
+                  </tr>
+                  <tr style="position: relative; top: 23px;">
+                    <th></th>
+                    <td style="position: relative; top: ${
+                      data.adresse && data.adresse.length > 33 ? "2px" : "14px"
+                    };text-transform: uppercase;" class="plaque-number">${
+        utilisateur?.province_code || ""
+      } ${formatPlaque(data.numero_plaque) || ""}</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div class="qr">
+                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
+                <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span>
+              </div>
+            </div>
+
+            <!-- VERSO (PAGE 2) -->
+            <div class="card" style="height: 40mm;margin-top: 30px;">
+              <table>
+                <tbody>
+                  <tr style="position: relative; top: -11px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.modele
+                        ? `${data.marque} ${data.modele}`
+                        : data.marque
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -17px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${data.usage_engin}</td>
+                  </tr>
+                  <tr style="position: relative; top: -20px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_chassis || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -26px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_moteur || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -31px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.annee_fabrication || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -36px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.couleur || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -40px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.puissance_fiscal || "-"
+                    }</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="sig-wrap">
+                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
+              </div>
+            </div>
+            
+            <script>
+              window.onload = function() {
+                // Attendre un peu pour s'assurer que tout est chargé
+                setTimeout(() => {
+                  window.print();
+                }, 300);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(utilisateur?.template_carte_actuel ? printContentAvecTemplate : printContentSansTemplate);
       printWindow.document.close();
     }
-  };
+  }, [data, dgrkCode, utilisateur?.province_code, utilisateur?.site_code]);
 
-  const toggleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
+  const toggleFlip = useCallback(() => {
+    setIsFlipped(prev => !prev);
+  }, []);
 
   // AJOUT: Gestion de l'ouverture de la fiche
-  const handleOpenFiche = () => {
+  const handleOpenFiche = useCallback(() => {
     if (onOpenFiche) {
       onOpenFiche();
     }
-  };
+  }, [onOpenFiche]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -345,7 +621,7 @@ export default function CarteRosePrint({
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      document.body.style.removeProperty("overflow");
     };
   }, [isOpen, onClose]);
 
@@ -432,7 +708,7 @@ export default function CarteRosePrint({
             style={{ position: "absolute", left: "-9999px" }}
           >
             <QRCodeCanvas
-              value={data.numero_plaque}
+              value={qrValue}
               size={128}
               level="H"
               bgColor="#FFFFFF"
@@ -587,6 +863,7 @@ export default function CarteRosePrint({
               <div
                 className={`card ${isFlipped ? "flipped" : ""}`}
                 onClick={toggleFlip}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlip(); } }}
                 role="button"
                 aria-label="Carte 86 par 54 millimètres recto verso"
                 tabIndex={0}
@@ -596,7 +873,7 @@ export default function CarteRosePrint({
                 <div className="flip">
                   {/* RECTO */}
                   <div className="face front" aria-hidden={isFlipped}>
-                    <div className="dgrk-code">{generateDGRKCode()}</div>
+                    <div className="dgrk-code">{dgrkCode}</div>
                     <table>
                       <tbody>
                         <tr>
@@ -629,7 +906,7 @@ export default function CarteRosePrint({
                     {/* QR Code */}
                     <div className="qr" aria-hidden={isFlipped} title="QR code">
                       <QRCodeCanvas
-                        value={data.numero_plaque}
+                        value={qrValue}
                         size={40}
                         level="H"
                         bgColor="#FFFFFF"

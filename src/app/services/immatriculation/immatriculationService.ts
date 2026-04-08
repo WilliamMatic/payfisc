@@ -174,7 +174,7 @@ export async function verifierParticulierParTelephone(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du particulier",
@@ -216,7 +216,7 @@ export async function rechercherModeles(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des modèles",
@@ -256,7 +256,7 @@ export async function rechercherPuissances(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des puissances",
@@ -295,7 +295,7 @@ export async function getNumeroPlaqueDisponible(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération du numéro de plaque",
@@ -333,7 +333,7 @@ export async function verifierNumeroChassis(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -422,9 +422,19 @@ export async function soumettreImmatriculation(
       },
     );
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error("Réponse non-JSON du serveur:", responseText.substring(0, 500));
+      return {
+        status: "error",
+        message: `Erreur serveur (HTTP ${response.status}): ${responseText.substring(0, 200)}`,
+      };
+    }
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la soumission de l'immatriculation",
@@ -446,10 +456,11 @@ export async function soumettreImmatriculation(
 
     return data;
   } catch (error) {
-    console.error("Soumettre immatriculation error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Soumettre immatriculation error:", msg);
     return {
       status: "error",
-      message: "Erreur réseau lors de la soumission de l'immatriculation",
+      message: `Erreur: ${msg}`,
     };
   }
 }
@@ -481,7 +492,7 @@ export async function annulerImmatriculation(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'annulation de l'immatriculation",
@@ -524,7 +535,7 @@ export async function rechercherCouleur(searchTerm: string): Promise<any> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des couleurs",
@@ -565,7 +576,7 @@ export async function ajouterCouleur(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de la couleur",

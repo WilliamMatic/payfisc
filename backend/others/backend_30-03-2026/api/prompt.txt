@@ -1,0 +1,2566 @@
+J'ai ce screen : import { usePrivilegeCheck } from "@/hooks/usePrivilegeCheck";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import {
+  Calendar,
+  Car,
+  Check,
+  ChevronDown,
+  CreditCard,
+  Download,
+  FileText,
+  Filter,
+  Hash,
+  MapPin,
+  Phone,
+  Printer,
+  RefreshCw,
+  Search,
+  User,
+  X,
+  Zap,
+} from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Types pour les données (inchangés)
+interface Assujetti {
+  id: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  adresse: string;
+}
+
+interface Engin {
+  id: string;
+  plaque: string;
+  type: string;
+  marque: string;
+  modele: string;
+  energie: string;
+  anneeFabrication: string;
+  couleur: string;
+  puissanceFiscale: string;
+}
+
+interface Paiement {
+  id: string;
+  numero: string;
+  date: string;
+  heure: string;
+  montantUSD: number;
+  montantCDF: number;
+  modePaiement: string;
+  statut: "payé" | "en attente" | "annulé";
+  assujettiId: string;
+  enginId: string;
+}
+
+// Données de test (inchangées)
+const MOCK_PAIEMENTS: Paiement[] = [
+  {
+    id: "1",
+    numero: "PAY-2024-001",
+    date: "15/01/2024",
+    heure: "14:30",
+    montantUSD: 10,
+    montantCDF: 22000,
+    modePaiement: "Espèces",
+    statut: "payé",
+    assujettiId: "1",
+    enginId: "1",
+  },
+  {
+    id: "2",
+    numero: "PAY-2024-002",
+    date: "16/01/2024",
+    heure: "09:15",
+    montantUSD: 10,
+    montantCDF: 22000,
+    modePaiement: "Mobile Money",
+    statut: "payé",
+    assujettiId: "2",
+    enginId: "2",
+  },
+  {
+    id: "3",
+    numero: "PAY-2024-003",
+    date: "17/01/2024",
+    heure: "16:45",
+    montantUSD: 10,
+    montantCDF: 22000,
+    modePaiement: "Espèces",
+    statut: "en attente",
+    assujettiId: "3",
+    enginId: "3",
+  },
+  {
+    id: "4",
+    numero: "PAY-2024-004",
+    date: "18/01/2024",
+    heure: "11:20",
+    montantUSD: 10,
+    montantCDF: 22000,
+    modePaiement: "Espèces",
+    statut: "payé",
+    assujettiId: "4",
+    enginId: "4",
+  },
+  {
+    id: "5",
+    numero: "PAY-2024-005",
+    date: "19/01/2024",
+    heure: "13:00",
+    montantUSD: 10,
+    montantCDF: 22000,
+    modePaiement: "Carte Bancaire",
+    statut: "annulé",
+    assujettiId: "5",
+    enginId: "5",
+  },
+  {
+    id: "6",
+    numero: "PAY-2024-006",
+    date: "20/01/2024",
+    heure: "10:30",
+    montantUSD: 10,
+    montantCDF: 22000,
+    modePaiement: "Espèces",
+    statut: "payé",
+    assujettiId: "6",
+    enginId: "6",
+  },
+];
+
+const MOCK_ASSUJETTIS: Record<string, Assujetti> = {
+  "1": {
+    id: "1",
+    nom: "DUPONT",
+    prenom: "Jean",
+    telephone: "+243 81 234 5678",
+    adresse: "Avenue de la Paix N°123, Kinshasa",
+  },
+  "2": {
+    id: "2",
+    nom: "KABILA",
+    prenom: "Joseph",
+    telephone: "+243 82 345 6789",
+    adresse: "Boulevard du 30 juin, Gombe",
+  },
+  "3": {
+    id: "3",
+    nom: "MBUYI",
+    prenom: "Sarah",
+    telephone: "+243 83 456 7890",
+    adresse: "Quartier Matonge, Kinshasa",
+  },
+  "4": {
+    id: "4",
+    nom: "LUBELO",
+    prenom: "David",
+    telephone: "+243 84 567 8901",
+    adresse: "Avenue des Aviateurs, Lingwala",
+  },
+  "5": {
+    id: "5",
+    nom: "NKASHAMA",
+    prenom: "Rachel",
+    telephone: "+243 85 678 9012",
+    adresse: "Commune de la Gombe, Kinshasa",
+  },
+  "6": {
+    id: "6",
+    nom: "TSHILOMBO",
+    prenom: "Pierre",
+    telephone: "+243 86 789 0123",
+    adresse: "Quartier industriel, Limete",
+  },
+};
+
+const MOCK_ENGINS: Record<string, Engin> = {
+  "1": {
+    id: "1",
+    plaque: "XP002",
+    type: "Moto",
+    marque: "Yamaha",
+    modele: "YZF-R3",
+    energie: "Essence",
+    anneeFabrication: "2022",
+    couleur: "Bleu",
+    puissanceFiscale: "12 CV",
+  },
+  "2": {
+    id: "2",
+    plaque: "AB123CD",
+    type: "Voiture",
+    marque: "Toyota",
+    modele: "Corolla",
+    energie: "Essence",
+    anneeFabrication: "2020",
+    couleur: "Noir",
+    puissanceFiscale: "15 CV",
+  },
+  "3": {
+    id: "3",
+    plaque: "EF456GH",
+    type: "Camion",
+    marque: "Mercedes",
+    modele: "Actros",
+    energie: "Diesel",
+    anneeFabrication: "2019",
+    couleur: "Blanc",
+    puissanceFiscale: "45 CV",
+  },
+  "4": {
+    id: "4",
+    plaque: "IJ789KL",
+    type: "Moto",
+    marque: "Honda",
+    modele: "CBR500R",
+    energie: "Essence",
+    anneeFabrication: "2023",
+    couleur: "Rouge",
+    puissanceFiscale: "10 CV",
+  },
+  "5": {
+    id: "5",
+    plaque: "MN012OP",
+    type: "Voiture",
+    marque: "BMW",
+    modele: "X5",
+    energie: "Diesel",
+    anneeFabrication: "2021",
+    couleur: "Gris",
+    puissanceFiscale: "25 CV",
+  },
+  "6": {
+    id: "6",
+    plaque: "QR345ST",
+    type: "Voiture",
+    marque: "Ford",
+    modele: "Ranger",
+    energie: "Diesel",
+    anneeFabrication: "2020",
+    couleur: "Blanc",
+    puissanceFiscale: "20 CV",
+  },
+};
+
+export default function ListePaiementsScreen() {
+  // Check if user has financier privilege
+  usePrivilegeCheck("financier");
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatut, setFilterStatut] = useState<string>("tous");
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedPaiement, setSelectedPaiement] = useState<Paiement | null>(
+    null,
+  );
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // Filtrer les paiements
+  const filteredPaiements = MOCK_PAIEMENTS.filter((paiement) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      paiement.numero.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      MOCK_ENGINS[paiement.enginId].plaque
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      MOCK_ASSUJETTIS[paiement.assujettiId].nom
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      MOCK_ASSUJETTIS[paiement.assujettiId].prenom
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+    const matchesFilter =
+      filterStatut === "tous" || paiement.statut === filterStatut;
+
+    return matchesSearch && matchesFilter;
+  });
+
+  // Afficher les détails d'un paiement
+  const handleShowDetails = (paiement: Paiement) => {
+    setSelectedPaiement(paiement);
+    setShowDetailModal(true);
+  };
+
+  // Imprimer un reçu
+  const handlePrintReceipt = (paiement: Paiement) => {
+    Alert.alert(
+      "Impression du reçu",
+      `Voulez-vous imprimer le reçu ${paiement.numero} ?`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Imprimer",
+          onPress: () => {
+            setIsLoading(true);
+            // Simulation d'impression
+            setTimeout(() => {
+              setIsLoading(false);
+              Alert.alert(
+                "Succès",
+                `Le reçu ${paiement.numero} a été envoyé à l'imprimante.`,
+                [{ text: "OK" }],
+              );
+            }, 1500);
+          },
+        },
+      ],
+    );
+  };
+
+  // Exporter en PDF
+  const handleExportPDF = () => {
+    setIsLoading(true);
+    // Simulation d'export
+    setTimeout(() => {
+      setIsLoading(false);
+      Alert.alert(
+        "Export réussi",
+        "La liste des paiements a été exportée en PDF.",
+        [{ text: "OK" }],
+      );
+    }, 2000);
+  };
+
+  // Rafraîchir les données
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulation du rafraîchissement des données
+    setTimeout(() => {
+      setIsLoading(false);
+      Alert.alert(
+        "Données rafraîchies",
+        "Les données ont été mises à jour avec succès.",
+        [{ text: "OK" }],
+      );
+    }, 1500);
+  };
+
+  // Télécharger le reçu
+  const handleDownloadReceipt = (paiement: Paiement) => {
+    setIsLoading(true);
+    // Simulation de téléchargement
+    setTimeout(() => {
+      setIsLoading(false);
+      Alert.alert(
+        "Téléchargement réussi",
+        `Le reçu ${paiement.numero} a été téléchargé.`,
+        [{ text: "OK" }],
+      );
+    }, 1500);
+  };
+
+  // Rendu d'un item de paiement
+  const renderPaiementItem = ({ item }: { item: Paiement }) => {
+    const assujetti = MOCK_ASSUJETTIS[item.assujettiId];
+    const engin = MOCK_ENGINS[item.enginId];
+
+    const getStatusConfig = () => {
+      switch (item.statut) {
+        case "payé":
+          return { color: "#10B981", bg: "#ECFDF5", icon: "✓" };
+        case "en attente":
+          return { color: "#F59E0B", bg: "#FFFBEB", icon: "⏱" };
+        case "annulé":
+          return { color: "#EF4444", bg: "#FEF2F2", icon: "✕" };
+        default:
+          return { color: "#6B7280", bg: "#F3F4F6", icon: "●" };
+      }
+    };
+
+    const statusConfig = getStatusConfig();
+
+    return (
+      <View style={styles.paiementCard}>
+        {/* En-tête avec statut */}
+        <View
+          style={[styles.statusHeader, { backgroundColor: statusConfig.bg }]}
+        >
+          <View style={styles.statusRow}>
+            <View
+              style={[
+                styles.statusIndicator,
+                { backgroundColor: statusConfig.color },
+              ]}
+            >
+              <Text style={styles.statusIcon}>{statusConfig.icon}</Text>
+            </View>
+            <Text style={[styles.statusText, { color: statusConfig.color }]}>
+              {item.statut.toUpperCase()}
+            </Text>
+            <View style={styles.flexSpacer} />
+            <View style={styles.dateContainer}>
+              <Calendar size={12} color="#64748B" />
+              <Text style={styles.dateText}>
+                {item.date} • {item.heure}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Contenu principal */}
+        <View style={styles.cardContent}>
+          {/* Numéro de paiement */}
+          <Text style={styles.paiementNumero}>{item.numero}</Text>
+
+          {/* Informations en grille */}
+          <View style={styles.infoGrid}>
+            <View style={styles.infoRow}>
+              <User size={14} color="#64748B" />
+              <Text style={styles.infoLabel}>Assujetti:</Text>
+              <Text style={styles.infoValue} numberOfLines={1}>
+                {assujetti.nom} {assujetti.prenom}
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Car size={14} color="#64748B" />
+              <Text style={styles.infoLabel}>Engin:</Text>
+              <Text style={styles.infoValue} numberOfLines={1}>
+                {engin.marque} {engin.modele}
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Hash size={14} color="#64748B" />
+              <Text style={styles.infoLabel}>Plaque:</Text>
+              <Text style={[styles.infoValue, styles.plaqueValue]}>
+                {engin.plaque}
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <CreditCard size={14} color="#64748B" />
+              <Text style={styles.infoLabel}>Mode:</Text>
+              <Text style={styles.infoValue}>{item.modePaiement}</Text>
+            </View>
+          </View>
+
+          {/* Montant */}
+          <View style={styles.amountContainer}>
+            <Text style={styles.amountLabel}>Montant payé</Text>
+            <View style={styles.amountRow}>
+              <Text style={styles.amountUSD}>{item.montantUSD} USD</Text>
+              <View style={styles.amountSeparator} />
+              <Text style={styles.amountCDF}>
+                {item.montantCDF.toLocaleString()} CDF
+              </Text>
+            </View>
+          </View>
+
+          {/* Actions */}
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.printButton]}
+              onPress={() => handlePrintReceipt(item)}
+              disabled={isLoading}
+            >
+              <Printer size={16} color="#10B981" />
+              <Text style={styles.printButtonText}>Imprimer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  // Modal de détail (AMÉLIORÉ)
+  const renderDetailModal = () => {
+    if (!selectedPaiement) return null;
+
+    const assujetti = MOCK_ASSUJETTIS[selectedPaiement.assujettiId];
+    const engin = MOCK_ENGINS[selectedPaiement.enginId];
+
+    const getStatusConfig = () => {
+      switch (selectedPaiement.statut) {
+        case "payé":
+          return {
+            color: "#10B981",
+            bg: "#ECFDF5",
+            textColor: "#065F46",
+            iconBg: "#D1FAE5",
+          };
+        case "en attente":
+          return {
+            color: "#F59E0B",
+            bg: "#FFFBEB",
+            textColor: "#92400E",
+            iconBg: "#FEF3C7",
+          };
+        case "annulé":
+          return {
+            color: "#EF4444",
+            bg: "#FEF2F2",
+            textColor: "#991B1B",
+            iconBg: "#FEE2E2",
+          };
+        default:
+          return {
+            color: "#6B7280",
+            bg: "#F3F4F6",
+            textColor: "#374151",
+            iconBg: "#E5E7EB",
+          };
+      }
+    };
+
+    const statusConfig = getStatusConfig();
+
+    return (
+      <Modal
+        visible={showDetailModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDetailModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              {/* En-tête avec gradient */}
+              <View style={styles.modalHeader}>
+                <View style={styles.modalHeaderBackground}>
+                  <View
+                    style={[
+                      styles.modalIconContainer,
+                      { backgroundColor: statusConfig.iconBg },
+                    ]}
+                  >
+                    <FileText size={28} color={statusConfig.color} />
+                  </View>
+                  <View style={styles.modalTitleContainer}>
+                    <Text style={styles.modalTitle}>DÉTAILS DU PAIEMENT</Text>
+                    <Text style={styles.modalSubtitle}>
+                      {selectedPaiement.numero}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setShowDetailModal(false)}
+                  style={styles.closeButton}
+                >
+                  <X size={24} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView
+                style={styles.modalBody}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.modalBodyContent}
+              >
+                {/* Bandeau d'information */}
+                <View
+                  style={[
+                    styles.infoBanner,
+                    { backgroundColor: statusConfig.bg },
+                  ]}
+                >
+                  <View style={styles.bannerContent}>
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        { backgroundColor: statusConfig.color + "15" },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.statusDot,
+                          { backgroundColor: statusConfig.color },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.statusBadgeText,
+                          { color: statusConfig.textColor },
+                        ]}
+                      >
+                        {selectedPaiement.statut.toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={styles.bannerInfo}>
+                      <Calendar size={16} color={statusConfig.textColor} />
+                      <Text
+                        style={[
+                          styles.bannerText,
+                          { color: statusConfig.textColor },
+                        ]}
+                      >
+                        {selectedPaiement.date} à {selectedPaiement.heure}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Carte du montant */}
+                <View style={styles.amountCard}>
+                  <View style={styles.amountCardHeader}>
+                    <CreditCard size={20} color="#153258" />
+                    <Text style={styles.amountCardTitle}>MONTANT PAYÉ</Text>
+                  </View>
+                  <View style={styles.amountValues}>
+                    <Text style={styles.amountMain}>
+                      {selectedPaiement.montantUSD} USD
+                    </Text>
+                    <Text style={styles.amountSeparator}> = </Text>
+                    <Text style={styles.amountSecondary}>
+                      {selectedPaiement.montantCDF.toLocaleString()} CDF
+                    </Text>
+                  </View>
+                  <View style={styles.paymentMethod}>
+                    <Text style={styles.paymentMethodLabel}>
+                      Mode de paiement:
+                    </Text>
+                    <Text style={styles.paymentMethodValue}>
+                      {selectedPaiement.modePaiement}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Section Assujetti */}
+                <View style={styles.sectionCard}>
+                  <View style={styles.sectionHeader}>
+                    <View style={styles.sectionIcon}>
+                      <User size={20} color="#FFFFFF" />
+                    </View>
+                    <Text style={styles.sectionTitle}>ASSUJETTI</Text>
+                  </View>
+
+                  <View style={styles.sectionGrid}>
+                    <View style={styles.infoRowModal}>
+                      <Text style={styles.infoLabelModal}>Nom complet</Text>
+                      <Text style={styles.infoValueModal}>
+                        {assujetti.nom} {assujetti.prenom}
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoRowModal}>
+                      <Text style={styles.infoLabelModal}>Téléphone</Text>
+                      <View style={styles.valueWithIcon}>
+                        <Phone
+                          size={16}
+                          color="#64748B"
+                          style={styles.rowIcon}
+                        />
+                        <Text style={styles.infoValueModal}>
+                          {assujetti.telephone}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.infoRowModal}>
+                      <Text style={styles.infoLabelModal}>Adresse</Text>
+                      <View style={styles.valueWithIcon}>
+                        <MapPin
+                          size={16}
+                          color="#64748B"
+                          style={styles.rowIcon}
+                        />
+                        <Text style={styles.infoValueModal} numberOfLines={2}>
+                          {assujetti.adresse}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Section Engin */}
+                <View style={styles.sectionCard}>
+                  <View style={styles.sectionHeader}>
+                    <View style={styles.sectionIcon}>
+                      <Car size={20} color="#FFFFFF" />
+                    </View>
+                    <Text style={styles.sectionTitle}>ENGIN</Text>
+                  </View>
+
+                  <View style={styles.sectionGrid}>
+                    <View style={styles.gridRow}>
+                      <View style={styles.gridColumn}>
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Plaque</Text>
+                          <Text
+                            style={[styles.infoValueModal, styles.plaqueModal]}
+                          >
+                            {engin.plaque}
+                          </Text>
+                        </View>
+
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Type</Text>
+                          <Text style={styles.infoValueModal}>
+                            {engin.type}
+                          </Text>
+                        </View>
+
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Marque</Text>
+                          <Text style={styles.infoValueModal}>
+                            {engin.marque}
+                          </Text>
+                        </View>
+
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Modèle</Text>
+                          <Text style={styles.infoValueModal}>
+                            {engin.modele}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.gridColumn}>
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Énergie</Text>
+                          <View style={styles.valueWithIcon}>
+                            <Zap
+                              size={16}
+                              color="#64748B"
+                              style={styles.rowIcon}
+                            />
+                            <Text style={styles.infoValueModal}>
+                              {engin.energie}
+                            </Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Année</Text>
+                          <Text style={styles.infoValueModal}>
+                            {engin.anneeFabrication}
+                          </Text>
+                        </View>
+
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Couleur</Text>
+                          <Text style={styles.infoValueModal}>
+                            {engin.couleur}
+                          </Text>
+                        </View>
+
+                        <View style={styles.infoItemGrid}>
+                          <Text style={styles.infoLabelModal}>Puissance</Text>
+                          <Text style={styles.infoValueModal}>
+                            {engin.puissanceFiscale}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Actions du modal */}
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.modalActionButton, styles.downloadButton]}
+                    onPress={() => handleDownloadReceipt(selectedPaiement)}
+                    disabled={isLoading}
+                  >
+                    <Download size={20} color="#3B82F6" />
+                    <Text style={styles.downloadButtonText}>
+                      {isLoading ? "TÉLÉCHARGEMENT..." : "TÉLÉCHARGER LE REÇU"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.modalActionButton, styles.printButtonModal]}
+                    onPress={() => {
+                      setShowDetailModal(false);
+                      handlePrintReceipt(selectedPaiement);
+                    }}
+                    disabled={isLoading}
+                  >
+                    <Printer size={20} color="#FFFFFF" />
+                    <Text style={styles.printButtonModalText}>
+                      IMPRIMER LE REÇU
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // Modal de filtre (AMÉLIORÉ)
+  const renderFilterModal = () => (
+    <Modal
+      visible={showFilterModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowFilterModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.filterModalContainer}>
+          <View style={styles.filterModalContent}>
+            {/* Header avec effet de profondeur */}
+            <View style={styles.filterHeader}>
+              <View style={styles.filterIconContainer}>
+                <Filter size={24} color="#153258" />
+              </View>
+              <View style={styles.filterTitleContainer}>
+                <Text style={styles.filterTitle}>FILTRER PAR STATUT</Text>
+                <Text style={styles.filterSubtitle}>
+                  Sélectionnez un statut
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowFilterModal(false)}
+                style={styles.filterCloseButton}
+              >
+                <X size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Options de filtre */}
+            <View style={styles.filterOptions}>
+              {["tous", "payé", "en attente", "annulé"].map((statut) => {
+                const isSelected = filterStatut === statut;
+                const getStatusColor = () => {
+                  switch (statut) {
+                    case "payé":
+                      return "#10B981";
+                    case "en attente":
+                      return "#F59E0B";
+                    case "annulé":
+                      return "#EF4444";
+                    default:
+                      return "#153258";
+                  }
+                };
+                const statusColor = getStatusColor();
+
+                return (
+                  <Pressable
+                    key={statut}
+                    style={({ pressed }) => [
+                      styles.filterOption,
+                      pressed && styles.filterOptionPressed,
+                      isSelected && styles.filterOptionSelected,
+                    ]}
+                    onPress={() => {
+                      setFilterStatut(statut);
+                      setTimeout(() => setShowFilterModal(false), 300);
+                    }}
+                  >
+                    <View style={styles.filterOptionContent}>
+                      <View
+                        style={[
+                          styles.filterCheckbox,
+                          { borderColor: isSelected ? statusColor : "#E2E8F0" },
+                          isSelected && {
+                            backgroundColor: statusColor,
+                            borderColor: statusColor,
+                          },
+                        ]}
+                      >
+                        {isSelected && <Check size={14} color="#FFFFFF" />}
+                      </View>
+
+                      <View style={styles.filterTextContainer}>
+                        <Text
+                          style={[
+                            styles.filterOptionText,
+                            isSelected && styles.filterOptionTextSelected,
+                          ]}
+                        >
+                          {statut === "tous"
+                            ? "Tous les statuts"
+                            : statut.charAt(0).toUpperCase() + statut.slice(1)}
+                        </Text>
+                        {statut !== "tous" && (
+                          <Text
+                            style={[styles.filterCount, { color: statusColor }]}
+                          >
+                            {
+                              MOCK_PAIEMENTS.filter((p) => p.statut === statut)
+                                .length
+                            }{" "}
+                            paiements
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+
+                    {isSelected && (
+                      <View
+                        style={[
+                          styles.filterIndicator,
+                          { backgroundColor: statusColor },
+                        ]}
+                      >
+                        <ChevronDown
+                          size={16}
+                          color="#FFFFFF"
+                          style={styles.filterChevron}
+                        />
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Bouton d'action */}
+            <TouchableOpacity
+              style={styles.filterActionButton}
+              onPress={() => setShowFilterModal(false)}
+            >
+              <Text style={styles.filterActionButtonText}>
+                APPLIQUER LE FILTRE
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: "PAIEMENTS",
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: "#153258",
+          },
+          headerTintColor: "#FFFFFF",
+          headerTitleStyle: {
+            fontFamily: "Saira-SemiBold",
+            fontSize: 20,
+          },
+          headerShadowVisible: false,
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={handleRefresh}
+              disabled={isLoading}
+              style={styles.headerButton}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <RefreshCw size={20} color="#FFFFFF" />
+                </>
+              )}
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <View style={styles.container}>
+        <StatusBar style="light" backgroundColor="#153258" />
+
+        {/* Barre de recherche */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchWrapper}>
+            <Search size={18} color="#64748B" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Rechercher un paiement..."
+              placeholderTextColor="#94A3B8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchQuery("")}
+                style={styles.clearButton}
+              >
+                <X size={16} color="#64748B" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              filterStatut !== "tous" && styles.filterButtonActive,
+            ]}
+            onPress={() => setShowFilterModal(true)}
+          >
+            <Filter
+              size={18}
+              color={filterStatut !== "tous" ? "#FFFFFF" : "#64748B"}
+            />
+            {filterStatut !== "tous" && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>
+                  {
+                    MOCK_PAIEMENTS.filter((p) => p.statut === filterStatut)
+                      .length
+                  }
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Compteur */}
+        <View style={styles.counterContainer}>
+          <Text style={styles.counterText}>
+            {filteredPaiements.length} PAIEMENT
+            {filteredPaiements.length !== 1 ? "S" : ""} TROUVÉ
+            {filteredPaiements.length !== 1 ? "S" : ""}
+          </Text>
+          <View style={styles.counterLine} />
+        </View>
+
+        {/* Liste des paiements */}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#153258" />
+            <Text style={styles.loadingText}>CHARGEMENT...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredPaiements}
+            keyExtractor={(item) => item.id}
+            renderItem={renderPaiementItem}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <View style={styles.emptyIconContainer}>
+                  <FileText size={64} color="#E2E8F0" />
+                </View>
+                <Text style={styles.emptyTitle}>AUCUN PAIEMENT</Text>
+                <Text style={styles.emptyText}>
+                  Aucun paiement ne correspond à votre recherche
+                </Text>
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    style={styles.emptyButton}
+                    onPress={() => setSearchQuery("")}
+                  >
+                    <Text style={styles.emptyButtonText}>
+                      EFFACER LA RECHERCHE
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            }
+          />
+        )}
+
+        {/* Modals */}
+        {renderDetailModal()}
+        {renderFilterModal()}
+      </View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  // Container principal
+  container: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+  },
+
+  // Header
+  headerButton: {
+    marginRight: 16,
+    padding: 8,
+    position: "relative",
+  },
+  exportBadge: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    backgroundColor: "#10B981",
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  exportBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 8,
+    fontFamily: "Saira-Bold",
+  },
+
+  // Search
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#153258",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  searchWrapper: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: "Saira-Regular",
+    color: "#153258",
+    padding: 0,
+    includeFontPadding: false,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  filterButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: "#F8FAFC",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+    position: "relative",
+  },
+  filterButtonActive: {
+    backgroundColor: "#153258",
+    borderColor: "#153258",
+  },
+  filterBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    backgroundColor: "#10B981",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+  filterBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontFamily: "Saira-Bold",
+  },
+
+  // Counter
+  counterContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+  counterText: {
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#64748B",
+    letterSpacing: 0.5,
+  },
+  counterLine: {
+    marginTop: 8,
+    width: 40,
+    height: 2,
+    backgroundColor: "#153258",
+    borderRadius: 1,
+  },
+
+  // List
+  listContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
+
+  // Payment Card
+  paiementCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    marginBottom: 16,
+    shadowColor: "#153258",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+  },
+  statusHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statusIndicator: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  statusIcon: {
+    fontSize: 11,
+    fontFamily: "Saira-Bold",
+    color: "#FFFFFF",
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: "Saira-SemiBold",
+    letterSpacing: 0.8,
+  },
+  flexSpacer: {
+    flex: 1,
+  },
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dateText: {
+    fontSize: 12,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+    marginLeft: 6,
+  },
+  cardContent: {
+    padding: 20,
+  },
+  paiementNumero: {
+    fontSize: 18,
+    fontFamily: "Saira-Bold",
+    color: "#153258",
+    marginBottom: 16,
+  },
+  infoGrid: {
+    gap: 12,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  infoLabel: {
+    fontSize: 13,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+    marginLeft: 8,
+    marginRight: 6,
+  },
+  infoValue: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#153258",
+  },
+  plaqueValue: {
+    fontFamily: "Saira-Bold",
+    letterSpacing: 1,
+  },
+  amountContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+  },
+  amountLabel: {
+    fontSize: 12,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+    marginBottom: 6,
+  },
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    flexWrap: "wrap",
+  },
+  amountUSD: {
+    fontSize: 24,
+    fontFamily: "Saira-Bold",
+    color: "#153258",
+  },
+  amountCDF: {
+    fontSize: 16,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  detailButton: {
+    backgroundColor: "#EFF6FF",
+    borderWidth: 2,
+    borderColor: "#EFF6FF",
+  },
+  printButton: {
+    backgroundColor: "#ECFDF5",
+    borderWidth: 2,
+    borderColor: "#ECFDF5",
+  },
+  detailButtonText: {
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#3B82F6",
+  },
+  printButtonText: {
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#10B981",
+  },
+
+  // Loading & Empty States
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 14,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+    letterSpacing: 1,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 80,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
+    borderWidth: 8,
+    borderColor: "#F1F5F9",
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontFamily: "Saira-Bold",
+    color: "#64748B",
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontFamily: "Saira-Regular",
+    color: "#94A3B8",
+    textAlign: "center",
+    maxWidth: 240,
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  emptyButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 12,
+  },
+  emptyButtonText: {
+    fontSize: 12,
+    fontFamily: "Saira-SemiBold",
+    color: "#64748B",
+    letterSpacing: 0.5,
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(21, 50, 88, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: SCREEN_WIDTH - 40,
+    maxHeight: "90%",
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    overflow: "hidden",
+    maxHeight: "90%",
+    shadowColor: "#153258",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.15,
+    shadowRadius: 30,
+    elevation: 10,
+  },
+
+  // Modal Header
+  modalHeader: {
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  modalHeaderBackground: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  modalIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  modalTitleContainer: {
+    flex: 1,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "Saira-Bold",
+    color: "#153258",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F1F5F9",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 12,
+  },
+
+  // Modal Body
+  modalBody: {
+    flex: 1,
+  },
+  modalBodyContent: {
+    paddingBottom: 32,
+  },
+
+  // Info Banner
+  infoBanner: {
+    margin: 24,
+    marginBottom: 20,
+    borderRadius: 16,
+    padding: 20,
+  },
+  bannerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusBadgeText: {
+    fontSize: 12,
+    fontFamily: "Saira-SemiBold",
+    letterSpacing: 0.8,
+  },
+  bannerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  bannerText: {
+    fontSize: 14,
+    fontFamily: "Saira-Medium",
+    marginLeft: 8,
+  },
+
+  // Amount Card
+  amountCard: {
+    backgroundColor: "#F8FAFC",
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+  },
+  amountCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  amountCardTitle: {
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#64748B",
+    marginLeft: 12,
+    letterSpacing: 1,
+  },
+  amountValues: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    flexWrap: "wrap",
+    marginBottom: 16,
+  },
+  amountMain: {
+    fontSize: 32,
+    fontFamily: "Saira-Bold",
+    color: "#153258",
+  },
+  amountSeparator: {
+    fontSize: 20,
+    fontFamily: "Saira-Regular",
+    color: "#94A3B8",
+    marginHorizontal: 8,
+  },
+  amountSecondary: {
+    fontSize: 20,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+  },
+  paymentMethod: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+  },
+  paymentMethodLabel: {
+    fontSize: 13,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+    marginRight: 8,
+  },
+  paymentMethodValue: {
+    fontSize: 15,
+    fontFamily: "Saira-SemiBold",
+    color: "#153258",
+  },
+
+  // Section Cards
+  sectionCard: {
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+  },
+  sectionHeader: {
+    backgroundColor: "#153258",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: "Saira-Bold",
+    color: "#FFFFFF",
+    letterSpacing: 1,
+  },
+  sectionGrid: {
+    padding: 20,
+  },
+
+  // Info Rows in Modal
+  infoRowModal: {
+    marginBottom: 16,
+  },
+  infoLabelModal: {
+    fontSize: 12,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+    marginBottom: 6,
+    letterSpacing: 0.5,
+  },
+  infoValueModal: {
+    fontSize: 15,
+    fontFamily: "Saira-SemiBold",
+    color: "#153258",
+  },
+  valueWithIcon: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  rowIcon: {
+    marginRight: 8,
+  },
+  plaqueModal: {
+    fontSize: 18,
+    fontFamily: "Saira-Bold",
+    letterSpacing: 1,
+  },
+
+  // Grid Layout
+  gridRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  gridColumn: {
+    width: "48%",
+  },
+  infoItemGrid: {
+    marginBottom: 16,
+  },
+
+  // Modal Actions
+  modalActions: {
+    flexDirection: "row",
+    paddingHorizontal: 24,
+    gap: 16,
+  },
+  modalActionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
+  },
+  downloadButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "#3B82F6",
+  },
+  printButtonModal: {
+    backgroundColor: "#153258",
+  },
+  downloadButtonText: {
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#3B82F6",
+    letterSpacing: 0.5,
+  },
+  printButtonModalText: {
+    fontSize: 14,
+    fontFamily: "Saira-SemiBold",
+    color: "#FFFFFF",
+    letterSpacing: 0.5,
+  },
+
+  // Filter Modal Styles
+  filterModalContainer: {
+    width: SCREEN_WIDTH - 40,
+  },
+  filterModalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    overflow: "hidden",
+    shadowColor: "#153258",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.15,
+    shadowRadius: 30,
+    elevation: 10,
+  },
+
+  // Filter Header
+  filterHeader: {
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+  },
+  filterIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+    borderWidth: 2,
+    borderColor: "#E2E8F0",
+  },
+  filterTitleContainer: {
+    flex: 1,
+  },
+  filterTitle: {
+    fontSize: 18,
+    fontFamily: "Saira-Bold",
+    color: "#153258",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  filterSubtitle: {
+    fontSize: 13,
+    fontFamily: "Saira-Medium",
+    color: "#64748B",
+  },
+  filterCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+
+  // Filter Options
+  filterOptions: {
+    padding: 24,
+    paddingBottom: 20,
+  },
+  filterOption: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    marginBottom: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderWidth: 2,
+    borderColor: "#F1F5F9",
+  },
+  filterOptionPressed: {
+    backgroundColor: "#F8FAFC",
+  },
+  filterOptionSelected: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+  },
+  filterOptionContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  filterCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  filterTextContainer: {
+    flex: 1,
+  },
+  filterOptionText: {
+    fontSize: 16,
+    fontFamily: "Saira-Medium",
+    color: "#153258",
+    marginBottom: 4,
+  },
+  filterOptionTextSelected: {
+    fontFamily: "Saira-SemiBold",
+  },
+  filterCount: {
+    fontSize: 12,
+    fontFamily: "Saira-Medium",
+  },
+  filterIndicator: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 12,
+  },
+  filterChevron: {
+    transform: [{ rotate: "-90deg" }],
+  },
+
+  // Filter Action Button
+  filterActionButton: {
+    backgroundColor: "#153258",
+    marginHorizontal: 24,
+    marginBottom: 24,
+    paddingVertical: 18,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filterActionButtonText: {
+    fontSize: 15,
+    fontFamily: "Saira-SemiBold",
+    color: "#FFFFFF",
+    letterSpacing: 1,
+  },
+});
+
+
+
+
+
+Tout est parfait sauf qu'il est static et on va l'associé avec le backend.
+
+
+Tu dois afficher la liste de 10 derniers  paiements effectué (Reference, Assujetti, Engin, Plaque, mode espace toujours ).
+
+
+Puis le button détail de qu'on click ça nous dirige vers la route paiement/[quittance].tsx 
+
+
+Voilà les tables sql en jeux : CREATE TABLE `paiements_immatriculation` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `engin_id` INT NULL DEFAULT NULL,
+  `particulier_id` INT NOT NULL,
+  `montant` DECIMAL(10,2) NOT NULL,
+  `montant_initial` INT NULL DEFAULT NULL,
+  `impot_id` INT NOT NULL DEFAULT '0',
+  `mode_paiement` ENUM('mobile_money','cheque','banque','espece') NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `operateur` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `numero_transaction` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `numero_cheque` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `banque` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `statut` ENUM('pending','completed','failed') NULL DEFAULT 'completed' COLLATE 'utf8mb4_0900_ai_ci',
+  `date_paiement` DATETIME NULL DEFAULT (CURRENT_TIMESTAMP),
+  `utilisateur_id` INT NOT NULL,
+  `site_id` INT NOT NULL,
+  `nombre_plaques` INT NULL DEFAULT '1',
+  `etat` TINYINT NULL DEFAULT '0',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_impot_id` (`impot_id`) USING BTREE,
+  INDEX `idx_date_paiement` (`date_paiement`) USING BTREE,
+  INDEX `idx_site_id` (`site_id`) USING BTREE,
+  INDEX `idx_particulier_id` (`particulier_id`) USING BTREE,
+  INDEX `idx_engin_id` (`engin_id`) USING BTREE,
+  INDEX `idx_statut` (`statut`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=531
+;
+
+
+
+CREATE TABLE `particuliers` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nom` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `prenom` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `date_naissance` DATE NULL DEFAULT NULL,
+  `lieu_naissance` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `sexe` ENUM('Masculin','Féminin') NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `rue` VARCHAR(255) NULL DEFAULT '-' COLLATE 'utf8mb4_0900_ai_ci',
+  `ville` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `code_postal` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `province` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `id_national` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `telephone` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `email` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `nif` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `situation_familiale` ENUM('Célibataire','Marié(e)','Divorcé(e)','Veuf/Veuve') NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `dependants` INT NULL DEFAULT '0',
+  `actif` TINYINT(1) NULL DEFAULT '1',
+  `date_creation` DATETIME NULL DEFAULT (CURRENT_TIMESTAMP),
+  `date_modification` DATETIME NULL DEFAULT (CURRENT_TIMESTAMP) ON UPDATE CURRENT_TIMESTAMP,
+  `password` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `password_hach` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `utilisateur` INT NULL DEFAULT NULL,
+  `site` INT NULL DEFAULT NULL,
+  `reduction_type` ENUM('pourcentage','montant_fixe') NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `reduction_valeur` DECIMAL(10,3) NULL DEFAULT '0.000',
+  `reduction_montant_max` DECIMAL(10,3) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_particuliers_nom_prenom` (`nom`, `prenom`) USING BTREE,
+  INDEX `idx_particuliers_email` (`email`) USING BTREE,
+  INDEX `idx_particuliers_actif` (`actif`) USING BTREE,
+  INDEX `idx_particuliers_telephone` (`telephone`) USING BTREE,
+  INDEX `idx_particuliers_nif` (`nif`) USING BTREE,
+  INDEX `idx_particuliers_utilisateur` (`utilisateur`) USING BTREE,
+  INDEX `idx_date_creation` (`date_creation`) USING BTREE,
+  INDEX `idx_province` (`province`) USING BTREE,
+  INDEX `idx_site` (`site`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=462810
+;
+
+
+
+CREATE TABLE `engins` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `particulier_id` INT NOT NULL,
+  `serie_id` INT NOT NULL,
+  `serie_item_id` INT NOT NULL,
+  `numero_plaque` VARCHAR(20) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `type_engin` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `marque` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `energie` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `annee_fabrication` YEAR NULL DEFAULT NULL,
+  `annee_circulation` YEAR NULL DEFAULT NULL,
+  `couleur` VARCHAR(30) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `puissance_fiscal` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `usage_engin` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `numero_chassis` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `numero_moteur` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `impot_id` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+  `utilisateur_id` INT NOT NULL,
+  `site_id` INT NOT NULL,
+  `date_creation` DATETIME NULL DEFAULT (CURRENT_TIMESTAMP),
+  `date_modification` DATETIME NULL DEFAULT (CURRENT_TIMESTAMP) ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `numero_plaque` (`numero_plaque`) USING BTREE,
+  INDEX `fk_engins_particuliers` (`particulier_id`) USING BTREE,
+  INDEX `fk_engins_series` (`serie_id`) USING BTREE,
+  INDEX `fk_engins_serie_items` (`serie_item_id`) USING BTREE,
+  INDEX `idx_impot_id` (`impot_id`) USING BTREE,
+  INDEX `idx_date_creation` (`date_creation`) USING BTREE,
+  INDEX `idx_type_engin` (`type_engin`) USING BTREE,
+  INDEX `idx_site_id` (`site_id`) USING BTREE,
+  CONSTRAINT `fk_engins_particuliers` FOREIGN KEY (`particulier_id`) REFERENCES `particuliers` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT `fk_engins_series` FOREIGN KEY (`serie_id`) REFERENCES `series` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT `fk_engins_serie_items` FOREIGN KEY (`serie_item_id`) REFERENCES `serie_items` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=268
+;
+
+
+
+
+NB : tu ne prends les paiement dont impot_id = 18.
+
+
+
+Ce que tu dois mettre en place en respectant la logique ci-haut : 
+
+
+La class php qui doit s'inspirer de cette class exemplaire : <?php
+require_once 'Connexion.php';
+
+/**
+ * Classe Energie - Gestion complète des types d'énergie
+ * 
+ * Cette classe étend la classe Connexion et fournit toutes les fonctionnalités
+ * de gestion des énergies (essence, diesel, électrique, etc.)
+ */
+class Energie extends Connexion
+{
+    /**
+     * Vérifie l'existence d'une énergie par son nom
+     *
+     * @param string $nom Nom à vérifier
+     * @param int $excludeId ID à exclure (pour la modification)
+     * @return array|false Données de l'énergie si trouvée, false sinon
+     */
+    public function energieExiste($nom, $excludeId = null)
+    {
+        try {
+            $sql = "SELECT id, nom, description, couleur, actif FROM energies WHERE nom = :nom";
+            $params = ['nom' => $nom];
+            
+            if ($excludeId !== null) {
+                $sql .= " AND id != :exclude_id";
+                $params['exclude_id'] = $excludeId;
+            }
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la vérification de l'existence de l'énergie: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Vérifie l'existence d'une énergie par son ID
+     *
+     * @param int $id ID de l'énergie
+     * @return array|false Données complètes de l'énergie si trouvée, false sinon
+     */
+    public function energieExisteParId($id)
+    {
+        try {
+            $sql = "SELECT * FROM energies WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(['id' => $id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la vérification de l'énergie par ID: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Ajoute une nouvelle énergie
+     *
+     * @param string $nom Nom de l'énergie
+     * @param string $description Description de l'énergie
+     * @param string $couleur Code couleur hexadécimal
+     * @return array Tableau avec statut et message
+     */
+    public function ajouterEnergie($nom, $description = '', $couleur = '#6B7280')
+    {
+        // Validation des données
+        if (empty($nom)) {
+            return ["status" => "error", "message" => "Le nom est obligatoire."];
+        }
+
+        if (!preg_match('/^#[0-9A-F]{6}$/i', $couleur)) {
+            return ["status" => "error", "message" => "Le format de couleur est invalide."];
+        }
+
+        if ($this->energieExiste($nom)) {
+            return ["status" => "error", "message" => "Cette énergie existe déjà."];
+        }
+
+        try {
+            $sql = "INSERT INTO energies (nom, description, couleur) 
+                    VALUES (:nom, :description, :couleur)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':nom' => $nom,
+                ':description' => $description,
+                ':couleur' => $couleur
+            ]);
+
+            $energieId = $this->pdo->lastInsertId();
+
+            // Log d'audit
+            $this->logAudit("Ajout de l'énergie ID $energieId: $nom");
+
+            return ["status" => "success", "message" => "Énergie ajoutée avec succès.", "id" => $energieId];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors de l'ajout de l'énergie: " . $e->getMessage());
+            
+            if ($e->getCode() == '23000') {
+                return ["status" => "error", "message" => "Cette énergie existe déjà."];
+            }
+            
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Modifie une énergie existante
+     *
+     * @param int $id ID de l'énergie à modifier
+     * @param string $nom Nouveau nom
+     * @param string $description Nouvelle description
+     * @param string $couleur Nouvelle couleur
+     * @return array Tableau avec statut et message
+     */
+    public function modifierEnergie($id, $nom, $description = '', $couleur = '#6B7280')
+    {
+        if (empty($nom)) {
+            return ["status" => "error", "message" => "Le nom est obligatoire."];
+        }
+
+        if (!preg_match('/^#[0-9A-F]{6}$/i', $couleur)) {
+            return ["status" => "error", "message" => "Le format de couleur est invalide."];
+        }
+
+        try {
+            // Vérification de l'unicité du nom
+            if ($this->energieExiste($nom, $id)) {
+                return ["status" => "error", "message" => "Cette énergie existe déjà."];
+            }
+
+            $sql = "UPDATE energies 
+                    SET nom = :nom, 
+                        description = :description,
+                        couleur = :couleur,
+                        date_modification = CURRENT_TIMESTAMP
+                    WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':nom' => $nom,
+                ':description' => $description,
+                ':couleur' => $couleur,
+                ':id' => $id
+            ]);
+
+            $this->logAudit("Modification de l'énergie ID $id: $nom");
+
+            return ["status" => "success", "message" => "Énergie modifiée avec succès."];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la modification de l'énergie: " . $e->getMessage());
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Supprime une énergie
+     *
+     * @param int $id ID de l'énergie à supprimer
+     * @return array Tableau avec statut et message
+     */
+    public function supprimerEnergie($id)
+    {
+        $energie = $this->energieExisteParId($id);
+        if (!$energie) {
+            return ["status" => "error", "message" => "L'énergie spécifiée n'existe pas."];
+        }
+
+        try {
+            // Vérifier si l'énergie est utilisée par des engins
+            $sqlCheck = "SELECT COUNT(*) as count FROM engins WHERE energie = :libelle";
+            $stmtCheck = $this->pdo->prepare($sqlCheck);
+            $stmtCheck->execute([':libelle' => $energie['nom']]);
+            $result = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            if ($result['count'] > 0) {
+                return ["status" => "error", "message" => "Impossible de supprimer cette énergie car elle est utilisée par des engins."];
+            }
+
+            $sql = "DELETE FROM energies WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(['id' => $id]);
+
+            $this->logAudit("Suppression de l'énergie ID $id: " . $energie['nom']);
+
+            return ["status" => "success", "message" => "Énergie supprimée avec succès."];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la suppression de l'énergie: " . $e->getMessage());
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Change le statut actif/inactif d'une énergie
+     *
+     * @param int $id ID de l'énergie
+     * @param bool $actif Nouveau statut
+     * @return array Tableau avec statut et message
+     */
+    public function changerStatutEnergie($id, $actif)
+    {
+        $energie = $this->energieExisteParId($id);
+        if (!$energie) {
+            return ["status" => "error", "message" => "L'énergie spécifiée n'existe pas."];
+        }
+
+        try {
+            $sql = "UPDATE energies 
+                    SET actif = :actif, 
+                        date_modification = CURRENT_TIMESTAMP
+                    WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+
+            $actifInt = $actif ? 1 : 0;
+            $stmt->bindValue(':actif', $actifInt, PDO::PARAM_INT);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+
+            $stmt->execute();
+
+            $statut = $actifInt === 1 ? "activée" : "désactivée";
+            $this->logAudit("Changement de statut de l'énergie ID $id: " . $energie['nom'] . ' -> ' . $statut);
+
+            return ["status" => "success", "message" => "L'énergie a été $statut avec succès."];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors du changement de statut de l'énergie: " . $e->getMessage());
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Récupère la liste de toutes les énergies
+     *
+     * @return array Liste des énergies ou message d'erreur
+     */
+    public function listerEnergies()
+    {
+        try {
+            $sql = "SELECT id, nom, description, couleur, actif, 
+                    DATE_FORMAT(date_creation, '%d/%m/%Y') as date_creation 
+                    FROM energies 
+                    ORDER BY nom ASC";
+            $stmt = $this->pdo->query($sql);
+            $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return ["status" => "success", "data" => $resultats];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors du listing des énergies: " . $e->getMessage());
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Récupère la liste de toutes les énergies actifs
+     *
+     * @return array Liste des énergies actifs ou message d'erreur
+     */
+    public function listerEnergiesActifs()
+    {
+        try {
+            $sql = "SELECT id, nom, description, couleur, actif, 
+                    DATE_FORMAT(date_creation, '%d/%m/%Y') as date_creation 
+                    FROM energies 
+                    WHERE actif = 1
+                    ORDER BY nom ASC";
+            $stmt = $this->pdo->query($sql);
+            $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return ["status" => "success", "data" => $resultats];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors du listing des énergies: " . $e->getMessage());
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Récupère les énergies actives seulement
+     *
+     * @return array Liste des énergies actives
+     */
+    public function listerEnergiesActives()
+    {
+        try {
+            $sql = "SELECT id, nom, description, couleur 
+                    FROM energies 
+                    WHERE actif = 1 
+                    ORDER BY nom ASC";
+            $stmt = $this->pdo->query($sql);
+            $resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return ["status" => "success", "data" => $resultats];
+
+        } catch (PDOException $e) {
+            error_log("Erreur lors du listing des énergies actives: " . $e->getMessage());
+            return ["status" => "error", "message" => "Erreur système: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Log une action dans le journal d'audit
+     *
+     * @param string $message Message à logger
+     * @return void
+     */
+    private function logAudit($message)
+    {
+        $userId = $_SESSION['user_id'] ?? 'system';
+        $userType = $_SESSION['user_type'] ?? 'system';
+        
+        $sql = "INSERT INTO audit_log (user_id, user_type, action, timestamp) 
+                VALUES (:user_id, :user_type, :action, NOW())";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':user_type' => $userType,
+            ':action' => $message
+        ]);
+    }
+}
+
+
+
+
+Le call qui doit s'inspirer de ce call exemplaire : <?php
+// calls/couleurs.php
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json; charset=UTF-8");
+
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Méthode non autorisée"
+    ]);
+    exit;
+}
+
+$data = json_decode(file_get_contents("php://input"), true);
+
+if (!$data || !isset($data['action'])) {
+    http_response_code(400);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Données invalides"
+    ]);
+    exit;
+}
+
+try {
+    require_once '../class/EnginCouleur.php';
+    
+    $service = new EnginCouleur();
+    
+    switch ($data['action']) {
+        case 'rechercher':
+            $result = $service->listerCouleursActives();
+            // Filtrer localement si search fourni
+            if (!empty($data['search'])) {
+                $search = strtolower($data['search']);
+                if (isset($result['data'])) {
+                    $result['data'] = array_filter($result['data'], function($couleur) use ($search) {
+                        return stripos($couleur['nom'], $search) !== false;
+                    });
+                    $result['data'] = array_values($result['data']);
+                }
+            }
+            break;
+            
+        default:
+            http_response_code(400);
+            echo json_encode([
+                "status" => "error",
+                "message" => "Action non supportée"
+            ]);
+            exit;
+    }
+    
+    echo json_encode($result);
+    
+} catch (Throwable $e) {
+    error_log("Erreur couleurs: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Erreur système"
+    ]);
+}
+
+
+
+Le service ts qui doit s'inspirer de ce service exemplaire : import config from "../config";
+
+type TypeEngin = "moto" | "voiture" | "camion" | "autre";
+
+export async function getMarquesParType(
+  typeEnginLibelle: string,
+  searchTerm?: string,
+) {
+  const url = `${config.BASE_URL}/marques_engins.php`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "rechercher",
+        type_engin_libelle: typeEnginLibelle,
+        search: searchTerm || "",
+      }),
+    });
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Erreur récupération marques:", error);
+    return { status: "error", message: "Erreur réseau" };
+  }
+}
+
+export async function getModelesParMarque(
+  marqueId: number,
+  searchTerm?: string,
+) {
+  const url = `${config.BASE_URL}/modeles_engins.php`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "rechercher",
+        marque_id: marqueId,
+        search: searchTerm || "",
+      }),
+    });
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Erreur récupération modèles:", error);
+    return { status: "error", message: "Erreur réseau" };
+  }
+}
+
+export async function getCouleurs(searchTerm?: string) {
+  const url = `${config.BASE_URL}/couleurs.php`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "rechercher",
+        search: searchTerm || "",
+      }),
+    });
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Erreur récupération couleurs:", error);
+    return { status: "error", message: "Erreur réseau" };
+  }
+}
+
+export async function getUsages(searchTerm?: string) {
+  const url = `${config.BASE_URL}/usages_engins.php`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "rechercher",
+        search: searchTerm || "",
+      }),
+    });
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Erreur récupération usages:", error);
+    return { status: "error", message: "Erreur réseau" };
+  }
+}
+
+export async function getPuissancesFiscales(
+  typeEnginLibelle: string,
+  searchTerm?: string,
+) {
+  const url = `${config.BASE_URL}/puissances_fiscales.php`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "rechercher_par_type",
+        type_engin_libelle: typeEnginLibelle,
+        search: searchTerm || "",
+      }),
+    });
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Erreur récupération puissances:", error);
+    return { status: "error", message: "Erreur réseau" };
+  }
+}
+
+export async function getTaxeControleTechnique() {
+  const url = `${config.BASE_URL}/impots.php`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "get_by_id",
+        id: 18,
+      }),
+    });
+
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error("Erreur récupération taxe:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau",
+      data: { prix: 10 }, // Valeur par défaut
+    };
+  }
+}
+
+export default {
+  getMarquesParType,
+  getModelesParMarque,
+  getCouleurs,
+  getUsages,
+  getPuissancesFiscales,
+  getTaxeControleTechnique,
+};
+
+
+
+
+Puis à la fin me régénérer le screen au complet (du début à la fin de A-Z) associée au service au complet
+
+
+NB : Agis étant expert 

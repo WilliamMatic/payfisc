@@ -16,24 +16,37 @@ export default function UtilisateurTable({
   onDelete, 
   onToggleStatus 
 }: UtilisateurTableProps) {
-  const privilegeLabels: Record<string, string> = {
-    simple: 'S',
-    special: 'SP',
-    delivrance: 'D',
-    plaque: 'P',
-    reproduction: 'R',
-    series: 'SE',
-    autresTaxes: 'AT'
+  const privilegeLabels: Record<string, Record<string, string>> = {
+    ventePlaque: {
+      simple: 'AVD', special: 'GVG', delivrance: 'DCR', correctionErreur: 'C&R',
+      plaque: 'KCP', reproduction: 'REP', series: 'SER', autresTaxes: 'AT'
+    },
+    vignette: {
+      venteDirecte: 'VV', delivrance: 'DV', renouvellement: 'RV'
+    },
+    assurance: {
+      venteDirecte: 'SAM', delivrance: 'DA', renouvellement: 'RA'
+    }
   };
 
-  const privilegeFullNames: Record<string, string> = {
-    simple: 'Simple',
-    special: 'Spécial',
-    delivrance: 'Délivrance',
-    plaque: 'Plaque',
-    reproduction: 'Reproduction',
-    series: 'Séries',
-    autresTaxes: 'Autres Taxes'
+  const privilegeFullNames: Record<string, Record<string, string>> = {
+    ventePlaque: {
+      simple: 'Assujetti - Vente Directe', special: 'Grossiste - Vente en Gros', delivrance: 'Délivrance Carte Rose',
+      correctionErreur: 'Correction & Reprocessing', plaque: 'Kit Complet Premium',
+      reproduction: 'Reproduction', series: 'Séries', autresTaxes: 'Autres Taxes'
+    },
+    vignette: {
+      venteDirecte: 'Vente de Vignette', delivrance: 'Délivrance Vignette', renouvellement: 'Renouvellement Vignette'
+    },
+    assurance: {
+      venteDirecte: 'Souscription Assurance Moto', delivrance: 'Délivrance Assurance', renouvellement: 'Renouvellement Assurance'
+    }
+  };
+
+  const categoryColors: Record<string, string> = {
+    ventePlaque: 'bg-blue-50 text-blue-700 border-blue-100',
+    vignette: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    assurance: 'bg-purple-50 text-purple-700 border-purple-100',
   };
 
   if (loading) {
@@ -87,19 +100,23 @@ export default function UtilisateurTable({
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex flex-wrap gap-1">
-                      {Object.entries(utilisateur.privileges).map(([privilege, hasAccess]) => 
-                        hasAccess && (
-                          <span
-                            key={privilege}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"
-                            title={privilegeFullNames[privilege] || privilege}
-                          >
-                            <Shield className="w-3 h-3 mr-1" />
-                            {privilegeLabels[privilege]}
-                          </span>
+                      {Object.entries(utilisateur.privileges).map(([category, perms]) =>
+                        Object.entries(perms as Record<string, boolean>).map(([key, hasAccess]) =>
+                          hasAccess ? (
+                            <span
+                              key={`${category}-${key}`}
+                              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium border ${categoryColors[category] || 'bg-gray-50 text-gray-700 border-gray-100'}`}
+                              title={privilegeFullNames[category]?.[key] || `${category} - ${key}`}
+                            >
+                              <Shield className="w-3 h-3 mr-1" />
+                              {privilegeLabels[category]?.[key] || key}
+                            </span>
+                          ) : null
                         )
                       )}
-                      {!Object.values(utilisateur.privileges).some(Boolean) && (
+                      {!Object.values(utilisateur.privileges).some(
+                        (cat) => Object.values(cat as Record<string, boolean>).some(Boolean)
+                      ) && (
                         <span className="text-xs text-gray-400">Aucun</span>
                       )}
                     </div>

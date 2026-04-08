@@ -3,6 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, User, Lock, Package } from "lucide-react";
 import ClientSimpleForm from "./components/ClientSimpleForm";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 import { useEffect, useState } from "react";
 
 export default function PlaqueCarteClient() {
@@ -16,7 +17,7 @@ export default function PlaqueCarteClient() {
   useEffect(() => {
     if (utilisateur?.privileges_include) {
       try {
-        const parsed = JSON.parse(utilisateur.privileges_include);
+        const parsed = parseAndNormalizePrivileges(utilisateur.privileges_include);
         setParsedPrivileges(parsed);
       } catch (error) {
         console.error('Erreur parsing privileges:', error);
@@ -70,7 +71,7 @@ export default function PlaqueCarteClient() {
   }
 
   // Vérifier si l'utilisateur a le privilège "plaque"
-  if (!parsedPrivileges.plaque) {
+  if (!parsedPrivileges?.ventePlaque?.plaque) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">

@@ -19,7 +19,6 @@ require_once __DIR__ . '/../../class/Paiement.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -29,7 +28,6 @@ $data = json_decode(file_get_contents("php://input"), true);
 $required_fields = ['id_declaration', 'montant_total', 'nombre_declarations'];
 foreach ($required_fields as $field) {
     if (!isset($data[$field])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le paramètre $field est requis."]);
         exit;
     }
@@ -47,7 +45,6 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors du calcul de la répartition : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: Impossible de calculer la répartition."]);
 }
 ?>

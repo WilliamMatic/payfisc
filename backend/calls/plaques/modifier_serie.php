@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -32,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 // ======================================================================
 
 if (!isset($_POST['id'], $_POST['nom_serie'], $_POST['province_id'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "L'ID, le nom de la série et la province sont requis."]);
     exit;
 }
@@ -70,6 +68,5 @@ try {
     error_log("Erreur lors de la modification de la série : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

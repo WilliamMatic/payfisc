@@ -19,14 +19,12 @@ header('Content-Type: application/json');
 
 // Validation de la requête HTTP
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
 
 // Validation des données du formulaire
 if (!isset($_POST['nom'], $_POST['telephone'], $_POST['numero_compte'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le nom, le téléphone et le numéro de compte sont obligatoires."]);
     exit;
 }
@@ -50,6 +48,5 @@ try {
     error_log("Erreur lors de l'ajout d'un bénéficiaire : " . $e->getMessage());
 
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

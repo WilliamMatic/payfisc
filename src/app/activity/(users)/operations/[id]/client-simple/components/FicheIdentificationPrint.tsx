@@ -57,14 +57,22 @@ export default function FicheIdentificationPrint({
   const printRef = useRef<HTMLDivElement>(null);
   const [isGeneratingQr, setIsGeneratingQr] = useState(false);
 
+  const escapeHtml = (text: string | undefined | null): string => {
+    if (!text) return "";
+    return String(text).replace(/[&<>"']/g, (char) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char)
+    );
+  };
+
   // Gestion de la date/heure
   useEffect(() => {
+    if (!isOpen) return;
     setCurrentDateTime(getDateTime());
     const interval = setInterval(() => {
       setCurrentDateTime(getDateTime());
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isOpen]);
 
   // Fonction pour générer les données du QR Code
   const generateQRData = (): string => {
@@ -704,15 +712,15 @@ export default function FicheIdentificationPrint({
         <tbody>
           <tr>
             <td>Nom :</td>
-            <td>${data.nom}</td>
+            <td>${escapeHtml(data.nom)}</td>
           </tr>
           <tr>
             <td>Prénom :</td>
-            <td>${data.prenom}</td>
+            <td>${escapeHtml(data.prenom)}</td>
           </tr>
           <tr>
             <td>Sexe :</td>
-            <td>${supplementaire?.sexe || "-----"}</td>
+            <td>${escapeHtml(supplementaire?.sexe) || "-----"}</td>
           </tr>
           <tr>
             <td>Date de naissance :</td>
@@ -720,11 +728,11 @@ export default function FicheIdentificationPrint({
           </tr>
           <tr>
             <td>Lieu de naissance :</td>
-            <td>${supplementaire?.lieu_naissance || "-----"}</td>
+            <td>${escapeHtml(supplementaire?.lieu_naissance) || "-----"}</td>
           </tr>
           <tr>
             <td>Adresse complète :</td>
-            <td>${supplementaire?.adresse_complete || data.adresse}</td>
+            <td>${escapeHtml(supplementaire?.adresse_complete || data.adresse)}</td>
           </tr>
         </tbody>
       </table>
@@ -776,23 +784,23 @@ export default function FicheIdentificationPrint({
         <tbody>
           <tr>
             <td>NIUP Moto :</td>
-            <td>${supplementaire?.niup_moto || "-----"}</td>
+            <td>${escapeHtml(supplementaire?.niup_moto) || "-----"}</td>
           </tr>
           <tr>
             <td>Marque/Modèle :</td>
-            <td>${data.marque} ${data.modele || ""}</td>
+            <td>${escapeHtml(data.marque)} ${escapeHtml(data.modele)}</td>
           </tr>
           <tr>
             <td>Année de fabrication :</td>
-            <td>${data.annee_fabrication || "-----"}</td>
+            <td>${escapeHtml(data.annee_fabrication) || "-----"}</td>
           </tr>
           <tr>
             <td>Couleur :</td>
-            <td>${data.couleur || "-----"}</td>
+            <td>${escapeHtml(data.couleur) || "-----"}</td>
           </tr>
           <tr>
             <td>Numéro de chassis (VIN) :</td>
-            <td>${data.numero_chassis || "-----"}</td>
+            <td>${escapeHtml(data.numero_chassis) || "-----"}</td>
           </tr>
           <tr>
             <td>Cylindrée / Puissance :</td>
@@ -906,7 +914,7 @@ export default function FicheIdentificationPrint({
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      document.body.style.removeProperty("overflow");
     };
   }, [isOpen, onClose]);
 

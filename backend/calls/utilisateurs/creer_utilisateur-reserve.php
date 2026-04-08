@@ -32,7 +32,6 @@ header('Content-Type: application/json');
 // VALIDATION DE LA REQUÊTE HTTP
 // ======================================================================
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée. Utilisez POST."]);
     exit;
 }
@@ -50,7 +49,6 @@ foreach ($required_fields as $field) {
 }
 
 if (!empty($missing_fields)) {
-    http_response_code(400);
     echo json_encode([
         "status" => "error", 
         "message" => "Champs obligatoires manquants: " . implode(', ', $missing_fields)
@@ -66,7 +64,6 @@ $siteAffecteId = (int)$_POST['site_affecte_id'];
 
 // Validation supplémentaire du téléphone
 if (!preg_match('/^\+?[0-9\s\-\(\)]{8,20}$/', $telephone)) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le format du téléphone est invalide."]);
     exit;
 }
@@ -348,7 +345,6 @@ try {
 } catch (Exception $e) {
     error_log("Erreur critique lors de l'ajout d'utilisateur: " . $e->getMessage());
     
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: Impossible de traiter la requête."

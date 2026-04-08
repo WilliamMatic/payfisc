@@ -98,7 +98,7 @@ export async function getProvinces(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des provinces',
@@ -141,7 +141,7 @@ export async function getProvincesActives(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des provinces actives',
@@ -187,7 +187,7 @@ export async function addProvince(provinceData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout de la province',
@@ -232,7 +232,7 @@ export async function updateProvince(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification de la province',
@@ -267,7 +267,7 @@ export async function deleteProvince(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression de la province',
@@ -306,7 +306,7 @@ export async function toggleProvinceStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut de la province',
@@ -347,7 +347,7 @@ export async function searchProvinces(searchTerm: string): Promise<ApiResponse> 
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des provinces',
@@ -389,7 +389,7 @@ export async function checkProvinceByNom(nom: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification de la province',
@@ -427,7 +427,7 @@ export async function checkProvinceByCode(code: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification du code de province',
@@ -469,7 +469,7 @@ export async function getProvinceById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération de la province',
@@ -520,7 +520,7 @@ export async function getProvincesPaginees(page: number = 1, limit: number = 10,
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des provinces paginées',

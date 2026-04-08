@@ -1,6 +1,6 @@
-import { Edit, X, Save, Loader2, User, Phone, MapPin, Shield } from 'lucide-react';
+import { Edit, X, Save, Loader2, User, Phone, MapPin, Shield, Car, FileCheck, ShieldCheck } from 'lucide-react';
 import { useEffect } from 'react';
-import { Utilisateur as UtilisateurType, Site, UtilisateurFormData, Privileges } from '@/services/utilisateurs/utilisateurService';
+import { Utilisateur as UtilisateurType, Site, UtilisateurFormData, Privileges, PrivilegesPlaque, PrivilegesVignette, PrivilegesAssurance } from '@/services/utilisateurs/utilisateurService';
 
 interface EditUtilisateurModalProps {
   utilisateur: UtilisateurType;
@@ -9,7 +9,7 @@ interface EditUtilisateurModalProps {
   processing: boolean;
   onClose: () => void;
   onFormDataChange: (data: UtilisateurFormData) => void;
-  onPrivilegeChange: (privilege: keyof Privileges, value: boolean) => void;
+  onPrivilegeChange: (category: keyof Privileges, key: string, value: boolean) => void;
   onEditUtilisateur: () => Promise<void>;
 }
 
@@ -23,14 +23,27 @@ export default function EditUtilisateurModal({
   onPrivilegeChange,
   onEditUtilisateur
 }: EditUtilisateurModalProps) {
-  const privilegeLabels: Record<keyof Privileges, string> = {
-    simple: 'Simple',
-    special: 'Spécial',
-    delivrance: 'Délivrance',
-    plaque: 'Plaque',
+  const plaqueLabelMap: Record<keyof PrivilegesPlaque, string> = {
+    simple: 'Assujetti - Vente Directe',
+    special: 'Grossiste - Vente en Gros',
+    delivrance: 'Délivrance Carte Rose',
+    correctionErreur: 'Correction & Reprocessing',
+    plaque: 'Kit Complet Premium',
     reproduction: 'Reproduction',
     series: 'Séries',
-    autresTaxes: 'Autres Taxes'
+    autresTaxes: 'Autres Taxes',
+  };
+
+  const vignetteLabelMap: Record<keyof PrivilegesVignette, string> = {
+    venteDirecte: 'Vente de Vignette',
+    delivrance: 'Délivrance Vignette',
+    renouvellement: 'Renouvellement Vignette',
+  };
+
+  const assuranceLabelMap: Record<keyof PrivilegesAssurance, string> = {
+    venteDirecte: 'Souscription Assurance Moto',
+    delivrance: 'Délivrance Assurance',
+    renouvellement: 'Renouvellement Assurance',
   };
 
   // Ajoutez ce useEffect pour s'assurer que le formData est correctement initialisé
@@ -163,27 +176,82 @@ export default function EditUtilisateurModal({
             <div>
               <div className="flex items-center mb-4">
                 <Shield className="w-5 h-5 text-[#2D5B7A] mr-2" />
-                <h4 className="text-md font-medium text-gray-800">Privilèges d'accès</h4>
+                <h4 className="text-md font-medium text-gray-800">Privilèges d&apos;accès</h4>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {(Object.keys(formData.privileges) as Array<keyof Privileges>).map((privilege) => (
-                  <div key={privilege} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`edit-privilege-${privilege}`}
-                      checked={formData.privileges[privilege]}
-                      onChange={(e) => onPrivilegeChange(privilege, e.target.checked)}
-                      className="w-4 h-4 text-[#2D5B7A] border-gray-300 rounded focus:ring-[#2D5B7A] focus:ring-2"
-                      disabled={processing}
-                    />
-                    <label 
-                      htmlFor={`edit-privilege-${privilege}`}
-                      className="ml-2 text-sm text-gray-700 cursor-pointer"
-                    >
-                      {privilegeLabels[privilege]}
-                    </label>
-                  </div>
-                ))}
+
+              {/* Vente Plaque */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                <div className="flex items-center mb-3">
+                  <Car className="w-4 h-4 text-[#2D5B7A] mr-2" />
+                  <h5 className="text-sm font-semibold text-gray-700">Vente Plaque</h5>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {(Object.keys(plaqueLabelMap) as Array<keyof PrivilegesPlaque>).map((key) => (
+                    <div key={key} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`edit-privilege-plaque-${key}`}
+                        checked={formData.privileges.ventePlaque[key]}
+                        onChange={(e) => onPrivilegeChange('ventePlaque', key, e.target.checked)}
+                        className="w-4 h-4 text-[#2D5B7A] border-gray-300 rounded focus:ring-[#2D5B7A] focus:ring-2"
+                        disabled={processing}
+                      />
+                      <label htmlFor={`edit-privilege-plaque-${key}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                        {plaqueLabelMap[key]}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Vignette */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                <div className="flex items-center mb-3">
+                  <FileCheck className="w-4 h-4 text-[#2D5B7A] mr-2" />
+                  <h5 className="text-sm font-semibold text-gray-700">Vignette</h5>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {(Object.keys(vignetteLabelMap) as Array<keyof PrivilegesVignette>).map((key) => (
+                    <div key={key} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`edit-privilege-vignette-${key}`}
+                        checked={formData.privileges.vignette[key]}
+                        onChange={(e) => onPrivilegeChange('vignette', key, e.target.checked)}
+                        className="w-4 h-4 text-[#2D5B7A] border-gray-300 rounded focus:ring-[#2D5B7A] focus:ring-2"
+                        disabled={processing}
+                      />
+                      <label htmlFor={`edit-privilege-vignette-${key}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                        {vignetteLabelMap[key]}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Assurance */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center mb-3">
+                  <ShieldCheck className="w-4 h-4 text-[#2D5B7A] mr-2" />
+                  <h5 className="text-sm font-semibold text-gray-700">Assurance</h5>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {(Object.keys(assuranceLabelMap) as Array<keyof PrivilegesAssurance>).map((key) => (
+                    <div key={key} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`edit-privilege-assurance-${key}`}
+                        checked={formData.privileges.assurance[key]}
+                        onChange={(e) => onPrivilegeChange('assurance', key, e.target.checked)}
+                        className="w-4 h-4 text-[#2D5B7A] border-gray-300 rounded focus:ring-[#2D5B7A] focus:ring-2"
+                        disabled={processing}
+                      />
+                      <label htmlFor={`edit-privilege-assurance-${key}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                        {assuranceLabelMap[key]}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

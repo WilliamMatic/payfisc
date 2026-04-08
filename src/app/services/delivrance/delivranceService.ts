@@ -95,7 +95,7 @@ export const verifierDelivrance = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification',
@@ -128,7 +128,7 @@ export const completerDelivrance = async (paiementId: number): Promise<Delivranc
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la complétion',
@@ -161,7 +161,7 @@ export const getDonneesImpression = async (paiementId: number): Promise<{status:
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des données',

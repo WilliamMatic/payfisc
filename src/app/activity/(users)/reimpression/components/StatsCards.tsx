@@ -12,11 +12,11 @@ interface StatsCardsProps {
 export default function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-        <div className="text-sm text-blue-600 font-medium">
+      <div className="bg-[#2D5B7A]/10 p-4 rounded-xl border border-[#2D5B7A]/20">
+        <div className="text-sm text-[#2D5B7A] font-medium">
           Total des cartes
         </div>
-        <div className="text-2xl font-bold text-blue-800 mt-1">
+        <div className="text-2xl font-bold text-[#2D5B7A] mt-1">
           {stats.total}
         </div>
       </div>

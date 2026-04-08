@@ -25,7 +25,6 @@ require_once __DIR__ . '/../../class/Paiement.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data['numero_declaration']) || empty($data['numero_declaration'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le paramètre numero_declaration est requis."]);
     exit;
 }
@@ -47,6 +45,5 @@ try {
 
 } catch (Exception $e) {
     error_log("Erreur lors de la recherche de déclaration : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: Impossible de rechercher la déclaration."]);
 }

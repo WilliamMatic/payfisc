@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -35,13 +34,11 @@ $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "JSON invalide."]);
     exit;
 }
 
 if (empty($data['bank_id']) || empty($data['api_key'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Bank ID et API Key requis."]);
     exit;
 }
@@ -62,7 +59,6 @@ try {
     $restrictions = $partenaireManager->verifierRestrictions($data['bank_id'], $ip, $userAgent);
     
     if ($restrictions['status'] === 'error') {
-        http_response_code(403);
         echo json_encode($restrictions);
         exit;
     }
@@ -74,7 +70,6 @@ try {
         http_response_code(200);
         echo json_encode($result);
     } else {
-        http_response_code(401);
         echo json_encode($result);
     }
 
@@ -83,6 +78,5 @@ try {
     error_log("Erreur lors de l'authentification du partenaire : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'authentification a échoué."]);
 }

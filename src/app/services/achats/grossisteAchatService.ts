@@ -152,7 +152,7 @@ export const getAchatsGrossistes = async (filtres?: FiltreAchats): Promise<ApiRe
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des achats',
@@ -197,7 +197,7 @@ export const getStatistiquesAchats = async (dateDebut?: string, dateFin?: string
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des statistiques',
@@ -237,12 +237,15 @@ export const exporterAchats = async (filtres?: FiltreAchats, format: 'csv' | 'ex
       body: formData,
     });
 
-    if (!response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
       const error = await response.json();
-      return {
-        status: 'error',
-        message: error.message || 'Échec de l\'exportation des données',
-      };
+      if (error.status === 'error') {
+        return {
+          status: 'error',
+          message: error.message || 'Échec de l\'exportation des données',
+        };
+      }
     }
 
     // Pour l'export, on retourne généralement un blob
@@ -287,7 +290,7 @@ export const getDetailAchat = async (achatId: number): Promise<ApiResponse> => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des détails',

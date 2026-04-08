@@ -108,7 +108,7 @@ export async function enregistrerPaiementAction(
 
     const result = await response.json();
 
-    if (!response.ok || result.status === "error") {
+    if (result.status === "error") {
       console.error("Erreur du serveur:", result);
       return {
         success: false,
@@ -306,7 +306,7 @@ export async function rechercherPlaqueAction(formData: FormData): Promise<{
 
     const result = await response.json();
 
-    if (!response.ok || result.status === "error") {
+    if (result.status === "error") {
       return {
         success: false,
         message: result.message || "Plaque non trouvée",
@@ -403,7 +403,7 @@ export async function verifierVignetteExistanteAction(plaque: string): Promise<{
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (result.status === "error") {
       return {
         success: false,
         existe: false,

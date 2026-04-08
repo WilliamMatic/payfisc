@@ -35,7 +35,7 @@ export async function fetchControles(params: FetchControlesParams) {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error" as const,
         message: data.message || "Erreur lors de la récupération des contrôles",
@@ -67,7 +67,7 @@ export async function supprimerControleTechnique(controleId: number) {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error" as const,
         message: data.message || "Erreur lors de la suppression",
@@ -103,7 +103,7 @@ export async function modifierResultatsControle(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error" as const,
         message: data.message || "Erreur lors de la modification des résultats",

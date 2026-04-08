@@ -10,8 +10,9 @@ export default function Header() {
       {/* Titre et description */}
       <div>
         <button
+        type="button"
         onClick={() => router.back()}
-        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+        className="p-2 text-[#2D5B7A] hover:text-[#244D68] hover:bg-[#2D5B7A]/10 rounded-lg transition-colors flex items-center justify-center"
         title="Retour"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -28,7 +29,7 @@ export default function Header() {
       {/* Bouton à droite */}
       <Link
         href="achats-grossistes/suppression-vente-grossiste/"
-        className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        className="inline-block px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-semibold"
       >
         Supprimer une vente
       </Link>

@@ -11,7 +11,6 @@ try {
     $userType = $data['user_type'] ?? '';
     
     if (empty($userId) || empty($userType)) {
-        http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'ID utilisateur et type requis']);
         exit;
     }
@@ -21,12 +20,10 @@ try {
     if ($result['success']) {
         echo json_encode($result);
     } else {
-        http_response_code(404);
         echo json_encode($result);
     }
     
 } catch (Exception $e) {
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
 }
 ?>

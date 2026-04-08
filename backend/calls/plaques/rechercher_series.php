@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || !isset($input['search'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le terme de recherche est requis."]);
     exit;
 }
@@ -68,7 +66,6 @@ try {
     $result = $plaqueManager->rechercherSeriesPagination($searchTerm, $page, $limit, $utilisateurId);
     
     if ($result['status'] === 'error') {
-        http_response_code(400);
         echo json_encode($result);
         exit;
     }
@@ -80,6 +77,5 @@ try {
     error_log("Erreur lors de la recherche des séries : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système: L'opération a échoué."]);
 }

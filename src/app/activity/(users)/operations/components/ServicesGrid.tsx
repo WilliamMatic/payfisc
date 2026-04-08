@@ -1,51 +1,58 @@
 // ServicesGrid.tsx
+'use client';
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import {
   User,
   Users,
   CreditCard,
   Package,
   ArrowRight,
-  Zap,
-  Crown,
   Shield,
   RefreshCw,
-  Sparkles,
-  BadgeCheck,
-  Truck,
   Building,
+  Lock,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { Impot as ImpotType } from "@/services/impots/impotService";
-
+import { useAuth } from "@/contexts/AuthContext";import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 interface ServicesGridProps {
   impot: ImpotType;
 }
 
 export default function ServicesGrid({ impot }: ServicesGridProps) {
+  const { utilisateur } = useAuth();
+  const [privileges, setPrivileges] = useState<any>(null);
+
+  useEffect(() => {
+    if (utilisateur) {
+      setPrivileges(parseAndNormalizePrivileges(utilisateur.privileges_include));
+    }
+  }, [utilisateur]);
+
   const services = [
     {
       id: "client-simple",
+      privilegeKey: "simple",
       title: "Assujetti - Vente Directe",
       description:
         "Pour les particuliers qui achètent une plaque et récupèrent immédiatement la carte rose correspondante.",
       icon: User,
-      color: "emerald",
       features: [
         "Achat plaque unique",
         "Carte rose immédiate",
         "Processus express 30min",
       ],
       tag: "RETAIL",
-      stats: "5 min",
-      popular: true,
     },
     {
       id: "client-special",
+      privilegeKey: "special",
       title: "Grossiste - Vente en Gros",
       description:
         "Pour les partenaires qui achètent plusieurs plaques et peuvent récupérer des cartes roses vierges ou pré-imprimées.",
       icon: Building,
-      color: "indigo",
       features: [
         "Achat volume (5+ plaques)",
         "Cartes roses vierges",
@@ -53,16 +60,14 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
         "Dashboard analytique",
       ],
       tag: "B2B",
-      stats: "Volume",
-      popular: true,
     },
     {
       id: "carte-rose",
+      privilegeKey: "delivrance",
       title: "Délivrance Carte Rose",
       description:
         "Lorsqu'un grossiste a vendu une plaque à un client externe, ce dernier vient finaliser et récupérer sa carte rose.",
       icon: CreditCard,
-      color: "sky",
       features: [
         "Transfert de propriété",
         "Activation finale",
@@ -70,16 +75,14 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
         "Biométrie optionnelle",
       ],
       tag: "TRANSFERT",
-      stats: "Sécurisé",
-      popular: false,
     },
     {
       id: "plaque-carte",
+      privilegeKey: "plaque",
       title: "Kit Complet Premium",
       description:
         "Service tout-en-un : plaque personnalisée + carte rose avec options premium et suivi prioritaire.",
       icon: Package,
-      color: "amber",
       features: [
         "Plaque personnalisée",
         "Carte rose NFC",
@@ -87,16 +90,14 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
         "Livraison premium",
       ],
       tag: "PREMIUM",
-      stats: "Premium",
-      popular: false,
     },
     {
       id: "refactor-carte",
+      privilegeKey: "correctionErreur",
       title: "Correction & Reprocessing",
       description:
         "Refactorisation et correction des données erronées sur les cartes roses existantes.",
       icon: RefreshCw,
-      color: "rose",
       features: [
         "Correction IA vérifiée",
         "Réimpression sécurisée",
@@ -104,238 +105,118 @@ export default function ServicesGrid({ impot }: ServicesGridProps) {
         "Validation MPAKO",
       ],
       tag: "SUPPORT",
-      stats: "16/6",
-      popular: false,
     },
   ];
 
-  const getColorClasses = (color: string) => {
-    const classes = {
-      emerald: {
-        bg: "bg-gradient-to-br from-emerald-50 to-emerald-25",
-        border: "border-emerald-200/60",
-        icon: "text-emerald-600",
-        button:
-          "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-emerald-200/50",
-        badge: "bg-emerald-100 text-emerald-800",
-        tag: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
-      },
-      indigo: {
-        bg: "bg-gradient-to-br from-indigo-50 to-indigo-25",
-        border: "border-indigo-200/60",
-        icon: "text-indigo-600",
-        button:
-          "bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 shadow-indigo-200/50",
-        badge: "bg-indigo-100 text-indigo-800",
-        tag: "bg-indigo-500/10 text-indigo-700 border-indigo-500/20",
-      },
-      sky: {
-        bg: "bg-gradient-to-br from-sky-50 to-sky-25",
-        border: "border-sky-200/60",
-        icon: "text-sky-600",
-        button:
-          "bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-700 hover:to-sky-600 shadow-sky-200/50",
-        badge: "bg-sky-100 text-sky-800",
-        tag: "bg-sky-500/10 text-sky-700 border-sky-500/20",
-      },
-      amber: {
-        bg: "bg-gradient-to-br from-amber-50 to-amber-25",
-        border: "border-amber-200/60",
-        icon: "text-amber-600",
-        button:
-          "bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 shadow-amber-200/50",
-        badge: "bg-amber-100 text-amber-800",
-        tag: "bg-amber-500/10 text-amber-700 border-amber-500/20",
-      },
-      rose: {
-        bg: "bg-gradient-to-br from-rose-50 to-rose-25",
-        border: "border-rose-200/60",
-        icon: "text-rose-600",
-        button:
-          "bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 shadow-rose-200/50",
-        badge: "bg-rose-100 text-rose-800",
-        tag: "bg-rose-500/10 text-rose-700 border-rose-500/20",
-      },
-      violet: {
-        bg: "bg-gradient-to-br from-violet-50 to-violet-25",
-        border: "border-violet-200/60",
-        icon: "text-violet-600",
-        button:
-          "bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-700 hover:to-violet-600 shadow-violet-200/50",
-        badge: "bg-violet-100 text-violet-800",
-        tag: "bg-violet-500/10 text-violet-700 border-violet-500/20",
-      },
-      cyan: {
-        bg: "bg-gradient-to-br from-cyan-50 to-cyan-25",
-        border: "border-cyan-200/60",
-        icon: "text-cyan-600",
-        button:
-          "bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 shadow-cyan-200/50",
-        badge: "bg-cyan-100 text-cyan-800",
-        tag: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20",
-      },
-      fuchsia: {
-        bg: "bg-gradient-to-br from-fuchsia-50 to-fuchsia-25",
-        border: "border-fuchsia-200/60",
-        icon: "text-fuchsia-600",
-        button:
-          "bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 hover:from-fuchsia-700 hover:to-fuchsia-600 shadow-fuchsia-200/50",
-        badge: "bg-fuchsia-100 text-fuchsia-800",
-        tag: "bg-fuchsia-500/10 text-fuchsia-700 border-fuchsia-500/20",
-      },
-    };
-    return classes[color as keyof typeof classes] || classes.emerald;
+  const isServiceAllowed = (privilegeKey: string): boolean => {
+    if (!privileges) return false;
+    return !!privileges?.ventePlaque?.[privilegeKey];
   };
 
+  const authorizedCount = services.filter(s => isServiceAllowed(s.privilegeKey)).length;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {services.map((service) => {
-        const colorClasses = getColorClasses(service.color);
-        const IconComponent = service.icon;
+    <div>
+      {/* Privilege summary bar */}
+      <div className="mb-5 bg-white rounded-lg border border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-gray-100 rounded-md">
+            <Shield className="w-4 h-4 text-[#2D5B7A]" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">Vos accès — Vente Plaque</p>
+            <p className="text-xs text-gray-500">{authorizedCount} / {services.length} services autorisés</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {services.map(s => (
+            <div
+              key={s.id}
+              title={`${s.title}: ${isServiceAllowed(s.privilegeKey) ? 'Autorisé' : 'Non autorisé'}`}
+              className={`w-2.5 h-2.5 rounded-full ${isServiceAllowed(s.privilegeKey) ? 'bg-emerald-500' : 'bg-gray-300'}`}
+            />
+          ))}
+        </div>
+      </div>
 
-        return (
-          <div
-            key={service.id}
-            className={`
-              relative rounded-2xl border ${colorClasses.border} ${
-              colorClasses.bg
-            } 
-              p-6 hover:shadow-2xl transition-all duration-300 group
-              hover:scale-[1.02] hover:-translate-y-1
-              backdrop-blur-sm
-              ${!impot.actif ? "opacity-50 grayscale" : ""}
-            `}
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 20% 80%, rgba(255,255,255,0.8) 0%, transparent 50%)",
-            }}
-          >
-            {/* BADGE POPULAIRE 2026 */}
-            {service.popular && (
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 shadow-lg">
-                  <Crown className="w-3.5 h-3.5" />
-                  <span>TRENDING 2026</span>
-                  <Zap className="w-3 h-3 animate-pulse" />
-                </div>
-              </div>
-            )}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {services.map((service) => {
+          const IconComponent = service.icon;
+          const allowed = isServiceAllowed(service.privilegeKey);
 
-            {/* TAG DE CATÉGORIE */}
-            <div className="absolute top-4 right-4">
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClasses.tag}`}
-              >
-                {service.tag}
-              </span>
-            </div>
-
-            {/* STATS MINI */}
-            <div className="absolute top-4 left-4">
-              <div className="text-xs font-bold text-gray-700 bg-white/80 px-2 py-1 rounded-lg">
-                {service.stats}
-              </div>
-            </div>
-
-            {/* CONTENU PRINCIPAL */}
-            <div className="pt-8">
-              {/* ICÔNE MODERNE */}
-              <div className="flex items-center justify-between mb-5">
-                <div
-                  className={`
-                  p-3.5 rounded-2xl ${colorClasses.bg} border ${colorClasses.border}
-                  shadow-lg group-hover:shadow-xl transition-shadow
-                `}
-                >
-                  <IconComponent className={`w-7 h-7 ${colorClasses.icon}`} />
+          return (
+            <div
+              key={service.id}
+              className={`
+                relative bg-white rounded-xl border p-5 transition-all duration-200 flex flex-col
+                ${allowed
+                  ? 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  : 'border-gray-200 bg-gray-50 opacity-60'
+                }
+                ${!impot.actif ? "opacity-50" : ""}
+              `}
+            >
+              {/* TAG + ACCESS */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-500 uppercase tracking-wide">
+                  {service.tag}
+                </span>
+                <div className={`flex items-center gap-1 text-xs font-medium ${allowed ? 'text-emerald-600' : 'text-gray-400'}`}>
+                  {allowed ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                  <span>{allowed ? 'Autorisé' : 'Verrouillé'}</span>
                 </div>
               </div>
 
-              {/* TITRE ET DESCRIPTION */}
-              <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
-                {service.title}
-              </h3>
-              <p className="text-gray-600 mb-5 leading-relaxed text-sm">
+              {/* ICON + TITLE */}
+              <div className="flex items-start gap-3 mb-3">
+                <div className={`p-2 rounded-lg flex-shrink-0 ${allowed ? 'bg-[#2D5B7A]/10' : 'bg-gray-100'}`}>
+                  {allowed ? (
+                    <IconComponent className="w-5 h-5 text-[#2D5B7A]" />
+                  ) : (
+                    <Lock className="w-5 h-5 text-gray-400" />
+                  )}
+                </div>
+                <h3 className={`text-[15px] font-semibold leading-tight ${allowed ? 'text-gray-900' : 'text-gray-500'}`}>
+                  {service.title}
+                </h3>
+              </div>
+
+              {/* DESCRIPTION */}
+              <p className={`text-[13px] leading-relaxed mb-4 ${allowed ? 'text-gray-500' : 'text-gray-400'}`}>
                 {service.description}
               </p>
 
-              {/* CARACTÉRISTIQUES MODERNES */}
-              <ul className="space-y-3 mb-6">
+              {/* FEATURES */}
+              <ul className="space-y-2 mb-5 flex-1">
                 {service.features.map((feature, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center space-x-3 text-sm"
-                  >
-                    <div
-                      className={`
-                      w-2 h-2 rounded-full ${colorClasses.icon} 
-                      flex-shrink-0 shadow-sm
-                    `}
-                    ></div>
-                    <span className="text-gray-700">{feature}</span>
+                  <li key={index} className="flex items-center gap-2 text-[13px]">
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${allowed ? 'bg-[#2D5B7A]' : 'bg-gray-300'}`} />
+                    <span className={allowed ? "text-gray-600" : "text-gray-400"}>{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              {/* BOUTON D'ACCÈS 2026 */}
-              {impot.actif ? (
+              {/* BUTTON */}
+              <div className="mt-auto">
+              {allowed && impot.actif ? (
                 <Link
                   href={`${impot.id}/${service.id}`}
-                  className={`
-                    w-full flex items-center justify-between px-5 py-3.5 
-                    ${colorClasses.button} text-white rounded-xl 
-                    transition-all duration-300 hover:no-underline group/button
-                    shadow-lg hover:shadow-xl
-                    hover:scale-[1.02] active:scale-[0.98]
-                  `}
+                  className="w-full flex items-center justify-between px-4 py-2.5 bg-[#2D5B7A] hover:bg-[#1a3a5c] text-white rounded-lg transition-colors duration-200 hover:no-underline text-sm font-medium"
                 >
-                  <span className="font-semibold text-sm tracking-wide">
-                    Démarrer maintenant
-                  </span>
-                  <div className="flex items-center space-x-1">
-                    <span className="text-xs opacity-80">GO</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover/button:translate-x-1.5 transition-transform" />
-                  </div>
+                  <span>Démarrer</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
               ) : (
-                <div
-                  className={`
-                  w-full flex items-center justify-center space-x-2 px-4 py-3.5 
-                  ${colorClasses.button} text-white rounded-xl opacity-30 
-                  cursor-not-allowed shadow-inner
-                `}
-                >
-                  <Shield className="w-4 h-4" />
-                  <span className="font-semibold text-sm">
-                    Service suspendu
-                  </span>
+                <div className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed text-sm font-medium">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{!allowed ? 'Accès non autorisé' : 'Service suspendu'}</span>
                 </div>
               )}
-            </div>
-
-            {/* INDICATEUR DE STATUT AVANCÉ */}
-            {!impot.actif && (
-              <div className="mt-4 text-center">
-                <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full text-xs text-gray-700 border border-gray-300/50">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span className="font-medium">
-                    Impôt temporairement suspendu
-                  </span>
-                </div>
               </div>
-            )}
-
-            {/* EFFET DE BORDURE ANIMÉ */}
-            <div
-              className={`
-              absolute inset-0 rounded-2xl border-2 ${colorClasses.border} 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-500
-              pointer-events-none
-            `}
-            ></div>
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

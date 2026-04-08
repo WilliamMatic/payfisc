@@ -4,10 +4,6 @@ import DelivranceSearch from "./components/DelivranceSearch";
 import React from "react";
 import { getImpotById } from "@/services/impots/impotService";
 
-export function generateStaticParams() {
-  return [{ id: "0" }];
-}
-
 interface PageProps {
   params: Promise<{
     id: string;

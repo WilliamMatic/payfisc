@@ -17,7 +17,6 @@ try {
     $limit = $data['limit'] ?? 10;
     
     if (empty($nif)) {
-        http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'NIF requis']);
         exit;
     }
@@ -70,10 +69,8 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur de base de données: ' . $e->getMessage()]);
 } catch (Exception $e) {
-    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
 }
 ?>

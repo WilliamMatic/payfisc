@@ -79,7 +79,7 @@ export async function getTypeEngins(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des types d\'engins',
@@ -122,7 +122,7 @@ export async function getTypeEnginsActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des types d\'engins actifs',
@@ -168,7 +168,7 @@ export async function addTypeEngin(typeEnginData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout du type d\'engin',
@@ -214,7 +214,7 @@ export async function updateTypeEngin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification du type d\'engin',
@@ -250,7 +250,7 @@ export async function deleteTypeEngin(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression du type d\'engin',
@@ -290,7 +290,7 @@ export async function toggleTypeEnginStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut du type d\'engin',
@@ -332,7 +332,7 @@ export async function searchTypeEngins(searchTerm: string): Promise<ApiResponse>
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des types d\'engins',
@@ -374,7 +374,7 @@ export async function checkTypeEnginExists(libelle: string): Promise<ApiResponse
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification du type d\'engin',
@@ -416,7 +416,7 @@ export async function getTypeEnginById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération du type d\'engin',

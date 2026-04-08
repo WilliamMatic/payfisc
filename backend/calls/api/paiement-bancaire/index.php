@@ -515,7 +515,6 @@ class BankPaymentAPI {
     }
     
     private function sendResponse($code, $data) {
-        http_response_code($code);
         header("X-Request-ID: " . $this->requestId);
         echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
@@ -527,7 +526,6 @@ try {
     $api = new BankPaymentAPI();
     $api->handleRequest();
 } catch (Exception $e) {
-    http_response_code(500);
     echo json_encode([
         "status" => "error",
         "message" => "Erreur critique: " . $e->getMessage(),

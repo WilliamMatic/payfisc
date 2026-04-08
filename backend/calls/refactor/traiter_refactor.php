@@ -13,7 +13,6 @@ require_once __DIR__ . '/../../class/RefactorCarte.php';
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée"]);
     exit;
 }
@@ -22,13 +21,11 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 // Validation des données requises
 if (!isset($data['source'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Source non spécifiée"]);
     exit;
 }
 
 if (!isset($data['site_code']) || empty($data['site_code'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le code du site est obligatoire"]);
     exit;
 }
@@ -47,7 +44,6 @@ try {
     } else {
         // Mettre à jour l'existant
         if (!isset($data['id_dgrk']) || empty($data['id_dgrk'])) {
-            http_response_code(400);
             echo json_encode(["status" => "error", "message" => "L'identifiant est obligatoire"]);
             exit;
         }
@@ -63,14 +59,12 @@ try {
     if ($result['status'] === 'success') {
         http_response_code(200);
     } else {
-        http_response_code(400);
     }
     
     echo json_encode($result);
 
 } catch (Exception $e) {
     error_log("Erreur traitement refactor: " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Erreur système"]);
 }
 ?>

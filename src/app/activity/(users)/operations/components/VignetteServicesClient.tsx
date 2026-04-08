@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Impot as ImpotType } from '@/services/impots/impotService';
 import ImpotServicesHeader from './ImpotServicesHeader';
 import AlertMessage from './AlertMessage';
@@ -9,6 +9,7 @@ import {
   Ticket,
   Smartphone,
   CheckCircle,
+  XCircle,
   Shield,
   Zap,
   ArrowRight,
@@ -20,8 +21,11 @@ import {
   Key,
   RefreshCw,
   Crown,
-  Wrench
+  Wrench,
+  Lock,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 
 interface VignetteServicesClientProps {
   impot: ImpotType;
@@ -30,10 +34,19 @@ interface VignetteServicesClientProps {
 export default function VignetteServicesClient({ impot }: VignetteServicesClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { utilisateur } = useAuth();
+  const [privileges, setPrivileges] = useState<any>(null);
+
+  useEffect(() => {
+    if (utilisateur) {
+      setPrivileges(parseAndNormalizePrivileges(utilisateur.privileges_include));
+    }
+  }, [utilisateur]);
 
   const services = [
     {
       id: "vente-vignette",
+      privilegeKey: "venteDirecte",
       title: "Vente de Vignette",
       description: "Pour les assujettis qui viennent acheter leur vignette automobile. Vérification préalable de l'immatriculation requise.",
       icon: Ticket,
@@ -51,6 +64,7 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
     },
     {
       id: "delivrance-vignette",
+      privilegeKey: "delivrance",
       title: "Délivrance Vignette",
       description: "Pour les assujettis ayant déjà payé via mobile money et qui viennent récupérer leur vignette. Vérification du paiement et de l'immatriculation.",
       icon: Smartphone,
@@ -68,6 +82,7 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
     },
     {
       id: "renouvellement-vignette",
+      privilegeKey: "renouvellement",
       title: "Renouvellement Vignette",
       description: "Service de renouvellement de vignette automobile après expiration de la période de validité de 6 mois.",
       icon: RefreshCw,
@@ -115,6 +130,13 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
     return classes[color as keyof typeof classes] || classes.emerald;
   };
 
+  const isServiceAllowed = (privilegeKey: string): boolean => {
+    if (!privileges) return false;
+    return !!privileges?.vignette?.[privilegeKey];
+  };
+
+  const authorizedCount = services.filter(s => isServiceAllowed(s.privilegeKey)).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -138,8 +160,8 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
             <div>
               <h3 className="font-bold text-amber-800 mb-1">Instructions importantes</h3>
               <p className="text-amber-700 text-sm">
-                Pour tous les services de vignette, une vérification préalable de l'immatriculation du véhicule est obligatoire. 
-                Assurez-vous que l'assujetti dispose de ses documents d'immatriculation avant de procéder.
+                Pour tous les services de vignette, une vérification préalable de l&apos;immatriculation du véhicule est obligatoire. 
+                Assurez-vous que l&apos;assujetti dispose de ses documents d&apos;immatriculation avant de procéder.
               </p>
             </div>
           </div>
@@ -161,28 +183,54 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
           </div>
         </div>
 
+        {/* Privilege summary bar */}
+        <div className="mb-6 bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <Shield className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Vos accès — Vignette</p>
+              <p className="text-xs text-gray-500">{authorizedCount} / {services.length} services autorisés</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {services.map(s => (
+              <div
+                key={s.id}
+                title={`${s.title}: ${isServiceAllowed(s.privilegeKey) ? 'Autorisé' : 'Non autorisé'}`}
+                className={`w-3 h-3 rounded-full transition-colors ${isServiceAllowed(s.privilegeKey) ? 'bg-emerald-500' : 'bg-red-300'}`}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Grille des services - 3 colonnes */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {services.map((service) => {
             const colorClasses = getColorClasses(service.color);
             const IconComponent = service.icon;
+            const allowed = isServiceAllowed(service.privilegeKey);
 
             return (
               <div
                 key={service.id}
                 className={`
-                  relative rounded-2xl border ${colorClasses.border} ${colorClasses.bg}
-                  p-6 hover:shadow-2xl transition-all duration-300 group
-                  hover:scale-[1.02] hover:-translate-y-1
-                  backdrop-blur-sm
+                  relative rounded-2xl border p-6 transition-all duration-300 group backdrop-blur-sm
+                  ${allowed
+                    ? `${colorClasses.border} ${colorClasses.bg} hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1`
+                    : 'border-gray-200 bg-gray-50/80 opacity-60 grayscale'
+                  }
                   ${!impot.actif ? "opacity-50 grayscale" : ""}
                 `}
                 style={{
-                  backgroundImage: "radial-gradient(circle at 20% 80%, rgba(255,255,255,0.8) 0%, transparent 50%)",
+                  backgroundImage: allowed
+                    ? "radial-gradient(circle at 20% 80%, rgba(255,255,255,0.8) 0%, transparent 50%)"
+                    : undefined,
                 }}
               >
-                {/* BADGE POPULAIRE */}
-                {service.popular && (
+                {/* BADGE POPULAIRE / LOCK */}
+                {allowed && service.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 shadow-lg">
                       <Crown className="w-3.5 h-3.5" />
@@ -191,10 +239,18 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
                     </div>
                   </div>
                 )}
+                {!allowed && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 shadow-lg">
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>ACCÈS RESTREINT</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* TAG DE CATÉGORIE */}
                 <div className="absolute top-4 right-4">
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClasses.tag}`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${allowed ? colorClasses.tag : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                     {service.tag}
                   </span>
                 </div>
@@ -208,18 +264,26 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
 
                 {/* CONTENU PRINCIPAL */}
                 <div className="pt-8">
-                  {/* ICÔNE MODERNE */}
+                  {/* ICÔNE */}
                   <div className="flex items-center justify-between mb-5">
-                    <div className={`p-3.5 rounded-2xl ${colorClasses.bg} border ${colorClasses.border} shadow-lg group-hover:shadow-xl transition-shadow`}>
-                      <IconComponent className={`w-7 h-7 ${colorClasses.icon}`} />
+                    <div className={`p-3.5 rounded-2xl border shadow-lg transition-shadow ${allowed ? `${colorClasses.bg} ${colorClasses.border} group-hover:shadow-xl` : 'bg-gray-100 border-gray-200'}`}>
+                      {allowed ? (
+                        <IconComponent className={`w-7 h-7 ${colorClasses.icon}`} />
+                      ) : (
+                        <Lock className="w-7 h-7 text-gray-400" />
+                      )}
+                    </div>
+                    <div className={`flex items-center space-x-1 text-xs font-medium px-2 py-1 rounded-full ${allowed ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                      {allowed ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                      <span>{allowed ? 'Autorisé' : 'Verrouillé'}</span>
                     </div>
                   </div>
 
                   {/* TITRE ET DESCRIPTION */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
+                  <h3 className={`text-xl font-bold mb-3 leading-tight ${allowed ? 'text-gray-900' : 'text-gray-500'}`}>
                     {service.title}
                   </h3>
-                  <p className="text-gray-600 mb-5 leading-relaxed text-sm">
+                  <p className={`mb-5 leading-relaxed text-sm ${allowed ? 'text-gray-600' : 'text-gray-400'}`}>
                     {service.description}
                   </p>
 
@@ -231,8 +295,8 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
                     <ul className="space-y-1.5">
                       {service.requirements.map((req, index) => (
                         <li key={index} className="flex items-center text-sm text-gray-700">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 mr-2 flex-shrink-0" />
-                          <span>{req}</span>
+                          <CheckCircle className={`w-3.5 h-3.5 mr-2 flex-shrink-0 ${allowed ? 'text-emerald-500' : 'text-gray-300'}`} />
+                          <span className={allowed ? '' : 'text-gray-400'}>{req}</span>
                         </li>
                       ))}
                     </ul>
@@ -246,15 +310,15 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
                     <ul className="space-y-2">
                       {service.features.map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2 text-sm">
-                          <div className={`w-1.5 h-1.5 rounded-full ${colorClasses.icon} mt-1.5 flex-shrink-0`}></div>
-                          <span className="text-gray-700">{feature}</span>
+                          <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${allowed ? colorClasses.icon : 'bg-gray-300'}`}></div>
+                          <span className={allowed ? "text-gray-700" : "text-gray-400"}>{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
                   {/* BOUTON D'ACCÈS */}
-                  {impot.actif ? (
+                  {allowed && impot.actif ? (
                     <Link
                       href={`${impot.id}/${service.id}`}
                       className={`
@@ -274,41 +338,25 @@ export default function VignetteServicesClient({ impot }: VignetteServicesClient
                       </div>
                     </Link>
                   ) : (
-                    <div
-                      className={`
-                        w-full flex items-center justify-center space-x-2 px-4 py-3.5
-                        ${colorClasses.button} text-white rounded-xl opacity-30
-                        cursor-not-allowed shadow-inner
-                      `}
-                    >
-                      <Shield className="w-4 h-4" />
+                    <div className="w-full flex items-center justify-center space-x-2 px-4 py-3.5 bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed">
+                      <Lock className="w-4 h-4" />
                       <span className="font-semibold text-sm">
-                        Service suspendu
+                        {!allowed ? 'Accès non autorisé' : 'Service suspendu'}
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* INDICATEUR DE STATUT AVANCÉ */}
-                {!impot.actif && (
-                  <div className="mt-4 text-center">
-                    <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full text-xs text-gray-700 border border-gray-300/50">
-                      <Shield className="w-3.5 h-3.5" />
-                      <span className="font-medium">
-                        Vignettes temporairement suspendues
-                      </span>
-                    </div>
-                  </div>
-                )}
-
                 {/* EFFET DE BORDURE ANIMÉ */}
-                <div
-                  className={`
-                    absolute inset-0 rounded-2xl border-2 ${colorClasses.border}
-                    opacity-0 group-hover:opacity-100 transition-opacity duration-500
-                    pointer-events-none
-                  `}
-                ></div>
+                {allowed && (
+                  <div
+                    className={`
+                      absolute inset-0 rounded-2xl border-2 ${colorClasses.border}
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                      pointer-events-none
+                    `}
+                  ></div>
+                )}
               </div>
             );
           })}

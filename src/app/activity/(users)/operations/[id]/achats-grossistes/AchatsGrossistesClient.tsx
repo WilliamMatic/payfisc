@@ -1,11 +1,12 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useEffect, useMemo, useCallback, useTransition, useRef } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Lock, ArrowLeft, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 import {
   fetchAchatsGrossistes,
   fetchStatistiquesAchats,
@@ -31,20 +32,20 @@ export default function AchatsGrossistesClient() {
   const params = useParams();
   const router = useRouter();
   const impotId = params.id as string;
-  const { utilisateur, isLoading: authLoading } = useAuth();
+  const { utilisateur } = useAuth();
 
   // États
   const [achats, setAchats] = useState<AchatPlaques[]>([]);
-  const [filteredAchats, setFilteredAchats] = useState<AchatPlaques[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statistiques, setStatistiques] = useState<StatistiquesType | null>(
     null
   );
   const [isPending, startTransition] = useTransition();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Filtres
-  const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
   const [dateDebut, setDateDebut] = useState<string>(today);
   const [dateFin, setDateFin] = useState<string>(today);
@@ -52,30 +53,67 @@ export default function AchatsGrossistesClient() {
   const [selectedPlaque, setSelectedPlaque] = useState<string>("");
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
-  const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
+
+  // Privilèges dérivés (useMemo au lieu de useState+useEffect)
+  const parsedPrivileges: any = useMemo(() => {
+    if (utilisateur?.privileges_include) {
+      try {
+        return parseAndNormalizePrivileges(utilisateur.privileges_include);
+      } catch (error) {
+        console.error("Erreur parsing privileges:", error);
+        return {};
+      }
+    }
+    return utilisateur ? {} : null;
+  }, [utilisateur]);
 
   // Modal pour afficher toutes les plaques
   const [showPlaquesModal, setShowPlaquesModal] = useState(false);
   const [selectedAchatForModal, setSelectedAchatForModal] =
     useState<AchatPlaques | null>(null);
 
-  // Parser les privilèges quand utilisateur change
+  // Fonction utilitaire pour formater les données d'achat (DRY)
+  const formatAchatData = useCallback((achat: any): AchatPlaques => ({
+    id: achat.id,
+    assujetti_id: achat.particulier_id,
+    assujetti: {
+      id: achat.particulier_id,
+      nom: achat.grossiste?.nom ?? "",
+      prenom: achat.grossiste?.prenom ?? "",
+      telephone: achat.grossiste?.telephone ?? "",
+      adresse: achat.grossiste?.adresse ?? "",
+      nif: achat.grossiste?.nif ?? "",
+      email: achat.grossiste?.email ?? null,
+      ville: achat.grossiste?.ville ?? null,
+      province: achat.grossiste?.province ?? null,
+    },
+    date_achat: achat.date_achat,
+    nombre_plaques: achat.nombre_plaques,
+    type_plaque: achat.type_plaque,
+    serie_debut: achat.serie_debut,
+    serie_fin: achat.serie_fin,
+    montant_total: achat.montant_total,
+    statut: achat.statut,
+    plaques: achat.plaques,
+    plaques_detail: achat.plaques_detail || [],
+    impot_id: achat.impot_id,
+    mode_paiement: achat.mode_paiement,
+  }), []);
+
+  // Cleanup AbortController on unmount
   useEffect(() => {
-    if (utilisateur?.privileges_include) {
-      try {
-        const parsed = JSON.parse(utilisateur.privileges_include);
-        setParsedPrivileges(parsed);
-      } catch (error) {
-        console.error("Erreur parsing privileges:", error);
-        setParsedPrivileges({});
-      }
-    } else if (utilisateur) {
-      setParsedPrivileges({});
-    }
-  }, [utilisateur]);
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   // Charger les données initiales (achats du jour)
-  const chargerDonnees = async (filtres?: FiltreAchats) => {
+  const chargerDonnees = useCallback(async (filtres?: FiltreAchats) => {
+    // Annuler la requête précédente
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
+
     try {
       setLoading(true);
       setError(null);
@@ -84,41 +122,15 @@ export default function AchatsGrossistesClient() {
         filtres
       );
 
+      if (signal.aborted) return;
+
       if (!response.success) {
         throw new Error(response.message);
       }
 
       const achatsData = response.data || [];
-
-      const formattedAchats: AchatPlaques[] = achatsData.map((achat: any) => ({
-        id: achat.id,
-        assujetti_id: achat.particulier_id,
-        assujetti: {
-          id: achat.particulier_id,
-          nom: achat.grossiste.nom,
-          prenom: achat.grossiste.prenom,
-          telephone: achat.grossiste.telephone,
-          adresse: achat.grossiste.adresse,
-          nif: achat.grossiste.nif,
-          email: achat.grossiste.email,
-          ville: achat.grossiste.ville,
-          province: achat.grossiste.province,
-        },
-        date_achat: achat.date_achat,
-        nombre_plaques: achat.nombre_plaques,
-        type_plaque: achat.type_plaque,
-        serie_debut: achat.serie_debut,
-        serie_fin: achat.serie_fin,
-        montant_total: achat.montant_total,
-        statut: achat.statut,
-        plaques: achat.plaques,
-        plaques_detail: achat.plaques_detail || [],
-        impot_id: achat.impot_id,
-        mode_paiement: achat.mode_paiement,
-      }));
-
+      const formattedAchats = achatsData.map(formatAchatData);
       setAchats(formattedAchats);
-      setFilteredAchats(formattedAchats);
 
       if (filtres?.dateDebut || filtres?.dateFin) {
         const responseStats = await fetchStatistiquesAchats(
@@ -126,11 +138,14 @@ export default function AchatsGrossistesClient() {
           filtres.dateFin
         );
 
+        if (signal.aborted) return;
+
         if (responseStats.success) {
           setStatistiques(responseStats.data);
         }
       }
     } catch (err) {
+      if (signal.aborted) return;
       setError(
         err instanceof Error
           ? err.message
@@ -138,18 +153,21 @@ export default function AchatsGrossistesClient() {
       );
       console.error("Erreur:", err);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
-  };
+  }, [formatAchatData]);
 
   // Charger les données au montage initial
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
     chargerDonnees({
       dateDebut: today,
       dateFin: today,
     });
-  }, []);
+  }, [chargerDonnees, today]);
+
+  // filteredAchats = achats (la vraie source de vérité)
+  // Le filtrage côté serveur est déjà fait dans chargerDonnees/appliquerFiltres
+  const filteredAchats = achats;
 
   // Grouper les achats par date
   const achatsGroupes = useMemo<GroupedAchats[]>(() => {
@@ -177,31 +195,31 @@ export default function AchatsGrossistesClient() {
   }, [filteredAchats, viewMode]);
 
   // Formater la date en français
-  const formaterDate = (dateStr: string) => {
+  const formaterDate = useCallback((dateStr: string) => {
     try {
       return format(new Date(dateStr), "dd/MM/yyyy", { locale: fr });
     } catch {
       return dateStr;
     }
-  };
+  }, []);
 
   // Formater la date longue
-  const formaterDateLongue = (dateStr: string) => {
+  const formaterDateLongue = useCallback((dateStr: string) => {
     try {
       return format(new Date(dateStr), "EEEE dd MMMM yyyy", { locale: fr });
     } catch {
       return dateStr;
     }
-  };
+  }, []);
 
   // Gérer l'affichage des séries de plaques
-  const formaterSeriePlaques = (achat: AchatPlaques) => {
+  const formaterSeriePlaques = useCallback((achat: AchatPlaques) => {
     if (achat.nombre_plaques <= 5) {
       return achat.plaques.join(", ");
     } else {
       return `${achat.serie_debut} → ${achat.serie_fin}`;
     }
-  };
+  }, []);
 
   // Toggle l'expansion d'une date
   const toggleDateExpansion = (date: string) => {
@@ -215,8 +233,13 @@ export default function AchatsGrossistesClient() {
   };
 
   // Appliquer les filtres avec Server Action
-  const appliquerFiltres = async () => {
+  const appliquerFiltres = useCallback(async () => {
     startTransition(async () => {
+      // Annuler la requête précédente
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+      const { signal } = abortControllerRef.current;
+
       try {
         setLoading(true);
 
@@ -230,49 +253,24 @@ export default function AchatsGrossistesClient() {
           formData
         );
 
+        if (signal.aborted) return;
+
         if (!response.success) {
           throw new Error(response.message);
         }
 
         const achatsData = response.data || [];
-
-        const formattedAchats: AchatPlaques[] = achatsData.map(
-          (achat: any) => ({
-            id: achat.id,
-            assujetti_id: achat.particulier_id,
-            assujetti: {
-              id: achat.particulier_id,
-              nom: achat.grossiste.nom,
-              prenom: achat.grossiste.prenom,
-              telephone: achat.grossiste.telephone,
-              adresse: achat.grossiste.adresse,
-              nif: achat.grossiste.nif,
-              email: achat.grossiste.email,
-              ville: achat.grossiste.ville,
-              province: achat.grossiste.province,
-            },
-            date_achat: achat.date_achat,
-            nombre_plaques: achat.nombre_plaques,
-            type_plaque: achat.type_plaque,
-            serie_debut: achat.serie_debut,
-            serie_fin: achat.serie_fin,
-            montant_total: achat.montant_total,
-            statut: achat.statut,
-            plaques: achat.plaques,
-            plaques_detail: achat.plaques_detail || [],
-            impot_id: achat.impot_id,
-            mode_paiement: achat.mode_paiement,
-          })
-        );
+        const formattedAchats = achatsData.map(formatAchatData);
 
         setAchats(formattedAchats);
-        setFilteredAchats(formattedAchats);
 
         const responseStats = await fetchStatistiquesAchats(dateDebut, dateFin);
+        if (signal.aborted) return;
         if (responseStats.success) {
           setStatistiques(responseStats.data);
         }
       } catch (err) {
+        if (signal.aborted) return;
         setError(
           err instanceof Error
             ? err.message
@@ -280,14 +278,18 @@ export default function AchatsGrossistesClient() {
         );
         console.error("Erreur:", err);
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     });
-  };
+  }, [dateDebut, dateFin, recherche, selectedPlaque, formatAchatData]);
 
   // Réinitialiser les filtres avec Server Action
-  const reinitialiserFiltres = async () => {
+  const reinitialiserFiltres = useCallback(async () => {
     startTransition(async () => {
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+      const { signal } = abortControllerRef.current;
+
       try {
         setDateDebut("");
         setDateFin("");
@@ -296,45 +298,19 @@ export default function AchatsGrossistesClient() {
 
         const response: ServerActionResponse = await resetAchatsFilters();
 
+        if (signal.aborted) return;
+
         if (!response.success) {
           throw new Error(response.message);
         }
 
         const achatsData = response.data || [];
-
-        const formattedAchats: AchatPlaques[] = achatsData.map(
-          (achat: any) => ({
-            id: achat.id,
-            assujetti_id: achat.particulier_id,
-            assujetti: {
-              id: achat.particulier_id,
-              nom: achat.grossiste.nom,
-              prenom: achat.grossiste.prenom,
-              telephone: achat.grossiste.telephone,
-              adresse: achat.grossiste.adresse,
-              nif: achat.grossiste.nif,
-              email: achat.grossiste.email,
-              ville: achat.grossiste.ville,
-              province: achat.grossiste.province,
-            },
-            date_achat: achat.date_achat,
-            nombre_plaques: achat.nombre_plaques,
-            type_plaque: achat.type_plaque,
-            serie_debut: achat.serie_debut,
-            serie_fin: achat.serie_fin,
-            montant_total: achat.montant_total,
-            statut: achat.statut,
-            plaques: achat.plaques,
-            plaques_detail: achat.plaques_detail || [],
-            impot_id: achat.impot_id,
-            mode_paiement: achat.mode_paiement,
-          })
-        );
+        const formattedAchats = achatsData.map(formatAchatData);
 
         setAchats(formattedAchats);
-        setFilteredAchats(formattedAchats);
         setStatistiques(null);
       } catch (err) {
+        if (signal.aborted) return;
         setError(
           err instanceof Error
             ? err.message
@@ -343,10 +319,10 @@ export default function AchatsGrossistesClient() {
         console.error("Erreur:", err);
       }
     });
-  };
+  }, [formatAchatData]);
 
   // Exporter les données avec Server Action
-  const exporterDonnees = async () => {
+  const exporterDonnees = useCallback(async () => {
     startTransition(async () => {
       try {
         const filtres: FiltreAchats = {};
@@ -366,13 +342,13 @@ export default function AchatsGrossistesClient() {
         console.error("Erreur:", err);
       }
     });
-  };
+  }, [dateDebut, dateFin, recherche, selectedPlaque]);
 
   // Afficher toutes les plaques d'un achat
-  const afficherToutesPlaques = (achat: AchatPlaques) => {
+  const afficherToutesPlaques = useCallback((achat: AchatPlaques) => {
     setSelectedAchatForModal(achat);
     setShowPlaquesModal(true);
-  };
+  }, []);
 
   // Calculer les totaux
   const totalPlaques = useMemo(
@@ -387,9 +363,9 @@ export default function AchatsGrossistesClient() {
 
   if (loading && achats.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2D5B7A] mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900">Chargement...</h2>
           <p className="text-gray-600">Récupération des données d'achats</p>
         </div>
@@ -398,9 +374,9 @@ export default function AchatsGrossistesClient() {
   }
 
   // Vérifier si l'utilisateur a le privilège "special"
-  if (!parsedPrivileges?.special) {
+  if (!parsedPrivileges?.ventePlaque?.special) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -437,7 +413,7 @@ export default function AchatsGrossistesClient() {
             </div>
             <button
               onClick={() => router.back()}
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
+              className="flex items-center space-x-2 text-[#2D5B7A] hover:text-[#244D68] transition-colors mx-auto"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Retour</span>
@@ -450,7 +426,7 @@ export default function AchatsGrossistesClient() {
 
   if (error && achats.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Search className="w-8 h-8 text-red-600" />
@@ -459,13 +435,12 @@ export default function AchatsGrossistesClient() {
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => {
-              const today = new Date().toISOString().split("T")[0];
               chargerDonnees({
                 dateDebut: today,
                 dateFin: today,
               });
             }}
-            className="text-blue-600 hover:text-blue-800 transition-colors font-medium"
+            className="text-[#2D5B7A] hover:text-[#244D68] transition-colors font-medium"
           >
             Réessayer
           </button>
@@ -475,7 +450,7 @@ export default function AchatsGrossistesClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-7xl">
         <Header />
 

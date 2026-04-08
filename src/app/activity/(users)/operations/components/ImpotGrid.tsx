@@ -1,4 +1,4 @@
-import { FileText, Calendar, Clock, AlertTriangle, Loader2, ArrowRight } from 'lucide-react';
+import { FileText, Calendar, Clock, AlertTriangle, Landmark, Car, Shield, RefreshCw, ChevronRight } from 'lucide-react';
 import { Impot as ImpotType } from '@/services/impots/impotService';
 import { useRouter } from 'next/navigation';
 
@@ -7,155 +7,112 @@ interface ImpotGridProps {
   loading: boolean;
 }
 
+const getImpotIcon = (id: number) => {
+  switch (id) {
+    case 11: return Landmark;
+    case 12: return RefreshCw;
+    case 14: return Car;
+    case 19: return Shield;
+    default: return FileText;
+  }
+};
+
 export default function ImpotGrid({ impots, loading }: ImpotGridProps) {
   const router = useRouter();
 
   const handleAccessImpot = (impot: ImpotType) => {
-    // Redirection vers la page des services de cet impôt spécifique
     router.push(`operations/${impot.id}`);
   };
 
   if (loading) {
     return (
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex justify-center items-center py-16">
-          <Loader2 className="w-8 h-8 text-[#153258] animate-spin" />
-          <span className="ml-3 text-gray-600">Chargement des impôts...</span>
+      <div className="flex-1 flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-full border-[3px] border-gray-200 border-t-[#2D5B7A] animate-spin mx-auto" />
+          <p className="mt-4 text-gray-500 font-medium text-sm">Chargement des opérations...</p>
         </div>
       </div>
     );
   }
 
-  const getStatusBadge = (actif: boolean) => {
-    return actif 
-      ? 'bg-green-50 text-green-700 border border-green-100' 
-      : 'bg-gray-100 text-gray-600 border border-gray-200';
-  };
-
-  const getPeriodeIcon = (periode: string) => {
-    switch (periode.toLowerCase()) {
-      case 'mensuel':
-        return '📅';
-      case 'trimestriel':
-        return '📊';
-      case 'semestriel':
-        return '📈';
-      case 'annuel':
-        return '📆';
-      default:
-        return '📋';
-    }
-  };
-
-  const getPenaliteInfo = (penalites: any) => {
-    if (!penalites || penalites.type === 'aucune') {
-      return { text: 'Aucune pénalité', color: 'text-gray-500' };
-    }
-    
-    switch (penalites.type) {
-      case 'pourcentage':
-        return { text: `${penalites.valeur}% de pénalité`, color: 'text-orange-600' };
-      case 'montant_fixe':
-        return { text: `${penalites.valeur} de pénalité`, color: 'text-red-600' };
-      default:
-        return { text: 'Pénalités spécifiques', color: 'text-yellow-600' };
-    }
-  };
-
-  const formatDelai = (delai: number) => {
-    if (delai === 0) return 'Immédiat';
-    if (delai === 1) return '1 jour';
-    return `${delai} jours`;
-  };
+  if (impots.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <FileText className="w-8 h-8 text-gray-300" />
+          </div>
+          <p className="text-gray-500 font-semibold">Aucun impôt trouvé</p>
+          <p className="text-gray-400 text-sm mt-1">Les impôts apparaîtront ici une fois créés</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1">
-      {impots.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              <FileText className="w-8 h-8 text-gray-400" />
-            </div>
-            <p className="text-gray-500 font-medium">Aucun impôt trouvé</p>
-            <p className="text-gray-400 text-sm mt-1">
-                Aucun résultat pour votre recherche' : 'Les impôts apparaîtront ici une fois créés
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {impots.map((impot) => (
-            <div
-              key={impot.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
-              onClick={() => handleAccessImpot(impot)}
-            >
-              {/* EN-TÊTE DE LA CARTE */}
-              <div className="p-5 border-b border-gray-100">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center">
-                    <div className="bg-blue-50 p-2 rounded-lg mr-3">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadge(impot.actif)}`}>
-                      {impot.actif ? 'Actif' : 'Inactif'}
-                    </span>
-                  </div>
-                  <div className="text-2xl">
-                    {getPeriodeIcon(impot.periode)}
-                  </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      {impots.map((impot) => {
+        const IconComponent = getImpotIcon(impot.id);
+
+        return (
+          <div
+            key={impot.id}
+            className="group bg-white rounded-xl border border-gray-200 hover:border-gray-300 overflow-hidden transition-all duration-200 hover:shadow-md cursor-pointer"
+            onClick={() => handleAccessImpot(impot)}
+          >
+            {/* Header */}
+            <div className="px-5 pt-5 pb-4 flex items-start gap-3.5">
+              <div className="bg-[#2D5B7A]/10 p-2.5 rounded-lg flex-shrink-0">
+                <IconComponent className="w-5 h-5 text-[#2D5B7A]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-[15px] font-semibold text-gray-900 truncate">{impot.nom}</h3>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium flex-shrink-0 ${
+                    impot.actif ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    {impot.actif ? 'Actif' : 'Inactif'}
+                  </span>
                 </div>
-                
-                <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
-                  {impot.nom}
-                </h3>
-                
-                <p className="text-gray-600 text-sm line-clamp-3">
+                <p className="text-gray-500 text-[13px] leading-relaxed line-clamp-2">
                   {impot.description}
                 </p>
               </div>
-
-              {/* INFORMATIONS DÉTAILLÉES */}
-              <div className="p-5 space-y-3">
-                {/* PÉRIODE */}
-                <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                  <span className="capitalize">{impot.periode}</span>
-                </div>
-
-                {/* DÉLAI D'ACCORD */}
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                  <span>Délai: {formatDelai(impot.delai_accord)}</span>
-                </div>
-
-                {/* PÉNALITÉS */}
-                <div className="flex items-center text-sm">
-                  <AlertTriangle className="w-4 h-4 mr-2 text-gray-400" />
-                  <span className={getPenaliteInfo(impot.penalites).color}>
-                    {getPenaliteInfo(impot.penalites).text}
-                  </span>
-                </div>
-
-                {/* DATE DE CRÉATION */}
-                <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
-                  Créé le {impot.date_creation}
-                </div>
-              </div>
-
-              {/* BOUTON ACCÉDER */}
-              <div className="px-5 pb-5">
-                <div className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#234761] transition-colors group/button">
-                  <span className="font-medium text-sm">
-                    Accéder aux services
-                  </span>
-                  <ArrowRight className="w-4 h-4 transform group-hover/button:translate-x-1 transition-transform" />
-                </div>
-              </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* Info chips */}
+            <div className="px-5 pb-4 flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-md text-xs text-gray-600">
+                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <span className="capitalize">{impot.periode}</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-md text-xs text-gray-600">
+                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                <span>{impot.delai_accord === 0 ? 'Immédiat' : `${impot.delai_accord}j`}</span>
+              </div>
+              {impot.penalites && impot.penalites.type !== 'aucune' && (
+                <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-md text-xs text-amber-700">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>
+                    {impot.penalites.type === 'pourcentage'
+                      ? `${impot.penalites.valeur}%`
+                      : impot.penalites.valeur}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 pb-4 flex items-center justify-between">
+              <p className="text-[11px] text-gray-400">Depuis le {impot.date_creation}</p>
+              <button className="flex items-center gap-1.5 text-[13px] font-medium text-[#2D5B7A] hover:text-[#1a3a5c] transition-colors group/btn">
+                <span>Accéder</span>
+                <ChevronRight className="w-4 h-4 transform group-hover/btn:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

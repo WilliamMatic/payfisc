@@ -44,7 +44,7 @@ export const poserQuestionIa = async (question: string): Promise<IaReponse> => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Erreur lors de la consultation de l\'IA fiscale',
@@ -76,7 +76,7 @@ export const getHistoriqueInteractions = async (limit: number = 10): Promise<Int
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       console.error('Erreur récupération historique:', data.message);
       return [];
     }

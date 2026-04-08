@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -34,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Données JSON invalides."]);
     exit;
 }
@@ -44,7 +42,6 @@ $requiredFields = ['user_id', 'nom', 'prenom', 'telephone', 'nif'];
 
 foreach ($requiredFields as $field) {
     if (empty($input[$field])) {
-        http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Le champ $field est obligatoire."]);
         exit;
     }
@@ -52,14 +49,12 @@ foreach ($requiredFields as $field) {
 
 // Validation de l'email si fourni
 if (!empty($input['email']) && !filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Format d'email invalide."]);
     exit;
 }
 
 // Validation du téléphone (format basique)
 if (!preg_match('/^[0-9+\-\s()]{8,20}$/', $input['telephone'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Format de téléphone invalide."]);
     exit;
 }
@@ -97,7 +92,6 @@ try {
         http_response_code(200);
         echo json_encode($result);
     } else {
-        http_response_code(400);
         echo json_encode($result);
     }
 
@@ -106,7 +100,6 @@ try {
     error_log("Erreur lors de la mise à jour du profil : " . $e->getMessage());
     
     // Message générique pour l'utilisateur
-    http_response_code(500);
     echo json_encode([
         "status" => "error", 
         "message" => "Erreur système: La mise à jour du profil a échoué."

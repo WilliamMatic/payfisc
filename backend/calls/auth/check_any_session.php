@@ -19,7 +19,6 @@ session_start();
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (GET requis)."]);
     exit;
 }
@@ -73,7 +72,8 @@ try {
                         "privileges_include" => $utilisateur['privilege_json'],
                         "province_id" => $utilisateur['province_id'],
                         "province_code" => $utilisateur['province_code'],
-                        "extension_site" => $utilisateur['extension_site']
+                        "extension_site" => $utilisateur['extension_site'],
+                        "template_carte_actuel" => (int)($utilisateur['template_carte_actuel'] ?? 0)
                     ]
                 ],
                 "userType" => "utilisateur"

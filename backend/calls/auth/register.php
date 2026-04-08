@@ -20,7 +20,6 @@ session_start();
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["success" => false, "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -28,7 +27,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 // Récupération et validation des données
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
-    http_response_code(400);
     echo json_encode(["success" => false, "message" => "Données JSON invalides."]);
     exit;
 }
@@ -48,13 +46,11 @@ try {
         http_response_code(201);
         echo json_encode($result);
     } else {
-        http_response_code(400);
         echo json_encode($result);
     }
 
 } catch (Exception $e) {
     error_log("Erreur lors de l'inscription : " . $e->getMessage());
-    http_response_code(500);
     echo json_encode(["success" => false, "message" => "Erreur système: L'inscription a échoué."]);
 }
 ?>

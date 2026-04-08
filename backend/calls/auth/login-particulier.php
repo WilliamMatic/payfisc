@@ -22,7 +22,6 @@ header('Content-Type: application/json');
 // ======================================================================
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Méthode non autorisée (POST requis)."]);
     exit;
 }
@@ -36,14 +35,12 @@ $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Données JSON invalides."]);
     exit;
 }
 
 // Validation des champs obligatoires
 if (!isset($data['telephone'], $data['password'])) {
-    http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Le téléphone et le mot de passe sont obligatoires."]);
     exit;
 }

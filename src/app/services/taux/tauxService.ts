@@ -145,7 +145,7 @@ export async function getTaux(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des taux',
@@ -188,7 +188,7 @@ export async function getTauxActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des taux actifs',
@@ -238,7 +238,7 @@ export async function addTaux(tauxData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout du taux',
@@ -288,7 +288,7 @@ export async function updateTaux(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification du taux',
@@ -324,7 +324,7 @@ export async function deleteTaux(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression du taux',
@@ -374,7 +374,7 @@ export async function attribuerTaux(attributionData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'attribution du taux',
@@ -414,7 +414,7 @@ export async function definirTauxDefaut(defautData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la définition du taux par défaut',
@@ -464,7 +464,7 @@ export async function getTauxActif(params: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération du taux actif',
@@ -503,7 +503,7 @@ export async function getImpots(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des impôts',
@@ -542,7 +542,7 @@ export async function getProvinces(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des provinces',
@@ -587,7 +587,7 @@ export async function retirerAttributionTaux(retraitData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du retrait de l\'attribution',
@@ -629,7 +629,7 @@ export async function getTauxById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération du taux',
@@ -667,7 +667,7 @@ export async function checkTauxByNom(nom: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification du taux',
@@ -709,7 +709,7 @@ export async function searchTaux(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des taux',
@@ -764,7 +764,7 @@ export async function getTauxPaginees(page: number = 1, limit: number = 10, sear
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des taux paginés',

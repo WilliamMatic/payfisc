@@ -114,7 +114,7 @@ export async function verifierPaiementBancaireAction(
 
     const result = await response.json();
 
-    if (!response.ok || result.status === "error") {
+    if (result.status === "error") {
       return {
         success: false,
         message: result.message || "Échec de la vérification",
@@ -194,7 +194,7 @@ export async function delivrerVignetteAction(
 
     const result = await response.json();
 
-    if (!response.ok || result.status === "error") {
+    if (result.status === "error") {
       return {
         success: false,
         message: result.message || "Échec de la délivrance",
