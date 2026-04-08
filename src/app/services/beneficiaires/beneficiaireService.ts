@@ -140,7 +140,7 @@ export async function getBeneficiaires(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des bénéficiaires",
@@ -186,7 +186,7 @@ export async function getBeneficiairesActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des bénéficiaires actifs",
@@ -235,7 +235,7 @@ export async function addBeneficiaire(beneficiaireData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout du bénéficiaire",
@@ -283,7 +283,7 @@ export async function updateBeneficiaire(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification du bénéficiaire",
@@ -321,7 +321,7 @@ export async function deleteBeneficiaire(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression du bénéficiaire",
@@ -363,7 +363,7 @@ export async function toggleBeneficiaireStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -409,7 +409,7 @@ export async function searchBeneficiaires(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des bénéficiaires",
@@ -457,7 +457,7 @@ export async function getBeneficiairesImpot(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des bénéficiaires",
@@ -499,7 +499,7 @@ export async function getProvinces(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des provinces",
@@ -545,7 +545,7 @@ export async function getBeneficiairesDisponibles(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des bénéficiaires disponibles",
@@ -590,7 +590,7 @@ export async function addBeneficiaireImpot(beneficiaireData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout du bénéficiaire",
@@ -638,7 +638,7 @@ export async function removeBeneficiaireImpot(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression du bénéficiaire",
@@ -681,7 +681,7 @@ export async function getBeneficiaireById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération du bénéficiaire",
@@ -719,7 +719,7 @@ export async function checkBeneficiaireByNumeroCompte(numeroCompte: string): Pro
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du bénéficiaire",
@@ -770,7 +770,7 @@ export async function getBeneficiairesPaginees(page: number = 1, limit: number =
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des bénéficiaires paginés",

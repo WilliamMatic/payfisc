@@ -143,7 +143,7 @@ export async function rechercherAssujettiParTelephone(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche de l'assujetti",
@@ -184,7 +184,7 @@ export async function verifierStockDisponible(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du stock",
@@ -229,7 +229,7 @@ export async function rechercherPlaquesDisponibles(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des plaques",
@@ -272,7 +272,7 @@ export async function verifierSequencePlaques(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de la séquence",
@@ -313,7 +313,7 @@ export async function getNumerosPlaquesDisponibles(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -374,7 +374,7 @@ export async function annulerCommandeClientSimple(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'annulation de la commande",
@@ -463,7 +463,7 @@ export async function soumettreCommandePlaques(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status !== "success") {
       return {
         status: "error",
         message: data.message || "Échec de la soumission de la commande",

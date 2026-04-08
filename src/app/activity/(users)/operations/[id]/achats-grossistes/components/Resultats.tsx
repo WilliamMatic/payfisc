@@ -47,7 +47,7 @@ export default function Resultats({
 
       {isPending && filteredAchats.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2D5B7A] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement des résultats...</p>
         </div>
       ) : filteredAchats.length === 0 ? (

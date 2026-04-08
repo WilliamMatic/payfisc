@@ -58,7 +58,7 @@ export const verifierNif = async (nif: string): Promise<ApiResponse> => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du NIF",
@@ -90,7 +90,7 @@ export const getImpots = async (): Promise<ApiResponse> => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des impôts",
@@ -134,7 +134,7 @@ export const enregistrerDeclaration = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'enregistrement de la déclaration",
@@ -172,7 +172,7 @@ export const supprimerDeclaration = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de la déclaration",
@@ -216,7 +216,7 @@ export const traiterPaiement = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du traitement du paiement",
@@ -254,7 +254,7 @@ export const rechercherDeclaration = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche de déclaration",
@@ -298,7 +298,7 @@ export const calculerEtEnregistrerRepartition = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du calcul de la répartition",

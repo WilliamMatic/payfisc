@@ -86,7 +86,7 @@ export async function getPuissancesFiscales(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des puissances fiscales',
@@ -129,7 +129,7 @@ export async function getPuissancesFiscalesActives(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des puissances fiscales actives',
@@ -179,7 +179,7 @@ export async function addPuissanceFiscale(puissanceFiscaleData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout de la puissance fiscale',
@@ -229,7 +229,7 @@ export async function updatePuissanceFiscale(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification de la puissance fiscale',
@@ -265,7 +265,7 @@ export async function deletePuissanceFiscale(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression de la puissance fiscale',
@@ -305,7 +305,7 @@ export async function togglePuissanceFiscaleStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut de la puissance fiscale',
@@ -347,7 +347,7 @@ export async function searchPuissancesFiscales(searchTerm: string): Promise<ApiR
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des puissances fiscales',

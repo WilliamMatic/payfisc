@@ -144,17 +144,6 @@ export const getDashboardData = async (
       },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP détaillée:", errorText);
-      return {
-        status: "error",
-        message: `Erreur HTTP ${response.status}: ${
-          response.statusText || "Pas de réponse"
-        }`,
-      };
-    }
-
     const responseText = await response.text();
 
     let data;
@@ -209,15 +198,6 @@ export const getDashboardStats = async (
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP stats:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des statistiques (${response.status})`,
-      };
-    }
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -262,15 +242,6 @@ export const exportDashboardExcel = async (
         },
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP export:", errorText);
-      return {
-        status: "error",
-        message: `Échec de l'exportation Excel (${response.status})`,
-      };
-    }
 
     const data = await response.json();
     return data;
@@ -318,15 +289,6 @@ export const getSalesHistory = async (
         },
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP history:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération de l'historique (${response.status})`,
-      };
-    }
 
     const data = await response.json();
     return data;

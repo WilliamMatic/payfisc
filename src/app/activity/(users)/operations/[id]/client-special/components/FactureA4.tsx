@@ -1,6 +1,6 @@
 // components/FactureA4.tsx
 'use client';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 interface FactureData {
@@ -36,7 +36,7 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
 
   const handlePrint = useReactToPrint({
     contentRef,
-    documentTitle: `Facture-${factureData.numeros_plaques[0] || 'PLAQUES'}`,
+    documentTitle: `Facture-${factureData.numeros_plaques?.[0] || 'PLAQUES'}`,
     pageStyle: `
       @page {
         size: A4;
@@ -62,15 +62,20 @@ export default function FactureA4({ factureData, onClose }: FactureA4Props) {
     `
   });
 
-  const reductionMontant = factureData.reduction_type && factureData.reduction_valeur 
-    ? factureData.reduction_type === 'pourcentage' 
-      ? (factureData.montant_initial * factureData.reduction_valeur) / 100
-      : factureData.reduction_valeur * factureData.nombre_plaques // MODIFICATION: Multiplier par quantité
-    : 0;
+  const reductionMontant = useMemo(() => {
+    if (factureData.reduction_type && factureData.reduction_valeur) {
+      return factureData.reduction_type === 'pourcentage'
+        ? (factureData.montant_initial * factureData.reduction_valeur) / 100
+        : factureData.reduction_valeur * factureData.nombre_plaques;
+    }
+    return 0;
+  }, [factureData.reduction_type, factureData.reduction_valeur, factureData.montant_initial, factureData.nombre_plaques]);
 
   // Récupérer le premier et dernier numéro de plaque
-  const premierePlaque = factureData.numeros_plaques[0] || '';
-  const dernierePlaque = factureData.numeros_plaques[factureData.numeros_plaques.length - 1] || '';
+  const premierePlaque = factureData.numeros_plaques?.[0] ?? '';
+  const dernierePlaque = factureData.numeros_plaques?.length > 0
+    ? factureData.numeros_plaques[factureData.numeros_plaques.length - 1]
+    : '';
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">

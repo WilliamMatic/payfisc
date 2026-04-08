@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Save,
@@ -762,12 +762,14 @@ export default function ClientSimpleForm({
   const montantEnFrancs = `${montantFrancs} CDF`;
 
   // Générer les options d'années
-  const anneeOptions = Array.from({ length: 30 }, (_, i) =>
+  const anneeOptions = useMemo(() => Array.from({ length: 30 }, (_, i) =>
     (2026 - i).toString(),
-  );
+  ), []);
 
   // Chargement des données initiales
   useEffect(() => {
+    let cancelled = false;
+
     const loadInitialData = async () => {
       try {
         setLoadingTaux(true);
@@ -775,54 +777,65 @@ export default function ClientSimpleForm({
           province_id: null,
           impot_id: Number(impotId),
         });
+        if (cancelled) return;
         if (tauxResponse.status === "success" && tauxResponse.data) {
           setTauxActif(tauxResponse.data);
         }
 
         setLoading((prev) => ({ ...prev, typeEngins: true }));
         const typeEnginsResponse = await getTypeEnginsActifs();
+        if (cancelled) return;
         if (typeEnginsResponse.status === "success") {
           setTypeEngins(typeEnginsResponse.data || []);
         }
 
         setLoading((prev) => ({ ...prev, energies: true }));
         const energiesResponse = await getEnergiesActives();
+        if (cancelled) return;
         if (energiesResponse.status === "success") {
           setEnergies(energiesResponse.data || []);
         }
 
         setLoading((prev) => ({ ...prev, couleurs: true }));
         const couleursResponse = await getCouleursActives();
+        if (cancelled) return;
         if (couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
 
         setLoading((prev) => ({ ...prev, usages: true }));
         const usagesResponse = await getUsagesActifs();
+        if (cancelled) return;
         if (usagesResponse.status === "success") {
           setUsages(usagesResponse.data || []);
         }
 
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
+        if (cancelled) return;
         if (puissancesResponse.status === "success") {
           setPuissancesFiscales(puissancesResponse.data || []);
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des données:", error);
+        if (!cancelled) {
+          console.error("Erreur lors du chargement des données:", error);
+        }
       } finally {
-        setLoading({
-          typeEngins: false,
-          energies: false,
-          couleurs: false,
-          usages: false,
-          puissances: false,
-        });
-        setLoadingTaux(false);
+        if (!cancelled) {
+          setLoading({
+            typeEngins: false,
+            energies: false,
+            couleurs: false,
+            usages: false,
+            puissances: false,
+          });
+          setLoadingTaux(false);
+        }
       }
     };
 
     loadInitialData();
+    return () => { cancelled = true; };
   }, []);
 
   // Réinitialiser l'année de circulation si l'année de fabrication change
@@ -1105,10 +1118,13 @@ export default function ClientSimpleForm({
 
   // Récupérer automatiquement une plaque disponible au chargement
   useEffect(() => {
+    let cancelled = false;
+
     const getPlaqueAutomatique = async () => {
       if (utilisateur && !formData.numeroPlaque) {
         try {
           const response = await getNumeroPlaqueDisponible(utilisateur);
+          if (cancelled) return;
           if (
             response.status === "success" &&
             response.data &&
@@ -1122,15 +1138,18 @@ export default function ClientSimpleForm({
             setPlaqueDisponible(true);
           }
         } catch (error) {
-          console.error(
-            "Erreur lors de la récupération automatique de plaque:",
-            error,
-          );
+          if (!cancelled) {
+            console.error(
+              "Erreur lors de la récupération automatique de plaque:",
+              error,
+            );
+          }
         }
       }
     };
 
     getPlaqueAutomatique();
+    return () => { cancelled = true; };
   }, [utilisateur]);
 
   const genererNIF = () => {
@@ -1555,22 +1574,22 @@ export default function ClientSimpleForm({
     <>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* SECTION ASSUJETTI */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="bg-blue-100 p-3 rounded-xl">
-              <User className="w-6 h-6 text-blue-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-base font-bold text-gray-900">
                 Informations de l'Assujetti
               </h2>
-              <p className="text-gray-600">
+              <p className="text-xs text-gray-500">
                 Renseignez les informations personnelles du propriétaire
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Téléphone */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -1770,22 +1789,22 @@ export default function ClientSimpleForm({
         </div>
 
         {/* SECTION ENGIN */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="bg-green-100 p-3 rounded-xl">
-              <Car className="w-6 h-6 text-green-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Car className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-base font-bold text-gray-900">
                 Informations de l'Engin
               </h2>
-              <p className="text-gray-600">
+              <p className="text-xs text-gray-500">
                 Renseignez les caractéristiques techniques du véhicule
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Type d'engin */}
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -2359,39 +2378,39 @@ export default function ClientSimpleForm({
         </div>
 
         {/* CALCUL ET SOUMISSION */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="bg-orange-100 p-3 rounded-xl">
-              <Calculator className="w-6 h-6 text-orange-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Calculator className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-base font-bold text-gray-900">
                 Calcul et Validation
               </h2>
-              <p className="text-gray-600">
+              <p className="text-xs text-gray-500">
                 Montant à payer et soumission de la demande
               </p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 mb-6">
+          <div className="flex items-center justify-between p-5 bg-[#2D5B7A]/5 rounded-xl border border-[#2D5B7A]/15 mb-5">
             <div>
-              <div className="text-sm text-blue-600 font-medium">
+              <div className="text-xs text-[#2D5B7A] font-medium uppercase tracking-wide">
                 Montant à payer
               </div>
-              <div className="text-3xl font-bold text-blue-800">
+              <div className="text-2xl font-bold text-gray-900 mt-1">
                 {montantAPayer}
               </div>
-              <div className="text-lg font-semibold text-blue-700 mt-2">
+              <div className="text-sm font-semibold text-gray-600 mt-1">
                 {montantEnFrancs}
               </div>
               {tauxActif && (
-                <div className="text-sm text-blue-500 mt-2">
+                <div className="text-xs text-gray-500 mt-1">
                   Taux: 1$ = {tauxActif.valeur.toLocaleString("fr-FR")} CDF
                 </div>
               )}
               {formData.reduction_type && formData.reduction_valeur && (
-                <div className="text-sm text-green-600 mt-2 font-medium">
+                <div className="text-xs text-green-600 mt-1 font-medium">
                   Réduction appliquée:{" "}
                   {formData.reduction_type === "pourcentage"
                     ? `${formData.reduction_valeur}%`
@@ -2400,12 +2419,12 @@ export default function ClientSimpleForm({
               )}
             </div>
             <div className="text-right">
-              <div className="text-sm text-blue-600 font-medium">
+              <div className="text-xs text-[#2D5B7A] font-medium uppercase tracking-wide">
                 Délai d'accord
               </div>
-              <div className="text-xl font-bold text-green-600">Immédiat</div>
+              <div className="text-lg font-bold text-green-600 mt-1">Immédiat</div>
               {utilisateur && (
-                <div className="text-sm text-blue-500 mt-2">
+                <div className="text-xs text-gray-500 mt-1">
                   Site: {utilisateur.site_nom}
                 </div>
               )}
@@ -2423,7 +2442,7 @@ export default function ClientSimpleForm({
             <button
               type="submit"
               disabled={isSubmitDisabled}
-              className="flex items-center space-x-3 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="flex items-center space-x-3 px-8 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               {isSubmitting ? (
                 <>

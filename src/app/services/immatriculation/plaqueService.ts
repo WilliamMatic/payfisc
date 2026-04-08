@@ -40,7 +40,7 @@ export const rechercherPlaques = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des plaques',

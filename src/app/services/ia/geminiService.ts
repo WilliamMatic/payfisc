@@ -740,11 +740,11 @@ export const getDeclarationsByNif = async (nif: string): Promise<ApiResponse> =>
   try {
     const response = await fetch(`/api/declarations/${nif}`);
     
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       throw new Error("Erreur lors de la récupération des déclarations");
     }
     
-    const data = await response.json();
     return {
       status: "success",
       data: data,

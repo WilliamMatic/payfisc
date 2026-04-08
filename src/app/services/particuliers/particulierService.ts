@@ -140,7 +140,7 @@ export async function getParticuliers(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des particuliers",
@@ -198,7 +198,7 @@ export async function getParticulierDetails(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des détails",
@@ -291,7 +291,7 @@ export async function addParticulier(particulierData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout du particulier",
@@ -385,7 +385,7 @@ export async function updateParticulier(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification du particulier",
@@ -425,7 +425,7 @@ export async function deleteParticulier(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression du particulier",
@@ -469,7 +469,7 @@ export async function toggleParticulierStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut du particulier",
@@ -521,7 +521,7 @@ export async function searchParticuliers(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des particuliers",
@@ -582,7 +582,7 @@ export async function getParticuliersActifs(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des particuliers actifs",
@@ -633,7 +633,7 @@ export async function checkParticulierByNIF(nif: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du particulier",
@@ -672,7 +672,7 @@ export async function checkParticulierByIdNational(idNational: string): Promise<
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de l'ID national",
@@ -724,7 +724,7 @@ export async function searchParticuliersByTelephone(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche par téléphone",
@@ -783,7 +783,7 @@ export async function updateAssujettiSimple(
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (result.status === "error") {
       return {
         status: "error",
         message: result.message || "Échec de la modification",

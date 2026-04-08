@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Save,
   User,
@@ -826,74 +826,92 @@ export default function ClientSimpleForm({
     );
   };
 
-  // Générer les options d'années
-  const anneeOptions = Array.from({ length: 30 }, (_, i) =>
-    (2026 - i).toString(),
+  // Générer les options d'années (memoized)
+  const anneeOptions = useMemo(
+    () => Array.from({ length: 30 }, (_, i) => (new Date().getFullYear() - i).toString()),
+    [],
   );
 
-  // Chargement des données initiales
+  // Cleanup all timeout refs on unmount
   useEffect(() => {
+    return () => {
+      if (rechercheModeleTimeoutRef.current) clearTimeout(rechercheModeleTimeoutRef.current);
+      if (recherchePuissanceTimeoutRef.current) clearTimeout(recherchePuissanceTimeoutRef.current);
+      if (verificationTelephoneTimeoutRef.current) clearTimeout(verificationTelephoneTimeoutRef.current);
+      if (marqueTimerRef.current) clearTimeout(marqueTimerRef.current);
+    };
+  }, []);
+
+  // Chargement des données initiales avec AbortController
+  useEffect(() => {
+    let cancelled = false;
+
     const loadInitialData = async () => {
       try {
         // Charger les types d'engins
         setLoading((prev) => ({ ...prev, typeEngins: true }));
         const typeEnginsResponse = await getTypeEnginsActifs();
-        if (typeEnginsResponse.status === "success") {
+        if (!cancelled && typeEnginsResponse.status === "success") {
           setTypeEngins(typeEnginsResponse.data || []);
         }
 
         // Charger les énergies
         setLoading((prev) => ({ ...prev, energies: true }));
         const energiesResponse = await getEnergies();
-        if (energiesResponse.status === "success") {
+        if (!cancelled && energiesResponse.status === "success") {
           setEnergies(energiesResponse.data || []);
         }
 
         // Charger les couleurs
         setLoading((prev) => ({ ...prev, couleurs: true }));
         const couleursResponse = await getCouleursActives();
-        if (couleursResponse.status === "success") {
+        if (!cancelled && couleursResponse.status === "success") {
           setCouleurs(couleursResponse.data || []);
         }
 
         // Charger les usages
         setLoading((prev) => ({ ...prev, usages: true }));
         const usagesResponse = await getUsagesActifs();
-        if (usagesResponse.status === "success") {
+        if (!cancelled && usagesResponse.status === "success") {
           setUsages(usagesResponse.data || []);
         }
 
         // Charger toutes les puissances fiscales
         setLoading((prev) => ({ ...prev, puissances: true }));
         const puissancesResponse = await getPuissancesFiscalesActives();
-        if (puissancesResponse.status === "success") {
+        if (!cancelled && puissancesResponse.status === "success") {
           setPuissancesFiscales(puissancesResponse.data || []);
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des données:", error);
-        showMessage(
-          "error",
-          "Erreur de chargement",
-          "Impossible de charger les données initiales. Veuillez rafraîchir la page.",
-        );
+        if (!cancelled) {
+          console.error("Erreur lors du chargement des données:", error);
+          showMessage(
+            "error",
+            "Erreur de chargement",
+            "Impossible de charger les données initiales. Veuillez rafraîchir la page.",
+          );
+        }
       } finally {
-        setLoading({
-          typeEngins: false,
-          energies: false,
-          couleurs: false,
-          usages: false,
-          puissances: false,
-          verificationTelephone: false,
-          rechercheModeles: false,
-          recherchePuissances: false,
-          rechercheCouleurs: false,
-          ajoutCouleur: false,
-          rechercheMarques: false,
-        });
+        if (!cancelled) {
+          setLoading({
+            typeEngins: false,
+            energies: false,
+            couleurs: false,
+            usages: false,
+            puissances: false,
+            verificationTelephone: false,
+            rechercheModeles: false,
+            recherchePuissances: false,
+            rechercheCouleurs: false,
+            ajoutCouleur: false,
+            rechercheMarques: false,
+          });
+        }
       }
     };
 
     loadInitialData();
+    return () => { cancelled = true; };
   }, []);
 
   // Réinitialiser l'année de circulation si l'année de fabrication change
@@ -1593,14 +1611,19 @@ export default function ClientSimpleForm({
     setIsSubmitting(true);
 
     try {
+      // Track local copies for modeleId/puissanceValeur (avoid direct mutation)
+      let resolvedModeleId = formData.modeleId;
+      let resolvedPuissanceValeur = formData.puissanceFiscalValeur;
+
       // Vérifier et créer le modèle si nécessaire
-      if (formData.modele && formData.marqueId && !formData.modeleId) {
+      if (formData.modele && formData.marqueId && !resolvedModeleId) {
         const modeleResult = await creerModele(
           formData.modele,
           parseInt(formData.marqueId),
         );
         if (modeleResult.status === "success" && modeleResult.data?.[0]?.id) {
-          formData.modeleId = modeleResult.data[0].id.toString();
+          resolvedModeleId = modeleResult.data[0].id.toString();
+          setFormData(prev => ({ ...prev, modeleId: resolvedModeleId }));
         }
       }
 
@@ -1608,7 +1631,7 @@ export default function ClientSimpleForm({
       if (
         formData.puissanceFiscal &&
         formData.typeEngin &&
-        !formData.puissanceFiscalValeur
+        !resolvedPuissanceValeur
       ) {
         const valeurMatch = formData.puissanceFiscal.match(/(\d+)/);
         const valeur = valeurMatch ? parseFloat(valeurMatch[1]) : 0;
@@ -1620,7 +1643,8 @@ export default function ClientSimpleForm({
             formData.typeEngin,
           );
           if (puissanceResult.status === "success") {
-            formData.puissanceFiscalValeur = valeur.toString();
+            resolvedPuissanceValeur = valeur.toString();
+            setFormData(prev => ({ ...prev, puissanceFiscalValeur: resolvedPuissanceValeur }));
           }
         }
       }
@@ -1661,7 +1685,7 @@ export default function ClientSimpleForm({
         formData.numeroPlaque,
         plaqueInfo?.serie_id || 0,
         plaqueInfo?.serie_item_id || 0,
-        plaqueInfo?.id || null,
+        plaqueInfo?.id ?? null,
         utilisateur,
       );
 
@@ -1683,7 +1707,7 @@ export default function ClientSimpleForm({
           numero_chassis: formData.numeroChassis,
           numero_moteur: formData.numeroMoteur,
           numero_plaque: formData.numeroPlaque,
-          paiement_id: result.data.paiement_id?.toString() || "000000",
+          paiement_id: result.data?.paiement_id?.toString() || "000000",
           email: formData.email,
           nif: formData.nif,
         };
@@ -1889,22 +1913,22 @@ export default function ClientSimpleForm({
 
   // Rendu de l'étape de vérification
   const renderEtapeVerification = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-blue-100 p-2 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-blue-600" />
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+        <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+          <CheckCircle className="w-4 h-4 text-[#2D5B7A]" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-base font-bold text-gray-900">
             Étape 1: Vérification Téléphone & Plaque
           </h2>
-          <p className="text-gray-600 text-sm">
+          <p className="text-xs text-gray-500">
             Renseignez le numéro de plaque (le téléphone est facultatif)
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl">
         {/* TÉLÉPHONE PARTICULIER - FACULTATIF */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2036,22 +2060,22 @@ export default function ClientSimpleForm({
       </div>
 
       {/* SECTION ASSUJETTI */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="bg-blue-100 p-2 rounded-lg">
-            <User className="w-5 h-5 text-blue-600" />
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+          <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <User className="w-4 h-4 text-[#2D5B7A]" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900">
               Informations de l'Assujetti
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-xs text-gray-500">
               Renseignez les informations personnelles du propriétaire
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* TÉLÉPHONE - FACULTATIF */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2216,22 +2240,22 @@ export default function ClientSimpleForm({
       </div>
 
       {/* SECTION ENGIN */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="bg-green-100 p-2 rounded-lg">
-            <Car className="w-5 h-5 text-green-600" />
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+          <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Car className="w-4 h-4 text-[#2D5B7A]" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900">
               Informations de l'Engin
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-xs text-gray-500">
               Renseignez les caractéristiques techniques du véhicule
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* Type d'engin */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2574,7 +2598,7 @@ export default function ClientSimpleForm({
 
         <button
           type="submit"
-          className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-colors font-semibold"
         >
           <Save className="w-4 h-4" />
           <span>Valider et Continuer</span>
@@ -2585,16 +2609,16 @@ export default function ClientSimpleForm({
 
   // Rendu de l'étape prévisualisation avec bouton pour la fiche
   const renderEtapePrevisualisation = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-green-100 p-2 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-green-600" />
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
+        <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+          <CheckCircle className="w-4 h-4 text-[#2D5B7A]" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-base font-bold text-gray-900">
             Carte Rose Prête à Être Imprimée
           </h2>
-          <p className="text-gray-600 text-sm">
+          <p className="text-xs text-gray-500">
             La carte rose a été enregistrée avec succès dans le système
           </p>
         </div>

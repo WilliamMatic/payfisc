@@ -138,7 +138,7 @@ export async function getImpots(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des impôts",
@@ -181,7 +181,8 @@ export async function getImpotsActifs(site_code: string): Promise<ApiResponse> {
       },
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const data = await response.json().catch(() => ({}));
       return {
         status: "error",
@@ -189,7 +190,6 @@ export async function getImpotsActifs(site_code: string): Promise<ApiResponse> {
       };
     }
 
-    const data = await response.json();
 
     if (data.status === "error") {
       return {
@@ -253,7 +253,7 @@ export async function addImpot(impotData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de l'impôt",
@@ -299,7 +299,7 @@ export async function updateImpot(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de l'impôt",
@@ -335,7 +335,7 @@ export async function deleteImpot(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de l'impôt",
@@ -378,7 +378,7 @@ export async function toggleImpotStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut de l'impôt",
@@ -418,7 +418,7 @@ export async function searchImpots(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des impôts",
@@ -464,7 +464,7 @@ export async function getBeneficiairesImpot(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des bénéficiaires",
@@ -514,7 +514,7 @@ export async function addBeneficiaireImpot(beneficiaireData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout du bénéficiaire",
@@ -559,7 +559,7 @@ export async function removeBeneficiaireImpot(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression du bénéficiaire",
@@ -595,7 +595,7 @@ export async function getImpotById(id: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Erreur lors de la récupération de l'impôt",
@@ -633,7 +633,7 @@ export async function checkImpotByNom(nom: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification de l'impôt",
@@ -682,7 +682,7 @@ export async function searchImpotsByStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des impôts par statut",
@@ -739,7 +739,7 @@ export async function getImpotsPaginees(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des impôts paginés",

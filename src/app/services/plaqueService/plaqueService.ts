@@ -88,7 +88,7 @@ export const getPlaques = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des plaques",
@@ -126,7 +126,7 @@ export const getStatistiques = async (particulierId: number): Promise<ApiRespons
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des statistiques",
@@ -171,7 +171,7 @@ export const searchPlaques = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des plaques",

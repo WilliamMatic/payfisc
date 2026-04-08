@@ -39,6 +39,7 @@ export default function SiteClient({
     code: "",
     description: "",
     formule: "",
+    template_carte_actuel: false,
     province_id: 0,
   });
   const [processing, setProcessing] = useState(false);
@@ -83,6 +84,7 @@ export default function SiteClient({
       code: site.code || "",
       description: site.description || "",
       formule: site.formule || "",
+      template_carte_actuel: site.template_carte_actuel || false,
       province_id: site.province_id || 0,
     });
     setShowEditModal(true);
@@ -155,6 +157,7 @@ export default function SiteClient({
             code: "",
             description: "",
             formule: "",
+            template_carte_actuel: false,
             province_id: 0,
           });
         }}
@@ -185,6 +188,7 @@ export default function SiteClient({
                 code: "",
                 description: "",
                 formule: "",
+                template_carte_actuel: false,
                 province_id: 0,
               });
               setShowAddModal(false);
@@ -225,6 +229,7 @@ export default function SiteClient({
                 code: "",
                 description: "",
                 formule: "",
+                template_carte_actuel: false,
                 province_id: 0,
               });
 

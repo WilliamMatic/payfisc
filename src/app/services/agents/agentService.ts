@@ -109,7 +109,7 @@ export async function getAgents(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des agents',
@@ -152,7 +152,7 @@ export async function getAgentsActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des agents actifs',
@@ -198,7 +198,7 @@ export async function addAgent(agentData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout de l\'agent',
@@ -243,7 +243,7 @@ export async function updateAgent(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification de l\'agent',
@@ -278,7 +278,7 @@ export async function deleteAgent(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression de l\'agent',
@@ -317,7 +317,7 @@ export async function toggleAgentStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut de l\'agent',
@@ -358,7 +358,7 @@ export async function getAgentPrivileges(agentId: number): Promise<ApiResponse> 
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des privilèges',
@@ -400,7 +400,7 @@ export async function updateAgentPrivileges(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la mise à jour des privilèges',
@@ -441,7 +441,7 @@ export async function searchAgents(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des agents',
@@ -483,7 +483,7 @@ export async function checkAgentByEmail(email: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification de l\'agent',
@@ -525,7 +525,7 @@ export async function getAgentById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération de l\'agent',
@@ -567,7 +567,7 @@ export async function getAllPrivileges(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des privilèges',
@@ -618,7 +618,7 @@ export async function getAgentsPaginees(page: number = 1, limit: number = 10, se
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des agents paginés',
@@ -680,7 +680,7 @@ export async function searchAgentsByStatus(actif: boolean, searchTerm?: string):
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des agents par statut',

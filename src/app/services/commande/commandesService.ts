@@ -141,15 +141,6 @@ export async function getCommandesPlaques(
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP détaillée:", errorText);
-      return {
-        status: "error",
-        message: `Erreur HTTP ${response.status}: ${response.statusText || 'Pas de réponse'}`,
-      };
-    }
-
     const responseText = await response.text();
 
     let data;
@@ -209,15 +200,6 @@ export async function getStatsCommandes(
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP stats:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des statistiques (${response.status})`,
-      };
-    }
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -252,15 +234,6 @@ export async function annulerCommandePlaques(
       },
       cache: 'no-store',
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP annulation:", errorText);
-      return {
-        status: "error",
-        message: `Échec de l'annulation de la commande (${response.status})`,
-      };
-    }
 
     const data = await response.json();
 
@@ -304,15 +277,6 @@ export async function exporterCommandesExcel(
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP export:", errorText);
-      return {
-        status: "error",
-        message: `Échec de l'exportation Excel (${response.status})`,
-      };
-    }
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -347,15 +311,6 @@ export async function getSitesDisponibles(): Promise<{
       },
       cache: 'no-store',
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP sites:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des sites (${response.status})`,
-      };
-    }
 
     const responseText = await response.text();
     let data;
@@ -399,15 +354,6 @@ export async function getDetailsCommande(
       },
       cache: 'no-store',
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP détails:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des détails (${response.status})`,
-      };
-    }
 
     const data = await response.json();
     
@@ -458,15 +404,6 @@ export async function searchCommandesByModePaiement(
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP recherche par mode paiement:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la recherche par mode de paiement (${response.status})`,
-      };
-    }
-
     const data = await response.json();
 
     // Nettoyer les données
@@ -514,15 +451,6 @@ export async function getCommandesRecent(
         cache: 'no-store',
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP commandes récentes:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des commandes récentes (${response.status})`,
-      };
-    }
 
     const data = await response.json();
     
@@ -576,15 +504,6 @@ export async function searchCommandesByNombrePlaques(
         cache: 'no-store',
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP recherche par nombre plaques:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la recherche par nombre de plaques (${response.status})`,
-      };
-    }
 
     const data = await response.json();
 

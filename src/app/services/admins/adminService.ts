@@ -119,7 +119,7 @@ export async function getAdmins(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des administrateurs',
@@ -162,7 +162,7 @@ export async function getAdminsActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des administrateurs actifs',
@@ -205,7 +205,7 @@ export async function getProvinces(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des provinces',
@@ -257,7 +257,7 @@ export async function addAdmin(adminData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout de l\'administrateur',
@@ -310,7 +310,7 @@ export async function updateAdmin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification de l\'administrateur',
@@ -345,7 +345,7 @@ export async function resetAdminPassword(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la réinitialisation du mot de passe',
@@ -381,7 +381,7 @@ export async function deleteAdmin(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression de l\'administrateur',
@@ -420,7 +420,7 @@ export async function toggleAdminStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut de l\'administrateur',
@@ -461,7 +461,7 @@ export async function searchAdmins(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des administrateurs',
@@ -503,7 +503,7 @@ export async function checkAdminByEmail(email: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification de l\'administrateur',
@@ -545,7 +545,7 @@ export async function getAdminById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération de l\'administrateur',
@@ -595,7 +595,7 @@ export async function searchAdminsByRole(role: string, searchTerm?: string): Pro
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des administrateurs par rôle',
@@ -650,7 +650,7 @@ export async function getAdminsPaginees(page: number = 1, limit: number = 10, se
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des administrateurs paginés',

@@ -36,6 +36,7 @@ interface UtilisateurSession {
   privileges_include?: any;
   province_code?: any;
   province_id?: any;
+  template_carte_actuel?: boolean;
 }
 
 interface AuthContextType {

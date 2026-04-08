@@ -192,7 +192,7 @@ export async function verifierPlaqueTelephone(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification",
@@ -245,7 +245,7 @@ export async function verifierTelephoneExistant(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du téléphone",
@@ -288,7 +288,7 @@ export async function rechercherModeles(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des modèles",
@@ -330,7 +330,7 @@ export async function creerModele(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la création du modèle",
@@ -375,7 +375,7 @@ export async function rechercherPuissancesFiscales(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des puissances",
@@ -419,7 +419,7 @@ export async function creerPuissanceFiscale(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la création de la puissance",
@@ -505,7 +505,7 @@ export async function soumettreCarteRose(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la soumission de la carte rose",

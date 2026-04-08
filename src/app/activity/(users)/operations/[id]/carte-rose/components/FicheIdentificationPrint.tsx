@@ -1,6 +1,14 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+
+// Utility to escape HTML entities and prevent XSS in print templates
+const escapeHtml = (text: string | undefined | null): string => {
+  if (!text) return "";
+  return String(text).replace(/[&<>"']/g, (char) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char)
+  );
+};
 
 interface FicheData {
   nom: string;
@@ -57,99 +65,18 @@ export default function FicheIdentificationPrint({
   const printRef = useRef<HTMLDivElement>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
-  // Gestion de la date/heure
+  // Gestion de la date/heure — only tick when modal is open
   useEffect(() => {
+    if (!isOpen) return;
     setCurrentDateTime(getDateTime());
     const interval = setInterval(() => {
       setCurrentDateTime(getDateTime());
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Effet pour générer le QR Code
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const generateQRCode = () => {
-      // Créer les données pour le QR Code
-      const qrData = {
-        nom: data.nom,
-        prenom: data.prenom,
-        plaque: data.numero_plaque,
-        niup: supplementaire?.niup_moto || "",
-        expiration: calculateValidity().expirationDate,
-        jours: calculateValidity().remainingDays,
-        timestamp: new Date().toISOString(),
-        document: "Fiche d'Identification Moto - Holding TSC-NPS SA",
-      };
-
-      // Créer un canvas temporaire
-      const canvas = document.createElement("canvas");
-      canvas.width = 256;
-      canvas.height = 256;
-      const ctx = canvas.getContext("2d");
-
-      if (ctx) {
-        // Dessiner un QR Code stylisé
-        // Fond blanc
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, 256, 256);
-        
-        // Bordures
-        ctx.strokeStyle = "#9f5514";
-        ctx.lineWidth = 8;
-        ctx.strokeRect(4, 4, 248, 248);
-        
-        // Dessiner un motif de QR Code simplifié
-        ctx.fillStyle = "#000000";
-        
-        // Grands carrés pour simuler les repères QR
-        // Coin supérieur gauche
-        ctx.fillRect(20, 20, 56, 56);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(28, 28, 40, 40);
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(32, 32, 32, 32);
-        
-        // Coin supérieur droit
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(180, 20, 56, 56);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(188, 28, 40, 40);
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(192, 32, 32, 32);
-        
-        // Coin inférieur gauche
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(20, 180, 56, 56);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(28, 188, 40, 40);
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(32, 192, 32, 32);
-
-        // Texte au centre
-        ctx.fillStyle = "#000000";
-        ctx.font = "bold 16px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("DOCUMENT", 128, 100);
-        ctx.fillText("SÉCURISÉ", 128, 120);
-        ctx.font = "12px Arial";
-        ctx.fillText(`${data.nom} ${data.prenom}`, 128, 140);
-        ctx.fillText(`Plaque: ${data.numero_plaque}`, 128, 155);
-        ctx.fillText(`Exp: ${calculateValidity().expirationDate}`, 128, 170);
-        ctx.font = "10px Arial";
-        ctx.fillText("Holding TSC-NPS SA", 128, 190);
-
-        const dataUrl = canvas.toDataURL("image/png");
-        setQrDataUrl(dataUrl);
-      }
-    };
-
-    generateQRCode();
-  }, [data, supplementaire, isOpen]);
+  }, [isOpen]);
 
   // Fonction pour calculer la validité
-  const calculateValidity = () => {
+  const calculateValidity = useCallback(() => {
     const dateImmatriculation = data.date_immatriculation
       ? new Date(data.date_immatriculation)
       : new Date();
@@ -166,9 +93,71 @@ export default function FicheIdentificationPrint({
       remainingDays: diffDays > 0 ? diffDays : 0,
       expirationDate: expirationDate.toLocaleDateString("fr-FR"),
     };
-  };
+  }, [data.date_immatriculation]);
 
-  const validity = calculateValidity();
+  const validity = useMemo(() => calculateValidity(), [calculateValidity]);
+
+  // Shared QR code drawing logic
+  const drawStyledQRCode = useCallback((expirationDate: string): string => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      console.error("Failed to create canvas context");
+      return "";
+    }
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = "#9f5514";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, 248, 248);
+    ctx.fillStyle = "#000000";
+
+    // Corner markers
+    ctx.fillRect(20, 20, 56, 56);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(28, 28, 40, 40);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(32, 32, 32, 32);
+
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(180, 20, 56, 56);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(188, 28, 40, 40);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(192, 32, 32, 32);
+
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(20, 180, 56, 56);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(28, 188, 40, 40);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(32, 192, 32, 32);
+
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("DOCUMENT", 128, 100);
+    ctx.fillText("SÉCURISÉ", 128, 120);
+    ctx.font = "12px Arial";
+    ctx.fillText(`${data.nom} ${data.prenom}`, 128, 140);
+    ctx.fillText(`Plaque: ${data.numero_plaque}`, 128, 155);
+    ctx.fillText(`Exp: ${expirationDate}`, 128, 170);
+    ctx.font = "10px Arial";
+    ctx.fillText("Holding TSC-NPS SA", 128, 190);
+
+    return canvas.toDataURL("image/png");
+  }, [data.nom, data.prenom, data.numero_plaque]);
+
+  // Effet pour générer le QR Code (using shared logic)
+  useEffect(() => {
+    if (!isOpen) return;
+    const dataUrl = drawStyledQRCode(validity.expirationDate);
+    setQrDataUrl(dataUrl);
+  }, [data, supplementaire, isOpen, drawStyledQRCode, validity.expirationDate]);
 
   // Formatage de la date de naissance
   const formatDateNaissance = () => {
@@ -230,77 +219,35 @@ export default function FicheIdentificationPrint({
     return `${getFormattedDate("numbers")} ${getCurrentTime()}`;
   };
 
-  // Fonction pour générer le QR Code pour l'impression
-  const generatePrintQRCode = (): string => {
-    // Créer un canvas pour générer le QR Code
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext("2d");
+  // Fonction pour générer le QR Code pour l'impression (reuses shared logic)
+  const generatePrintQRCode = useCallback((): string => {
+    return drawStyledQRCode(validity.expirationDate);
+  }, [drawStyledQRCode, validity.expirationDate]);
 
-    if (ctx) {
-      // Dessiner un QR Code stylisé
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, 256, 256);
-      
-      // Bordures
-      ctx.strokeStyle = "#9f5514";
-      ctx.lineWidth = 8;
-      ctx.strokeRect(4, 4, 248, 248);
-      
-      // Dessiner un motif de QR Code simplifié
-      ctx.fillStyle = "#000000";
-      
-      // Grands carrés pour simuler les repères QR
-      // Coin supérieur gauche
-      ctx.fillRect(20, 20, 56, 56);
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(28, 28, 40, 40);
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(32, 32, 32, 32);
-      
-      // Coin supérieur droit
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(180, 20, 56, 56);
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(188, 28, 40, 40);
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(192, 32, 32, 32);
-      
-      // Coin inférieur gauche
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(20, 180, 56, 56);
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(28, 188, 40, 40);
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(32, 192, 32, 32);
-
-      // Texte au centre
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 16px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("DOCUMENT", 128, 100);
-      ctx.fillText("SÉCURISÉ", 128, 120);
-      ctx.font = "12px Arial";
-      ctx.fillText(`${data.nom} ${data.prenom}`, 128, 140);
-      ctx.fillText(`Plaque: ${data.numero_plaque}`, 128, 155);
-      ctx.fillText(`Exp: ${validity.expirationDate}`, 128, 170);
-      ctx.font = "10px Arial";
-      ctx.fillText("Holding TSC-NPS SA", 128, 190);
-
-      return canvas.toDataURL("image/png");
-    }
-    
-    return "";
-  };
-
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     // Générer le QR Code pour l'impression
     const printQRCodeUrl = generatePrintQRCode();
     
     if (printRef.current) {
       const printWindow = window.open("", "_blank");
       if (!printWindow) return;
+
+      // Escape all user data for safe HTML injection
+      const safeNom = escapeHtml(data.nom);
+      const safePrenom = escapeHtml(data.prenom);
+      const safeSexe = escapeHtml(supplementaire?.sexe) || "-----";
+      const safeDateNaissance = escapeHtml(formatDateNaissance());
+      const safeLieuNaissance = escapeHtml(supplementaire?.lieu_naissance) || "-----";
+      const safeAdresseComplete = escapeHtml(supplementaire?.adresse_complete || data.adresse);
+      const safeNiupMoto = escapeHtml(supplementaire?.niup_moto?.trim()) || "-----";
+      const safeMarque = escapeHtml(data.marque);
+      const safeModele = escapeHtml(data.modele);
+      const safeAnneeFab = escapeHtml(data.annee_fabrication) || "-----";
+      const safeCouleur = escapeHtml(data.couleur) || "-----";
+      const safeNumeroChassis = escapeHtml(data.numero_chassis) || "-----";
+      const safeFormattedDate = escapeHtml(getFormattedDate("full"));
+      const safeExpirationDate = escapeHtml(validity.expirationDate);
+      const safeCylindree = escapeHtml(formatCylindree());
 
       const printContent = `
         <!DOCTYPE html>
@@ -709,7 +656,7 @@ export default function FicheIdentificationPrint({
           <figcaption>
             <b>Scannez pour</b><br>vérifier l'authenticité
             <div class="qr-info">
-              Exp: ${validity.expirationDate}
+              Exp: ${safeExpirationDate}
             </div>
           </figcaption>
         </figure>
@@ -724,27 +671,27 @@ export default function FicheIdentificationPrint({
         <tbody>
           <tr>
             <td>Nom :</td>
-            <td>${data.nom}</td>
+            <td>${safeNom}</td>
           </tr>
           <tr>
             <td>Prénom :</td>
-            <td>${data.prenom}</td>
+            <td>${safePrenom}</td>
           </tr>
           <tr>
             <td>Sexe :</td>
-            <td>${supplementaire?.sexe || "-----"}</td>
+            <td>${safeSexe}</td>
           </tr>
           <tr>
             <td>Date de naissance :</td>
-            <td>${formatDateNaissance()}</td>
+            <td>${safeDateNaissance}</td>
           </tr>
           <tr>
             <td>Lieu de naissance :</td>
-            <td>${supplementaire?.lieu_naissance || "-----"}</td>
+            <td>${safeLieuNaissance}</td>
           </tr>
           <tr>
             <td>Adresse complète :</td>
-            <td>${supplementaire?.adresse_complete || data.adresse}</td>
+            <td>${safeAdresseComplete}</td>
           </tr>
         </tbody>
       </table>
@@ -796,27 +743,27 @@ export default function FicheIdentificationPrint({
         <tbody>
           <tr>
             <td>NIUP Moto :</td>
-            <td>${supplementaire?.niup_moto || "-----"}</td>
+            <td>${safeNiupMoto}</td>
           </tr>
           <tr>
             <td>Marque/Modèle :</td>
-            <td>${data.marque} ${data.modele || ""}</td>
+            <td>${safeMarque} ${safeModele}</td>
           </tr>
           <tr>
             <td>Année de fabrication :</td>
-            <td>${data.annee_fabrication || "-----"}</td>
+            <td>${safeAnneeFab}</td>
           </tr>
           <tr>
             <td>Couleur :</td>
-            <td>${data.couleur || "-----"}</td>
+            <td>${safeCouleur}</td>
           </tr>
           <tr>
             <td>Numéro de chassis (VIN) :</td>
-            <td>${data.numero_chassis || "-----"}</td>
+            <td>${safeNumeroChassis}</td>
           </tr>
           <tr>
             <td>Cylindrée / Puissance :</td>
-            <td>${formatCylindree()}</td>
+            <td>${safeCylindree}</td>
           </tr>
         </tbody>
       </table>
@@ -835,9 +782,7 @@ export default function FicheIdentificationPrint({
             </tr>
             <tr>
               <td>Date :</td>
-              <td><span class="placeholder">${getFormattedDate(
-                "full"
-              )}</span></td>
+              <td><span class="placeholder">${safeFormattedDate}</span></td>
             </tr>
           </tbody>
         </table>
@@ -933,7 +878,7 @@ export default function FicheIdentificationPrint({
       printWindow.document.write(printContent);
       printWindow.document.close();
     }
-  };
+  }, [data, supplementaire, generatePrintQRCode, validity, formatDateNaissance, formatCylindree, getFormattedDate]);
 
   // Gestion des événements clavier
   useEffect(() => {
@@ -950,7 +895,7 @@ export default function FicheIdentificationPrint({
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
+      document.body.style.removeProperty("overflow");
     };
   }, [isOpen, onClose]);
 

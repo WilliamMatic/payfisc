@@ -143,7 +143,7 @@ export const getSeries = async (utilisateurId: number): Promise<ApiResponse> => 
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des séries",
@@ -186,7 +186,7 @@ export const getProvinces = async (): Promise<ApiResponse> => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des provinces",
@@ -234,7 +234,7 @@ export const getSerieItems = async (serieId: number, utilisateurId: number): Pro
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des items",
@@ -287,7 +287,7 @@ export const addSerie = async (serieData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout de la série",
@@ -337,7 +337,7 @@ export const updateSerie = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la modification de la série",
@@ -377,7 +377,7 @@ export const deleteSerie = async (id: number, utilisateurId: number): Promise<Ap
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression de la série",
@@ -422,7 +422,7 @@ export const toggleSerieStatus = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec du changement de statut de la série",
@@ -469,7 +469,7 @@ export const searchSeries = async (
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la recherche des séries",

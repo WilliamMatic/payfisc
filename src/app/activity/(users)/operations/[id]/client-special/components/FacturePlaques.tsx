@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { X, Download, Printer } from 'lucide-react';
 
 interface FactureData {
@@ -44,17 +44,22 @@ interface FacturePlaquesProps {
 }
 
 export default function FacturePlaques({ data, onClose }: FacturePlaquesProps) {
-  const [isPrinting, setIsPrinting] = useState(false);
-
   // Calcul des informations sur les plaques
-  const premierePlaque = data.plaques[0] || 'N/A';
-  const dernierePlaque = data.plaques[data.plaques.length - 1] || 'N/A';
-  const totalPlaques = data.plaques.length;
-  
-  // Calcul de la série attribuée
-  const seriesAttribuees = Array.from(new Set(
-    data.plaques.map(plaque => plaque.substring(0, 2))
-  )).join(', ');
+  const { premierePlaque, dernierePlaque, totalPlaques, seriesAttribuees } = useMemo(() => {
+    const premierePlaque = data.plaques?.[0] || 'N/A';
+    const dernierePlaque = data.plaques?.length > 0
+      ? data.plaques[data.plaques.length - 1]
+      : 'N/A';
+    const totalPlaques = data.plaques?.length || 0;
+    const seriesAttribuees = Array.from(new Set(
+      (data.plaques || []).map(plaque => plaque.substring(0, 2))
+    )).join(', ');
+    return { premierePlaque, dernierePlaque, totalPlaques, seriesAttribuees };
+  }, [data.plaques]);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <>
@@ -72,7 +77,7 @@ export default function FacturePlaques({ data, onClose }: FacturePlaquesProps) {
 
           <div className="p-6 overflow-y-auto max-h-[70vh]">
             {/* Facture content */}
-            <div className={`bg-white ${isPrinting ? 'p-0' : 'p-8'} border border-gray-200 rounded-lg`} id="facture-content">
+            <div className={`bg-white p-8 border border-gray-200 rounded-lg`} id="facture-content">
               {/* En-tête de la facture */}
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">FACTURE D'IMMATRICULATION</h1>
@@ -212,6 +217,7 @@ export default function FacturePlaques({ data, onClose }: FacturePlaquesProps) {
 
           <div className="flex items-center justify-end space-x-4 p-6 border-t border-gray-200 bg-gray-50">
             <button
+              onClick={handlePrint}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Printer className="w-4 h-4" />

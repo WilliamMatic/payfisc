@@ -14,6 +14,7 @@ export interface Site {
   code: string;
   description: string;
   formule: string;
+  template_carte_actuel: boolean;
   province_id: number;
   province_nom: string;
   actif: boolean;
@@ -86,6 +87,7 @@ export async function cleanSiteData(data: any): Promise<Site> {
     code: data.code || "",
     description: data.description || "",
     formule: data.formule || "",
+    template_carte_actuel: Boolean(Number(data.template_carte_actuel)),
     province_id: data.province_id || 0,
     province_nom: data.province_nom || "",
     actif: Boolean(data.actif),
@@ -120,7 +122,7 @@ export async function getSites(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des sites',
@@ -163,7 +165,7 @@ export async function getSitesActifs(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des sites actifs',
@@ -206,7 +208,7 @@ export async function getProvinces(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des provinces',
@@ -238,6 +240,7 @@ export async function addSite(siteData: {
   code: string;
   description: string;
   formule: string;
+  template_carte_actuel: boolean;
   province_id: number;
 }): Promise<ApiResponse> {
   try {
@@ -246,6 +249,7 @@ export async function addSite(siteData: {
     formData.append('code', siteData.code);
     formData.append('description', siteData.description);
     formData.append('formule', siteData.formule);
+    formData.append('template_carte_actuel', siteData.template_carte_actuel ? '1' : '0');
     formData.append('province_id', siteData.province_id.toString());
 
     const response = await fetch(`${API_BASE_URL}/sites/creer_site.php`, {
@@ -256,7 +260,7 @@ export async function addSite(siteData: {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de l\'ajout du site',
@@ -285,6 +289,7 @@ export async function updateSite(
     code: string;
     description: string;
     formule: string;
+    template_carte_actuel: boolean;
     province_id: number;
   }
 ): Promise<ApiResponse> {
@@ -295,6 +300,7 @@ export async function updateSite(
     formData.append('code', siteData.code);
     formData.append('description', siteData.description);
     formData.append('formule', siteData.formule);
+    formData.append('template_carte_actuel', siteData.template_carte_actuel ? '1' : '0');
     formData.append('province_id', siteData.province_id.toString());
 
     const response = await fetch(`${API_BASE_URL}/sites/modifier_site.php`, {
@@ -305,7 +311,7 @@ export async function updateSite(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la modification du site',
@@ -340,7 +346,7 @@ export async function deleteSite(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la suppression du site',
@@ -379,7 +385,7 @@ export async function toggleSiteStatus(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec du changement de statut du site',
@@ -420,7 +426,7 @@ export async function searchSites(searchTerm: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des sites',
@@ -462,7 +468,7 @@ export async function checkSiteByCode(code: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification du site',
@@ -500,7 +506,7 @@ export async function checkSiteByNom(nom: string): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la vérification du site par nom',
@@ -542,7 +548,7 @@ export async function getSiteById(id: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération du site',
@@ -592,7 +598,7 @@ export async function searchSitesByProvince(provinceId: number, searchTerm?: str
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche des sites par province',
@@ -647,7 +653,7 @@ export async function getSitesPaginees(page: number = 1, limit: number = 10, sea
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des sites paginés',

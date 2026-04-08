@@ -1,12 +1,12 @@
-import { Plus, X, Save, Loader2 } from 'lucide-react';
+import { Plus, X, Save, Loader2, Printer } from 'lucide-react';
 import { Province as ProvinceType } from '@/services/sites/siteService';
 
 interface AddSiteModalProps {
-  formData: { nom: string; code: string; description: string; formule: string; province_id: number };
+  formData: { nom: string; code: string; description: string; formule: string; template_carte_actuel: boolean; province_id: number };
   provinces: ProvinceType[];
   processing: boolean;
   onClose: () => void;
-  onFormDataChange: (data: { nom: string; code: string; description: string; formule: string; province_id: number }) => void;
+  onFormDataChange: (data: { nom: string; code: string; description: string; formule: string; template_carte_actuel: boolean; province_id: number }) => void;
   onAddSite: () => Promise<void>;
 }
 
@@ -122,6 +122,21 @@ export default function AddSiteModal({
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] transition-colors"
                 placeholder="Ex: Formule de calcul (optionnel)"
               />
+            </div>
+
+            {/* CHECKBOX TEMPLATE CARTE ACTUEL */}
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <input
+                type="checkbox"
+                id="template_carte_actuel_add"
+                checked={formData.template_carte_actuel}
+                onChange={(e) => onFormDataChange({...formData, template_carte_actuel: e.target.checked})}
+                className="w-4 h-4 text-[#2D5B7A] border-gray-300 rounded focus:ring-[#2D5B7A]/30 cursor-pointer"
+              />
+              <label htmlFor="template_carte_actuel_add" className="flex items-center space-x-2 cursor-pointer select-none">
+                <Printer className="w-4 h-4 text-[#2D5B7A]" />
+                <span className="text-sm font-medium text-gray-700">Template carte actuel</span>
+              </label>
             </div>
           </div>
           

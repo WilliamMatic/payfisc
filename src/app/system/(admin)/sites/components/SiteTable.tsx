@@ -1,4 +1,4 @@
-import { MapPin, Loader2, Edit, Trash2, Eye, EyeOff, Receipt } from 'lucide-react';
+import { MapPin, Loader2, Edit, Trash2, Eye, EyeOff, Receipt, Printer } from 'lucide-react';
 import { Site as SiteType } from '@/services/sites/siteService';
 
 interface SiteTableProps {
@@ -40,6 +40,7 @@ export default function SiteTable({
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Province</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Template Carte</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Taxes</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Création</th>
               <th className="px-5 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -70,6 +71,16 @@ export default function SiteTable({
                         : 'bg-gray-100 text-gray-600 border border-gray-200'
                     }`}>
                       {site.actif ? 'Actif' : 'Inactif'}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                      site.template_carte_actuel 
+                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' 
+                        : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}>
+                      <Printer className="w-3 h-3" />
+                      <span>{site.template_carte_actuel ? 'Activé' : 'Désactivé'}</span>
                     </span>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">

@@ -31,6 +31,7 @@ import {
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import ReproductionPrint from "./ReproductionPrint";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 
 // Import des services pour les données dynamiques
 import {
@@ -425,16 +426,8 @@ export default function ReproductionServicesClient({
 
   // Parser les privilèges quand utilisateur change
   useEffect(() => {
-    if (utilisateur?.privileges_include) {
-      try {
-        const parsed = JSON.parse(utilisateur.privileges_include);
-        setParsedPrivileges(parsed);
-      } catch (error) {
-        console.error("Erreur parsing privileges:", error);
-        setParsedPrivileges({});
-      }
-    } else if (utilisateur) {
-      setParsedPrivileges({});
+    if (utilisateur) {
+      setParsedPrivileges(parseAndNormalizePrivileges(utilisateur.privileges_include));
     }
   }, [utilisateur]);
 
@@ -785,7 +778,7 @@ export default function ReproductionServicesClient({
   }
 
   // Vérifier si l'utilisateur a le privilège "reproduction"
-  if (!parsedPrivileges.reproduction) {
+  if (!parsedPrivileges?.ventePlaque?.reproduction) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
@@ -802,8 +795,8 @@ export default function ReproductionServicesClient({
             </p>
             <div className="text-sm text-gray-500 mb-4">
               <div className="text-left bg-gray-50 p-3 rounded-lg">
-                <div className="font-medium mb-2">Vos privilèges:</div>
-                {Object.entries(parsedPrivileges).map(
+                <div className="font-medium mb-2">Vos privilèges Vente Plaque:</div>
+                {parsedPrivileges?.ventePlaque && Object.entries(parsedPrivileges.ventePlaque).map(
                   ([key, value]: [string, any]) => (
                     <div key={key} className="flex items-center gap-2 mb-1">
                       <span

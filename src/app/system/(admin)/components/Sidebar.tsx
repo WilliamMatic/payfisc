@@ -97,8 +97,8 @@ export default function Sidebar({
         {
           icon: "📑",
           label: "Création Impôt",
-          href: "https://mpako.net/Backend/models/impotCreate.php",
-          // href: "http://localhost/Impot/backend/impotCreate.php",
+          // href: "https://mpako.net/Backend/models/impotCreate.php",
+          href: "http://localhost/Impot/Front/payfisc/backend/impotCreate.php",
         },
         {
           icon: "🔢",

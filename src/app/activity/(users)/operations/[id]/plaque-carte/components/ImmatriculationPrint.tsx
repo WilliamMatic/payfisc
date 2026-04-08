@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
 import { QRCodeCanvas } from 'qrcode.react';
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PrintData {
   nom: string;
@@ -27,6 +28,7 @@ interface ImmatriculationPrintProps {
 }
 
 export default function ImmatriculationPrint({ data, isOpen, onClose }: ImmatriculationPrintProps) {
+  const { utilisateur } = useAuth();
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -241,7 +243,7 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img src="https://willyaminsi.com/signature-fixe.jpg" width="70" height="50" style="position: relative;top: 0px;"></div>
+                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             

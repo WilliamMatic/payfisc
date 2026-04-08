@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { X } from "lucide-react";
 import { AchatPlaques } from "../types";
 
 interface VoirPlaquesModalProps {
@@ -11,7 +13,19 @@ export default function VoirPlaquesModal({
   setShowPlaquesModal,
   selectedAchatForModal
 }: VoirPlaquesModalProps) {
+  // Fermer avec Escape
+  useEffect(() => {
+    if (!showPlaquesModal) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowPlaquesModal(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showPlaquesModal, setShowPlaquesModal]);
+
   if (!showPlaquesModal || !selectedAchatForModal) return null;
+
+  const plaquesDetail = selectedAchatForModal.plaques_detail ?? [];
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -33,25 +47,13 @@ export default function VoirPlaquesModal({
             onClick={() => setShowPlaquesModal(false)}
             className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {selectedAchatForModal.plaques_detail.map((plaque, index) => (
+            {plaquesDetail.map((plaque, index) => (
               <div
                 key={index}
                 className={`p-3 rounded-lg border text-center ${
@@ -87,7 +89,7 @@ export default function VoirPlaquesModal({
             <span className="font-medium">Série complète:</span>{" "}
             {selectedAchatForModal.serie_debut} →{" "}
             {selectedAchatForModal.serie_fin}
-            {selectedAchatForModal.plaques_detail.some(p => p.estDelivree) && (
+            {plaquesDetail.some(p => p.estDelivree) && (
               <span className="ml-3 text-red-600">
                 • Certaines plaques déjà délivrées
               </span>

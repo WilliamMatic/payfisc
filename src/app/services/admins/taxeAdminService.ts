@@ -108,7 +108,7 @@ export async function getTaxesActives(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des taxes actives",
@@ -153,7 +153,7 @@ export async function getTaxes(): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la récupération des taxes",
@@ -201,7 +201,7 @@ export async function getTaxesByAdmin(adminId: number): Promise<ApiResponse> {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message:
@@ -253,7 +253,7 @@ export async function addTaxeToAdmin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de l'ajout du lien admin-taxe",
@@ -296,7 +296,7 @@ export async function removeTaxeFromAdmin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression du lien admin-taxe",
@@ -337,7 +337,7 @@ export async function removeAllTaxesFromAdmin(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la suppression des liens admin-taxe",
@@ -382,7 +382,7 @@ export async function checkAdminHasTaxe(
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: "error",
         message: data.message || "Échec de la vérification du lien admin-taxe",

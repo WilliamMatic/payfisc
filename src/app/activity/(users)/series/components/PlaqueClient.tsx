@@ -13,6 +13,7 @@ import AlertMessage from "./AlertMessage";
 import RapportSeriesModal from "./RapportSeriesModal";
 import Pagination from "./Pagination";
 import { useAuth } from "@/contexts/AuthContext";
+import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 import { ArrowLeft, User, Lock, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -72,7 +73,7 @@ export default function PlaqueClient({
     
     if (utilisateur?.privileges_include) {
       try {
-        const parsedPrivileges = JSON.parse(utilisateur.privileges_include);
+        const parsedPrivileges = parseAndNormalizePrivileges(utilisateur.privileges_include);
         setPrivileges(parsedPrivileges);
       } catch (error) {
         console.error("Erreur lors du parsing des privilèges:", error);
@@ -313,8 +314,8 @@ export default function PlaqueClient({
     );
   }
 
-  // Vérifier si privileges est null ou si series n'est pas défini
-  if (!privileges || privileges.series === undefined) {
+  // Vérifier si l'utilisateur a le privilège "series" (nested)
+  if (!privileges || !privileges?.ventePlaque?.series) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
@@ -326,14 +327,13 @@ export default function PlaqueClient({
               Accès Refusé
             </h2>
             <p className="text-gray-600 mb-6">
-              Vous n'avez pas les privilèges nécessaires pour accéder à cette
-              fonctionnalité.
+              Vous n&apos;avez pas les privilèges nécessaires pour accéder à la gestion des séries.
             </p>
-            {privileges && (
+            {privileges?.ventePlaque && (
               <div className="text-sm text-gray-500 mb-4">
-                Privilèges disponibles:
+                Privilèges Vente Plaque:
                 <div className="mt-2 text-left">
-                  {Object.entries(privileges).map(([key, value]) => (
+                  {Object.entries(privileges.ventePlaque).map(([key, value]) => (
                     <div key={key} className="flex items-center gap-2">
                       <span
                         className={`w-2 h-2 rounded-full ${value ? "bg-green-500" : "bg-red-500"}`}
@@ -346,50 +346,6 @@ export default function PlaqueClient({
                 </div>
               </div>
             )}
-            <button
-              onClick={() => router.back()}
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Retour</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Vérifier si l'utilisateur a le privilège "series"
-  if (privileges.series === false) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-red-600" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Accès Refusé
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Vous n'avez pas les privilèges nécessaires pour accéder à cette
-              fonctionnalité.
-            </p>
-            <div className="text-sm text-gray-500 mb-4">
-              Privilèges disponibles:
-              <div className="mt-2 text-left">
-                {Object.entries(privileges).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <span
-                      className={`w-2 h-2 rounded-full ${value ? "bg-green-500" : "bg-red-500"}`}
-                    ></span>
-                    <span>
-                      {key}: {value ? "✓" : "✗"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
             <button
               onClick={() => router.back()}
               className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors mx-auto"

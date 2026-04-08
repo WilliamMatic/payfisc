@@ -25,13 +25,13 @@ export default function DateGroup({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* En-tête de date */}
       <div
-        className="px-6 py-4 bg-gray-50 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+        className="px-6 py-4 bg-[#2D5B7A]/5 border-b border-gray-200 cursor-pointer hover:bg-[#2D5B7A]/10 transition-colors"
         onClick={() => toggleDateExpansion(groupe.date)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CalendarDays className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-[#2D5B7A]/10 rounded-xl">
+              <CalendarDays className="w-5 h-5 text-[#2D5B7A]" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">

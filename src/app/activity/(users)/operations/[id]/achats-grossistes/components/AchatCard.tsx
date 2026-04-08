@@ -12,14 +12,22 @@ export default function AchatCard({
   afficherToutesPlaques,
   formaterSeriePlaques
 }: AchatCardProps) {
+  if (!achat?.assujetti) {
+    return (
+      <div className="border border-gray-200 rounded-lg p-6 text-gray-500 text-sm">
+        Données de l'assujetti manquantes pour l'achat #{achat?.id}
+      </div>
+    );
+  }
+
   return (
     <div className="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Informations de l'assujetti */}
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <User className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-[#2D5B7A]/10 rounded-xl">
+              <User className="w-5 h-5 text-[#2D5B7A]" />
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">
@@ -68,7 +76,7 @@ export default function AchatCard({
         {/* Détails de l'achat */}
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-50 rounded-lg">
+            <div className="p-2 bg-green-50 rounded-xl">
               <Package className="w-5 h-5 text-green-600" />
             </div>
             <div>
@@ -133,7 +141,7 @@ export default function AchatCard({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-50 rounded-lg">
+              <div className="p-2 bg-purple-50 rounded-xl">
                 <Eye className="w-5 h-5 text-purple-600" />
               </div>
               <div>
@@ -149,7 +157,7 @@ export default function AchatCard({
             {achat.nombre_plaques > 5 && (
               <button
                 onClick={() => afficherToutesPlaques(achat)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-[#2D5B7A] hover:text-[#244D68] font-medium"
               >
                 Voir toutes
               </button>
@@ -157,7 +165,7 @@ export default function AchatCard({
           </div>
 
           <div className="pl-11">
-            <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="p-3 bg-[#2D5B7A]/5 rounded-xl">
               <p className="text-sm font-medium text-gray-700 mb-1">
                 Série:
               </p>

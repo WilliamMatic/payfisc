@@ -54,7 +54,7 @@ export const getDonneesFiscalesCompletes = async (): Promise<ApiResponse> => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la récupération des données fiscales',
@@ -87,7 +87,7 @@ export const rechercherDonneesPourQuestion = async (question: string): Promise<R
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (data.status === "error") {
       return {
         status: 'error',
         message: data.message || 'Échec de la recherche',

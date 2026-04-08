@@ -1,4 +1,4 @@
-import { FileText, Search, RefreshCw } from "lucide-react";
+import { Landmark, Search } from "lucide-react";
 
 interface ImpotHeaderProps {
   searchTerm: string;
@@ -16,47 +16,34 @@ export default function ImpotHeader({
   isRefreshing = false,
 }: ImpotHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-      {/* TITRE */}
-      <div className="flex items-center">
-        <div className="bg-[#2D5B7A] p-2.5 rounded-lg mr-3">
-          <FileText className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800">
-            Gestion des Impôts
-          </h2>
-          <p className="text-sm text-gray-500">
-            {impotsCount} {impotsCount <= 1 ? "impôt trouvé" : "impôts trouvés"}
-          </p>
-        </div>
-      </div>
+    <div className="mb-6">
+      <div className="bg-[#2D5B7A] rounded-xl p-5 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/15 p-2.5 rounded-lg">
+              <Landmark className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-white">
+                Opérations Fiscales
+              </h1>
+              <p className="text-white/70 text-sm mt-0.5">
+                {impotsCount} {impotsCount <= 1 ? "service disponible" : "services disponibles"}
+              </p>
+            </div>
+          </div>
 
-      {/* BARRE DE RECHERCHE + BOUTON RAFRAÎCHIR */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-        <div className="relative flex-1 sm:w-80">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Rechercher un impôt par nom, description ou période..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A] bg-white w-full"
-          />
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Rechercher un impôt..."
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-10 pr-4 py-2.5 border-0 rounded-lg bg-white/95 w-full focus:outline-none focus:ring-2 focus:ring-white/40 text-gray-800 placeholder-gray-400 text-sm"
+            />
+          </div>
         </div>
-
-        {/* BOUTON DE RAFRAÎCHISSEMENT DU CACHE */}
-        {/* {onRefresh && (
-          <button
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#2D5B7A] text-white rounded-lg hover:bg-[#1e3f5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            title="Revalider le cache"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Actualiser</span>
-          </button>
-        )} */}
       </div>
     </div>
   );

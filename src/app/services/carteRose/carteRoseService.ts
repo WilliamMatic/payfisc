@@ -139,15 +139,6 @@ export async function getCartesRoses(
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP détaillée:", errorText);
-      return {
-        status: "error",
-        message: `Erreur HTTP ${response.status}: ${response.statusText || 'Pas de réponse'}`,
-      };
-    }
-
     const responseText = await response.text();
 
     let data;
@@ -208,7 +199,8 @@ export async function getStatsCartesRoses(
       }
     );
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP stats:", errorText);
       return {
@@ -217,7 +209,6 @@ export async function getStatsCartesRoses(
       };
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get stats error:", error);
@@ -252,7 +243,8 @@ export async function annulerCarteRose(
       cache: 'no-store',
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP annulation:", errorText);
       return {
@@ -261,7 +253,6 @@ export async function annulerCarteRose(
       };
     }
 
-    const data = await response.json();
 
     // Pas d'invalidation de cache nécessaire puisque tout est en temps réel
     return data;
@@ -304,7 +295,8 @@ export async function exporterCartesRosesExcel(
       cache: 'no-store',
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP export:", errorText);
       return {
@@ -313,7 +305,6 @@ export async function exporterCartesRosesExcel(
       };
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Export Excel error:", error);
@@ -347,15 +338,6 @@ export async function getSitesDisponibles(): Promise<{
       },
       cache: 'no-store',
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur HTTP sites:", errorText);
-      return {
-        status: "error",
-        message: `Échec de la récupération des sites (${response.status})`,
-      };
-    }
 
     const responseText = await response.text();
     let data;
@@ -400,7 +382,8 @@ export async function getDetailsCarteRose(
       cache: 'no-store',
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP détails:", errorText);
       return {
@@ -409,7 +392,6 @@ export async function getDetailsCarteRose(
       };
     }
 
-    const data = await response.json();
     
     // Nettoyer les données
     if (data.status === "success" && data.data) {
@@ -445,7 +427,8 @@ export async function getTypesVehicules(): Promise<{
       cache: 'no-store',
     });
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP types véhicules:", errorText);
       return {
@@ -454,7 +437,6 @@ export async function getTypesVehicules(): Promise<{
       };
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Get types véhicules error:", error);
@@ -497,7 +479,8 @@ export async function searchCartesRosesByEnergie(
       }
     );
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP recherche par énergie:", errorText);
       return {
@@ -506,7 +489,6 @@ export async function searchCartesRosesByEnergie(
       };
     }
 
-    const data = await response.json();
 
     // Nettoyer les données
     if (data.status === "success" && Array.isArray(data.data?.cartesRoses)) {
@@ -554,7 +536,8 @@ export async function getCartesRosesRecent(
       }
     );
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP cartes roses récentes:", errorText);
       return {
@@ -563,7 +546,6 @@ export async function getCartesRosesRecent(
       };
     }
 
-    const data = await response.json();
     
     // Nettoyer les données
     if (data.status === "success" && Array.isArray(data.data)) {
@@ -610,7 +592,8 @@ export async function searchCartesRosesByPlaque(
       }
     );
 
-    if (!response.ok) {
+    const data = await response.json();
+    if (data.status === "error") {
       const errorText = await response.text();
       console.error("Erreur HTTP recherche par plaque:", errorText);
       return {
@@ -619,7 +602,6 @@ export async function searchCartesRosesByPlaque(
       };
     }
 
-    const data = await response.json();
 
     // Nettoyer les données
     if (data.status === "success" && Array.isArray(data.data?.cartesRoses)) {
