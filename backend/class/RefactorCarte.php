@@ -67,7 +67,7 @@ class RefactorCarte extends Connexion
             $parent = null;
             
             // Alternative: chercher directement par site_code dans la table sites
-            $sqlSiteAlt = "SELECT province_id, id FROM sites WHERE code = :site_code AND actif = 1 LIMIT 1";
+            $sqlSiteAlt = "SELECT province_id, id FROM sites WHERE nom = :site_code AND actif = 1 LIMIT 1";
             $stmtSiteAlt = $this->pdo->prepare($sqlSiteAlt);
             $stmtSiteAlt->bindValue(':site_code', $siteNom, PDO::PARAM_STR);
             $stmtSiteAlt->execute();
@@ -109,15 +109,15 @@ class RefactorCarte extends Connexion
                     LEFT JOIN puissances_fiscales pf ON e.puissance_fiscal = pf.libelle
                     WHERE s.province_id = :province_id 
                     AND pm.id = :id_dgrk
-                    AND s.id = :site_id
+                    -- AND s.id = :site_id
                     ORDER BY s.id ASC, pm.id DESC
                     LIMIT 1";
 
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
                     ':province_id' => $provinceId, 
-                    ':id_dgrk' => (int) $identifiant,
-                    ':site_id' => $parent
+                    ':id_dgrk' => (int) $identifiant
+                    // ':site_id' => $parent
                 ]);
             } else {
                 // Recherche par numéro de plaque

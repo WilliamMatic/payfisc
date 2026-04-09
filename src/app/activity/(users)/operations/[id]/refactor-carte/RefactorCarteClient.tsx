@@ -254,10 +254,10 @@ export default function RefactorCarteClient() {
     setErreurVerification("");
 
     try {
-      // Utiliser site_code au lieu de site_nom
+      // Utiliser le nom du site pour la vérification
       const result = await verifierIdDGRK(
         idDGRK,
-        utilisateur?.site_code || "",
+        utilisateur?.site_nom || "",
         utilisateur?.extension_site ?? 0,
       );
 
