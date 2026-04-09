@@ -67,10 +67,16 @@ class RefactorCarte extends Connexion
             $parent = null;
             
             // Alternative: chercher directement par site_code dans la table sites
-            $sqlSiteAlt = "SELECT province_id, id FROM sites WHERE nom = :site_code AND actif = 1 LIMIT 1";
+            $sqlSiteAlt = "SELECT province_id FROM sites WHERE code = :site_code AND actif = 1 LIMIT 1";
             $stmtSiteAlt = $this->pdo->prepare($sqlSiteAlt);
             $stmtSiteAlt->bindValue(':site_code', $siteNom, PDO::PARAM_STR);
             $stmtSiteAlt->execute();
+            
+            // Alternative: chercher directement par site_code dans la table sites
+            $sqlSiteAltSite = "SELECT id FROM sites WHERE code = :site_code AND actif = 1";
+            $stmtSiteAltSite = $this->pdo->prepare($sqlSiteAltSite);
+            $stmtSiteAltSite->bindValue(':site_code', $siteNom, PDO::PARAM_STR);
+            $stmtSiteAltSite->execute();
             
             $siteDataAlt = $stmtSiteAlt->fetch(PDO::FETCH_ASSOC);
             
