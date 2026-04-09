@@ -503,7 +503,7 @@ export default function RefactorPrint({
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.type_engin
-                        ? `${data.marque} ${data.type_engin}`
+                        ? `${data.marque}`
                         : data.marque
                     }</td>
                   </tr>
