@@ -1186,7 +1186,7 @@ export default function ImmatriculationPrint({
                           <tr>
                             <th>Marque et type</th>
                             <td>
-                              {data.marque} - {data.type_engin}
+                              {data.marque}
                             </td>
                           </tr>
                           <tr>
