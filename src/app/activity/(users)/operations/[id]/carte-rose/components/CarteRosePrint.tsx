@@ -933,8 +933,7 @@ export default function CarteRosePrint({
                           <th>Marque et type</th>
                           <td>
                             {data.marque} $
-                            {data.modele ? " " + data.modele : ""} -{" "}
-                            {data.type_engin}
+                            {data.modele ? " " + data.modele : ""}
                           </td>
                         </tr>
                         <tr>
