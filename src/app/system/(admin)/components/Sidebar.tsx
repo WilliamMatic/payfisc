@@ -71,6 +71,7 @@ export default function Sidebar({
         { icon: "👥", label: "Utilisateurs", href: "/system/utilisateurs" },
         { icon: "🧑‍💼", label: "Agents", href: "/system/agents" },
         { icon: "🤝", label: "Bénéficiaires", href: "/system/beneficiaires" },
+        { icon: "🏦", label: "Partenaires", href: "/system/partenaires" },
         { icon: "👑", label: "Admin", href: "/system/admins" },
       ],
     },
@@ -150,6 +151,11 @@ export default function Sidebar({
           label: "Suppression Contrôle Technique",
           href: "/system/suppression-controle-technique",
         },
+        {
+          icon: "🧹",
+          label: "Suppression Assainissement",
+          href: "/system/suppression-paiement-assainissement",
+        },
         // {
         //   icon: "♻️",
         //   label: "Suppression Reproduction",
@@ -179,7 +185,7 @@ export default function Sidebar({
         }`}
       >
         {/* Header */}
-        <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center">
+        <div className="px-5 h-[73px] border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center shrink-0">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 bg-gradient-to-r from-[#2D5B7A] to-[#3A7A5F] rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-lg">P</span>

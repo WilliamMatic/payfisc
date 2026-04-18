@@ -267,6 +267,7 @@ export default function CartesRosesContent() {
           showMessage={showMessage}
           onError={setError}
           formatDate={formatDate}
+          onDeleteSuccess={() => statsCardsRef.current?.refresh()}
         />
       </div>
 

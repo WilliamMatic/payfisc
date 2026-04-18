@@ -21,6 +21,10 @@ export const emptyPrivileges: Privileges = {
     delivrance: false,
     renouvellement: false,
   },
+  assainissement: {
+    agentTerrain: false,
+    admin: false,
+  },
 };
 
 /**
@@ -36,6 +40,7 @@ export function normalizePrivileges(priv: any): Privileges {
       ventePlaque: { ...emptyPrivileges.ventePlaque, ...priv.ventePlaque },
       vignette: { ...emptyPrivileges.vignette, ...priv.vignette },
       assurance: { ...emptyPrivileges.assurance, ...priv.assurance },
+      assainissement: { ...emptyPrivileges.assainissement, ...priv.assainissement },
     };
   }
 
@@ -53,6 +58,7 @@ export function normalizePrivileges(priv: any): Privileges {
     },
     vignette: { ...emptyPrivileges.vignette },
     assurance: { ...emptyPrivileges.assurance },
+    assainissement: { ...emptyPrivileges.assainissement },
   };
 }
 

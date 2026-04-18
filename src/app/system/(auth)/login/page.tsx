@@ -2,11 +2,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import styles from "../styles/Login.module.css";
 import { LoginForm } from "../components/LoginForm";
 import { useAuth } from "../../../contexts/AuthContext";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:80/SOCOFIAPP/Impot/backend/calls";
 
 interface LoginCredentials {
   identifiant: string;
@@ -17,18 +21,67 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { login, isAuthenticated, userType, isLoading: authLoading } = useAuth();
+  const { login, isAuthenticated, userType, utilisateur, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Read error from URL params (e.g. proxy redirect)
+  useEffect(() => {
+    const urlError = searchParams.get('error');
+    if (urlError) {
+      setError(urlError);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && userType) {
       if (userType === "agent") {
         router.push("/system/welcom/");
       } else if (userType === "utilisateur") {
-        router.push("/activity/speed/");
+        // Redirect based on user's first site tax
+        const redirectByTax = async () => {
+          if (utilisateur?.site_id) {
+            try {
+              const res = await fetch(
+                `${API_BASE_URL}/site_taxe/lister_taxes_site.php?site_id=${utilisateur.site_id}`,
+                { credentials: "include", headers: { "Content-Type": "application/json" } }
+              );
+              const data = await res.json();
+              if (data.status === "success" && Array.isArray(data.data) && data.data.length > 0) {
+                const firstTax = (data.data[0].taxe_nom || "").toLowerCase();
+                if (firstTax.includes("patente")) {
+                  router.push("/activity/patente/dashboard");
+                  return;
+                }
+                if (firstTax.includes("embarquement")) {
+                  router.push("/activity/embarquement/dashboard");
+                  return;
+                }
+                if (firstTax.includes("stationnement")) {
+                  router.push("/activity/stationnement/dashboard");
+                  return;
+                }
+                if (firstTax.includes("assainissement")) {
+                  router.push("/activity/assainissement/dashboard");
+                  return;
+                }
+                if (firstTax.includes("environnement")) {
+                  router.push("/activity/environnement/dashboard");
+                  return;
+                }
+              }
+            } catch (e) {
+              console.error("Erreur récupération taxes site:", e);
+            }
+          }
+          // Default: immatriculation / plaque or fallback
+          // router.push("/activity/speed/");
+          router.push("/activity/dashboard/");
+        };
+        redirectByTax();
       }
     }
-  }, [isAuthenticated, userType, authLoading, router]);
+  }, [isAuthenticated, userType, authLoading, utilisateur, router]);
 
   const handleLogin = async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -80,14 +133,14 @@ export default function Login() {
           </div>
           
           <div className={styles.brandDescription}>
-            <h2>Gestion des plaques minéralogiques</h2>
-            <p>Plateforme officielle d'immatriculation des motos et gestion des taxes</p>
+            <h2>Gestion des recettes nationales & internationales</h2>
+            <p>Plateforme officielle de gestion fiscale et de recouvrement des recettes</p>
           </div>
 
           <div className={styles.statsCards}>
             <div className={styles.statCard}>
-              <span className={styles.statNumber}>180000+</span>
-              <span className={styles.statLabel}>Motos immatriculées</span>
+              <span className={styles.statNumber}>300+</span>
+              <span className={styles.statLabel}>Recettes gérées</span>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statNumber}>98%</span>
@@ -97,10 +150,10 @@ export default function Login() {
 
           <div className={styles.featuresGrid}>
             <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>🏍️</div>
+              <div className={styles.featureIcon}>💰</div>
               <div>
-                <h3>Immatriculation rapide</h3>
-                <p>Traitement express de vos demandes</p>
+                <h3>Recouvrement efficace</h3>
+                <p>Collecte rapide et sécurisée des recettes</p>
               </div>
             </div>
             <div className={styles.featureCard}>

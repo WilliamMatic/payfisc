@@ -31,6 +31,8 @@ interface CartesTableProps {
   onPrintSuccess: (carteId: number) => void;
   utilisateur: any;
   onRefresh: () => void;
+  selectedCartes: Set<number>;
+  onSelectionChange: (selected: Set<number>) => void;
 }
 
 export default function CartesTable({
@@ -43,6 +45,8 @@ export default function CartesTable({
   onPrintSuccess,
   utilisateur,
   onRefresh,
+  selectedCartes,
+  onSelectionChange,
 }: CartesTableProps) {
   const [selectedCarte, setSelectedCarte] = useState<CarteReprint | null>(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -112,6 +116,22 @@ export default function CartesTable({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-[#2D5B7A]/5">
               <tr>
+                <th className="px-4 py-4 w-12">
+                  <input
+                    type="checkbox"
+                    checked={cartes.length > 0 && cartes.every(c => selectedCartes.has(c.id_primaire))}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        onSelectionChange(new Set([...selectedCartes, ...cartes.map(c => c.id_primaire)]));
+                      } else {
+                        const newSet = new Set(selectedCartes);
+                        cartes.forEach(c => newSet.delete(c.id_primaire));
+                        onSelectionChange(newSet);
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 text-[#2D5B7A] focus:ring-[#2D5B7A] cursor-pointer"
+                  />
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Propriétaire
                 </th>
@@ -139,6 +159,22 @@ export default function CartesTable({
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => handleRowClick(carte)}
                 >
+                  <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedCartes.has(carte.id_primaire)}
+                      onChange={() => {
+                        const newSet = new Set(selectedCartes);
+                        if (newSet.has(carte.id_primaire)) {
+                          newSet.delete(carte.id_primaire);
+                        } else {
+                          newSet.add(carte.id_primaire);
+                        }
+                        onSelectionChange(newSet);
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-[#2D5B7A] focus:ring-[#2D5B7A] cursor-pointer"
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 bg-[#2D5B7A]/10 rounded-full flex items-center justify-center">

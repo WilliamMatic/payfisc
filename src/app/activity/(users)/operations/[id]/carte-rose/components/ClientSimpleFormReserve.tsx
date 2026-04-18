@@ -737,11 +737,11 @@ export default function ClientSimpleForm({
     useState(false);
 
   // Références pour les timeouts
-  const rechercheModeleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const rechercheModeleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recherchePuissanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const verificationTelephoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const couleurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const marqueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fonction pour afficher un message modal
   const showMessage = (

@@ -134,7 +134,7 @@ export default function Header({
 
   return (
     <header className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-700 z-50 sticky top-0">
-      <div className="px-5 py-3 flex justify-between items-center">
+      <div className="px-5 h-[73px] flex justify-between items-center">
         {/* Logo et menu burger */}
         <div className="flex items-center space-x-3">
           <button
@@ -154,6 +154,10 @@ export default function Header({
                 height={32}
                 className="object-contain"
               />
+            </div>
+            <div className="hidden sm:block ml-4 pl-4 border-l border-gray-200 dark:border-gray-600">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Administration</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Gestion du système</p>
             </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ export interface Site {
   description: string;
   formule: string;
   template_carte_actuel: boolean;
+  logo: string | null;
   province_id: number;
   province_nom: string;
   actif: boolean;
@@ -88,6 +89,7 @@ export async function cleanSiteData(data: any): Promise<Site> {
     description: data.description || "",
     formule: data.formule || "",
     template_carte_actuel: Boolean(Number(data.template_carte_actuel)),
+    logo: data.logo || null,
     province_id: data.province_id || 0,
     province_nom: data.province_nom || "",
     actif: Boolean(data.actif),
@@ -242,6 +244,8 @@ export async function addSite(siteData: {
   formule: string;
   template_carte_actuel: boolean;
   province_id: number;
+  logoBase64?: string;
+  logoFileName?: string;
 }): Promise<ApiResponse> {
   try {
     const formData = new FormData();
@@ -251,6 +255,12 @@ export async function addSite(siteData: {
     formData.append('formule', siteData.formule);
     formData.append('template_carte_actuel', siteData.template_carte_actuel ? '1' : '0');
     formData.append('province_id', siteData.province_id.toString());
+
+    if (siteData.logoBase64 && siteData.logoFileName) {
+      const buffer = Buffer.from(siteData.logoBase64, 'base64');
+      const blob = new Blob([buffer]);
+      formData.append('logo', blob, siteData.logoFileName);
+    }
 
     const response = await fetch(`${API_BASE_URL}/sites/creer_site.php`, {
       method: 'POST',
@@ -291,6 +301,9 @@ export async function updateSite(
     formule: string;
     template_carte_actuel: boolean;
     province_id: number;
+    logoBase64?: string;
+    logoFileName?: string;
+    supprimerLogo?: boolean;
   }
 ): Promise<ApiResponse> {
   try {
@@ -302,6 +315,16 @@ export async function updateSite(
     formData.append('formule', siteData.formule);
     formData.append('template_carte_actuel', siteData.template_carte_actuel ? '1' : '0');
     formData.append('province_id', siteData.province_id.toString());
+
+    if (siteData.logoBase64 && siteData.logoFileName) {
+      const buffer = Buffer.from(siteData.logoBase64, 'base64');
+      const blob = new Blob([buffer]);
+      formData.append('logo', blob, siteData.logoFileName);
+    }
+
+    if (siteData.supprimerLogo) {
+      formData.append('supprimer_logo', '1');
+    }
 
     const response = await fetch(`${API_BASE_URL}/sites/modifier_site.php`, {
       method: 'POST',

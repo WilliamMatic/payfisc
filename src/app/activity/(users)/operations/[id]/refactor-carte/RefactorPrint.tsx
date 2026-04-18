@@ -41,11 +41,16 @@ export default function RefactorPrint({
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // QR Code : infos Assujetti + Engin
-  const qrValue = data ? JSON.stringify({
-    assujetti: { nom: data.nom, prenom: data.prenom, adresse: data.adresse, nif: data.nif },
-    engin: { plaque: data.numero_plaque, marque: data.marque, type_engin: data.type_engin, usage: data.usage, chassis: data.numero_chassis, moteur: data.numero_moteur, annee_fab: data.annee_fabrication, couleur: data.couleur, puissance: data.puissance_fiscal }
-  }) : "";
+  // QR Code : infos lisibles
+  const qrValue = data ? [
+    `NOM: ${data.nom} ${data.prenom}`,
+    `ADRESSE: ${data.adresse}`,
+    `MARQUE: ${data.marque}`,
+    `PLAQUE: ${data.numero_plaque}`,
+    `CHASSIS: ${data.numero_chassis}`,
+    `COULEUR: ${data.couleur}`,
+    `USAGE: ${data.usage}`,
+  ].filter(Boolean).join("\n") : "";
 
   // Fonction pour générer le code DGRK
   const generateDGRKCode = () => {
@@ -384,8 +389,8 @@ export default function RefactorPrint({
 
               .qr { 
                 position: absolute; 
-                right: 7mm; 
-                bottom: 8mm; 
+                right: 6mm; 
+                bottom: 9.8mm; 
                 width: 13mm; 
                 height: 13mm; 
                 display: flex; 
@@ -457,15 +462,19 @@ export default function RefactorPrint({
                 <tbody>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${
+                    <td style="position: relative; top: 6px;text-transform: uppercase;font-weight: normal !important;">${
                       data.nom
                     } ${data.prenom}</td>
                   </tr>
                   <tr>
                     <th></th>
-                    <td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${
-                      data.adresse
-                    }</td>
+                    <td style="position: relative; top: 3px; text-transform: uppercase; font-weight: normal !important;">
+                      ${
+                        data.adresse
+                          ? data.adresse.slice(0, 30) + "<br>" + data.adresse.slice(30)
+                          : ""
+                      }
+                    </td>
                   </tr>
                   <tr style="position: relative; top: 8px;">
                     <th></th>
@@ -475,13 +484,13 @@ export default function RefactorPrint({
                   <tr>
                     <th style="position: relative; top: 9px;"></th>
                     <td style="position: relative; top: ${
-                      data.adresse && data.adresse.length > 33 ? "13px" : "24px"
+                      data.adresse && data.adresse.length > 30 ? "14px" : "24px"
                     };text-transform: uppercase;left: 10px;">${data.annee_circulation}</td>
                   </tr>
                   <tr style="position: relative; top: 23px;">
                     <th></th>
                     <td style="position: relative; top: ${
-                      data.adresse && data.adresse.length > 33 ? "2px" : "14px"
+                      data.adresse && data.adresse.length > 30 ? "2px" : "12px"
                     };text-transform: uppercase;" class="plaque-number">${
         utilisateur?.province_code || ""
       } ${formatPlaque(data.numero_plaque) || ""}</td>
@@ -489,7 +498,11 @@ export default function RefactorPrint({
                 </tbody>
               </table>
               
-              <div class="qr">
+              <div class="qr" 
+  style="
+  right: ${(data.adresse?.length ?? 0) > 30 ? "5.2mm" : "5.2mm"};
+  bottom: ${(data.adresse?.length ?? 0) > 30 ? "8.7mm" : "8.7mm"};
+">
                 ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
                 <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span>
               </div>
@@ -499,7 +512,7 @@ export default function RefactorPrint({
             <div class="card" style="height: 40mm;margin-top: 30px;">
               <table>
                 <tbody>
-                  <tr style="position: relative; top: -11px;">
+                  <tr style="position: relative; top: -14px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.type_engin
@@ -507,35 +520,35 @@ export default function RefactorPrint({
                         : data.marque
                     }</td>
                   </tr>
-                  <tr style="position: relative; top: -17px;">
+                  <tr style="position: relative; top: -19px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${data.usage}</td>
                   </tr>
-                  <tr style="position: relative; top: -20px;">
+                  <tr style="position: relative; top: -23px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.numero_chassis || "-"
                     }</td>
                   </tr>
-                  <tr style="position: relative; top: -26px;">
+                  <tr style="position: relative; top: -28px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.numero_moteur || "-"
                     }</td>
                   </tr>
-                  <tr style="position: relative; top: -31px;">
+                  <tr style="position: relative; top: -33px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.annee_fabrication || "-"
                     }</td>
                   </tr>
-                  <tr style="position: relative; top: -36px;">
+                  <tr style="position: relative; top: -37px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.couleur || "-"
                     }</td>
                   </tr>
-                  <tr style="position: relative; top: -40px;">
+                  <tr style="position: relative; top: -42px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${
                       data.puissance_fiscal || "-"
@@ -545,7 +558,22 @@ export default function RefactorPrint({
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
+                <div class="signature-box"><img 
+  src="${utilisateur?.site_code === "DGRSA" 
+    ? "https://willyaminsi.com/signature-sankuru.png" 
+    : "https://willyaminsi.com/signature-fixe.jpg"}"
+  style="
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    top: 12px;
+    left: 16px;
+    image-rendering: crisp-edges;
+  "
+></div>
               </div>
             </div>
             
@@ -645,7 +673,7 @@ export default function RefactorPrint({
             <QRCodeCanvas
               value={qrValue}
               size={128}
-              level="H"
+              level="L"
               bgColor="#FFFFFF"
               fgColor="#000000"
             />
@@ -843,7 +871,7 @@ export default function RefactorPrint({
                       <QRCodeCanvas
                         value={qrValue}
                         size={40}
-                        level="H"
+                        level="L"
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                       />

@@ -1,5 +1,5 @@
-import { Plus, X, Save, Loader2, User, Phone, MapPin, Shield, Car, FileCheck, ShieldCheck } from 'lucide-react';
-import { Site, UtilisateurFormData, Privileges, PrivilegesPlaque, PrivilegesVignette, PrivilegesAssurance } from '@/services/utilisateurs/utilisateurService';
+import { Plus, X, Save, Loader2, User, Phone, MapPin, Shield, Car, FileCheck, ShieldCheck, Droplets } from 'lucide-react';
+import { Site, UtilisateurFormData, Privileges, PrivilegesPlaque, PrivilegesVignette, PrivilegesAssurance, PrivilegesAssainissement } from '@/services/utilisateurs/utilisateurService';
 
 interface AddUtilisateurModalProps {
   formData: UtilisateurFormData;
@@ -41,6 +41,11 @@ export default function AddUtilisateurModal({
     venteDirecte: 'Souscription Assurance Moto',
     delivrance: 'Délivrance Assurance',
     renouvellement: 'Renouvellement Assurance',
+  };
+
+  const assainissementLabelMap: Record<keyof PrivilegesAssainissement, string> = {
+    agentTerrain: 'Agent Terrain',
+    admin: 'Administrateur',
   };
 
   return (
@@ -227,6 +232,31 @@ export default function AddUtilisateurModal({
                         />
                         <label htmlFor={`privilege-assurance-${key}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
                           {assuranceLabelMap[key]}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Assainissement */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
+                    <Droplets className="w-4 h-4 text-cyan-600 mr-2" />
+                    <h5 className="text-sm font-semibold text-gray-700">Assainissement</h5>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {(Object.keys(formData.privileges.assainissement) as Array<keyof PrivilegesAssainissement>).map((key) => (
+                      <div key={key} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`privilege-assainissement-${key}`}
+                          checked={formData.privileges.assainissement[key]}
+                          onChange={(e) => onPrivilegeChange('assainissement', key, e.target.checked)}
+                          className="w-4 h-4 text-[#2D5B7A] border-gray-300 rounded focus:ring-[#2D5B7A] focus:ring-2"
+                          disabled={processing}
+                        />
+                        <label htmlFor={`privilege-assainissement-${key}`} className="ml-2 text-sm text-gray-700 cursor-pointer">
+                          {assainissementLabelMap[key]}
                         </label>
                       </div>
                     ))}

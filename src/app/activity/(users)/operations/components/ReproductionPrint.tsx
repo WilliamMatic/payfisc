@@ -40,6 +40,17 @@ export default function ReproductionPrint({
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // QR Code : infos lisibles
+  const qrValue = data ? [
+    `NOM: ${data.nom} ${data.prenom}`,
+    `ADRESSE: ${data.adresse}`,
+    `MARQUE: ${data.marque}`,
+    `PLAQUE: ${data.numero_plaque}`,
+    `CHASSIS: ${data.numero_chassis}`,
+    `COULEUR: ${data.couleur}`,
+    `USAGE: ${data.usage}`,
+  ].filter(Boolean).join("\n") : "";
+
   // Générer le format DGRK/mois/année/idpaiement
   const getReferencePaiement = () => {
     if (!data.paiement_id) return "DGRK/--/----/------";
@@ -61,7 +72,8 @@ export default function ReproductionPrint({
         ? (qrElement as HTMLCanvasElement).toDataURL()
         : "";
 
-      const printContent = `
+      // Si Template Carte Actuel n'est pas activé
+      const printContentSansTemplate = `
         <!DOCTYPE html>
         <html>
           <head>
@@ -307,7 +319,274 @@ export default function ReproductionPrint({
         </html>
       `;
 
-      printWindow.document.write(printContent);
+      // Si Template Carte Actuel est activé
+      const printContentAvecTemplate = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Immatriculation - ${data.numero_plaque}</title>
+            <style>
+              @page { 
+                size: auto; 
+                margin: 0; 
+              }
+              body { 
+                margin: 0; 
+                padding: 10mm; 
+                background: #fff; 
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                min-height: 70vh;
+                box-sizing: border-box;
+              }
+              
+              .card {
+                width: 86mm;
+                border-radius: 1mm;
+                padding: 2.5mm;
+                box-sizing: border-box;
+                position: relative;
+                top: 38px;
+                background: #fff;
+              }
+              
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: 2.2mm; 
+              }
+              
+              td, th { 
+                padding: 0.8mm; 
+                text-align: left; 
+                vertical-align: middle; 
+                border-bottom: 0.15mm solid #eee;
+              }
+              
+              th { 
+                width: 45%; 
+                font-weight: 700; 
+                font-size: 2.4mm; 
+              }
+              
+              td { 
+                width: 55%; 
+                font-weight: bolder; 
+              }
+
+              .plaque-number {
+                font-weight: bold;
+                font-size: 2.6mm;
+                color: #dc2626;
+              }
+
+              .qr { 
+                position: absolute; 
+                right: 6mm; 
+                bottom: 9.8mm; 
+                width: 13mm; 
+                height: 13mm; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                border: none;
+                padding: 0;
+                background: transparent;
+              }
+
+              .qr img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+              }
+
+              .sig-wrap { 
+                position: absolute; 
+                right: 2mm; 
+                bottom: -2mm; 
+                width: 25mm; 
+                height: 9mm; 
+                display: flex; 
+                align-items: flex-end; 
+                justify-content: center; 
+              }
+              
+              .signature-box { 
+                width: 100%; 
+                border-top: 0.15mm dashed rgba(255,255,255,0.0); 
+                padding-top: 1mm; 
+                font-size: 2mm; 
+                text-align: center; 
+              }
+
+              .page-break {
+                page-break-after: always;
+                break-after: page;
+              }
+
+              .instruction {
+                width: 86mm;
+                text-align: center;
+                font-size: 2.5mm;
+                color: #666;
+                margin: 3mm 0;
+                padding: 1.5mm;
+                background: #f9f9f9;
+              }
+
+              @media print {
+                body {
+                  padding: 5mm;
+                }
+                .instruction {
+                  display: none;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <!-- RECTO (PAGE 1) -->
+            <div class="card" style="height: 40mm !important;">
+              <div style="position: absolute;top: 0;left: 0;right: 0;display: flex;justify-content: center;align-items: center;">
+                <span style="font-size: .5em;">${getReferencePaiement()}</span>
+              </div>
+              <table>
+                <tbody>
+                  <tr>
+                    <th></th>
+                    <td style="position: relative; top: 6px;text-transform: uppercase;font-weight: normal !important;">${
+                      data.nom
+                    } ${data.prenom}</td>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <td style="position: relative; top: 3px; text-transform: uppercase; font-weight: normal !important;">
+                      ${
+                        data.adresse
+                          ? data.adresse.slice(0, 30) + "<br>" + data.adresse.slice(30)
+                          : ""
+                      }
+                    </td>
+                  </tr>
+                  <tr style="position: relative; top: 8px;">
+                    <th></th>
+                    <td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td>
+                  </tr>
+                  <tr>
+                    <th style="position: relative; top: 9px;"></th>
+                    <td style="position: relative; top: ${
+                      data.adresse &&
+                      data.adresse.length > 30
+                        ? "14px"
+                        : "24px"
+                    };text-transform: uppercase;left: 10px;">${data.annee_circulation}</td>
+                  </tr>
+                  <tr style="position: relative; top: 23px;">
+                    <th></th>
+                    <td style="position: relative; top: ${
+                      data.adresse &&
+                      data.adresse.length > 30
+                        ? "2px" 
+                        : "12px"
+                    };text-transform: uppercase;" class="plaque-number">${
+                  utilisateur?.province_code || ""
+                } ${formatPlaque(data.numero_plaque) || ""}</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <div class="qr" 
+  style="
+  right: ${(data.adresse?.length ?? 0) > 30 ? "5.2mm" : "5.2mm"};
+  bottom: ${(data.adresse?.length ?? 0) > 30 ? "8.7mm" : "8.7mm"};
+">
+                ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}
+                <span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${
+                  data.date_jour
+                }</span>
+              </div>
+            </div>
+
+            <!-- VERSO (PAGE 2) -->
+            <div class="card" style="height: 40mm;margin-top: 30px;">
+              <table>
+                <tbody>
+                  <tr style="position: relative; top: -14px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${data.marque}</td>
+                  </tr>
+                  <tr style="position: relative; top: -19px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${data.usage}</td>
+                  </tr>
+                  <tr style="position: relative; top: -23px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_chassis || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -28px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.numero_moteur || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -33px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.annee_fabrication || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -37px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.couleur || "-"
+                    }</td>
+                  </tr>
+                  <tr style="position: relative; top: -42px;">
+                    <th></th>
+                    <td style="text-transform: uppercase;">${
+                      data.puissance_fiscal || "-"
+                    }</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="sig-wrap">
+                <div class="signature-box"><img 
+  src="${utilisateur?.site_code === "DGRSA" 
+    ? "https://willyaminsi.com/signature-sankuru.png" 
+    : "https://willyaminsi.com/signature-fixe.jpg"}"
+  style="
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    top: 12px;
+    left: 16px;
+    image-rendering: crisp-edges;
+  "
+></div>
+              </div>
+            </div>
+            
+            <script>
+              window.onload = function() {
+                setTimeout(() => {
+                  window.print();
+                }, 300);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(utilisateur?.template_carte_actuel ? printContentAvecTemplate : printContentSansTemplate);
       printWindow.document.close();
     }
   };
@@ -389,9 +668,9 @@ export default function ReproductionPrint({
             style={{ position: "absolute", left: "-9999px" }}
           >
             <QRCodeCanvas
-              value={data.numero_plaque}
+              value={qrValue}
               size={128}
-              level="H"
+              level="L"
               bgColor="#FFFFFF"
               fgColor="#000000"
             />
@@ -587,9 +866,9 @@ export default function ReproductionPrint({
                     {/* QR Code */}
                     <div className="qr" aria-hidden={isFlipped} title="QR code">
                       <QRCodeCanvas
-                        value={data.numero_plaque}
+                        value={qrValue}
                         size={40}
-                        level="H"
+                        level="L"
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                       />

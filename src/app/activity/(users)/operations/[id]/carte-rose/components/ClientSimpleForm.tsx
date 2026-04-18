@@ -730,10 +730,12 @@ export default function ClientSimpleForm({
     useState(false);
 
   // Références pour les timeouts
-  const rechercheModeleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const rechercheModeleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recherchePuissanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const verificationTelephoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const marqueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const justSelectedMarque = useRef(false);
+  const justSelectedPuissance = useRef(false);
 
   // Fonction pour afficher un message modal
   const showMessage = (
@@ -932,6 +934,11 @@ export default function ClientSimpleForm({
       clearTimeout(marqueTimerRef.current);
     }
 
+    if (justSelectedMarque.current) {
+      justSelectedMarque.current = false;
+      return;
+    }
+
     if (formData.marque.length >= 2 && formData.typeEngin) {
       marqueTimerRef.current = setTimeout(async () => {
         setIsSearchingMarques(true);
@@ -1019,6 +1026,7 @@ export default function ClientSimpleForm({
 
   // Gestion de la sélection de marque
   const handleMarqueSelect = (marque: MarqueEngin) => {
+    justSelectedMarque.current = true;
     setFormData((prev) => ({
       ...prev,
       marque: marque.libelle,
@@ -1253,6 +1261,11 @@ export default function ClientSimpleForm({
       return;
     }
 
+    if (justSelectedPuissance.current) {
+      justSelectedPuissance.current = false;
+      return;
+    }
+
     if (recherchePuissanceTimeoutRef.current) {
       clearTimeout(recherchePuissanceTimeoutRef.current);
     }
@@ -1296,6 +1309,7 @@ export default function ClientSimpleForm({
 
   // Sélection d'une puissance fiscale
   const handleSelectPuissance = (puissance: any) => {
+    justSelectedPuissance.current = true;
     setFormData((prev) => ({
       ...prev,
       puissanceFiscal: puissance.libelle,

@@ -8,7 +8,7 @@ export default function GeminiScreen() {
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Gestion des messages flash
   const showMessage = (text: string, type: 'success' | 'error') => {

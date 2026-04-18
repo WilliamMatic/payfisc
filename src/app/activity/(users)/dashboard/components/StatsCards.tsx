@@ -83,7 +83,10 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
       title: "Ventes au détail",
       amount: stats?.retail.amount || 0,
       icon: ShoppingCart,
-      color: "bg-blue-50 text-blue-600",
+      gradient: "from-blue-500 to-blue-600",
+      bgLight: "bg-blue-50",
+      textColor: "text-blue-600",
+      borderColor: "border-blue-100",
       trend: stats?.trends.retail || "+12%",
       transactions: stats?.retail.transactions || 0,
       extraInfo: null,
@@ -92,7 +95,10 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
       title: "Ventes grossistes",
       amount: stats?.wholesale.amount || 0,
       icon: Users,
-      color: "bg-green-50 text-green-600",
+      gradient: "from-emerald-500 to-emerald-600",
+      bgLight: "bg-emerald-50",
+      textColor: "text-emerald-600",
+      borderColor: "border-emerald-100",
       trend: stats?.trends.wholesale || "+8%",
       transactions: stats?.wholesale.transactions || 0,
       extraInfo: stats?.wholesale.total_plates 
@@ -103,7 +109,10 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
       title: "Reproductions",
       amount: stats?.reproduction.amount || 0,
       icon: Copy,
-      color: "bg-amber-50 text-amber-600",
+      gradient: "from-amber-500 to-orange-500",
+      bgLight: "bg-amber-50",
+      textColor: "text-amber-600",
+      borderColor: "border-amber-100",
       trend: stats?.trends.reproduction || "+5%",
       transactions: stats?.reproduction.transactions || 0,
       extraInfo: null,
@@ -112,7 +121,10 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
       title: "Total général",
       amount: stats?.total.amount || 0,
       icon: DollarSign,
-      color: "bg-purple-50 text-purple-600",
+      gradient: "from-[#153258] to-[#1e4a7a]",
+      bgLight: "bg-purple-50",
+      textColor: "text-[#153258]",
+      borderColor: "border-purple-100",
       trend: stats?.trends.total || "+9.5%",
       transactions: stats?.total.transactions || 0,
       extraInfo: null,
@@ -121,16 +133,19 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
 
   if (authLoading || loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {[...Array(4)].map((_, index) => (
           <div
             key={index}
-            className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
           >
             <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
-              <div className="h-8 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 bg-gray-200 rounded-xl" />
+                <div className="h-4 bg-gray-200 rounded-lg w-24" />
+              </div>
+              <div className="h-8 bg-gray-200 rounded-lg mb-3 w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded-lg w-1/2"></div>
             </div>
           </div>
         ))}
@@ -140,7 +155,7 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-red-100">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-red-100">
         <div className="text-center text-red-600">
           <p className="font-medium">Erreur de chargement des statistiques</p>
           <p className="text-sm mt-1">{error}</p>
@@ -150,48 +165,60 @@ const StatsCards = ({ refreshTrigger = 0 }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {statsCards.map((stat, index) => {
         const Icon = stat.icon;
+        const isPositive = stat.trend?.startsWith('+');
+        const isNegative = stat.trend?.startsWith('-');
         return (
           <div
             key={index}
-            className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+            className={`group relative bg-white rounded-2xl p-6 shadow-sm border ${stat.borderColor} hover:shadow-lg transition-all duration-300 overflow-hidden`}
           >
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 font-medium mb-2">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {formatAmount(stat.amount)}
-                </p>
-                <div className="mt-3 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium px-2 py-1 rounded ${
-                      stat.trend?.startsWith('+') 
-                        ? 'bg-green-50 text-green-600' 
-                        : stat.trend?.startsWith('-')
-                        ? 'bg-red-50 text-red-600'
-                        : 'bg-gray-50 text-gray-600'
-                    }`}>
-                      {stat.trend} ce mois
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {stat.transactions} transaction{stat.transactions !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  {stat.extraInfo && (
-                    <p className="text-xs text-gray-500">
-                      {stat.extraInfo}
-                    </p>
-                  )}
-                </div>
+            {/* Decorative gradient bar */}
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
+            
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`p-2.5 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-sm`}>
+                <Icon className="w-5 h-5 text-white" />
               </div>
-              <div className={`p-3 rounded-lg ${stat.color}`}>
-                <Icon className="w-6 h-6" />
-              </div>
+              <p className="text-sm text-gray-500 font-medium">
+                {stat.title}
+              </p>
             </div>
+
+            <p className="text-2xl font-bold text-gray-900 mb-3">
+              {formatAmount(stat.amount)}
+            </p>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 ${
+                  isPositive 
+                    ? 'bg-emerald-50 text-emerald-600' 
+                    : isNegative
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-gray-50 text-gray-600'
+                }`}>
+                  {isPositive && (
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
+                  )}
+                  {isNegative && (
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                  )}
+                  {stat.trend}
+                </span>
+              </div>
+              <span className="text-xs text-gray-400 font-medium">
+                {stat.transactions} txn{stat.transactions !== 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {stat.extraInfo && (
+              <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-50">
+                {stat.extraInfo}
+              </p>
+            )}
           </div>
         );
       })}

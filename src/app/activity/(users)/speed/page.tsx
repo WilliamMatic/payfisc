@@ -1,447 +1,295 @@
+"use client";
+
 import Link from "next/link";
 import {
-  CheckCircle2,
-  Database,
-  ArrowRight,
-  FileEdit,
-  CreditCard,
-  Shield,
-  History,
-  Users,
-  BookOpen,
-  Calendar,
-  Clock,
-  Layers,
-  GitBranch,
-  Copy,
-  RefreshCw,
-  PenTool,
   Sparkles,
-  Target,
-  UserCircle,
-  Truck,
-  Repeat,
-  AlertCircle,
-  FileText,
-  UserPlus,
+  Layers,
+  Printer,
+  CheckCircle2,
+  ArrowRight,
+  Zap,
+  Clock,
+  MousePointerClick,
+  Eye,
+  Hash,
+  PartyPopper,
+  TrendingUp,
+  ChevronRight,
+  Loader2,
+  Check,
 } from "lucide-react";
 
-export default function MpakoMigrationPage() {
+export default function WhatsNewPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header simplifié */}
-      <div className="max-w-5xl mx-auto px-4 pt-10 pb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Database className="w-6 h-6 text-blue-600" />
-          </div>
-          <span className="text-sm font-medium text-blue-700 uppercase tracking-wide">
-            Gestion des Cartes Roses
-          </span>
-        </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Deux façons de gérer les cartes roses
-        </h1>
-        <p className="text-lg text-gray-600 max-w-3xl">
-          Choisissez l'opération selon la situation de l'assujetti
-        </p>
-      </div>
-
-      {/* Contenu principal */}
-      <div className="max-w-5xl mx-auto px-4 pb-16 space-y-10">
-        {/* Carte d'introduction - Focus sur les deux cas métier */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <GitBranch className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Refactor vs Reproduction : Deux cas différents
-                  </h2>
-                  <p className="text-blue-100 text-sm">
-                    Comprendre quand utiliser chaque option
-                  </p>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div className="max-w-5xl mx-auto px-6 py-12 lg:py-16">
+        
+        {/* Hero Section - Élégant et aéré */}
+        <div className="relative mb-20">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full mb-6">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
+              Nouvelle fonctionnalité
+            </span>
+            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
           </div>
 
-          <div className="p-8">
-            {/* Tableau comparatif des cas métier */}
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              {/* Colonne Refactor - Correction d'erreurs */}
-              <div className="bg-purple-50 rounded-xl p-6 border-2 border-purple-200">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-purple-200 rounded-xl flex items-center justify-center">
-                    <PenTool className="w-6 h-6 text-purple-700" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-purple-900">
-                      REFACTOR
-                    </h3>
-                    <p className="text-sm text-purple-700">
-                      Correction d'erreurs
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-2">
-                    <UserCircle className="w-5 h-5 text-purple-600 mt-0.5" />
-                    <div>
-                      <span className="font-medium">Cas typique :</span>
-                      <p className="text-sm text-gray-700 mt-1">
-                        L'assujetti a sa carte mais constate des erreurs : nom
-                        mal orthographié, date de naissance erronée, adresse
-                        incorrecte, etc.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border border-purple-200">
-                    <p className="text-xs font-medium text-purple-800 mb-1">
-                      🔍 Exemple concret :
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      "Mon nom sur la carte est Koffi mais c'est Kouassi, il
-                      faut corriger l'orthographe"
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Colonne Reproduction - Duplicata/Changement de propriétaire */}
-              <div className="bg-amber-50 rounded-xl p-6 border-2 border-amber-200">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-amber-200 rounded-xl flex items-center justify-center">
-                    <Copy className="w-6 h-6 text-amber-700" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-amber-900">
-                      REPRODUCTION
-                    </h3>
-                    <p className="text-sm text-amber-700">
-                      Duplicata ou Changement de propriétaire
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-2">
-                    <Repeat className="w-5 h-5 text-amber-600 mt-0.5" />
-                    <div>
-                      <span className="font-medium">Deux cas possibles :</span>
-                      <ul className="text-sm text-gray-700 mt-2 space-y-2">
-                        <li className="flex items-start gap-2">
-                          <span className="w-1 h-1 bg-amber-500 rounded-full mt-2"></span>
-                          <span>
-                            <strong>Duplicata :</strong> L'assujetti a perdu sa
-                            carte et revient pour obtenir un duplicata
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1 h-1 bg-amber-500 rounded-full mt-2"></span>
-                          <span>
-                            <strong>Mutation :</strong> L'assujetti a acheté
-                            l'engin auprès d'un autre propriétaire et veut
-                            mettre la carte à son nom
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border border-amber-200 space-y-2">
-                    <p className="text-xs font-medium text-amber-800 mb-1">
-                      🔍 Exemples concrets :
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      • "J'ai perdu ma carte, je veux un duplicata"
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      • "J'ai acheté le véhicule à M. Yao, je veux la carte à
-                      mon nom maintenant"
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Message clé pour comprendre */}
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 p-6 rounded-xl">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Target className="w-5 h-5 text-gray-700" />
-                Comment choisir ?
-              </h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-purple-700 font-bold">1</span>
-                  </div>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-bold text-purple-700">Refactor</span>{" "}
-                    →
-                    <span className="italic">
-                      {" "}
-                      "L'assujetti a sa carte mais il y a des erreurs à
-                      corriger"
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-amber-700 font-bold">2</span>
-                  </div>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-bold text-amber-700">
-                      Reproduction
-                    </span>{" "}
-                    →
-                    <span className="italic">
-                      {" "}
-                      "L'assujetti n'a plus sa carte (perte) ou l'engin a changé
-                      de propriétaire"
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section de choix - Titre */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
-            Quelle est la situation ?
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Sélectionnez l'option qui correspond au cas de l'assujetti
+          {/* Titre */}
+          <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-4 leading-[1.15]">
+            Impression Multiple
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
+              des Cartes Roses
+            </span>
+          </h1>
+          
+          <p className="text-lg text-slate-500 max-w-xl leading-relaxed mb-8">
+            Gagnez un temps précieux. Sélectionnez l&apos;ensemble des cartes à réimprimer 
+            et laissez le système travailler pour vous.
           </p>
-        </div>
 
-        {/* Options d'accès - Version métier */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Option 1: Refactor - Correction d'erreurs */}
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-            <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl transition-all duration-300">
-              {/* Badge */}
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
-                  CORRECTION
-                </span>
+          {/* Stats cards */}
+          <div className="flex flex-wrap gap-6">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
               </div>
-
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6">
-                <FileEdit className="w-8 h-8 text-purple-600" />
+              <div>
+                <div className="text-xl font-bold text-slate-900">-70%</div>
+                <div className="text-xs text-slate-500">de temps</div>
               </div>
-
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Refactor</h3>
-              <p className="text-sm text-purple-600 font-medium mb-4">
-                ✏️ Corriger les erreurs sur une carte existante
-              </p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                L'assujetti a déjà sa carte mais a constaté des erreurs dans les
-                informations (nom, prénom, date de naissance, adresse, etc.)
-              </p>
-
-              {/* Exemples concrets */}
-              <div className="mb-8 bg-purple-50 p-4 rounded-xl">
-                <h4 className="text-sm font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  Erreurs fréquentes à corriger :
-                </h4>
-                <ul className="space-y-2">
-                  {[
-                    "Orthographe du nom ou prénom",
-                    "Date de naissance erronée",
-                    "Lieu de naissance incorrect",
-                    "Adresse de résidence à mettre à jour",
-                    "Situation matrimoniale à modifier",
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <ArrowRight className="w-3 h-3 text-purple-500 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Link
-                href="/activity/operations/11/refactor-carte"
-                className="group/btn inline-flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 gap-3 shadow-md hover:shadow-lg"
-              >
-                <PenTool className="w-4 h-4" />
-                <span>Corriger une carte existante</span>
-                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </Link>
-
-              <p className="text-xs text-gray-500 text-center mt-3">
-                👆 L'assujetti a sa carte mais les infos sont erronées
-              </p>
             </div>
-          </div>
-
-          {/* Option 2: Reproduction - Duplicata/Mutation */}
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-            <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl transition-all duration-300">
-              {/* Badge */}
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
-                  DUPLICATA / MUTATION
-                </span>
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <Layers className="w-4 h-4 text-blue-600" />
               </div>
-
-              <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center mb-6">
-                <Repeat className="w-8 h-8 text-amber-600" />
+              <div>
+                <div className="text-xl font-bold text-slate-900">Illimité</div>
+                <div className="text-xs text-slate-500">cartes par lot</div>
               </div>
-
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Reproduction de Carte
-              </h3>
-              <p className="text-sm text-amber-600 font-medium mb-4">
-                🔄 Duplicata • Changement de propriétaire
-              </p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                L'assujetti a perdu sa carte et veut un duplicata, OU il a
-                acheté l'engin à quelqu'un d'autre et veut la carte à son nom.
-              </p>
-
-              {/* Deux sous-cas clairement identifiés */}
-              <div className="mb-8 space-y-4">
-                {/* Cas 1: Duplicata */}
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                  <h4 className="text-sm font-semibold text-amber-900 mb-2 flex items-center gap-2">
-                    <Copy className="w-4 h-4" />
-                    Cas 1 : Duplicata (perte de carte)
-                  </h4>
-                  <ul className="space-y-1">
-                    {[
-                      "Carte perdue par l'assujetti",
-                      "Carte volée",
-                      "Carte détériorée/illisible",
-                      "Carte arrivée à expiration",
-                    ].map((item, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-2 text-sm"
-                      >
-                        <span className="w-1 h-1 bg-amber-500 rounded-full mt-2"></span>
-                        <span className="text-gray-700">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Cas 2: Mutation */}
-                <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
-                  <h4 className="text-sm font-semibold text-orange-900 mb-2 flex items-center gap-2">
-                    <Truck className="w-4 h-4" />
-                    Cas 2 : Mutation (changement de propriétaire)
-                  </h4>
-                  <ul className="space-y-1">
-                    {[
-                      "Achat de l'engin à un autre assujetti",
-                      "Héritage / succession",
-                      "Don de l'engin",
-                      "L'assujetti veut la carte à son nom (le vendeur avait sa carte)",
-                    ].map((item, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-2 text-sm"
-                      >
-                        <span className="w-1 h-1 bg-orange-500 rounded-full mt-2"></span>
-                        <span className="text-gray-700">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            </div>
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-amber-600" />
               </div>
-
-              <Link
-                href="/activity/operations/12"
-                className="group/btn inline-flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl transition-all duration-200 gap-3 shadow-md hover:shadow-lg"
-              >
-                <Copy className="w-4 h-4" />
-                <span>Créer un duplicata ou mutation</span>
-                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </Link>
-
-              <div className="text-xs text-gray-500 text-center mt-3 space-y-1">
-                <p>👆 Perte de carte → Duplicata</p>
-                <p>👆 Changement de propriétaire → Mutation</p>
+              <div>
+                <div className="text-xl font-bold text-slate-900">1 clic</div>
+                <div className="text-xs text-slate-500">pour tout lancer</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Aide-mémoire visuel pour les OPS */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <BookOpen className="w-6 h-6 text-blue-700" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3">
-                Guide de choix pour les OPS
-              </h3>
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center">
-                      <span className="text-purple-700 text-xs font-bold">
-                        R
-                      </span>
-                    </div>
-                    <span className="font-medium text-purple-800">
-                      REFACTOR
-                    </span>
+        {/* Before / After - Split screen moderne */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-20">
+          {/* Avant */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+                    <Printer className="w-3.5 h-3.5 text-red-500" />
                   </div>
-                  <p className="text-sm text-gray-700 pl-8">
-                    <span className="font-medium">Quand ?</span> L'assujetti a
-                    SA carte mais les infos sont fausses
-                  </p>
-                  <p className="text-sm text-gray-600 pl-8">
-                    Ex: "Mon nom est mal écrit"
-                  </p>
+                  <span className="text-sm font-semibold text-red-600">Avant</span>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center">
-                      <span className="text-amber-700 text-xs font-bold">
-                        R
-                      </span>
+                <Clock className="w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-3">
+                {["Sélectionner 1 carte", "Lancer l'impression", "Attendre", "Répéter..."].map((step, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-mono text-slate-400">
+                      {i + 1}
                     </div>
-                    <span className="font-medium text-amber-800">
-                      REPRODUCTION
-                    </span>
+                    <span>{step}</span>
                   </div>
-                  <p className="text-sm text-gray-700 pl-8">
-                    <span className="font-medium">Quand ?</span> L'assujetti N'A
-                    PLUS sa carte (perte) OU l'engin a changé de propriétaire
-                  </p>
-                  <p className="text-sm text-gray-600 pl-8">
-                    Ex: "J'ai perdu ma carte" ou "J'ai acheté le véhicule"
-                  </p>
+                ))}
+              </div>
+              <div className="mt-5 pt-4 border-t border-slate-100">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Pour 10 cartes</span>
+                  <span className="font-mono font-semibold text-red-500">~5 min</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-4 border-t border-blue-200 pt-3">
-                💡 La question à poser : "Est-ce que l'assujetti a sa carte
-                physique en main et veut juste corriger des infos (Refactor) OU
-                est-ce qu'il n'a plus sa carte ou l'engin a changé de
-                propriétaire (Reproduction) ?"
+            </div>
+          </div>
+
+          {/* Maintenant */}
+          <div className="bg-white rounded-2xl border-2 border-emerald-200 shadow-lg shadow-emerald-100/50 overflow-hidden relative">
+            <div className="absolute -top-px right-6">
+              <div className="flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-b-xl">
+                <Zap className="w-3 h-3" />
+                NOUVEAU
+              </div>
+            </div>
+            <div className="px-6 py-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50/50 to-transparent">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <Layers className="w-3.5 h-3.5 text-emerald-600" />
+                </div>
+                <span className="text-sm font-semibold text-emerald-700">Maintenant</span>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-3">
+                {[
+                  "Sélectionner plusieurs cartes",
+                  "Lancer l'impression groupée",
+                  "Suivre le compteur",
+                  "Terminé !",
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-slate-700">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-mono text-emerald-600">
+                      {i + 1}
+                    </div>
+                    <span>{step}</span>
+                    {i === 3 && <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 pt-4 border-t border-emerald-100">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Pour 10 cartes</span>
+                  <span className="font-mono font-semibold text-emerald-600 text-lg">~30 sec</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Démo - Compteur élégant */}
+        <div className="mb-20">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 mb-4">
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-xs font-medium text-slate-600 uppercase tracking-wide">
+                Visualisation
+              </span>
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-2">
+              Suivez la progression en temps réel
+            </h2>
+            <p className="text-slate-500">Le compteur décrémente automatiquement à chaque carte imprimée</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-2xl mx-auto">
+            <div className="flex flex-col items-center gap-6">
+              {/* Compteur animé */}
+              <div className="flex items-center justify-center gap-6">
+                <div className="text-center">
+                  <div className="text-xs text-slate-400 mb-1">Restantes</div>
+                  <div className="text-5xl font-mono font-bold text-slate-800">3</div>
+                </div>
+                <ArrowRight className="w-6 h-6 text-slate-300" />
+                <div className="text-center">
+                  <div className="text-xs text-slate-400 mb-1">En cours</div>
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />
+                    <span className="text-sm text-slate-500">Carte #7/10</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-6 h-6 text-slate-300" />
+                <div className="text-center">
+                  <div className="text-xs text-slate-400 mb-1">Terminé</div>
+                  <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+                </div>
+              </div>
+
+              {/* Barre progression */}
+              <div className="w-full">
+                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <span>Progression</span>
+                  <span>70%</span>
+                </div>
+                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full w-[70%] bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" />
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-400 mt-2">
+                L&apos;impression s&apos;enchaîne automatiquement jusqu&apos;à la dernière carte
               </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Badge contextuel */}
-      <div className="fixed bottom-6 right-6 bg-white rounded-full shadow-xl px-5 py-3 border border-gray-200 flex items-center gap-3">
-        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-        <div>
-          <p className="text-xs font-medium text-gray-900">Mpako v1.2</p>
-          <p className="text-xs text-gray-500">Refactor vs Reproduction</p>
+        {/* 3 étapes - Design épuré */}
+        <div className="mb-20">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-2">
+              Comment ça marche
+            </h2>
+            <p className="text-slate-500">Trois étapes simples pour une efficacité maximale</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: MousePointerClick,
+                title: "Sélectionnez",
+                desc: "Cochez toutes les cartes roses à réimprimer. Sans limite.",
+                step: "01",
+                color: "blue",
+              },
+              {
+                icon: Eye,
+                title: "Suivez",
+                desc: "Le compteur affiche le nombre restant et se met à jour en temps réel.",
+                step: "02",
+                color: "amber",
+              },
+              {
+                icon: PartyPopper,
+                title: "Terminez",
+                desc: "Une confirmation visuelle apparaît quand tout est imprimé.",
+                step: "03",
+                color: "emerald",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="group bg-white rounded-xl border border-slate-200 p-6 hover:border-emerald-200 hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`w-10 h-10 rounded-xl bg-${item.color}-100 flex items-center justify-center`}>
+                    <item.icon className={`w-5 h-5 text-${item.color}-600`} />
+                  </div>
+                  <span className="text-2xl font-mono font-bold text-slate-200 group-hover:text-slate-300 transition">
+                    {item.step}
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-slate-800 mb-1">{item.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA - Final élégant */}
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg mb-1">
+                  Disponible dans le module Réimpression
+                </h3>
+                <p className="text-slate-300 text-sm max-w-md">
+                  Retrouvez la fonctionnalité et optimisez vos impressions groupées dès maintenant.
+                </p>
+              </div>
+            </div>
+            <Link href="/activity/reimpression" className="group inline-flex items-center gap-2 px-5 py-2.5 bg-white text-slate-800 font-semibold rounded-xl hover:bg-slate-100 transition-all duration-200 shadow-md">
+              Découvrir
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

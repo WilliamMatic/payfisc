@@ -117,6 +117,7 @@ interface CommandesTableProps {
   getSiteName: (siteId: number) => string;
   showMessage: (type: "success" | "error" | "info" | "warning", title: string, message: string) => void;
   onError: (error: string | null) => void;
+  onDeleteSuccess?: () => void;
 }
 
 export interface CommandesTableRef {
@@ -129,7 +130,8 @@ const CommandesTable = forwardRef<CommandesTableRef, CommandesTableProps>(({
   sites,
   getSiteName,
   showMessage,
-  onError 
+  onError,
+  onDeleteSuccess 
 }, ref) => {
   // États
   const [commandes, setCommandes] = useState<CommandePlaque[]>([]);
@@ -258,6 +260,7 @@ const CommandesTable = forwardRef<CommandesTableRef, CommandesTableProps>(({
         setShowDeleteModal(false);
         setCommandeToDelete(null);
         showMessage("success", "Succès", "Commande annulée avec succès");
+        onDeleteSuccess?.();
       } else {
         showMessage("error", "Erreur", result.message || "Erreur lors de l'annulation");
       }

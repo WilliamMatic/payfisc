@@ -1,5 +1,7 @@
-import { MapPin, Loader2, Edit, Trash2, Eye, EyeOff, Receipt, Printer } from 'lucide-react';
+import { MapPin, Loader2, Edit, Trash2, Eye, EyeOff, Receipt, Printer, ImageIcon } from 'lucide-react';
 import { Site as SiteType } from '@/services/sites/siteService';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls';
 
 interface SiteTableProps {
   sites: SiteType[];
@@ -36,6 +38,7 @@ export default function SiteTable({
           <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
             <tr>{/* SUPPRIMER TOUT ESPACE AVANT LES <th> */}
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Site</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Logo</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Code</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Province</th>
               <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
@@ -52,6 +55,19 @@ export default function SiteTable({
                 <tr key={site.id} className="hover:bg-gray-50/80 transition-colors">
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900 text-sm">{site.nom || 'N/A'}</div>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    {site.logo ? (
+                      <img
+                        src={`${API_BASE_URL}/sites/uploads/${site.logo}`}
+                        alt={`Logo ${site.nom}`}
+                        className="w-8 h-8 object-contain rounded"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-gray-300" />
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">

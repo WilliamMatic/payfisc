@@ -101,6 +101,7 @@ interface VentesTableProps {
   getSiteName: (siteId: number) => string;
   showMessage: (type: "success" | "error" | "info" | "warning", title: string, message: string) => void;
   onError: (error: string | null) => void;
+  onDeleteSuccess?: () => void;
 }
 
 export interface VentesTableRef {
@@ -113,7 +114,8 @@ const VentesTable = forwardRef<VentesTableRef, VentesTableProps>(({
   sites,
   getSiteName,
   showMessage,
-  onError 
+  onError,
+  onDeleteSuccess 
 }, ref) => {
   // États
   const [ventes, setVentes] = useState<VenteNonGrossiste[]>([]);
@@ -242,6 +244,7 @@ const VentesTable = forwardRef<VentesTableRef, VentesTableProps>(({
         setShowDeleteModal(false);
         setVenteToDelete(null);
         showMessage("success", "Succès", "Vente supprimée avec succès");
+        onDeleteSuccess?.();
       } else {
         showMessage("error", "Erreur", result.message || "Erreur lors de la suppression");
       }

@@ -431,10 +431,10 @@ export default function InscriptionDelivranceForm({
   });
 
   // ─── Refs pour timeouts ───
-  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const rechercheModeleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const recherchePuissanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const verificationTelephoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const marqueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rechercheModeleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recherchePuissanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const verificationTelephoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ─── Helpers ───
 

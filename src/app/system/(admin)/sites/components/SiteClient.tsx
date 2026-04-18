@@ -44,6 +44,7 @@ export default function SiteClient({
   });
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   // Fonction pour recharger les sites
   const loadSites = async () => {
@@ -67,6 +68,18 @@ export default function SiteClient({
 
   const term = searchTerm?.toLowerCase() || "";
 
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const filteredSites = sites.filter(
     (site) =>
       site &&
@@ -87,6 +100,7 @@ export default function SiteClient({
       template_carte_actuel: site.template_carte_actuel || false,
       province_id: site.province_id || 0,
     });
+    setLogoFile(null);
     setShowEditModal(true);
   };
 
@@ -148,10 +162,13 @@ export default function SiteClient({
         provinces={provinces}
         formData={formData}
         processing={processing}
-        onAddClose={() => setShowAddModal(false)}
+        logoFile={logoFile}
+        onLogoFileChange={setLogoFile}
+        onAddClose={() => { setShowAddModal(false); setLogoFile(null); }}
         onEditClose={() => {
           setShowEditModal(false);
           setSelectedSite(null);
+          setLogoFile(null);
           setFormData({
             nom: "",
             code: "",
@@ -179,7 +196,12 @@ export default function SiteClient({
           setProcessing(true);
           try {
             const { addSite } = await import("@/services/sites/siteService");
-            const result = await addSite(formData);
+            const payload: any = { ...formData };
+            if (logoFile) {
+              payload.logoBase64 = await convertToBase64(logoFile);
+              payload.logoFileName = logoFile.name;
+            }
+            const result = await addSite(payload);
 
             if (result.status === "success") {
               setSuccessMessage(result.message || "Site ajouté avec succès");
@@ -191,6 +213,7 @@ export default function SiteClient({
                 template_carte_actuel: false,
                 province_id: 0,
               });
+              setLogoFile(null);
               setShowAddModal(false);
 
               // Recharger la liste complète des sites
@@ -218,12 +241,18 @@ export default function SiteClient({
           setProcessing(true);
           try {
             const { updateSite } = await import("@/services/sites/siteService");
-            const result = await updateSite(selectedSite.id, formData);
+            const payload: any = { ...formData };
+            if (logoFile) {
+              payload.logoBase64 = await convertToBase64(logoFile);
+              payload.logoFileName = logoFile.name;
+            }
+            const result = await updateSite(selectedSite.id, payload);
 
             if (result.status === "success") {
               setSuccessMessage(result.message || "Site modifié avec succès");
               setShowEditModal(false);
               setSelectedSite(null);
+              setLogoFile(null);
               setFormData({
                 nom: "",
                 code: "",

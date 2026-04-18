@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Filter, Search } from "lucide-react";
+import { RefreshCw, Filter, Search, Printer, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getCartesReprint,
@@ -11,6 +11,7 @@ import {
 import StatsCards from "./StatsCards";
 import CartesTable from "./CartesTable";
 import ErrorModal from "./ErrorModal";
+import MultiPrintModal from "./MultiPrintModal";
 import { CarteReprint } from "../types"; // À créer
 
 export default function CartesReprintClient() {
@@ -40,6 +41,8 @@ export default function CartesReprintClient() {
     total: 0,
     totalPages: 1,
   });
+  const [selectedCartes, setSelectedCartes] = useState<Set<number>>(new Set());
+  const [showMultiPrintModal, setShowMultiPrintModal] = useState(false);
 
   // Gestionnaire d'erreurs
   const handleError = useCallback((title: string, message: string) => {
@@ -121,6 +124,7 @@ export default function CartesReprintClient() {
   // Changement de page
   const handlePageChange = useCallback((newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
+    setSelectedCartes(new Set());
   }, []);
 
   // Rafraîchissement
@@ -131,6 +135,32 @@ export default function CartesReprintClient() {
   // Application des filtres
   const handleApplyFilters = useCallback(() => {
     setPagination((prev) => ({ ...prev, page: 1 }));
+    setSelectedCartes(new Set());
+    loadCartes();
+  }, [loadCartes]);
+
+  // Gestion de la sélection multiple
+  const handleSelectionChange = useCallback((selected: Set<number>) => {
+    setSelectedCartes(selected);
+  }, []);
+
+  // Impression multiple réussie
+  const handleMultiPrintSuccess = useCallback((carteIds: number[]) => {
+    setCartes((prev) =>
+      prev.map((carte) =>
+        carteIds.includes(carte.id) ? { ...carte, status: 1 } : carte,
+      ),
+    );
+    setStats((prev) => ({
+      ...prev,
+      aImprimer: Math.max(0, prev.aImprimer - carteIds.length),
+      dejaImprime: prev.dejaImprime + carteIds.length,
+    }));
+  }, []);
+
+  const handleMultiPrintClose = useCallback(() => {
+    setShowMultiPrintModal(false);
+    setSelectedCartes(new Set());
     loadCartes();
   }, [loadCartes]);
 
@@ -210,6 +240,42 @@ export default function CartesReprintClient() {
         onPrintSuccess={handlePrintSuccess}
         utilisateur={utilisateur}
         onRefresh={handleRefresh}
+        selectedCartes={selectedCartes}
+        onSelectionChange={handleSelectionChange}
+      />
+
+      {/* Barre d'action flottante */}
+      {selectedCartes.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+          <div className="bg-[#2D5B7A] text-white rounded-2xl shadow-2xl px-6 py-4 flex items-center space-x-4">
+            <span className="font-medium text-sm">
+              {selectedCartes.size} carte{selectedCartes.size > 1 ? "s" : ""} sélectionnée{selectedCartes.size > 1 ? "s" : ""}
+            </span>
+            <div className="w-px h-8 bg-white/30" />
+            <button
+              onClick={() => setShowMultiPrintModal(true)}
+              className="px-4 py-2 bg-white text-[#2D5B7A] rounded-xl hover:bg-gray-100 transition-colors font-medium flex items-center space-x-2 text-sm"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Imprimer la sélection</span>
+            </button>
+            <button
+              onClick={() => setSelectedCartes(new Set())}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal d'impression multiple */}
+      <MultiPrintModal
+        isOpen={showMultiPrintModal}
+        onClose={handleMultiPrintClose}
+        cartes={cartes.filter(c => selectedCartes.has(c.id_primaire))}
+        utilisateur={utilisateur}
+        onPrintSuccess={handleMultiPrintSuccess}
       />
 
       {/* Modal d'erreur */}

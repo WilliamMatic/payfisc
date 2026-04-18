@@ -1,11 +1,16 @@
-import { Edit, X, Save, Loader2, Printer } from 'lucide-react';
+import { Edit, X, Save, Loader2, Printer, Upload, Trash2 } from 'lucide-react';
 import { Site as SiteType, Province as ProvinceType } from '@/services/sites/siteService';
+import { useState, useRef } from 'react';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls';
 
 interface EditSiteModalProps {
   site: SiteType;
   formData: { nom: string; code: string; description: string; formule: string; template_carte_actuel: boolean; province_id: number };
   provinces: ProvinceType[];
   processing: boolean;
+  logoFile: File | null;
+  onLogoFileChange: (file: File | null) => void;
   onClose: () => void;
   onFormDataChange: (data: { nom: string; code: string; description: string; formule: string; template_carte_actuel: boolean; province_id: number }) => void;
   onEditSite: () => Promise<void>;
@@ -16,10 +21,37 @@ export default function EditSiteModal({
   formData,
   provinces,
   processing,
+  logoFile,
+  onLogoFileChange,
   onClose,
   onFormDataChange,
   onEditSite
 }: EditSiteModalProps) {
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const currentLogoUrl = site.logo ? `${API_BASE_URL}/sites/uploads/${site.logo}` : null;
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Le fichier est trop volumineux. Taille maximale : 2 Mo.');
+        return;
+      }
+      onLogoFileChange(file);
+      const reader = new FileReader();
+      reader.onload = () => setLogoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    onLogoFileChange(null);
+    setLogoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4">
       <div 
@@ -146,6 +178,65 @@ export default function EditSiteModal({
                 <Printer className="w-4 h-4 text-[#2D5B7A]" />
                 <span className="text-sm font-medium text-gray-700">Template carte actuel</span>
               </label>
+            </div>
+
+            {/* UPLOAD / MODIFIER LOGO */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Logo du site
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                onChange={handleLogoChange}
+                className="hidden"
+                disabled={processing}
+              />
+              {logoPreview ? (
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <img src={logoPreview} alt="Nouveau logo" className="w-12 h-12 object-contain rounded" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-700 truncate">{logoFile?.name}</p>
+                    <p className="text-xs text-green-600">Nouveau logo sélectionné</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeLogo}
+                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    disabled={processing}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : currentLogoUrl ? (
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <img src={currentLogoUrl} alt="Logo actuel" className="w-12 h-12 object-contain rounded" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-700">Logo actuel</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Changer le logo"
+                    disabled={processing}
+                  >
+                    <Upload className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-[#2D5B7A] hover:text-[#2D5B7A] transition-colors"
+                  disabled={processing}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span className="text-sm">Ajouter un logo (optionnel)</span>
+                </button>
+              )}
+              <p className="text-xs text-gray-400 mt-1">JPG, PNG, GIF, WEBP ou SVG. Max 2 Mo.</p>
             </div>
           </div>
           

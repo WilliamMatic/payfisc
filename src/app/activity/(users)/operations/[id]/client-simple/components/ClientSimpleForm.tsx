@@ -746,11 +746,14 @@ export default function ClientSimpleForm({
   const [printData, setPrintData] = useState<any>(null);
   const [serieItemId, setSerieItemId] = useState<number | null>(null);
 
-  const telephoneTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const modeleTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const puissanceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const couleurTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const marqueTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const telephoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const modeleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const puissanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const couleurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const marqueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const justSelectedMarque = useRef(false);
+  const justSelectedPuissance = useRef(false);
+  const justSelectedCouleur = useRef(false);
 
   // Calcul des montants avec le taux
   const montantDollars = utilisateur?.formule || "32";
@@ -945,6 +948,11 @@ export default function ClientSimpleForm({
       clearTimeout(marqueTimerRef.current);
     }
 
+    if (justSelectedMarque.current) {
+      justSelectedMarque.current = false;
+      return;
+    }
+
     if (formData.marque.length >= 2 && formData.typeEngin) {
       marqueTimerRef.current = setTimeout(async () => {
         setIsSearchingMarques(true);
@@ -1030,6 +1038,11 @@ export default function ClientSimpleForm({
       clearTimeout(puissanceTimerRef.current);
     }
 
+    if (justSelectedPuissance.current) {
+      justSelectedPuissance.current = false;
+      return;
+    }
+
     if (formData.puissanceFiscal.length >= 1 && formData.typeEngin) {
       puissanceTimerRef.current = setTimeout(async () => {
         setIsSearchingPuissances(true);
@@ -1070,6 +1083,11 @@ export default function ClientSimpleForm({
   useEffect(() => {
     if (couleurTimerRef.current) {
       clearTimeout(couleurTimerRef.current);
+    }
+
+    if (justSelectedCouleur.current) {
+      justSelectedCouleur.current = false;
+      return;
     }
 
     if (formData.couleur.length >= 2 && !showAddCouleurForm) {
@@ -1259,6 +1277,7 @@ export default function ClientSimpleForm({
   };
 
   const handleMarqueSelect = (marque: MarqueEngin) => {
+    justSelectedMarque.current = true;
     setFormData((prev) => ({ ...prev, marque: marque.libelle }));
     setSelectedMarqueId(marque.id);
     setShowMarquesSuggestions(false);
@@ -1275,11 +1294,13 @@ export default function ClientSimpleForm({
   };
 
   const handlePuissanceSelect = (puissance: any) => {
+    justSelectedPuissance.current = true;
     setFormData((prev) => ({ ...prev, puissanceFiscal: puissance.libelle }));
     setShowPuissancesSuggestions(false);
   };
 
   const handleCouleurSelect = (couleur: EnginCouleur) => {
+    justSelectedCouleur.current = true;
     setFormData((prev) => ({ ...prev, couleur: couleur.nom }));
     setSelectedCouleur(couleur);
     setShowCouleursSuggestions(false);

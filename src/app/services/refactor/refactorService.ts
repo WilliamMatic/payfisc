@@ -49,8 +49,7 @@ const API_BASE_URL =
  */
 export const verifierIdDGRK = async (
   identifiant: string,
-  siteCode: string,
-  extension?: number | null
+  siteCode: string
 ): Promise<RefactorResponse & { source?: string }> => {
   'use server';
   
@@ -59,10 +58,6 @@ export const verifierIdDGRK = async (
     const formData = new FormData();
     formData.append("id_dgrk", identifiant);
     formData.append("site_code", siteCode);
-
-    // Convertir extension en nombre avec 0 comme valeur par défaut
-    const extensionNumber = extension || 0;
-    formData.append("extension", extensionNumber.toString());
 
     const response = await fetch(`${API_BASE_URL}/refactor/verifier_dgrk.php`, {
       method: "POST",
@@ -82,8 +77,7 @@ export const verifierIdDGRK = async (
       // Si erreur ou non trouvé localement, essayer avec la base externe
       // Passer extensionNumber (qui est toujours un nombre) à verifierPlaqueExterne
       const resultExterne = await verifierPlaqueExterne(
-        identifiant,
-        extensionNumber
+        identifiant
       );
       return resultExterne;
     }
@@ -92,8 +86,8 @@ export const verifierIdDGRK = async (
     // En cas d'erreur, essayer quand même l'externe
     try {
       // Utiliser 0 comme valeur par défaut si extension est undefined/null
-      const extensionNumber = extension || 0;
-      return await verifierPlaqueExterne(identifiant, extensionNumber);
+      const extensionNumber = 0;
+      return await verifierPlaqueExterne(identifiant);
     } catch (externeError) {
       return {
         status: "error",
@@ -160,23 +154,13 @@ export const traiterRefactor = async (
  * 🔄 Vérifie dans la base externe (TEMPS RÉEL)
  */
 export const verifierPlaqueExterne = async (
-  plaque: string,
-  extension?: number | null // Accepter le même type que verifierIdDGRK
+  plaque: string
 ): Promise<RefactorResponse> => {
   'use server';
   
   try {
     const formData = new FormData();
     formData.append("plaque", plaque);
-
-    // Convertir extension en nombre avec 0 comme valeur par défaut
-    const extensionNumber = extension || 0;
-    formData.append("extension", extensionNumber.toString());
-
-    console.log("Vérification plaque externe:", {
-      plaque,
-      extension: extensionNumber,
-    });
 
     const response = await fetch(
       `${API_BASE_URL}/refactor/rechercher_plaque.php`,

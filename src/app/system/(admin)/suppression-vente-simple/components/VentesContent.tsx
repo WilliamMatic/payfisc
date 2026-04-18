@@ -242,6 +242,7 @@ export default function VentesContent() {
           getSiteName={getSiteName}
           showMessage={showMessage}
           onError={setError}
+          onDeleteSuccess={() => statsCardsRef.current?.refresh()}
         />
       </div>
 

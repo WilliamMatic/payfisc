@@ -14,6 +14,8 @@ interface SiteModalsProps {
   provinces: ProvinceType[];
   formData: { nom: string; code: string; description: string; formule: string; template_carte_actuel: boolean; province_id: number };
   processing: boolean;
+  logoFile: File | null;
+  onLogoFileChange: (file: File | null) => void;
   onAddClose: () => void;
   onEditClose: () => void;
   onDeleteClose: () => void;
@@ -34,6 +36,8 @@ export default function SiteModals({
   provinces,
   formData,
   processing,
+  logoFile,
+  onLogoFileChange,
   onAddClose,
   onEditClose,
   onDeleteClose,
@@ -52,6 +56,8 @@ export default function SiteModals({
             formData={formData}
             provinces={provinces}
             processing={processing}
+            logoFile={logoFile}
+            onLogoFileChange={onLogoFileChange}
             onClose={onAddClose}
             onFormDataChange={onFormDataChange}
             onAddSite={onAddSite}
@@ -66,6 +72,8 @@ export default function SiteModals({
             formData={formData}
             provinces={provinces}
             processing={processing}
+            logoFile={logoFile}
+            onLogoFileChange={onLogoFileChange}
             onClose={onEditClose}
             onFormDataChange={onFormDataChange}
             onEditSite={onEditSite}

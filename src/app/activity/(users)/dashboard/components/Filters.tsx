@@ -71,28 +71,33 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
   }, []);
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Filtres</h3>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-[#153258] to-[#1e4a7a] rounded-xl flex items-center justify-center">
+            <Filter className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-800">Filtres</h3>
+            <p className="text-xs text-gray-400">Affinez vos résultats</p>
+          </div>
         </div>
         {utilisateur && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="font-medium">Site:</span>
-            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+            <span className="font-medium bg-gradient-to-r from-gray-50 to-blue-50 px-3 py-1.5 rounded-lg border border-gray-100 text-xs">
               {utilisateur.site_nom}
             </span>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Date de début */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              📅 Date début
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+              Date début
             </label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -100,7 +105,7 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
                 type="date"
                 value={filters.startDate}
                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#153258]/20 focus:border-[#153258] outline-none transition-all text-sm bg-gray-50/50"
                 disabled={loading}
               />
             </div>
@@ -108,8 +113,8 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
 
           {/* Date de fin */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              📅 Date fin
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+              Date fin
             </label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -117,7 +122,7 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#153258]/20 focus:border-[#153258] outline-none transition-all text-sm bg-gray-50/50"
                 disabled={loading}
               />
             </div>
@@ -125,8 +130,8 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
 
           {/* Numéro de plaque */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              🔢 Numéro de plaque
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+              N° de plaque
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -135,7 +140,7 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
                 placeholder="Ex: 6AB123CD"
                 value={filters.plateNumber}
                 onChange={(e) => handleFilterChange('plateNumber', e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#153258]/20 focus:border-[#153258] outline-none transition-all text-sm bg-gray-50/50"
                 disabled={loading}
               />
             </div>
@@ -143,13 +148,13 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
 
           {/* Type de vente */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              🏷 Type de vente
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+              Type de vente
             </label>
             <select
               value={filters.saleType}
               onChange={(e) => handleFilterChange('saleType', e.target.value as SaleType)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#153258]/20 focus:border-[#153258] outline-none transition-all text-sm bg-gray-50/50 appearance-none"
               disabled={loading}
             >
               {saleTypes.map((type) => (
@@ -162,11 +167,11 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
         </div>
 
         {/* Boutons d'action */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+        <div className="flex justify-end gap-3 pt-5 mt-5 border-t border-gray-100">
           <button
             type="button"
             onClick={handleReset}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             disabled={loading}
           >
             <RefreshCw className="w-4 h-4" />
@@ -174,7 +179,7 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 bg-gradient-to-r from-[#153258] to-[#1e4a7a] text-white rounded-xl hover:shadow-lg transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             disabled={loading}
           >
             {loading ? (
@@ -183,7 +188,10 @@ const Filters = ({ onFilterChange, loading = false }: FiltersProps) => {
                 Chargement...
               </>
             ) : (
-              'Appliquer les filtres'
+              <>
+                <Search className="w-4 h-4" />
+                Appliquer
+              </>
             )}
           </button>
         </div>

@@ -101,7 +101,7 @@ export default function Header({
   const displayInfo = getDisplayInfo();
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200/80 z-50 sticky top-0 shrink-0">
+    <header className="h-[73px] bg-white border-b border-gray-200/80 z-50 sticky top-0 shrink-0">
       <div className="h-full px-4 flex items-center justify-between">
         {/* Left: burger + logo + site badge */}
         <div className="flex items-center gap-3">
@@ -113,8 +113,14 @@ export default function Header({
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Logo conditionnel */}
-          {utilisateur?.site_code === "DGRPT" ? (
+          {/* Logo conditionnel dynamique */}
+          {utilisateur?.site_logo ? (
+            <img
+              src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80/SOCOFIAPP/Impot/backend/calls'}/sites/uploads/${utilisateur.site_logo}`}
+              alt={`Logo ${utilisateur.site_nom || ''}`}
+              className="h-7 w-auto object-contain"
+            />
+          ) : utilisateur?.site_code === "DGRPT" ? (
             <Image
               src="/dgrpt.jpeg"
               alt="Logo DRPT"
@@ -135,7 +141,7 @@ export default function Header({
           ) : null}
 
           {utilisateur?.site_code && (
-            <span className="hidden sm:inline-flex px-2 py-0.5 bg-gray-100 text-gray-600 text-[11px] rounded font-medium tracking-wide">
+            <span className="hidden sm:inline-flex px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded font-medium tracking-wide">
               {utilisateur.site_code}
             </span>
           )}
@@ -147,10 +153,10 @@ export default function Header({
           <div className="hidden md:flex items-center gap-2 text-gray-400">
             <Clock className="w-3.5 h-3.5" />
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[13px] font-mono font-medium text-gray-600 tabular-nums">
+              <span className="text-sm font-mono font-medium text-gray-600 tabular-nums">
                 {currentTime}
               </span>
-              <span className="text-[11px] text-gray-400">
+              <span className="text-xs text-gray-400">
                 {currentDate}
               </span>
             </div>
@@ -183,14 +189,14 @@ export default function Header({
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <div className="w-7 h-7 bg-[#2D5B7A] rounded-full flex items-center justify-center text-white text-[11px] font-semibold shrink-0">
+              <div className="w-8 h-8 bg-[#2D5B7A] rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0">
                 {displayInfo.initial}
               </div>
               <div className="text-left hidden md:block max-w-[140px]">
-                <p className="text-[13px] font-medium text-gray-800 truncate leading-tight">
+                <p className="text-sm font-medium text-gray-800 truncate leading-tight">
                   {displayInfo.name}
                 </p>
-                <p className="text-[11px] text-gray-400 truncate leading-tight">
+                <p className="text-xs text-gray-400 truncate leading-tight">
                   {displayInfo.detail}
                 </p>
               </div>

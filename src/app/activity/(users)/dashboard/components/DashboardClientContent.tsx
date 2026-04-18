@@ -90,34 +90,63 @@ export default function DashboardClientContent({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50/30 p-4 md:p-6 lg:p-8">
+      {/* Header */}
       <header className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Tableau de bord - Ventes de plaques motos
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Gestion et suivi des ventes détail, grossiste et reproduction
-            </p>
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#153258] to-[#1e4a7a] rounded-2xl p-6 md:p-8 shadow-xl">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white rounded-full blur-3xl" />
+            <div className="absolute -left-10 -bottom-10 w-48 h-48 bg-[#23A974] rounded-full blur-3xl" />
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-white">
+                  Tableau de bord
+                </h1>
+              </div>
+              <p className="text-blue-100/80 ml-[52px]">
+                Ventes de plaques motos — Suivi en temps réel
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl text-sm text-white/90 border border-white/10">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <span>{utilisateur?.site_nom || "—"}</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl text-sm text-white/90 border border-white/10">
+                {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
+      {/* Stats */}
       <StatsCards refreshTrigger={refreshTrigger} />
 
+      {/* Filters */}
       <div className="mt-8">
         <Filters onFilterChange={handleFilterChange} loading={loading} />
       </div>
 
-      <div className="mt-10 space-y-10">
+      {/* Tables */}
+      <div className="mt-10 space-y-8">
         {/* Ventes au détail */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Ventes au détail
-            </h2>
-            <span className="text-sm text-blue-600 font-medium">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-blue-500 rounded-full" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                Ventes au détail
+              </h2>
+            </div>
+            <span className="text-sm bg-blue-50 text-blue-700 font-medium px-3 py-1 rounded-full">
               {counts.retail} transaction{counts.retail !== 1 ? "s" : ""}
             </span>
           </div>
@@ -127,10 +156,13 @@ export default function DashboardClientContent({
         {/* Ventes grossistes */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Ventes grossistes
-            </h2>
-            <span className="text-sm text-green-600 font-medium">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-emerald-500 rounded-full" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                Ventes grossistes
+              </h2>
+            </div>
+            <span className="text-sm bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-full">
               {counts.wholesale} transaction{counts.wholesale !== 1 ? "s" : ""}
             </span>
           </div>
@@ -143,10 +175,13 @@ export default function DashboardClientContent({
         {/* Reproduction de plaques */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Reproduction de plaques
-            </h2>
-            <span className="text-sm text-amber-600 font-medium">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-amber-500 rounded-full" />
+              <h2 className="text-lg font-semibold text-gray-800">
+                Reproduction de plaques
+              </h2>
+            </div>
+            <span className="text-sm bg-amber-50 text-amber-700 font-medium px-3 py-1 rounded-full">
               {counts.reproduction} transaction
               {counts.reproduction !== 1 ? "s" : ""}
             </span>
@@ -158,15 +193,15 @@ export default function DashboardClientContent({
         </section>
       </div>
 
-      {/* Bouton de rafraîchissement manuel */}
-      <div className="fixed bottom-6 right-6">
+      {/* Bouton de rafraîchissement */}
+      <div className="fixed bottom-6 right-6 z-30">
         <button
           onClick={() => setRefreshTrigger((prev) => prev + 1)}
-          className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+          className="group bg-gradient-to-r from-[#153258] to-[#1e4a7a] text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           title="Rafraîchir les données"
         >
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

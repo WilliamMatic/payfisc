@@ -139,8 +139,8 @@ export default function ClientSimpleForm({
   const [sequencePlaques, setSequencePlaques] = useState<string[]>([]);
   const [rechercheAssujettiEnCours, setRechercheAssujettiEnCours] =
     useState(false);
-  const rechercheTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const rechercheAssujettiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rechercheTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rechercheAssujettiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Calculs avec taux
   const montantUnitaire = utilisateur?.formule

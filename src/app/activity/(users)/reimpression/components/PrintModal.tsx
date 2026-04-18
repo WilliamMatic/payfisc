@@ -28,11 +28,20 @@ export default function PrintModal({
   const [isPrinting, setIsPrinting] = useState(false);
   const [printError, setPrintError] = useState<string | null>(null);
 
-  // QR Code : infos Assujetti + Engin
-  const qrValue = carte ? JSON.stringify({
-    assujetti: { nom: carte.nom_proprietaire, adresse: carte.adresse_proprietaire, nif: carte.nif_proprietaire },
-    engin: { plaque: carte.numero_plaque, marque: carte.marque_vehicule, usage: carte.usage_vehicule, chassis: carte.numero_chassis, moteur: carte.numero_moteur, annee_fab: carte.annee_fabrication, couleur: carte.couleur_vehicule, puissance: carte.puissance_vehicule }
-  }) : "";
+  // QR Code : infos lisibles
+  const qrValue = carte
+    ? [
+        `NOM: ${carte.nom_proprietaire}`,
+        `ADRESSE: ${carte.adresse_proprietaire}`,
+        `MARQUE: ${carte.marque_vehicule}`,
+        `PLAQUE: ${carte.numero_plaque}`,
+        `CHASSIS: ${carte.numero_chassis}`,
+        `COULEUR: ${carte.couleur_vehicule}`,
+        `USAGE: ${carte.usage_vehicule}`,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : "";
 
   const getCurrentDate = () => {
     const now = new Date();
@@ -83,7 +92,7 @@ export default function PrintModal({
       th { width: 45%; font-weight: 700; font-size: 2.4mm; }
       td { width: 55%; font-weight: bolder; }
       .plaque-number { font-weight: bold; font-size: 2.6mm; color: #dc2626; }
-      .qr { position: absolute; right: 7mm; bottom: 8mm; width: 13mm; height: 13mm; display: flex; align-items: center; justify-content: center; border: none; padding: 0; background: transparent; }
+      .qr { position: absolute; right: 6mm; bottom: 9.8mm; width: 13mm; height: 13mm; display: flex; align-items: center; justify-content: center; border: none; padding: 0; background: transparent; }
       .qr img { width: 100%; height: 100%; object-fit: contain; }
       .sig-wrap { position: absolute; right: 2mm; bottom: -2mm; width: 25mm; height: 9mm; display: flex; align-items: flex-end; justify-content: center; }
       .signature-box { width: 100%; border-top: 0.15mm dashed rgba(255,255,255,0.0); padding-top: 1mm; font-size: 2mm; text-align: center; }
@@ -99,28 +108,60 @@ export default function PrintModal({
       </div>
       <table>
         <tbody>
-          <tr><th></th><td style="position: relative; top: 3px;text-transform: uppercase;font-weight: normal !important;">${carte.nom_proprietaire}</td></tr>
-          <tr><th></th><td style="position: relative; top: 4px;text-transform: uppercase;font-weight: normal !important;">${carte.adresse_proprietaire || ""}</td></tr>
+          <tr><th></th><td style="position: relative; top: 6px;text-transform: uppercase;font-weight: normal !important;">${carte.nom_proprietaire}</td></tr>
+          <tr>
+  <th></th>
+  <td style="position: relative; top: 3px; text-transform: uppercase; font-weight: normal !important;">
+    ${
+  carte.adresse_proprietaire
+    ? carte.adresse_proprietaire.slice(0, 30) +
+      "<br>" +
+      carte.adresse_proprietaire.slice(30)
+    : ""
+}
+  </td>
+</tr>
           <tr style="position: relative; top: 8px;"><th></th><td style="position: relative; top: 8px;text-transform: uppercase;font-weight: normal !important;"></td></tr>
-          <tr><th style="position: relative; top: 9px;"></th><td style="position: relative; top: ${carte.adresse_proprietaire && carte.adresse_proprietaire.length > 33 ? "13px" : "24px"};text-transform: uppercase;left: 10px;">${carte.annee_mise_circulation}</td></tr>
-          <tr style="position: relative; top: 23px;"><th></th><td style="position: relative; top: ${carte.adresse_proprietaire && carte.adresse_proprietaire.length > 33 ? "2px" : "14px"};text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(carte.numero_plaque) || ""}</td></tr>
+          <tr><th style="position: relative; top: 9px;"></th><td style="position: relative; top: ${carte.adresse_proprietaire && carte.adresse_proprietaire.length > 30 ? "14px" : "24px"};text-transform: uppercase;left: 10px;">${carte.annee_mise_circulation}</td></tr>
+          <tr style="position: relative; top: 23px;"><th></th><td style="position: relative; top: ${carte.adresse_proprietaire && carte.adresse_proprietaire.length > 30 ? "2px" : "12px"};text-transform: uppercase;" class="plaque-number">${utilisateur?.province_code || ""} ${formatPlaque(carte.numero_plaque) || ""}</td></tr>
         </tbody>
       </table>
-      <div class="qr">${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}<span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span></div>
+      <div class="qr" 
+  style="
+  right: ${(carte.adresse_proprietaire?.length ?? 0) > 30 ? "5.2mm" : "5.2mm"};
+  bottom: ${(carte.adresse_proprietaire?.length ?? 0) > 30 ? "8.7mm" : "8.7mm"};
+">${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ""}<span style="position: absolute;bottom: -20px;font-size: .5em;font-weight: bold;">${getCurrentDate()}</span></div>
     </div>
     <div class="card" style="height: 40mm;margin-top: 30px;">
       <table>
         <tbody>
-          <tr style="position: relative; top: -11px;"><th></th><td style="text-transform: uppercase;">${carte.marque_vehicule || ""}</td></tr>
-          <tr style="position: relative; top: -17px;"><th></th><td style="text-transform: uppercase;">${carte.usage_vehicule || ""}</td></tr>
-          <tr style="position: relative; top: -20px;"><th></th><td style="text-transform: uppercase;">${carte.numero_chassis || "-"}</td></tr>
-          <tr style="position: relative; top: -26px;"><th></th><td style="text-transform: uppercase;">${carte.numero_moteur || "-"}</td></tr>
-          <tr style="position: relative; top: -31px;"><th></th><td style="text-transform: uppercase;">${carte.annee_fabrication || "-"}</td></tr>
-          <tr style="position: relative; top: -36px;"><th></th><td style="text-transform: uppercase;">${carte.couleur_vehicule || "-"}</td></tr>
-          <tr style="position: relative; top: -40px;"><th></th><td style="text-transform: uppercase;">${carte.puissance_vehicule || "-"}</td></tr>
+          <tr style="position: relative; top: -14px;"><th></th><td style="text-transform: uppercase;">${carte.marque_vehicule || ""}</td></tr>
+          <tr style="position: relative; top: -19px;"><th></th><td style="text-transform: uppercase;">${carte.usage_vehicule || ""}</td></tr>
+          <tr style="position: relative; top: -23px;"><th></th><td style="text-transform: uppercase;">${carte.numero_chassis || "-"}</td></tr>
+          <tr style="position: relative; top: -28px;"><th></th><td style="text-transform: uppercase;">${carte.numero_moteur || "-"}</td></tr>
+          <tr style="position: relative; top: -33px;"><th></th><td style="text-transform: uppercase;">${carte.annee_fabrication || "-"}</td></tr>
+          <tr style="position: relative; top: -37px;"><th></th><td style="text-transform: uppercase;">${carte.couleur_vehicule || "-"}</td></tr>
+          <tr style="position: relative; top: -42px;"><th></th><td style="text-transform: uppercase;">${carte.puissance_vehicule || "-"}</td></tr>
         </tbody>
       </table>
-      <div class="sig-wrap"><div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div></div>
+      <div class="sig-wrap"><div class="signature-box"><img 
+  src="${
+    utilisateur?.site_code === "DGRSA"
+      ? "https://willyaminsi.com/signature-sankuru.png"
+      : "https://willyaminsi.com/signature-fixe.jpg"
+  }"
+  style="
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    top: 12px;
+    left: 16px;
+    image-rendering: crisp-edges;
+  "
+></div></div>
     </div>
     <script>window.onload = function() { setTimeout(() => { window.print(); }, 300); };</script>
   </body>
@@ -186,7 +227,11 @@ export default function PrintModal({
 </html>
 `;
 
-        printWindow.document.write(utilisateur?.template_carte_actuel ? printContentAvecTemplate : printContentSansTemplate);
+        printWindow.document.write(
+          utilisateur?.template_carte_actuel
+            ? printContentAvecTemplate
+            : printContentSansTemplate,
+        );
         printWindow.document.close();
 
         if (carte.status === 0) {
@@ -318,7 +363,7 @@ export default function PrintModal({
             <QRCodeCanvas
               value={qrValue}
               size={128}
-              level="H"
+              level="L"
               bgColor="#FFFFFF"
               fgColor="#000000"
             />
@@ -388,7 +433,7 @@ export default function PrintModal({
                       <QRCodeCanvas
                         value={qrValue}
                         size={40}
-                        level="H"
+                        level="L"
                         bgColor="#FFFFFF"
                         fgColor="#000000"
                       />

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useCallback } from "react";
 
 interface MenuItem {
@@ -63,6 +63,7 @@ const menuItems: MenuEntry[] = [
       { icon: "🔄", label: "Usages", href: "/activity/usages" },
     ],
   },
+
 ];
 
 const defaultOpenCategories = new Set<string>(
@@ -112,42 +113,41 @@ export default function Sidebar({
       {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-[2px] lg:hidden z-20 transition-opacity"
+          className="fixed inset-0 bg-black/20 lg:hidden z-20"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed lg:static lg:translate-x-0 z-30 w-[260px] h-full bg-white border-r border-gray-200/80 transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed lg:static lg:translate-x-0 z-30 w-64 h-full bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 ease-in-out border-r border-gray-100 dark:border-gray-700 flex flex-col ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Logo */}
-        <div className="h-14 px-5 flex items-center justify-between border-b border-gray-200/80 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#2D5B7A] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
+        {/* Header */}
+        <div className="px-5 h-[73px] border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 bg-gradient-to-r from-[#2D5B7A] to-[#3A7A5F] rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-lg">P</span>
             </div>
-            <div className="leading-tight">
-              <span className="text-gray-900 font-semibold text-[15px] tracking-tight">
+            <div>
+              <span className="text-gray-800 dark:text-white font-semibold text-lg">
                 PayFisc
               </span>
-              <p className="text-[11px] text-gray-400 font-medium">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Système fiscal
               </p>
             </div>
           </div>
           <button
-            type="button"
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden p-1.5 -mr-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            className="lg:hidden p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
           {menuItems.map((item) => (
             <div key={"category" in item ? item.category : item.href}>
               {"category" in item ? (
@@ -155,42 +155,38 @@ export default function Sidebar({
                   {/* Category header */}
                   <button
                     onClick={() => toggleCategory(item.category)}
-                    className="w-full flex items-center justify-between px-2 py-1.5 group"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                   >
                     <span
-                      className={`text-[11px] font-semibold uppercase tracking-wider ${
-                        isCategoryActive(item.items)
-                          ? "text-[#2D5B7A]"
-                          : "text-gray-400 group-hover:text-gray-500"
-                      } transition-colors`}
+                      className={`text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide ${
+                        isCategoryActive(item.items) ? "text-[#2D5B7A]" : ""
+                      }`}
                     >
                       {item.category}
                     </span>
-                    <ChevronDown
-                      className={`w-3.5 h-3.5 text-gray-300 group-hover:text-gray-400 transition-transform duration-200 ${
-                        isCategoryOpen(item.category) ? "" : "-rotate-90"
-                      }`}
-                    />
+                    {isCategoryOpen(item.category) ? (
+                      <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    )}
                   </button>
 
                   {/* Category items */}
                   {isCategoryOpen(item.category) && (
-                    <div className="mt-0.5 space-y-0.5">
+                    <div className="ml-3 mt-1 space-y-1 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
                       {item.items.map((subItem) => (
                         <Link
                           key={subItem.href}
                           href={subItem.href}
                           onClick={() => setIsSidebarOpen(false)}
-                          className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150 ${
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                             isActive(subItem.href)
-                              ? "bg-[#2D5B7A] text-white font-medium shadow-sm"
-                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                              ? "bg-[#2D5B7A] text-white shadow-sm font-medium"
+                              : "text-gray-700 dark:text-gray-300 hover:text-[#2D5B7A] dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                           }`}
                         >
-                          <span className="text-[15px] leading-none w-5 text-center shrink-0">
-                            {subItem.icon}
-                          </span>
-                          <span className="truncate">{subItem.label}</span>
+                          <span className="text-base">{subItem.icon}</span>
+                          <span className="flex-1">{subItem.label}</span>
                         </Link>
                       ))}
                     </div>
@@ -200,16 +196,14 @@ export default function Sidebar({
                 <Link
                   href={item.href}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150 ${
+                  className={`flex items-center space-x-2 px-3 py-2.5 rounded-lg transition-colors text-sm ${
                     isActive(item.href)
-                      ? "bg-[#2D5B7A] text-white font-medium shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-[#2D5B7A] text-white shadow-sm font-medium"
+                      : "text-gray-700 dark:text-gray-300 hover:text-[#2D5B7A] dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
-                  <span className="text-[15px] leading-none w-5 text-center shrink-0">
-                    {item.icon}
-                  </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.label}</span>
                 </Link>
               )}
             </div>
@@ -217,10 +211,11 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-gray-100 shrink-0">
-          <p className="text-[11px] text-gray-300 text-center font-medium">
-            PayFisc v1.2 — © 2026
-          </p>
+        <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Version 1.2</p>
+            <p className="text-xs text-gray-400 mt-1">© 2026 PayFisc</p>
+          </div>
         </div>
       </aside>
     </>

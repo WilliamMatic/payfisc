@@ -258,7 +258,6 @@ export default function RefactorCarteClient() {
       const result = await verifierIdDGRK(
         idDGRK,
         utilisateur?.site_code || "",
-        utilisateur?.extension_site ?? 0,
       );
 
       if (result.status === "error") {

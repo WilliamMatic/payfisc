@@ -112,6 +112,7 @@ interface CartesRosesTableProps {
   ) => void;
   onError: (error: string | null) => void;
   formatDate: (date: string) => string;
+  onDeleteSuccess?: () => void;
 }
 
 export interface CartesRosesTableRef {
@@ -128,6 +129,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
       showMessage,
       onError,
       formatDate,
+      onDeleteSuccess,
     },
     ref,
   ) => {
@@ -277,6 +279,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
           setShowDeleteModal(false);
           setCarteRoseToDelete(null);
           showMessage("success", "Succès", "Carte rose annulée avec succès");
+          onDeleteSuccess?.();
         } else {
           showMessage(
             "error",

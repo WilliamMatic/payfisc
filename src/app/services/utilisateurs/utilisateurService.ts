@@ -31,10 +31,16 @@ export interface PrivilegesAssurance {
   renouvellement: boolean;
 }
 
+export interface PrivilegesAssainissement {
+  agentTerrain: boolean;
+  admin: boolean;
+}
+
 export interface Privileges {
   ventePlaque: PrivilegesPlaque;
   vignette: PrivilegesVignette;
   assurance: PrivilegesAssurance;
+  assainissement: PrivilegesAssainissement;
 }
 
 // Interface pour les données d'un utilisateur

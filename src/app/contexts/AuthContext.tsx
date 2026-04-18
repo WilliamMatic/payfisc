@@ -30,6 +30,7 @@ interface UtilisateurSession {
   site_nom: string;
   site_code: string;
   site_id?: number;
+  site_logo?: string | null;
   extension_site?: any;
   formule?: string;
   privileges?: any;
