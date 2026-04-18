@@ -44,3 +44,6 @@ next-env.d.ts
 
 # mobile assainissement
 /src/app/activity/(assainissement)/mobile/
+
+# sql dump
+/backend/payment-api-go/payfisc_dump.sql
