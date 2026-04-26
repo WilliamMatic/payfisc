@@ -7,8 +7,12 @@ import { useAuth } from "@/contexts/AuthContext";
 // Utility to escape HTML entities and prevent XSS in print templates
 const escapeHtml = (text: string | undefined | null): string => {
   if (!text) return "";
-  return String(text).replace(/[&<>"']/g, (char) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char)
+  return String(text).replace(
+    /[&<>"']/g,
+    (char) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        char
+      ] || char,
   );
 };
 
@@ -52,16 +56,20 @@ export default function CarteRosePrint({
   const [isFlipped, setIsFlipped] = useState(false);
 
   // QR Code : infos lisibles
-  const qrValue = data ? [
-    `NOM: ${data.nom} ${data.prenom}`,
-    `ADRESSE: ${data.adresse}`,
-    `TEL: ${data.telephone}`,
-    `MARQUE: ${data.marque}`,
-    `PLAQUE: ${data.numero_plaque}`,
-    `CHASSIS: ${data.numero_chassis}`,
-    `COULEUR: ${data.couleur}`,
-    `USAGE: ${data.usage_engin}`,
-  ].filter(Boolean).join("\n") : "";
+  const qrValue = data
+    ? [
+        `NOM: ${data.nom} ${data.prenom}`,
+        `ADRESSE: ${data.adresse}`,
+        `TEL: ${data.telephone}`,
+        `MARQUE: ${data.marque}`,
+        `PLAQUE: ${data.numero_plaque}`,
+        `CHASSIS: ${data.numero_chassis}`,
+        `COULEUR: ${data.couleur}`,
+        `USAGE: ${data.usage_engin}`,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : "";
 
   // Fonction pour formater la date actuelle
   const getCurrentDate = useCallback(() => {
@@ -109,6 +117,11 @@ export default function CarteRosePrint({
       const safePuissance = escapeHtml(data.puissance_fiscal);
       const safeProvinceCode = escapeHtml(utilisateur?.province_code);
       const safePlaqueFmt = escapeHtml(formatPlaque(data.numero_plaque));
+
+      const signatures: Record<string, string> = {
+        DGRSA: "https://willyaminsi.com/signature-sankuru.png",
+        DGRKOR: "https://willyaminsi.com/signature-kasai-oriental.pdf.png",
+      };
 
       // Si Template Carte Actuel n'est pas activé
       const printContentSansTemplate = `
@@ -275,8 +288,8 @@ export default function CarteRosePrint({
                     <td style="position: relative; top: ${
                       data.adresse && data.adresse.length > 33 ? "2px" : "14px"
                     };text-transform: uppercase;" class="plaque-number">${
-        utilisateur?.province_code || ""
-      } ${formatPlaque(data.numero_plaque) || ""}</td>
+                      utilisateur?.province_code || ""
+                    } ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>
@@ -294,8 +307,8 @@ export default function CarteRosePrint({
                   <tr style="position: relative; top: -11px;">
                     <th></th>
                     <td style="text-transform: uppercase;">${data.marque} ${
-        data.modele ? data.modele : ""
-      }</td>
+                      data.modele ? data.modele : ""
+                    }</td>
                   </tr>
                   <tr style="position: relative; top: -17px;">
                     <th></th>
@@ -337,7 +350,7 @@ export default function CarteRosePrint({
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
+                <div class="signature-box"><img src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             
@@ -502,7 +515,9 @@ export default function CarteRosePrint({
                     <td style="position: relative; top: 3px; text-transform: uppercase; font-weight: normal !important;">
                       ${
                         data.adresse
-                          ? data.adresse.slice(0, 30) + "<br>" + data.adresse.slice(30)
+                          ? data.adresse.slice(0, 30) +
+                            "<br>" +
+                            data.adresse.slice(30)
                           : ""
                       }
                     </td>
@@ -523,8 +538,8 @@ export default function CarteRosePrint({
                     <td style="position: relative; top: ${
                       data.adresse && data.adresse.length > 30 ? "2px" : "12px"
                     };text-transform: uppercase;" class="plaque-number">${
-        utilisateur?.province_code || ""
-      } ${formatPlaque(data.numero_plaque) || ""}</td>
+                      utilisateur?.province_code || ""
+                    } ${formatPlaque(data.numero_plaque) || ""}</td>
                   </tr>
                 </tbody>
               </table>
@@ -589,10 +604,7 @@ export default function CarteRosePrint({
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img 
-  src="${utilisateur?.site_code === "DGRSA" 
-    ? "https://willyaminsi.com/signature-sankuru.png" 
-    : "https://willyaminsi.com/signature-fixe.jpg"}"
+                <div class="signature-box"><img src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}"
   style="
     max-width: 100%;
     max-height: 100%;
@@ -620,13 +632,17 @@ export default function CarteRosePrint({
         </html>
       `;
 
-      printWindow.document.write(utilisateur?.template_carte_actuel ? printContentAvecTemplate : printContentSansTemplate);
+      printWindow.document.write(
+        utilisateur?.template_carte_actuel
+          ? printContentAvecTemplate
+          : printContentSansTemplate,
+      );
       printWindow.document.close();
     }
   }, [data, dgrkCode, utilisateur?.province_code, utilisateur?.site_code]);
 
   const toggleFlip = useCallback(() => {
-    setIsFlipped(prev => !prev);
+    setIsFlipped((prev) => !prev);
   }, []);
 
   // AJOUT: Gestion de l'ouverture de la fiche
@@ -892,7 +908,12 @@ export default function CarteRosePrint({
               <div
                 className={`card ${isFlipped ? "flipped" : ""}`}
                 onClick={toggleFlip}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlip(); } }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleFlip();
+                  }
+                }}
                 role="button"
                 aria-label="Carte 86 par 54 millimètres recto verso"
                 tabIndex={0}

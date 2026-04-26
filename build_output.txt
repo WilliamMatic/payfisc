@@ -1,0 +1,209 @@
+
+> payfisc@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.1.4 (Turbopack, Cache Components)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬À serverActions
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 8.5s
+  Running TypeScript ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/163) ...
+  Generating static pages using 19 workers (40/163) 
+  Generating static pages using 19 workers (81/163) 
+  Generating static pages using 19 workers (122/163) 
+Ô£ô Generating static pages using 19 workers (163/163) in 3.4s
+  Finalizing page optimization ...
+
+Route (app)                                                                  Revalidate  Expire
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ Ôùï /activity/assainissement/agents-terrain
+Ôö£ Ôùï /activity/assainissement/avenues
+Ôö£ Ôùï /activity/assainissement/communes
+Ôö£ Ôùï /activity/assainissement/contribuables
+Ôö£ Ôùï /activity/assainissement/controles
+Ôö£ Ôùï /activity/assainissement/dashboard
+Ôö£ Ôùï /activity/assainissement/factures
+Ôö£ Ôùï /activity/assainissement/paiements
+Ôö£ Ôùï /activity/assainissement/passages
+Ôö£ Ôùï /activity/assainissement/quartiers
+Ôö£ Ôùï /activity/assainissement/repartitions
+Ôö£ Ôùï /activity/assainissement/sanctions
+Ôö£ Ôùï /activity/assainissement/types-taxe
+Ôö£ Ôùï /activity/couleurs                                                               1w     30d
+Ôö£ ÔùÉ /activity/dashboard
+Ôö£ Ôùï /activity/declaration
+Ôö£ Ôùï /activity/embarquement/configuration
+Ôö£ Ôùï /activity/embarquement/contribuables
+Ôö£ Ôùï /activity/embarquement/dashboard
+Ôö£ Ôùï /activity/embarquement/engins
+Ôö£ Ôùï /activity/embarquement/paiements
+Ôö£ Ôùï /activity/energies                                                               1w     30d
+Ôö£ Ôùï /activity/entreprises                                                            1h      1d
+Ôö£ Ôùï /activity/environnement/avenues
+Ôö£ Ôùï /activity/environnement/categories-taxe
+Ôö£ Ôùï /activity/environnement/communes
+Ôö£ Ôùï /activity/environnement/contribuables
+Ôö£ Ôùï /activity/environnement/controles
+Ôö£ Ôùï /activity/environnement/dashboard
+Ôö£ Ôùï /activity/environnement/evaluations
+Ôö£ Ôùï /activity/environnement/factures
+Ôö£ Ôùï /activity/environnement/niveaux-risque
+Ôö£ Ôùï /activity/environnement/paiements
+Ôö£ Ôùï /activity/environnement/quartiers
+Ôö£ Ôùï /activity/environnement/repartitions
+Ôö£ Ôùï /activity/environnement/sanctions
+Ôö£ Ôùï /activity/environnement/types-activite
+Ôö£ Ôùï /activity/environnement/types-pollution
+Ôö£ Ôùï /activity/foncier
+Ôö£ Ôùï /activity/foncier/affectations
+Ôö£ Ôùï /activity/foncier/agents-terrain
+Ôö£ Ôùï /activity/foncier/audit
+Ôö£ Ôùï /activity/foncier/avenues
+Ôö£ Ôùï /activity/foncier/biens
+Ôö£ Ôùï /activity/foncier/communes
+Ôö£ Ôùï /activity/foncier/dashboard
+Ôö£ Ôùï /activity/foncier/factures
+Ôö£ Ôùï /activity/foncier/paiements
+Ôö£ Ôùï /activity/foncier/penalites
+Ôö£ Ôùï /activity/foncier/quartiers
+Ôö£ Ôùï /activity/foncier/rangs
+Ôö£ Ôùï /activity/foncier/repartitions
+Ôö£ Ôùï /activity/foncier/tarifs
+Ôö£ Ôùï /activity/foncier/types-concession
+Ôö£ Ôùï /activity/foncier/villes
+Ôö£ Ôùï /activity/marques-engins                                                         1w     30d
+Ôö£ Ôùï /activity/mobile/assets/icon-98ipyp.png
+Ôö£ ãÆ /activity/mobile/node_modules/color-convert
+Ôö£ ãÆ /activity/mobile/node_modules/highlight/node_modules/color-convert
+Ôö£ ãÆ /activity/mobile/node_modules/log-symbols/node_modules/color-convert
+Ôö£ ãÆ /activity/mobile/node_modules/ora/node_modules/color-convert
+Ôö£ Ôùï /activity/operations
+Ôö£ ÔùÉ /activity/operations/[id]                                                        1d      1w
+Ôöé Ôö£ /activity/operations/[id]                                                        1d      1w
+Ôöé Ôöö /activity/operations/0                                                           1d      1w
+Ôö£ ÔùÉ /activity/operations/[id]/achats-grossistes
+Ôöé Ôö£ /activity/operations/[id]/achats-grossistes
+Ôöé Ôöö /activity/operations/0/achats-grossistes
+Ôö£ ÔùÉ /activity/operations/[id]/achats-grossistes/suppression-vente-grossiste
+Ôöé Ôö£ /activity/operations/[id]/achats-grossistes/suppression-vente-grossiste
+Ôöé Ôöö /activity/operations/0/achats-grossistes/suppression-vente-grossiste
+Ôö£ ÔùÉ /activity/operations/[id]/assurance-moto
+Ôöé Ôö£ /activity/operations/[id]/assurance-moto
+Ôöé Ôöö /activity/operations/0/assurance-moto
+Ôö£ ÔùÉ /activity/operations/[id]/assurance-moto/inscription
+Ôöé Ôö£ /activity/operations/[id]/assurance-moto/inscription
+Ôöé Ôöö /activity/operations/0/assurance-moto/inscription
+Ôö£ ÔùÉ /activity/operations/[id]/carte-rose
+Ôöé Ôö£ /activity/operations/[id]/carte-rose
+Ôöé Ôöö /activity/operations/0/carte-rose
+Ôö£ ÔùÉ /activity/operations/[id]/client-simple
+Ôöé Ôö£ /activity/operations/[id]/client-simple
+Ôöé Ôöö /activity/operations/0/client-simple
+Ôö£ ÔùÉ /activity/operations/[id]/client-special
+Ôöé Ôö£ /activity/operations/[id]/client-special
+Ôöé Ôöö /activity/operations/0/client-special
+Ôö£ ÔùÉ /activity/operations/[id]/controle-technique
+Ôöé Ôö£ /activity/operations/[id]/controle-technique
+Ôöé Ôöö /activity/operations/0/controle-technique
+Ôö£ ÔùÉ /activity/operations/[id]/delivrance-assurance
+Ôöé Ôö£ /activity/operations/[id]/delivrance-assurance
+Ôöé Ôöö /activity/operations/0/delivrance-assurance
+Ôö£ ÔùÉ /activity/operations/[id]/delivrance-assurance/inscription
+Ôöé Ôö£ /activity/operations/[id]/delivrance-assurance/inscription
+Ôöé Ôöö /activity/operations/0/delivrance-assurance/inscription
+Ôö£ ÔùÉ /activity/operations/[id]/delivrance-vignette
+Ôöé Ôö£ /activity/operations/[id]/delivrance-vignette
+Ôöé Ôöö /activity/operations/0/delivrance-vignette
+Ôö£ ÔùÉ /activity/operations/[id]/delivrance-vignette/inscription
+Ôöé Ôö£ /activity/operations/[id]/delivrance-vignette/inscription
+Ôöé Ôöö /activity/operations/0/delivrance-vignette/inscription
+Ôö£ ÔùÉ /activity/operations/[id]/plaque-carte
+Ôöé Ôö£ /activity/operations/[id]/plaque-carte
+Ôöé Ôöö /activity/operations/0/plaque-carte
+Ôö£ ÔùÉ /activity/operations/[id]/refactor-carte
+Ôöé Ôö£ /activity/operations/[id]/refactor-carte
+Ôöé Ôöö /activity/operations/0/refactor-carte
+Ôö£ ÔùÉ /activity/operations/[id]/renouvellement-assurance
+Ôöé Ôö£ /activity/operations/[id]/renouvellement-assurance
+Ôöé Ôöö /activity/operations/0/renouvellement-assurance
+Ôö£ ÔùÉ /activity/operations/[id]/renouvellement-vignette
+Ôöé Ôö£ /activity/operations/[id]/renouvellement-vignette
+Ôöé Ôöö /activity/operations/0/renouvellement-vignette
+Ôö£ ÔùÉ /activity/operations/[id]/vente-vignette
+Ôöé Ôö£ /activity/operations/[id]/vente-vignette
+Ôöé Ôöö /activity/operations/0/vente-vignette
+Ôö£ ÔùÉ /activity/operations/[id]/vente-vignette/inscription
+Ôöé Ôö£ /activity/operations/[id]/vente-vignette/inscription
+Ôöé Ôöö /activity/operations/0/vente-vignette/inscription
+Ôö£ Ôùï /activity/paiement
+Ôö£ Ôùï /activity/particuliers                                                           1h      1d
+Ôö£ Ôùï /activity/patente/classification
+Ôö£ Ôùï /activity/patente/contribuables
+Ôö£ Ôùï /activity/patente/controles
+Ôö£ Ôùï /activity/patente/dashboard
+Ôö£ Ôùï /activity/patente/declarations
+Ôö£ Ôùï /activity/patente/gestion
+Ôö£ Ôùï /activity/patente/paiements
+Ôö£ Ôùï /activity/puissances-fiscales                                                    1w     30d
+Ôö£ Ôùï /activity/reimpression
+Ôö£ Ôùï /activity/series                                                                 1d      1w
+Ôö£ Ôùï /activity/seriesInterne
+Ôö£ Ôùï /activity/speed
+Ôö£ Ôùï /activity/stationnement/amendes
+Ôö£ Ôùï /activity/stationnement/controles
+Ôö£ Ôùï /activity/stationnement/dashboard
+Ôö£ Ôùï /activity/stationnement/paiements
+Ôö£ Ôùï /activity/stationnement/stationnements
+Ôö£ Ôùï /activity/stationnement/vehicules
+Ôö£ Ôùï /activity/stationnement/zones
+Ôö£ Ôùï /activity/usages                                                                 1w     30d
+Ôö£ Ôùï /system/admins                                                                  15m      1d
+Ôö£ Ôùï /system/agents                                                                  15m      1d
+Ôö£ ÔùÉ /system/audit-logs                                                              15m      1y
+Ôö£ Ôùï /system/beneficiaires                                                           15m      1d
+Ôö£ Ôùï /system/categories                                                              15m      1w
+Ôö£ Ôùï /system/couleurs                                                                15m     30d
+Ôö£ ÔùÉ /system/dashboard                                                               15m      1y
+Ôö£ ÔùÉ /system/dashboards                                                              15m      1y
+Ôö£ Ôùï /system/energies                                                                15m     30d
+Ôö£ Ôùï /system/entreprises                                                             15m      1d
+Ôö£ Ôùï /system/forgot-password
+Ôö£ Ôùï /system/gemini                                                                  15m      1y
+Ôö£ Ôùï /system/ia-fiscale                                                              15m      1y
+Ôö£ Ôùï /system/login
+Ôö£ Ôùï /system/marques-engins                                                          15m     30d
+Ôö£ Ôùï /system/notifications                                                            1m      1h
+Ôö£ Ôùï /system/paiement                                                                15m      1y
+Ôö£ Ôùï /system/partenaires                                                             15m      1d
+Ôö£ Ôùï /system/particuliers                                                            15m      1d
+Ôö£ Ôùï /system/provinces                                                               15m      1d
+Ôö£ Ôùï /system/puissances-fiscales                                                     15m     30d
+Ôö£ Ôùï /system/roles                                                                   15m      1y
+Ôö£ Ôùï /system/secteurs                                                                15m      1y
+Ôö£ Ôùï /system/series                                                                  15m      1w
+Ôö£ Ôùï /system/sites                                                                   15m      1d
+Ôö£ Ôùï /system/suppression-controle-technique                                          15m      1y
+Ôö£ Ôùï /system/suppression-delivrance                                                  15m      1y
+Ôö£ Ôùï /system/suppression-paiement-assainissement                                     15m      1y
+Ôö£ Ôùï /system/suppression-vente-grossiste                                             15m      1y
+Ôö£ Ôùï /system/suppression-vente-simple                                                15m      1y
+Ôö£ Ôùï /system/suppression-vignette                                                    15m      1y
+Ôö£ Ôùï /system/taux                                                                    15m     30d
+Ôö£ Ôùï /system/type-engins                                                             15m     30d
+Ôö£ Ôùï /system/usages                                                                  15m     30d
+Ôö£ Ôùï /system/utilisateurs                                                            15m      1d
+Ôö£ ÔùÉ /system/web-vitals                                                              15m      1y
+Ôöö ÔùÉ /system/welcom                                                                  15m      1y
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)             prerendered as static content
+ÔùÉ  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ãÆ  (Dynamic)            server-rendered on demand
+

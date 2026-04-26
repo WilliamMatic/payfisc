@@ -1,0 +1,12 @@
+
+> payfisc@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.1.4 (Turbopack, Cache Components)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬À serverActions
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 8.0s
+  Running TypeScript ...

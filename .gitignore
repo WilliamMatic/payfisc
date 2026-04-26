@@ -44,6 +44,7 @@ next-env.d.ts
 
 # mobile assainissement
 /src/app/activity/(assainissement)/mobile/
+/src/app/activity/(assainissement)/mobileV0/
 
 # backend
 /backend/

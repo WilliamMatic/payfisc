@@ -69,6 +69,10 @@ export default function Login() {
                   router.push("/activity/environnement/dashboard");
                   return;
                 }
+                if (firstTax.includes("foncier") || firstTax.includes("foncière")) {
+                  router.push("/activity/foncier/dashboard");
+                  return;
+                }
               }
             } catch (e) {
               console.error("Erreur récupération taxes site:", e);

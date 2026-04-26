@@ -363,6 +363,11 @@ export default function ImmatriculationPrint({
         ? (qrElement as HTMLCanvasElement).toDataURL()
         : "";
 
+      const signatures: Record<string, string> = {
+        DGRSA: "https://willyaminsi.com/signature-sankuru.png",
+        DGRKOR: "https://willyaminsi.com/signature-kasai-oriental.pdf.png",
+      };
+
       // Si Template Carte Actuel n'est pas activé
       const printContentSansTemplate = `
         <!DOCTYPE html>
@@ -591,7 +596,7 @@ export default function ImmatriculationPrint({
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
+                <div class="signature-box"><img src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             
@@ -844,9 +849,7 @@ export default function ImmatriculationPrint({
 
               <div class="sig-wrap">
                 <div class="signature-box"><img 
-  src="${utilisateur?.site_code === "DGRSA" 
-    ? "https://willyaminsi.com/signature-sankuru.png" 
-    : "https://willyaminsi.com/signature-fixe.jpg"}"
+  src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}"
   style="
     max-width: 100%;
     max-height: 100%;

@@ -77,6 +77,11 @@ export default function PrintModal({
           ? (qrElement as HTMLCanvasElement).toDataURL()
           : "";
 
+        const signatures: Record<string, string> = {
+          DGRSA: "https://willyaminsi.com/signature-sankuru.png",
+          DGRKOR: "https://willyaminsi.com/signature-kasai-oriental.pdf.png",
+        };
+
         // Si Template Carte Actuel est activé
         const printContentAvecTemplate = `
 <!DOCTYPE html>
@@ -145,11 +150,7 @@ export default function PrintModal({
         </tbody>
       </table>
       <div class="sig-wrap"><div class="signature-box"><img 
-  src="${
-    utilisateur?.site_code === "DGRSA"
-      ? "https://willyaminsi.com/signature-sankuru.png"
-      : "https://willyaminsi.com/signature-fixe.jpg"
-  }"
+  src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}"
   style="
     max-width: 100%;
     max-height: 100%;
@@ -220,7 +221,7 @@ export default function PrintModal({
           <tr style="position: relative; top: -43px;"><th></th><td style="text-transform: uppercase;">${carte.puissance_vehicule || "-"}</td></tr>
         </tbody>
       </table>
-      <div class="sig-wrap"><div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div></div>
+      <div class="sig-wrap"><div class="signature-box"><img src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}" width="70" height="50" style="position: relative;top: 0px;"></div></div>
     </div>
     <script>window.onload = function() { setTimeout(() => { window.print(); }, 300); };</script>
   </body>

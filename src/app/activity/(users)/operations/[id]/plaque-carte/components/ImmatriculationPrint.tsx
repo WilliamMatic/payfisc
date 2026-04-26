@@ -41,6 +41,11 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
       const qrElement = document.querySelector('.qr-code-canvas canvas');
       const qrDataUrl = qrElement ? (qrElement as HTMLCanvasElement).toDataURL() : '';
 
+      const signatures: Record<string, string> = {
+        DGRSA: "https://willyaminsi.com/signature-sankuru.png",
+        DGRKOR: "https://willyaminsi.com/signature-kasai-oriental.pdf.png",
+      };
+
       const printContent = `
         <!DOCTYPE html>
         <html>
@@ -243,7 +248,7 @@ export default function ImmatriculationPrint({ data, isOpen, onClose }: Immatric
               </table>
 
               <div class="sig-wrap">
-                <div class="signature-box"><img src="${utilisateur?.site_code === "DGRSA" ? "https://willyaminsi.com/signature-sankuru.png" : "https://willyaminsi.com/signature-fixe.jpg"}" width="70" height="50" style="position: relative;top: 0px;"></div>
+                <div class="signature-box"><img src="${signatures[utilisateur?.site_code ?? ''] || 'https://willyaminsi.com/signature-fixe.jpg'}" width="70" height="50" style="position: relative;top: 0px;"></div>
               </div>
             </div>
             
