@@ -30,6 +30,7 @@ import {
 } from "@/services/reproduction/reproductionService";
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import ReproductionPrint from "./ReproductionPrint";
+import FicheIdentificationPrint from "../[id]/client-simple/components/FicheIdentificationPrint";
 import { useAuth } from "@/contexts/AuthContext";
 import { parseAndNormalizePrivileges } from '@/utils/normalizePrivileges';
 
@@ -102,6 +103,7 @@ interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPrint: () => void;
+  onPrintFiche: () => void;
   data: any;
 }
 
@@ -297,6 +299,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   isOpen,
   onClose,
   onPrint,
+  onPrintFiche,
   data,
 }) => {
   if (!isOpen) return null;
@@ -344,6 +347,13 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
 
           <div className="flex space-x-3 pt-4 border-t border-gray-200">
             <button
+              onClick={onPrintFiche}
+              className="flex-1 px-4 py-3 text-orange-700 bg-orange-50 hover:bg-orange-100 rounded-xl transition-all font-semibold border border-orange-200"
+              title="Imprimer la fiche provisoire (validité 7 jours)"
+            >
+              Fiche provisoire
+            </button>
+            <button
               onClick={onPrint}
               className="flex-1 px-4 py-3 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all font-semibold"
             >
@@ -383,6 +393,7 @@ export default function ReproductionServicesClient({
   const [erreurVerification, setErreurVerification] = useState("");
   const [successData, setSuccessData] = useState<any>(null);
   const [printData, setPrintData] = useState<any>(null);
+  const [showFiche, setShowFiche] = useState(false);
 
   // États pour le taux
   const [tauxActif, setTauxActif] = useState<Taux | null>(null);
@@ -676,6 +687,11 @@ export default function ReproductionServicesClient({
   const handlePrint = () => {
     setShowSuccess(false);
     setShowPrint(true);
+  };
+
+  const handlePrintFiche = () => {
+    setShowSuccess(false);
+    setShowFiche(true);
   };
 
   const handleSuccessClose = () => {
@@ -1421,6 +1437,7 @@ export default function ReproductionServicesClient({
           isOpen={showSuccess}
           onClose={handleSuccessClose}
           onPrint={handlePrint}
+          onPrintFiche={handlePrintFiche}
           data={successData}
         />
 
@@ -1429,6 +1446,36 @@ export default function ReproductionServicesClient({
           isOpen={showPrint}
           onClose={handlePrintClose}
         />
+
+        {/* Fiche d'identification provisoire (7 jours) */}
+        {printData && (
+          <FicheIdentificationPrint
+            data={{
+              nom: printData.nom || "",
+              prenom: printData.prenom || "",
+              adresse: printData.adresse || "",
+              nif: printData.nif || "",
+              numero_plaque: printData.numero_plaque || "",
+              annee_circulation: printData.annee_circulation || "",
+              marque: printData.marque || "",
+              type_engin: printData.type_engin || "",
+              usage: printData.usage || "",
+              numero_chassis: printData.numero_chassis || "",
+              numero_moteur: printData.numero_moteur || "",
+              annee_fabrication: printData.annee_fabrication || "",
+              couleur: printData.couleur || "",
+              puissance_fiscal: printData.puissance_fiscal || "",
+              energie: printData.energie || "",
+              paiement_id: String(printData.paiement_id || ""),
+              modele: "",
+              telephone: formData.telephone || "",
+              email: formData.email || "",
+              date_immatriculation: new Date().toISOString().split("T")[0],
+            }}
+            isOpen={showFiche}
+            onClose={() => setShowFiche(false)}
+          />
+        )}
       </div>
     </div>
   );

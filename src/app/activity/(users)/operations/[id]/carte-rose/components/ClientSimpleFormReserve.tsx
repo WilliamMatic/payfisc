@@ -1661,7 +1661,8 @@ export default function ClientSimpleForm({
 
   // Gestion de l'ouverture de la fiche d'identification
   const handleOpenFicheIdentification = () => {
-    setShowModalSupplementaire(true);
+    // Plus de modal supplémentaire : on ouvre directement la fiche pour impression.
+    setShowFicheIdentification(true);
   };
 
   // ÉTAPE 3: Confirmation et soumission finale

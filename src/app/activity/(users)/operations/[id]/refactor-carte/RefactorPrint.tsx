@@ -3,6 +3,8 @@ import { useRef, useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { formatPlaque } from "../../utils/formatPlaque";
 import { useAuth } from "@/contexts/AuthContext";
+import FicheIdentificationPrint from "../client-simple/components/FicheIdentificationPrint";
+import { FileText } from "lucide-react";
 
 interface PrintData {
   nom: string;
@@ -40,6 +42,33 @@ export default function RefactorPrint({
   const { utilisateur } = useAuth();
   const printRef = useRef<HTMLDivElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showFiche, setShowFiche] = useState(false);
+
+  // Données pour la fiche d'identification provisoire (7 jours)
+  const ficheData = data
+    ? {
+        nom: data.nom || "",
+        prenom: data.prenom || "",
+        adresse: data.adresse || "",
+        nif: data.nif || "",
+        numero_plaque: data.numero_plaque || "",
+        annee_circulation: data.annee_circulation || "",
+        marque: data.marque || "",
+        type_engin: data.type_engin || "",
+        usage: data.usage || "",
+        numero_chassis: data.numero_chassis || "",
+        numero_moteur: data.numero_moteur || "",
+        annee_fabrication: data.annee_fabrication || "",
+        couleur: data.couleur || "",
+        puissance_fiscal: data.puissance_fiscal || "",
+        energie: data.energie || "",
+        paiement_id: data.paiement_id || data.id || "",
+        modele: "",
+        telephone: "",
+        email: "",
+        date_immatriculation: new Date().toISOString().split("T")[0],
+      }
+    : null;
 
   // QR Code : infos lisibles
   const qrValue = data ? [
@@ -632,6 +661,14 @@ export default function RefactorPrint({
             </h3>
             <div className="flex space-x-3">
               <button
+                onClick={() => setShowFiche(true)}
+                className="px-4 py-2 bg-orange-100 text-orange-700 border border-orange-300 rounded-lg hover:bg-orange-200 transition-colors flex items-center space-x-2"
+                title="Imprimer la fiche provisoire (validité 7 jours)"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Fiche provisoire</span>
+              </button>
+              <button
                 onClick={handlePrint}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
@@ -943,6 +980,15 @@ export default function RefactorPrint({
           </div>
         </div>
       </div>
+
+      {/* Fiche d'identification provisoire (7 jours) */}
+      {ficheData && (
+        <FicheIdentificationPrint
+          data={ficheData}
+          isOpen={showFiche}
+          onClose={() => setShowFiche(false)}
+        />
+      )}
     </div>
   );
 }

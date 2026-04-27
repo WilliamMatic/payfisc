@@ -2,11 +2,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Printer, RefreshCw, AlertCircle, User, Car, X } from "lucide-react";
+import { Printer, RefreshCw, AlertCircle, User, Car, X, FileText } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { formatPlaque } from "../../operations/utils/formatPlaque";
 import { mettreAJourStatusCarte } from "@/services/cartes-reprint/cartesReprintService";
 import { CarteReprint } from "../types";
+import FicheIdentificationPrint from "../../operations/[id]/client-simple/components/FicheIdentificationPrint";
 
 interface PrintModalProps {
   isOpen: boolean;
@@ -27,6 +28,33 @@ export default function PrintModal({
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [printError, setPrintError] = useState<string | null>(null);
+  const [showFiche, setShowFiche] = useState(false);
+
+  // Mapping CarteReprint -> données attendues par FicheIdentificationPrint
+  const ficheData = carte
+    ? {
+        nom: carte.nom_proprietaire || "",
+        prenom: "",
+        adresse: carte.adresse_proprietaire || "",
+        nif: carte.nif_proprietaire || "",
+        numero_plaque: carte.numero_plaque || "",
+        annee_circulation: carte.annee_mise_circulation || "",
+        marque: carte.marque_vehicule || "",
+        type_engin: "",
+        usage: carte.usage_vehicule || "",
+        numero_chassis: carte.numero_chassis || "",
+        numero_moteur: carte.numero_moteur || "",
+        annee_fabrication: carte.annee_fabrication || "",
+        couleur: carte.couleur_vehicule || "",
+        puissance_fiscal: carte.puissance_vehicule || "",
+        energie: "",
+        paiement_id: String(carte.id || ""),
+        modele: "",
+        telephone: "",
+        email: "",
+        date_immatriculation: new Date().toISOString().split("T")[0],
+      }
+    : null;
 
   // QR Code : infos lisibles
   const qrValue = carte
@@ -301,6 +329,15 @@ export default function PrintModal({
             </h3>
             <div className="flex space-x-3">
               <button
+                onClick={() => setShowFiche(true)}
+                disabled={isPrinting}
+                className="px-4 py-2 bg-orange-100 text-orange-700 border border-orange-300 rounded-lg hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                title="Imprimer la fiche provisoire (validité 7 jours)"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Fiche provisoire</span>
+              </button>
+              <button
                 onClick={handlePrint}
                 disabled={isPrinting}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
@@ -518,6 +555,15 @@ export default function PrintModal({
           </div>
         </div>
       </div>
+
+      {/* Fiche d'identification provisoire (7 jours) — déclenchée par le bouton "Fiche provisoire" */}
+      {ficheData && (
+        <FicheIdentificationPrint
+          data={ficheData}
+          isOpen={showFiche}
+          onClose={() => setShowFiche(false)}
+        />
+      )}
     </div>
   );
 }

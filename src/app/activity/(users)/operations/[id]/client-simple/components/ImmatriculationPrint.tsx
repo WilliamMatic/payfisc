@@ -887,8 +887,8 @@ export default function ImmatriculationPrint({
   };
 
   const handleOpenFiche = () => {
-    // Afficher d'abord le modal supplémentaire
-    setShowModalSupplementaire(true);
+    // Plus de modal supplémentaire : on lance directement l'impression de la fiche.
+    setShowFiche(true);
   };
 
   const handleSubmitSupplementaire = (suppData: FicheSupplementaire) => {
