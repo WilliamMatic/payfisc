@@ -544,13 +544,13 @@ export default function ClientSimpleForm({
     <>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* SECTION ASSUJETTI */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
             <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 Informations de l'Assujetti
               </h2>
               <p className="text-xs text-gray-500">
@@ -808,7 +808,7 @@ export default function ClientSimpleForm({
                         : `${reductionValeur}$ par plaque`}
                     </span>
                   </div>
-                  <div className="text-lg font-bold text-blue-800">
+                  <div className="text-[15px] font-semibold text-blue-800">
                     -{reductionMontant.toFixed(2)} $
                   </div>
                 </div>
@@ -821,13 +821,13 @@ export default function ClientSimpleForm({
         </div>
 
         {/* SECTION PLAQUES (inchangée) */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
             <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
               <Car className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 Commande de Plaques
               </h2>
               <p className="text-xs text-gray-500">
@@ -961,13 +961,13 @@ export default function ClientSimpleForm({
         </div>
 
         {/* CALCUL ET SOUMISSION */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
             <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
               <Calculator className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 Calcul et Validation
               </h2>
               <p className="text-xs text-gray-500">
@@ -997,7 +997,7 @@ export default function ClientSimpleForm({
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between text-lg font-bold text-blue-800 border-t pt-2">
+                  <div className="flex justify-between text-[15px] font-semibold text-blue-800 border-t pt-2">
                     <span>Montant final:</span>
                     <span>{montantAPayer}</span>
                   </div>
@@ -1015,7 +1015,7 @@ export default function ClientSimpleForm({
                 <div className="text-sm text-blue-600 font-medium">
                   Montant en Francs
                 </div>
-                <div className="text-2xl font-bold text-blue-800 mt-2">
+                <div className="text-[18px] font-semibold text-blue-800 mt-2">
                   {montantEnFrancs}
                 </div>
                 <div className="text-sm text-gray-600 mt-4">
@@ -1042,7 +1042,7 @@ export default function ClientSimpleForm({
             <button
               type="submit"
               disabled={isSubmitting || !sequenceValide}
-              className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
             >
               {isSubmitting ? (
                 <>
@@ -1065,7 +1065,7 @@ export default function ClientSimpleForm({
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Confirmation</h3>
+              <h3 className="text-[15px] font-semibold text-gray-900">Confirmation</h3>
               <button
                 onClick={() => setShowConfirmation(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
@@ -1134,7 +1134,7 @@ export default function ClientSimpleForm({
               </button>
               <button
                 onClick={handleConfirmation}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-semibold"
+                className="flex-1 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all text-sm font-medium"
               >
                 Confirmer et Payer
               </button>
@@ -1193,7 +1193,7 @@ function ModalPaiement({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-gray-900">Mode de Paiement</h3>
+          <h3 className="text-[15px] font-semibold text-gray-900">Mode de Paiement</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
@@ -1315,12 +1315,12 @@ function ModalPaiement({
           )}
 
           {/* Montant */}
-          <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-            <div className="text-sm text-blue-600 font-medium">
+          <div className="p-5 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="text-[13px] text-blue-600 font-medium">
               Montant à payer
             </div>
-            <div className="text-3xl font-bold text-blue-800">{montant}</div>
-            <div className="text-lg font-semibold text-blue-700 mt-2">
+            <div className="text-[18px] font-semibold text-blue-800">{montant}</div>
+            <div className="text-[13px] font-medium text-blue-700 mt-2">
               {montantEnFrancs}
             </div>
           </div>
@@ -1330,7 +1330,7 @@ function ModalPaiement({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold border-2 border-transparent hover:border-gray-300"
+              className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 text-sm font-medium border-2 border-transparent hover:border-gray-300"
               disabled={isLoading}
             >
               Annuler
@@ -1338,7 +1338,7 @@ function ModalPaiement({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Traitement..." : "Confirmer"}
             </button>

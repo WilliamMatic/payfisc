@@ -1,22 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import {
-  ArrowLeft,
-  User,
-  Car,
-  CreditCard,
-  FileText,
-  CheckCircle,
-  Printer,
-  Search,
-  AlertCircle,
-  X,
-  CheckCircle2,
-  Hash,
-  Lock,
-  RefreshCw,
-} from "lucide-react";
+import { ArrowLeft, User, Car, Hash, Lock, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getImpotById, Impot } from "@/services/impots/impotService";
 
@@ -25,6 +10,11 @@ import {
   traiterRefactor,
   type DonneesRefactor,
 } from "@/services/refactor/refactorService";
+import {
+  verifierChassis,
+  type ChassisVerificationResponse,
+} from "@/services/carte-rose/carteRoseService";
+import ModalChassisExistant from "@/app/_components/shared/ModalChassisExistant";
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
 import RefactorPrint from "./RefactorPrint";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,90 +26,37 @@ import {
   type TypeEngin,
 } from "@/services/type-engins/typeEnginService";
 
-// Interfaces pour les modals
-interface SuccessModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onPrint: () => void;
-  data: any;
-}
+import { type Etape, type RefactorFormData } from "./components/types";
+import SuccessModal from "./components/modals/SuccessModal";
+import PageHeader from "./components/PageHeader";
+import EtapeVerification from "./components/EtapeVerification";
+import EtapeConfirmation from "./components/EtapeConfirmation";
 
-// Composant Modal de Succès
-const SuccessModal: React.FC<SuccessModalProps> = ({
-  isOpen,
-  onClose,
-  onPrint,
-  data,
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-gray-100">
-        <div className="p-6">
-          <div className="text-center mb-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-1">
-              Refactorisation Réussie!
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Les données ont été corrigées avec succès.
-            </p>
-          </div>
-
-          <div className="space-y-4 mb-4">
-            <div className="text-center bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-              <div className="text-sm text-green-600 font-medium">
-                Numéro de plaque
-              </div>
-              <div className="text-2xl font-bold text-green-700 mt-1">
-                {data?.numero_plaque}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500 text-xs">Assujetti:</span>
-                <p className="font-semibold text-gray-800">
-                  {data?.nom} {data?.prenom}
-                </p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs">ID DGRK:</span>
-                <p className="font-semibold text-gray-800">{data?.id}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex space-x-3 pt-4 border-t border-gray-200">
-            <button
-              onClick={onPrint}
-              className="flex-1 px-4 py-3 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all font-semibold"
-            >
-              Imprimer la Carte
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-semibold"
-            >
-              Terminer
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+const EMPTY_FORM: RefactorFormData = {
+  nom: "",
+  prenom: "",
+  telephone: "",
+  email: "",
+  adresse: "",
+  nif: "",
+  typeEngin: "",
+  anneeFabrication: "",
+  anneeCirculation: "",
+  couleur: "",
+  puissanceFiscal: "",
+  usage: "",
+  marque: "",
+  energie: "",
+  numeroPlaque: "",
+  numeroChassis: "",
+  numeroMoteur: "",
 };
 
 export default function RefactorCarteClient() {
   const router = useRouter();
   const params = useParams();
   const [impot, setImpot] = useState<Impot | null>(null);
-  const [etapeActuelle, setEtapeActuelle] = useState<
-    "verification" | "confirmation" | "recapitulatif"
-  >("verification");
+  const [etapeActuelle, setEtapeActuelle] = useState<Etape>("verification");
   const [idDGRK, setIdDGRK] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -137,25 +74,14 @@ export default function RefactorCarteClient() {
   // États pour les types d'engins seulement
   const [typeEngins, setTypeEngins] = useState<TypeEngin[]>([]);
 
-  const [formData, setFormData] = useState({
-    nom: "",
-    prenom: "",
-    telephone: "",
-    email: "",
-    adresse: "",
-    nif: "",
-    typeEngin: "",
-    anneeFabrication: "",
-    anneeCirculation: "",
-    couleur: "",
-    puissanceFiscal: "",
-    usage: "",
-    marque: "",
-    energie: "",
-    numeroPlaque: "",
-    numeroChassis: "",
-    numeroMoteur: "",
-  });
+  const [formData, setFormData] = useState<RefactorFormData>(EMPTY_FORM);
+
+  // Vérification du numéro de châssis
+  const [showModalChassisExistant, setShowModalChassisExistant] = useState(false);
+  const [chassisExistantData, setChassisExistantData] =
+    useState<ChassisVerificationResponse["data"]>(null);
+  const [chassisConfirme, setChassisConfirme] = useState(false);
+  const [verificationChassisLoading, setVerificationChassisLoading] = useState(false);
 
   const { utilisateur, isLoading: authLoading } = useAuth();
   const [parsedPrivileges, setParsedPrivileges] = useState<any>(null);
@@ -331,6 +257,37 @@ export default function RefactorCarteClient() {
       ...prev,
       [field]: value,
     }));
+    if (field === "numeroChassis" && chassisConfirme) {
+      setChassisConfirme(false);
+    }
+  };
+
+  // Vérification du numéro de châssis au blur
+  const handleChassisBlur = async () => {
+    const chassis = formData.numeroChassis.trim();
+    if (!chassis || chassis.length < 3) return;
+    if (chassisConfirme) return;
+
+    // Pour la source 'locale' (refactor MPAKO), on exclut l'engin courant
+    const enginIdExclu =
+      donneesRefactor?.source === "locale" ? donneesRefactor?.engin_id : null;
+
+    setVerificationChassisLoading(true);
+    try {
+      const result = await verifierChassis(
+        chassis,
+        utilisateur?.id,
+        enginIdExclu,
+      );
+      if (result.status === "success" && result.data) {
+        setChassisExistantData(result.data);
+        setShowModalChassisExistant(true);
+      }
+    } catch (error) {
+      console.error("Erreur vérification châssis:", error);
+    } finally {
+      setVerificationChassisLoading(false);
+    }
   };
 
   const traiterRefactorisation = async () => {
@@ -366,6 +323,7 @@ export default function RefactorCarteClient() {
         },
         donneesRefactor?.source, // Passer la source
         utilisateur?.site_code, // Ajouter le site_code ici
+        donneesRefactor?.carte_reprint_id, // Identifiant carte_reprint si source = carte_reprint
       );
 
       if (result.status === "success") {
@@ -388,7 +346,8 @@ export default function RefactorCarteClient() {
           annee_circulation: formData.anneeCirculation,
           puissance_fiscal: formData.puissanceFiscal,
           montant:
-            donneesRefactor?.source === "externe"
+            donneesRefactor?.source === "externe" ||
+            donneesRefactor?.source === "carte_reprint"
               ? "0"
               : donneesRefactor?.montant?.toString() || "0",
           date_jour: new Date().toLocaleDateString("fr-FR"),
@@ -413,56 +372,13 @@ export default function RefactorCarteClient() {
     setShowPrint(true);
   };
 
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    // Réinitialiser pour un nouveau refactor
+  const resetForm = () => {
     setEtapeActuelle("verification");
     setIdDGRK("");
-    setFormData({
-      nom: "",
-      prenom: "",
-      telephone: "",
-      email: "",
-      adresse: "",
-      nif: "",
-      typeEngin: "",
-      anneeFabrication: "",
-      anneeCirculation: "",
-      couleur: "",
-      puissanceFiscal: "",
-      usage: "",
-      marque: "",
-      energie: "",
-      numeroPlaque: "",
-      numeroChassis: "",
-      numeroMoteur: "",
-    });
-  };
-
-  const handlePrintClose = () => {
-    setShowPrint(false);
-    // Réinitialiser complètement
-    setEtapeActuelle("verification");
-    setIdDGRK("");
-    setFormData({
-      nom: "",
-      prenom: "",
-      telephone: "",
-      email: "",
-      adresse: "",
-      nif: "",
-      typeEngin: "",
-      anneeFabrication: "",
-      anneeCirculation: "",
-      couleur: "",
-      puissanceFiscal: "",
-      usage: "",
-      marque: "",
-      energie: "",
-      numeroPlaque: "",
-      numeroChassis: "",
-      numeroMoteur: "",
-    });
+    setFormData(EMPTY_FORM);
+    setChassisConfirme(false);
+    setChassisExistantData(null);
+    setShowModalChassisExistant(false);
   };
 
   // Afficher un écran de chargement pendant le chargement de l'impôt
@@ -473,10 +389,10 @@ export default function RefactorCarteClient() {
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
             Chargement du service...
           </h2>
-          <p className="text-gray-600">
+          <p className="text-[13px] text-gray-600">
             Veuillez patienter pendant le chargement des données.
           </p>
         </div>
@@ -490,10 +406,10 @@ export default function RefactorCarteClient() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
             Chargement...
           </h2>
-          <p className="text-gray-600">
+          <p className="text-[13px] text-gray-600">
             Veuillez patienter pendant que nous vérifions vos accès.
           </p>
         </div>
@@ -509,10 +425,10 @@ export default function RefactorCarteClient() {
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <User className="w-8 h-8 text-blue-600" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
             Session expirée
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-[13px] text-gray-600 mb-6">
             Veuillez vous reconnecter pour accéder à cette page.
           </p>
           <button
@@ -530,15 +446,15 @@ export default function RefactorCarteClient() {
   if (!parsedPrivileges?.ventePlaque?.correctionErreur) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-red-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
               Accès Refusé
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[13px] text-gray-600 mb-6">
               Vous n'avez pas les privilèges nécessaires pour accéder à cette
               fonctionnalité.
             </p>
@@ -577,111 +493,20 @@ export default function RefactorCarteClient() {
     );
   }
 
-  // Rendu de l'étape de vérification
-  const renderEtapeVerification = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
-          <Search className="w-5 h-5 text-[#2D5B7A]" />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Étape 1: Vérification de l'ID DGRK ou Numéro de plaque
-          </h2>
-          <p className="text-gray-600 text-sm">
-            Saisissez l'identifiant DGRK ou le numéro de plaque pour récupérer
-            les informations du véhicule à corriger
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-md">
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Identifiant DGRK ou Numéro de plaque{" "}
-            <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={idDGRK}
-            onChange={(e) => {
-              setIdDGRK(e.target.value);
-              setErreurVerification("");
-            }}
-            placeholder="Ex: AA256 ou 123456"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p className="text-gray-500 text-sm mt-2">
-            Le système récupérera automatiquement les informations depuis la
-            base MPAKO
-          </p>
-        </div>
-
-        {erreurVerification && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h4 className="font-semibold text-red-800 text-sm">
-                Erreur de vérification
-              </h4>
-              <p className="text-red-700 text-sm mt-1">{erreurVerification}</p>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-[#2D5B7A]/5 rounded-lg p-4 border border-[#2D5B7A]/15">
-          <div className="flex items-start space-x-3">
-            <RefreshCw className="w-5 h-5 text-[#2D5B7A] mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-[#2D5B7A] text-sm">
-                Service de Correction
-              </h4>
-              <div className="text-lg font-bold text-[#2D5B7A]">
-                Correction des données
-              </div>
-              <div className="text-md font-semibold text-[#2D5B7A]/80 mt-1">
-                Aucun frais supplémentaire
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-8">
-          <button
-            onClick={handleVerification}
-            disabled={isLoading || !idDGRK.trim()}
-            className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-          >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Vérification en cours...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                <span>Vérifier et Continuer</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
+  // Récupération des données via ID DGRK maintenant dans renderEtapeVerification (composant EtapeVerification)
   // Rendu de l'étape confirmation
   const renderEtapeConfirmation = () => (
     <div className="space-y-8">
       {/* EN-TÊTE AVEC DONNÉES RÉCUPÉRÉES */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-700">
+          <h3 className="text-[15px] font-semibold text-gray-700">
             {donneesRefactor?.source === "externe"
               ? `Données récupérées depuis base externe - Plaque: ${formData.numeroPlaque}`
               : `Informations Récupérées - ID DGRK: ${idDGRK}`}
           </h3>
           <span
-            className={`text-xs px-2 py-1 rounded-full ${
+            className={`text-[11px] px-2 py-0.5 rounded-full ${
               donneesRefactor?.source === "externe"
                 ? "bg-blue-100 text-blue-800"
                 : "bg-green-100 text-green-800"
@@ -696,7 +521,7 @@ export default function RefactorCarteClient() {
         {/* Message d'information pour les données externes */}
         {donneesRefactor?.source === "externe" && (
           <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-700 text-sm">
+            <p className="text-blue-700 text-[13px]">
               <strong>Note:</strong> Ces données proviennent de la base externe.
               Un nouvel enregistrement sera créé avec un montant de{" "}
               <strong>0$</strong>.
@@ -704,7 +529,7 @@ export default function RefactorCarteClient() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[13px]">
           <div>
             <span className="text-gray-500">Numéro de Plaque:</span>
             <div className="text-gray-700 font-medium">
@@ -729,16 +554,16 @@ export default function RefactorCarteClient() {
       </div>
 
       {/* INFORMATIONS ASSUJETTI */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
           <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
             <User className="w-5 h-5 text-[#2D5B7A]" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-[15px] font-semibold text-gray-900">
               Informations de l'Assujetti
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-[13px] text-gray-600">
               {donneesRefactor?.source === "externe"
                 ? "Vérifiez et complétez les informations personnelles du propriétaire"
                 : "Corrigez les informations personnelles du propriétaire"}
@@ -833,16 +658,16 @@ export default function RefactorCarteClient() {
       </div>
 
       {/* INFORMATIONS VÉHICULE */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
           <div className="bg-[#2D5B7A]/10 p-2 rounded-lg">
             <Car className="w-5 h-5 text-[#2D5B7A]" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-[15px] font-semibold text-gray-900">
               Informations de l'Engin
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className="text-[13px] text-gray-600">
               {donneesRefactor?.source === "externe"
                 ? "Vérifiez et complétez les caractéristiques techniques du véhicule"
                 : "Corrigez les caractéristiques techniques du véhicule"}
@@ -999,26 +824,26 @@ export default function RefactorCarteClient() {
       </div>
 
       {/* VALIDATION */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between p-6 bg-[#2D5B7A]/5 rounded-xl border border-[#2D5B7A]/15 mb-6">
           <div>
-            <h4 className="font-semibold text-[#2D5B7A] text-sm">
+            <h4 className="font-semibold text-[#2D5B7A] text-[13px]">
               Service de Correction
             </h4>
-            <div className="text-2xl font-bold text-[#2D5B7A]">
+            <div className="text-[18px] font-semibold text-[#2D5B7A]">
               {donneesRefactor?.source === "externe"
                 ? "Création d'un nouvel enregistrement"
                 : "Refactorisation des données"}
             </div>
-            <div className="text-lg font-semibold text-[#2D5B7A]/80 mt-2">
+            <div className="text-[13px] font-medium text-[#2D5B7A]/80 mt-2">
               {donneesRefactor?.source === "externe"
                 ? "Montant: 0$ (Nouvelle création)"
                 : "Aucun frais supplémentaire"}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-[#2D5B7A] font-medium">Statut</div>
-            <div className="text-xl font-bold text-green-600">
+            <div className="text-[13px] text-[#2D5B7A] font-medium">Statut</div>
+            <div className="text-[15px] font-semibold text-green-600">
               {donneesRefactor?.source === "externe"
                 ? "Nouvelle création"
                 : "Correction"}
@@ -1032,7 +857,7 @@ export default function RefactorCarteClient() {
               setEtapeActuelle("verification");
               setErreurVerification("");
             }}
-            className="flex items-center space-x-2 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors font-semibold border-2 border-transparent hover:border-gray-300"
+            className="flex items-center space-x-2 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors text-sm font-medium border-2 border-transparent hover:border-gray-300"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Retour</span>
@@ -1041,7 +866,7 @@ export default function RefactorCarteClient() {
           <button
             onClick={traiterRefactorisation}
             disabled={isLoading}
-            className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md font-semibold disabled:opacity-50"
+            className="flex items-center space-x-2 px-6 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 text-sm font-medium disabled:opacity-50"
           >
             <RefreshCw className="w-4 h-4" />
             <span>
@@ -1060,94 +885,56 @@ export default function RefactorCarteClient() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
-        {/* HEADER */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Retour aux services</span>
-            </button>
-            <div className="text-sm text-gray-500">ID: #{impot.id}</div>
-          </div>
+        <PageHeader
+          impot={impot}
+          etapeActuelle={etapeActuelle}
+          onBack={() => router.back()}
+        />
 
-          <div className="flex items-center space-x-4">
-            <div className="bg-[#2D5B7A]/10 p-3 rounded-lg">
-              <RefreshCw className="w-8 h-8 text-[#2D5B7A]" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Gestion des Erreurs - Refactorisation
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Correction des informations mal saisies sur les cartes roses
-              </p>
-            </div>
-          </div>
+        {etapeActuelle === "verification" && (
+          <EtapeVerification
+            idDGRK={idDGRK}
+            setIdDGRK={setIdDGRK}
+            isLoading={isLoading}
+            erreurVerification={erreurVerification}
+            setErreurVerification={setErreurVerification}
+            handleVerification={handleVerification}
+          />
+        )}
 
-          {/* DESCRIPTION */}
-          <div className="mt-4 p-4 bg-[#2D5B7A]/5 rounded-lg border border-[#2D5B7A]/15">
-            <p className="text-[#2D5B7A] text-sm">
-              Ce service permet de corriger les informations mal saisies sur les
-              cartes roses existantes. Saisissez l'identifiant DGRK pour
-              récupérer automatiquement les informations du véhicule.
-            </p>
-          </div>
+        {etapeActuelle === "confirmation" && (
+          <EtapeConfirmation
+            formData={formData}
+            handleInputChange={handleInputChange}
+            donneesRefactor={donneesRefactor}
+            typeEngins={typeEngins}
+            isLoading={isLoading}
+            traiterRefactorisation={traiterRefactorisation}
+            setEtapeActuelle={setEtapeActuelle}
+            setErreurVerification={setErreurVerification}
+            onChassisBlur={handleChassisBlur}
+            verificationChassisLoading={verificationChassisLoading}
+          />
+        )}
 
-          {/* INDICATEUR D'ÉTAPE */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {["verification", "confirmation", "recapitulatif"].map(
-                (etape, index) => (
-                  <div key={etape} className="flex items-center">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                        etapeActuelle === etape
-                          ? "bg-[#2D5B7A] text-white"
-                          : index <
-                              [
-                                "verification",
-                                "confirmation",
-                                "recapitulatif",
-                              ].indexOf(etapeActuelle)
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-300 text-gray-600"
-                      }`}
-                    >
-                      {index <
-                      ["verification", "confirmation", "recapitulatif"].indexOf(
-                        etapeActuelle,
-                      ) ? (
-                        <CheckCircle className="w-4 h-4" />
-                      ) : (
-                        index + 1
-                      )}
-                    </div>
-                    {index < 2 && (
-                      <div className="w-16 h-1 bg-gray-300 mx-2"></div>
-                    )}
-                  </div>
-                ),
-              )}
-            </div>
-            <div className="flex justify-between max-w-2xl mx-auto mt-2 text-xs text-gray-600">
-              <span>Vérification</span>
-              <span>Correction</span>
-              <span>Terminé</span>
-            </div>
-          </div>
-        </div>
+        <ModalChassisExistant
+          isOpen={showModalChassisExistant && !!chassisExistantData}
+          chassisData={chassisExistantData}
+          onAnnuler={() => {
+            setShowModalChassisExistant(false);
+            setChassisExistantData(null);
+            setChassisConfirme(false);
+            setFormData((prev) => ({ ...prev, numeroChassis: "" }));
+          }}
+          onContinuer={() => {
+            setShowModalChassisExistant(false);
+            setChassisConfirme(true);
+          }}
+        />
 
-        {/* CONTENU PRINCIPAL */}
-        {etapeActuelle === "verification" && renderEtapeVerification()}
-        {etapeActuelle === "confirmation" && renderEtapeConfirmation()}
-
-        {/* MODALS */}
         <SuccessModal
           isOpen={showSuccess}
-          onClose={handleSuccessClose}
+          onClose={resetForm}
           onPrint={handlePrint}
           data={successData}
         />
@@ -1155,7 +942,10 @@ export default function RefactorCarteClient() {
         <RefactorPrint
           data={printData}
           isOpen={showPrint}
-          onClose={handlePrintClose}
+          onClose={() => {
+            setShowPrint(false);
+            resetForm();
+          }}
         />
       </div>
     </div>

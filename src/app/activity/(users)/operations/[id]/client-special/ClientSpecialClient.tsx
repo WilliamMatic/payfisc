@@ -31,10 +31,10 @@ export default function ClientSpecialClient() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
             Chargement...
           </h2>
-          <p className="text-gray-600">
+          <p className="text-[13px] text-gray-600">
             Veuillez patienter pendant que nous vérifions vos accès.
           </p>
         </div>
@@ -50,10 +50,10 @@ export default function ClientSpecialClient() {
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <User className="w-8 h-8 text-blue-600" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
             Session expirée
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-[13px] text-gray-600 mb-6">
             Veuillez vous reconnecter pour accéder à cette page.
           </p>
           <button
@@ -71,15 +71,15 @@ export default function ClientSpecialClient() {
   if (!parsedPrivileges?.ventePlaque?.special) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 max-w-md w-full mx-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-red-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
               Accès Refusé
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[13px] text-gray-600 mb-6">
               Vous n'avez pas les privilèges nécessaires pour accéder à cette
               fonctionnalité.
             </p>
@@ -122,7 +122,7 @@ export default function ClientSpecialClient() {
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* HEADER */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 mb-6 overflow-hidden">
           <div className="px-5 py-3 flex items-center justify-between border-b border-gray-100">
             <button
               onClick={() => router.back()}
@@ -150,7 +150,7 @@ export default function ClientSpecialClient() {
               <User className="w-5 h-5 text-[#2D5B7A]" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">
+              <h1 className="text-[15px] font-semibold text-gray-900">
                 Client Spécial — Immatriculation Plaques
               </h1>
               <p className="text-xs text-gray-500">

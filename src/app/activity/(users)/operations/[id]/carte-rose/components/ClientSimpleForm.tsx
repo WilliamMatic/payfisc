@@ -20,6 +20,7 @@ import {
   verifierPlaqueTelephone,
   soumettreCarteRose,
   verifierTelephoneExistant,
+  verifierChassis,
   rechercherModeles,
   creerModele,
   rechercherPuissancesFiscales,
@@ -28,6 +29,8 @@ import {
   type ParticulierData,
   type EnginData,
   type CarteRoseResponse,
+  type ChassisVerificationResponse,
+  type CarteExistanteDetails,
 } from "@/services/carte-rose/carteRoseService";
 import {
   rechercherCouleur,
@@ -58,6 +61,14 @@ import {
   getPuissancesFiscalesActives,
   type PuissanceFiscale,
 } from "@/services/puissances-fiscales/puissanceFiscaleService";
+import ToastContainer, { type Toast } from "./modals/ToastContainer";
+import AddCouleurModal from "./modals/AddCouleurModal";
+import ModalSupplementaire from "./modals/ModalSupplementaire";
+import ModalChassisExistant from "./modals/ModalChassisExistant";
+import ModalVerification from "./modals/ModalVerification";
+import ModalCarteExistante from "./modals/ModalCarteExistante";
+import ModalPlaqueDoublon from "./modals/ModalPlaqueDoublon";
+import ModalRecap from "./modals/ModalRecap";
 
 interface FormData {
   // Étape vérification
@@ -146,483 +157,7 @@ interface FicheSupplementaire {
   niup_moto: string;
 }
 
-// Modal pour les messages (succès/erreur)
-interface MessageModalProps {
-  isOpen: boolean;
-  type: "success" | "error" | "warning" | "info";
-  title: string;
-  message: string;
-  onClose: () => void;
-  onAction?: () => void;
-  actionText?: string;
-  showAction?: boolean;
-}
 
-// Interface pour le composant d'ajout de couleur
-interface AddCouleurModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (nom: string, codeHex: string) => Promise<void>;
-  defaultNom?: string;
-}
-
-const AddCouleurModal: React.FC<AddCouleurModalProps> = ({
-  isOpen,
-  onClose,
-  onAdd,
-  defaultNom = "",
-}) => {
-  const [nom, setNom] = useState("");
-  const [codeHex, setCodeHex] = useState("#000000");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Reset à chaque ouverture du modal
-  useEffect(() => {
-    if (isOpen) {
-      setNom(defaultNom);
-      setCodeHex("#000000");
-    }
-  }, [isOpen, defaultNom]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nom.trim()) return;
-    setIsSubmitting(true);
-    try {
-      await onAdd(nom, codeHex);
-      setNom("");
-      setCodeHex("#000000");
-      onClose();
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la couleur:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900">
-            Ajouter une nouvelle couleur
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Nom de la couleur <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={nom}
-              onChange={(e) => setNom(e.target.value)}
-              placeholder="Ex: Rouge vif, Bleu nuit..."
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Code couleur <span className="text-red-500">*</span>
-            </label>
-            <div className="flex items-center space-x-4">
-              <input
-                type="color"
-                value={codeHex}
-                onChange={(e) => setCodeHex(e.target.value)}
-                className="w-12 h-12 cursor-pointer rounded-lg border border-gray-300"
-              />
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={codeHex}
-                  onChange={(e) => setCodeHex(e.target.value)}
-                  placeholder="#000000"
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-                  pattern="^#[0-9A-Fa-f]{6}$"
-                  title="Code hexadécimal (ex: #FF0000)"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Code hexadécimal (ex: #FF0000 pour rouge)
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
-              disabled={isSubmitting}
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !nom.trim()}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader className="w-4 h-4 mr-2 animate-spin" />
-                  Ajout...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Ajouter la couleur
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Modal principal pour afficher les messages
-const MessageModal: React.FC<MessageModalProps> = ({
-  isOpen,
-  type,
-  title,
-  message,
-  onClose,
-  onAction,
-  actionText = "OK",
-  showAction = true,
-}) => {
-  if (!isOpen) return null;
-
-  const typeConfig = {
-    success: {
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200",
-      textColor: "text-green-800",
-      iconColor: "text-green-600",
-      icon: CheckCircle,
-    },
-    error: {
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200",
-      textColor: "text-red-800",
-      iconColor: "text-red-600",
-      icon: AlertCircle,
-    },
-    warning: {
-      bgColor: "bg-yellow-50",
-      borderColor: "border-yellow-200",
-      textColor: "text-yellow-800",
-      iconColor: "text-yellow-600",
-      icon: AlertCircle,
-    },
-    info: {
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
-      textColor: "text-blue-800",
-      iconColor: "text-blue-600",
-      icon: Info,
-    },
-  };
-
-  const config = typeConfig[type];
-  const Icon = config.icon;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
-        <div className="flex items-start space-x-4 mb-6">
-          <div className={`p-2 rounded-full ${config.bgColor}`}>
-            <Icon className={`w-6 h-6 ${config.iconColor}`} />
-          </div>
-          <div className="flex-1">
-            <h3 className={`text-lg font-semibold ${config.textColor} mb-2`}>
-              {title}
-            </h3>
-            <div className={`text-sm ${config.textColor}`}>
-              {message.split("\n").map((line, idx) => (
-                <p key={idx} className="mb-1">
-                  {line}
-                </p>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex justify-end space-x-3">
-          {showAction && onAction && (
-            <button
-              onClick={onAction}
-              className={`px-6 py-2 rounded-lg font-medium ${
-                type === "success"
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : type === "error"
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : type === "warning"
-                      ? "bg-yellow-600 hover:bg-yellow-700 text-white"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"
-              } transition-colors`}
-            >
-              {actionText}
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className="px-6 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
-          >
-            Fermer
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Modal pour compléter les informations supplémentaires
-const ModalSupplementaire: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: FicheSupplementaire) => void;
-  defaultAdresse?: string;
-}> = ({ isOpen, onClose, onSubmit, defaultAdresse = "" }) => {
-  const [formData, setFormData] = useState<FicheSupplementaire>({
-    sexe: "",
-    date_naissance: "",
-    lieu_naissance: "",
-    adresse_complete: defaultAdresse,
-    types_document: {
-      carte_identite: false,
-      passeport: false,
-      permis_conduire: false,
-      carte_electeur: false,
-    },
-    niup_moto: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  const toggleDocumentType = (type: keyof typeof formData.types_document) => {
-    setFormData((prev) => ({
-      ...prev,
-      types_document: {
-        ...prev.types_document,
-        [type]: !prev.types_document[type],
-      },
-    }));
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900">
-            Informations supplémentaires pour la fiche d'identification
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Sexe <span className="text-red-500">*</span>
-            </label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="sexe"
-                  value="Masculin"
-                  checked={formData.sexe === "Masculin"}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, sexe: e.target.value }))
-                  }
-                  className="mr-2"
-                  required
-                />
-                Masculin
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="sexe"
-                  value="Féminin"
-                  checked={formData.sexe === "Féminin"}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, sexe: e.target.value }))
-                  }
-                  className="mr-2"
-                />
-                Féminin
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Date de naissance <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={formData.date_naissance}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date_naissance: e.target.value,
-                }))
-              }
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Lieu de naissance <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.lieu_naissance}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  lieu_naissance: e.target.value,
-                }))
-              }
-              placeholder="Ex: Kinshasa/Gombe"
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Adresse complète <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={formData.adresse_complete}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  adresse_complete: e.target.value,
-                }))
-              }
-              placeholder="Ex: Avenue de la Justice N°123, Quartier, Commune, Ville"
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[80px]"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Type de document d'identité{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.types_document.carte_identite}
-                  onChange={() => toggleDocumentType("carte_identite")}
-                  className="mr-2"
-                />
-                Carte d'identité
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.types_document.passeport}
-                  onChange={() => toggleDocumentType("passeport")}
-                  className="mr-2"
-                />
-                Passeport
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.types_document.permis_conduire}
-                  onChange={() => toggleDocumentType("permis_conduire")}
-                  className="mr-2"
-                />
-                Permis de conduire
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.types_document.carte_electeur}
-                  onChange={() => toggleDocumentType("carte_electeur")}
-                  className="mr-2"
-                />
-                Carte d'électeur
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              NIUP Moto <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.niup_moto}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, niup_moto: e.target.value }))
-              }
-              placeholder="Ex: CD-KN-2024-123456"
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all duration-200 font-semibold"
-            >
-              Générer la fiche
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 export default function ClientSimpleForm({
   impotId,
@@ -678,21 +213,7 @@ export default function ClientSimpleForm({
   const [showFicheIdentification, setShowFicheIdentification] = useState(false);
 
   // État pour le modal de messages
-  const [modalMessage, setModalMessage] = useState<{
-    isOpen: boolean;
-    type: "success" | "error" | "warning" | "info";
-    title: string;
-    message: string;
-    onAction?: () => void;
-    actionText?: string;
-    showAction?: boolean;
-  }>({
-    isOpen: false,
-    type: "info",
-    title: "",
-    message: "",
-    showAction: true,
-  });
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
   // États de chargement
   const [loading, setLoading] = useState({
@@ -707,6 +228,7 @@ export default function ClientSimpleForm({
     rechercheCouleurs: false,
     ajoutCouleur: false,
     rechercheMarques: false,
+    verificationChassis: false,
   });
 
   const [plaqueInfo, setPlaqueInfo] = useState<PlaqueInfo | null>(null);
@@ -717,10 +239,20 @@ export default function ClientSimpleForm({
   const [isVerifying, setIsVerifying] = useState(false);
   const [showModalVerification, setShowModalVerification] = useState(false);
   const [showModalCarteExistante, setShowModalCarteExistante] = useState(false);
+  const [carteExistanteData, setCarteExistanteData] =
+    useState<CarteExistanteDetails | null>(null);
+  const [showModalPlaqueDoublon, setShowModalPlaqueDoublon] = useState(false);
+  const [plaqueDublonData, setPlaqueDublonData] =
+    useState<CarteExistanteDetails | null>(null);
   const [showModalRecap, setShowModalRecap] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
   const [printData, setPrintData] = useState<any>(null);
   const [showAddCouleurModal, setShowAddCouleurModal] = useState(false);
+
+  // États pour la vérification du châssis
+  const [showModalChassisExistant, setShowModalChassisExistant] = useState(false);
+  const [chassisExistantData, setChassisExistantData] = useState<ChassisVerificationResponse["data"]>(null);
+  const [chassisConfirme, setChassisConfirme] = useState(false);
 
   // États pour l'auto-complétion
   const [suggestionsModeles, setSuggestionsModeles] = useState<any[]>([]);
@@ -728,6 +260,26 @@ export default function ClientSimpleForm({
   const [showSuggestionsModeles, setShowSuggestionsModeles] = useState(false);
   const [showSuggestionsPuissances, setShowSuggestionsPuissances] =
     useState(false);
+
+  // Handler vérification châssis au blur
+  const handleChassisBlur = useCallback(async () => {
+    const chassis = formData.numeroChassis.trim();
+    if (!chassis || chassis.length < 3) return;
+    if (chassisConfirme) return; // déjà confirmé par l'agent
+
+    setLoading((prev) => ({ ...prev, verificationChassis: true }));
+    try {
+      const result = await verifierChassis(chassis, utilisateur?.id);
+      if (result.status === "success" && result.data) {
+        setChassisExistantData(result.data);
+        setShowModalChassisExistant(true);
+      }
+    } catch (error) {
+      console.error("Erreur vérification châssis:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, verificationChassis: false }));
+    }
+  }, [formData.numeroChassis, chassisConfirme, utilisateur]);
 
   // Références pour les timeouts
   const rechercheModeleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -737,29 +289,23 @@ export default function ClientSimpleForm({
   const justSelectedMarque = useRef(false);
   const justSelectedPuissance = useRef(false);
 
-  // Fonction pour afficher un message modal
+  // Fonction pour afficher un toast
   const showMessage = (
     type: "success" | "error" | "warning" | "info",
     title: string,
     message: string,
-    onAction?: () => void,
-    actionText?: string,
-    showAction?: boolean,
   ) => {
-    setModalMessage({
-      isOpen: true,
-      type,
-      title,
-      message,
-      onAction,
-      actionText,
-      showAction,
-    });
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setToasts((prev) => [...prev, { id, type, title, message }]);
   };
 
-  // Fonction pour fermer le modal de message
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  // Vide tous les toasts (ex: retour formulaire)
   const closeMessage = () => {
-    setModalMessage((prev) => ({ ...prev, isOpen: false }));
+    setToasts([]);
   };
 
   // Fonction pour réinitialiser complètement le formulaire
@@ -817,15 +363,10 @@ export default function ClientSimpleForm({
   // Bouton "Retour au formulaire"
   const handleRetourFormulaire = () => {
     closeMessage();
+    reinitialiserFormulaire();
+    setChassisConfirme(false);
+    setChassisExistantData(null);
     setEtapeActuelle("formulaire");
-    showMessage(
-      "info",
-      "Retour au formulaire",
-      "Vous pouvez maintenant modifier les informations du formulaire.",
-      undefined,
-      "Compris",
-      true,
-    );
   };
 
   // Générer les options d'années (memoized)
@@ -907,6 +448,7 @@ export default function ClientSimpleForm({
             rechercheCouleurs: false,
             ajoutCouleur: false,
             rechercheMarques: false,
+            verificationChassis: false,
           });
         }
       }
@@ -1217,9 +759,9 @@ export default function ClientSimpleForm({
         parseInt(formData.marqueId),
       );
 
-      if (result.status === "success" && result.data) {
+      if (result.status === "success") {
         const newModele = {
-          id: result.data[0]?.id || Date.now(),
+          id: result.data?.[0]?.id || Date.now(),
           libelle: formData.modele,
           description: "Nouveau modèle créé",
         };
@@ -1234,7 +776,7 @@ export default function ClientSimpleForm({
         showMessage(
           "success",
           "Modèle créé",
-          "Le modèle a été créé avec succès",
+          result.message || "Le modèle a été créé avec succès",
         );
       } else {
         showMessage(
@@ -1455,6 +997,7 @@ export default function ClientSimpleForm({
 
         switch (result.type) {
           case "carte_existante":
+            setCarteExistanteData(result.details ?? null);
             setShowModalCarteExistante(true);
             break;
           case "conflit_particulier":
@@ -1737,11 +1280,17 @@ export default function ClientSimpleForm({
           "La carte rose a été créée avec succès. Vous pouvez maintenant l'imprimer.",
         );
       } else {
-        showMessage(
-          "error",
-          "Erreur de soumission",
-          result.message || "Erreur lors de la soumission",
-        );
+        setShowModalRecap(false);
+        if (result.type === "plaque_deja_enregistree") {
+          setPlaqueDublonData(result.details ?? null);
+          setShowModalPlaqueDoublon(true);
+        } else {
+          showMessage(
+            "error",
+            "Erreur de soumission",
+            result.message || "Erreur lors de la soumission",
+          );
+        }
       }
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
@@ -2571,15 +2120,36 @@ export default function ClientSimpleForm({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Numéro de châssis
             </label>
-            <input
-              type="text"
-              value={formData.numeroChassis}
-              onChange={(e) =>
-                handleInputChange("numeroChassis", e.target.value)
-              }
-              placeholder="Entrez le numéro de châssis"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.numeroChassis}
+                onChange={(e) => {
+                  handleInputChange("numeroChassis", e.target.value);
+                  if (chassisConfirme) setChassisConfirme(false);
+                }}
+                onBlur={handleChassisBlur}
+                placeholder="Entrez le numéro de châssis"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 pr-9 ${
+                  chassisConfirme
+                    ? "border-orange-400 focus:ring-orange-400 bg-orange-50"
+                    : "border-gray-300 focus:ring-blue-500"
+                }`}
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                {loading.verificationChassis ? (
+                  <Loader className="w-4 h-4 text-gray-400 animate-spin" />
+                ) : chassisConfirme ? (
+                  <span title="Châssis confirmé par l'agent" className="text-orange-500 text-xs font-bold">!</span>
+                ) : null}
+              </div>
+            </div>
+            {chassisConfirme && (
+              <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Ce châssis existe déjà — continuez uniquement si l'assujetti confirme qu'il lui appartient.
+              </p>
+            )}
           </div>
 
           {/* Numéro de moteur */}
@@ -2716,6 +2286,22 @@ export default function ClientSimpleForm({
 
   return (
     <>
+      {/* MODALS */}
+      <ModalChassisExistant
+        isOpen={showModalChassisExistant && !!chassisExistantData}
+        chassisData={chassisExistantData}
+        onAnnuler={() => {
+          handleInputChange("numeroChassis", "");
+          setChassisConfirme(false);
+          setShowModalChassisExistant(false);
+          setChassisExistantData(null);
+        }}
+        onContinuer={() => {
+          setChassisConfirme(true);
+          setShowModalChassisExistant(false);
+        }}
+      />
+
       {/* MODAL D'AJOUT DE COULEUR */}
       <AddCouleurModal
         isOpen={showAddCouleurModal}
@@ -2724,224 +2310,63 @@ export default function ClientSimpleForm({
         defaultNom=""
       />
 
-      {/* MODAL DE MESSAGES */}
-      <MessageModal
-        isOpen={modalMessage.isOpen}
-        type={modalMessage.type}
-        title={modalMessage.title}
-        message={modalMessage.message}
-        onClose={closeMessage}
-        onAction={modalMessage.onAction}
-        actionText={modalMessage.actionText}
-        showAction={modalMessage.showAction}
+      {/* TOASTS */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+      <ModalVerification
+        isOpen={showModalVerification}
+        particulierInfo={particulierInfo}
+        numeroPlaque={formData.numeroPlaque}
+        onAnnuler={() => setShowModalVerification(false)}
+        onContinuer={passerAuFormulaire}
       />
 
-      {/* MODAL VÉRIFICATION RÉUSSIE */}
-      {showModalVerification && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-            <div className="p-6">
-              <h3 className="font-bold text-lg mb-4 text-green-600">
-                ✅ Vérification Réussie
-              </h3>
+      <ModalCarteExistante
+        isOpen={showModalCarteExistante}
+        details={carteExistanteData}
+        onClose={reinitialiserChampsVerification}
+      />
 
-              <div className="space-y-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-800 mb-2">
-                    Particulier Trouvé
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-green-600">Nom:</span>
-                      <span className="font-medium">
-                        {particulierInfo?.nom} {particulierInfo?.prenom}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-green-600">Téléphone:</span>
-                      <span className="font-medium">
-                        {particulierInfo?.telephone}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-green-600">Adresse:</span>
-                      <span className="font-medium">
-                        {particulierInfo?.adresse}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+      <ModalPlaqueDoublon
+        isOpen={showModalPlaqueDoublon}
+        details={plaqueDublonData}
+        onClose={() => {
+          setShowModalPlaqueDoublon(false);
+          reinitialiserFormulaire();
+          setEtapeActuelle("verification");
+        }}
+      />
 
-                <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-400 text-center">
-                  <div className="text-blue-800 text-sm mb-2">
-                    Plaque vérifiée et disponible
-                  </div>
-                  <div className="text-3xl font-bold text-blue-700 bg-white py-3 px-6 rounded-lg border-2 border-blue-500">
-                    {formData.numeroPlaque}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={() => setShowModalVerification(false)}
-                  className="px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={passerAuFormulaire}
-                  className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                  <span>Passer au Formulaire</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL CARTE ROSE EXISTANTE */}
-      {showModalCarteExistante && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-            <div className="p-6">
-              <div className="flex items-center space-x-2 mb-4">
-                <X className="w-6 h-6 text-red-500" />
-                <h3 className="font-bold text-lg text-red-600">
-                  Carte Rose Déjà Délivrée
-                </h3>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                  <p className="text-red-700">
-                    Une carte rose a déjà été délivrée pour cette plaque.
-                    Impossible de procéder à une nouvelle délivrance.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  onClick={reinitialiserChampsVerification}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Compris
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL RÉCAPITULATIF AVANT SOUMISSION */}
-      {showModalRecap && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h3 className="font-bold text-lg mb-6">Confirmation Finale</h3>
-
-              <div className="space-y-6 mb-6">
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-3">
-                    Récapitulatif de la Carte Rose
-                  </h4>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-blue-600">Plaque:</span>
-                      <div className="font-medium text-lg text-blue-800">
-                        {formData.numeroPlaque}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-blue-600">Propriétaire:</span>
-                      <div className="font-medium">
-                        {formData.nom} {formData.prenom}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-blue-600">Marque:</span>
-                      <div className="font-medium">{formData.marque}</div>
-                    </div>
-                    <div>
-                      <span className="text-blue-600">Modèle:</span>
-                      <div className="font-medium">{formData.modele}</div>
-                    </div>
-                    <div>
-                      <span className="text-blue-600">Couleur:</span>
-                      <div className="flex items-center space-x-2">
-                        {couleurs.find((c) => c.nom === formData.couleur) && (
-                          <div
-                            className="w-4 h-4 rounded-full border border-gray-300"
-                            style={{
-                              backgroundColor: couleurs.find(
-                                (c) => c.nom === formData.couleur,
-                              )?.code_hex,
-                            }}
-                          />
-                        )}
-                        <span className="font-medium">{formData.couleur}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-blue-600">Puissance:</span>
-                      <div className="font-medium">
-                        {formData.puissanceFiscal}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-blue-600">Téléphone:</span>
-                      <div className="font-medium">
-                        {formData.telephoneAssujetti || "Non fourni"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                  <h4 className="font-semibold text-yellow-800 mb-2">
-                    ⚠️ Confirmation Requise
-                  </h4>
-                  <p className="text-yellow-700 text-sm">
-                    Voulez-vous confirmer la délivrance de cette carte rose ?
-                    Cette action est irréversible.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setShowModalRecap(false)}
-                  disabled={isSubmitting}
-                  className="px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium disabled:opacity-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleConfirmerSoumission}
-                  disabled={isSubmitting}
-                  className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Traitement...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Confirmer la Délivrance</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalRecap
+        isOpen={showModalRecap}
+        recapData={{
+          numeroPlaque: formData.numeroPlaque,
+          nom: formData.nom,
+          prenom: formData.prenom,
+          telephoneAssujetti: formData.telephoneAssujetti,
+          email: formData.email,
+          adresse: formData.adresse,
+          ville: formData.ville,
+          code_postal: formData.code_postal,
+          province: formData.province,
+          nif: formData.nif,
+          typeEngin: formData.typeEngin,
+          marque: formData.marque,
+          modele: formData.modele,
+          energie: formData.energie,
+          anneeFabrication: formData.anneeFabrication,
+          anneeCirculation: formData.anneeCirculation,
+          couleur: formData.couleur,
+          puissanceFiscal: formData.puissanceFiscal,
+          usage: formData.usage,
+          numeroChassis: formData.numeroChassis,
+          numeroMoteur: formData.numeroMoteur,
+        }}
+        couleurs={couleurs}
+        isSubmitting={isSubmitting}
+        onAnnuler={() => setShowModalRecap(false)}
+        onConfirmer={handleConfirmerSoumission}
+      />
 
       {/* MODAL POUR COMPLÉTER LES INFORMATIONS SUPPLÉMENTAIRES */}
       <ModalSupplementaire

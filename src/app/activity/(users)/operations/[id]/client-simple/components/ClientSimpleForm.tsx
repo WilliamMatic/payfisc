@@ -57,6 +57,11 @@ import {
   type PlaqueResult,
 } from "@/services/immatriculation/plaqueService";
 import { getTauxActif, type Taux } from "@/services/taux/tauxService";
+import {
+  verifierChassis,
+  type ChassisVerificationResponse,
+} from "@/services/carte-rose/carteRoseService";
+import ModalChassisExistant from "@/app/_components/shared/ModalChassisExistant";
 import ImmatriculationPrint from "./ImmatriculationPrint";
 
 interface FormData {
@@ -168,7 +173,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900">Mode de Paiement</h3>
+          <h3 className="text-[15px] font-semibold text-gray-900">Mode de Paiement</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
@@ -262,12 +267,12 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             </div>
           )}
 
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-            <div className="text-sm text-blue-600 font-medium">
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="text-[13px] text-blue-600 font-medium">
               Montant à payer
             </div>
-            <div className="text-2xl font-bold text-blue-800">{montant}</div>
-            <div className="text-lg font-semibold text-blue-700 mt-1">
+            <div className="text-[18px] font-semibold text-blue-800">{montant}</div>
+            <div className="text-[13px] font-medium text-blue-700 mt-1">
               {montantEnFrancs}
             </div>
           </div>
@@ -276,7 +281,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
+              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 text-sm font-medium"
               disabled={isLoading}
             >
               Annuler
@@ -284,7 +289,7 @@ const PaiementModal: React.FC<PaiementModalProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 text-sm font-medium disabled:opacity-50"
             >
               {isLoading ? "Traitement..." : "Confirmer"}
             </button>
@@ -310,9 +315,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-gray-100">
-        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="p-6 border-b border-gray-200 bg-blue-50">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-[15px] font-semibold text-gray-900">
               Récapitulatif de la Demande
             </h3>
             <button
@@ -429,24 +434,24 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </div>
               </div>
               {numeroPlaque && (
-                <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
                   <span className="text-gray-500 text-xs font-medium">
                     Numéro de plaque attribué:
                   </span>
-                  <p className="font-bold text-green-600 text-lg mt-1">
+                  <p className="font-semibold text-green-600 text-[15px] mt-1">
                     {numeroPlaque}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-5 text-white">
+            <div className="bg-[#2D5B7A] rounded-xl p-5 text-white">
               <div className="text-center">
-                <div className="text-blue-100 text-sm font-medium">
+                <div className="text-blue-100 text-[13px] font-medium">
                   Montant total à payer
                 </div>
-                <div className="text-3xl font-bold mt-1">{montantAPayer}</div>
-                <div className="text-xl font-semibold mt-2">
+                <div className="text-[18px] font-semibold mt-1">{montantAPayer}</div>
+                <div className="text-[13px] font-medium mt-2">
                   {montantEnFrancs}
                 </div>
               </div>
@@ -458,7 +463,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <div className="flex space-x-3">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-3 text-gray-700 bg-white border border-gray-300 hover:border-gray-400 rounded-xl transition-all font-semibold"
+              className="flex-1 px-4 py-3 text-gray-700 bg-white border border-gray-300 hover:border-gray-400 rounded-xl transition-all text-sm font-medium"
               disabled={isLoading}
             >
               Retour
@@ -466,7 +471,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all font-semibold disabled:opacity-50 flex items-center justify-center space-x-2"
+              className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all text-sm font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
             >
               {isLoading ? (
                 <>
@@ -505,20 +510,20 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-1">
+            <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
               Immatriculation Réussie!
             </h3>
-            <p className="text-gray-600 text-sm">
+            <p className="text-[13px] text-gray-600">
               La demande d'immatriculation a été traitée avec succès.
             </p>
           </div>
 
           <div className="space-y-4 mb-4">
-            <div className="text-center bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-              <div className="text-sm text-green-600 font-medium">
+            <div className="text-center bg-green-50 p-4 rounded-xl border border-green-200">
+              <div className="text-[13px] text-green-600 font-medium">
                 Numéro de plaque attribué
               </div>
-              <div className="text-2xl font-bold text-green-700 mt-1">
+              <div className="text-[18px] font-semibold text-green-700 mt-1">
                 {data?.numero_plaque}
               </div>
             </div>
@@ -579,7 +584,7 @@ const AnnulationModal: React.FC<AnnulationModalProps> = ({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900">
+          <h3 className="text-[15px] font-semibold text-gray-900">
             Annuler l'Immatriculation
           </h3>
           <button
@@ -623,7 +628,7 @@ const AnnulationModal: React.FC<AnnulationModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold"
+              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 text-sm font-medium"
               disabled={isLoading}
             >
               Annuler
@@ -631,7 +636,7 @@ const AnnulationModal: React.FC<AnnulationModalProps> = ({
             <button
               type="submit"
               disabled={isLoading || !raison.trim()}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 font-semibold disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 text-sm font-medium disabled:opacity-50"
             >
               {isLoading ? "Traitement..." : "Confirmer l'annulation"}
             </button>
@@ -733,7 +738,14 @@ export default function ClientSimpleForm({
     couleurs: false,
     usages: false,
     puissances: false,
+    verificationChassis: false,
   });
+
+  // États pour la vérification du châssis
+  const [showModalChassisExistant, setShowModalChassisExistant] = useState(false);
+  const [chassisExistantData, setChassisExistantData] =
+    useState<ChassisVerificationResponse["data"]>(null);
+  const [chassisConfirme, setChassisConfirme] = useState(false);
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -825,13 +837,14 @@ export default function ClientSimpleForm({
         }
       } finally {
         if (!cancelled) {
-          setLoading({
+          setLoading((prev) => ({
+            ...prev,
             typeEngins: false,
             energies: false,
             couleurs: false,
             usages: false,
             puissances: false,
-          });
+          }));
           setLoadingTaux(false);
         }
       }
@@ -1217,6 +1230,26 @@ export default function ClientSimpleForm({
     setNouvelleCouleurCode("#000000");
   };
 
+  // Vérification du numéro de châssis au blur
+  const handleChassisBlur = async () => {
+    const chassis = formData.numeroChassis.trim();
+    if (!chassis || chassis.length < 3) return;
+    if (chassisConfirme) return;
+
+    setLoading((prev) => ({ ...prev, verificationChassis: true }));
+    try {
+      const result = await verifierChassis(chassis, utilisateur?.id);
+      if (result.status === "success" && result.data) {
+        setChassisExistantData(result.data);
+        setShowModalChassisExistant(true);
+      }
+    } catch (error) {
+      console.error("Erreur vérification châssis:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, verificationChassis: false }));
+    }
+  };
+
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -1595,13 +1628,13 @@ export default function ClientSimpleForm({
     <>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* SECTION ASSUJETTI */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
             <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 Informations de l'Assujetti
               </h2>
               <p className="text-xs text-gray-500">
@@ -1810,13 +1843,13 @@ export default function ClientSimpleForm({
         </div>
 
         {/* SECTION ENGIN */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
             <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
               <Car className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 Informations de l'Engin
               </h2>
               <p className="text-xs text-gray-500">
@@ -2369,15 +2402,24 @@ export default function ClientSimpleForm({
               <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Numéro de châssis
               </label>
-              <input
-                type="text"
-                value={formData.numeroChassis}
-                onChange={(e) =>
-                  handleInputChange("numeroChassis", e.target.value)
-                }
-                placeholder="Entrez le numéro de châssis"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.numeroChassis}
+                  onChange={(e) => {
+                    handleInputChange("numeroChassis", e.target.value);
+                    if (chassisConfirme) setChassisConfirme(false);
+                  }}
+                  onBlur={handleChassisBlur}
+                  placeholder="Entrez le numéro de châssis"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+                />
+                {loading.verificationChassis && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Numéro de moteur */}
@@ -2399,13 +2441,13 @@ export default function ClientSimpleForm({
         </div>
 
         {/* CALCUL ET SOUMISSION */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center space-x-3 mb-5 pb-4 border-b border-gray-100">
             <div className="w-8 h-8 bg-[#2D5B7A]/10 rounded-lg flex items-center justify-center flex-shrink-0">
               <Calculator className="w-4 h-4 text-[#2D5B7A]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 Calcul et Validation
               </h2>
               <p className="text-xs text-gray-500">
@@ -2419,10 +2461,10 @@ export default function ClientSimpleForm({
               <div className="text-xs text-[#2D5B7A] font-medium uppercase tracking-wide">
                 Montant à payer
               </div>
-              <div className="text-2xl font-bold text-gray-900 mt-1">
+              <div className="text-[18px] font-semibold text-gray-900 mt-1">
                 {montantAPayer}
               </div>
-              <div className="text-sm font-semibold text-gray-600 mt-1">
+              <div className="text-[13px] font-medium text-gray-600 mt-1">
                 {montantEnFrancs}
               </div>
               {tauxActif && (
@@ -2443,7 +2485,7 @@ export default function ClientSimpleForm({
               <div className="text-xs text-[#2D5B7A] font-medium uppercase tracking-wide">
                 Délai d'accord
               </div>
-              <div className="text-lg font-bold text-green-600 mt-1">Immédiat</div>
+              <div className="text-[15px] font-semibold text-green-600 mt-1">Immédiat</div>
               {utilisateur && (
                 <div className="text-xs text-gray-500 mt-1">
                   Site: {utilisateur.site_nom}
@@ -2456,14 +2498,14 @@ export default function ClientSimpleForm({
             <button
               type="button"
               onClick={() => window.history.back()}
-              className="px-8 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-semibold border-2 border-transparent hover:border-gray-300"
+              className="px-8 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 text-sm font-medium border-2 border-transparent hover:border-gray-300"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={isSubmitDisabled}
-              className="flex items-center space-x-3 px-8 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="flex items-center space-x-3 px-8 py-3 bg-[#2D5B7A] text-white rounded-xl hover:bg-[#244D68] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
             >
               {isSubmitting ? (
                 <>
@@ -2522,6 +2564,21 @@ export default function ClientSimpleForm({
         data={printData}
         isOpen={showPrint}
         onClose={handlePrintClose}
+      />
+
+      <ModalChassisExistant
+        isOpen={showModalChassisExistant && !!chassisExistantData}
+        chassisData={chassisExistantData}
+        onAnnuler={() => {
+          setShowModalChassisExistant(false);
+          setChassisExistantData(null);
+          setChassisConfirme(false);
+          setFormData((prev) => ({ ...prev, numeroChassis: "" }));
+        }}
+        onContinuer={() => {
+          setShowModalChassisExistant(false);
+          setChassisConfirme(true);
+        }}
       />
     </>
   );

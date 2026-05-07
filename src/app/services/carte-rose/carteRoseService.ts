@@ -39,10 +39,46 @@ export interface EnginData {
   numeroMoteur?: string;
 }
 
+export interface CarteExistanteDetails {
+  // Assujetti
+  nom_complet: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  adresse: string;
+  ville: string;
+  nif: string;
+  // Plaque
+  numero_plaque: string;
+  date_attribution: string;
+  // Site
+  site_id: number | null;
+  site_nom: string;
+  site_code: string;
+  province_nom: string;
+  // Agent enregistreur (optionnel — présent sur plaque_deja_enregistree)
+  agent_id?: number | null;
+  agent_nom?: string;
+  // Engin
+  engin_id: number | null;
+  type_engin: string;
+  marque: string;
+  energie: string;
+  annee_fabrication: string;
+  annee_circulation: string;
+  couleur: string;
+  puissance_fiscal: string;
+  usage_engin: string;
+  numero_chassis: string;
+  numero_moteur: string;
+  engin_date_creation: string;
+}
+
 export interface CarteRoseResponse {
   status: "success" | "error";
   message?: string;
   type?: string;
+  details?: CarteExistanteDetails;
   data?: {
     particulier?: {
       id: number;
@@ -169,6 +205,98 @@ async function invalidateCarteRoseCache() {
   revalidateTag("cartes-plaque-", "max");
 }
 
+export interface ChassisVerificationResponse {
+  status: "success" | "error";
+  message?: string;
+  data: {
+    engin: {
+      id: number;
+      numero_plaque: string;
+      numero_chassis: string;
+      numero_moteur: string;
+      type_engin: string;
+      marque: string;
+      energie: string;
+      annee_fabrication: string;
+      annee_circulation: string;
+      couleur: string;
+      puissance_fiscal: string;
+      usage_engin: string;
+      date_modification: string;
+    };
+    proprietaire: {
+      id: number | null;
+      nom: string;
+      prenom: string;
+      telephone: string;
+      adresse: string;
+      ville: string;
+      nif: string;
+    };
+    enregistrement: {
+      site_id: number | null;
+      site_nom: string;
+      site_code: string;
+      agent_id: number | null;
+      agent_nom: string;
+    };
+  } | null;
+}
+
+/**
+ * Vérifie si un numéro de châssis est déjà enregistré dans un autre engin
+ * PAS DE CACHE - vérification en temps réel
+ */
+export async function verifierChassis(
+  numeroChassis: string,
+  utilisateurId?: number,
+  enginIdExclu?: number | null,
+): Promise<ChassisVerificationResponse> {
+  try {
+    if (!numeroChassis || numeroChassis.trim().length < 3) {
+      return { status: "success", data: null };
+    }
+
+    const formData = new FormData();
+    formData.append("numero_chassis", numeroChassis.trim());
+    if (utilisateurId) {
+      formData.append("utilisateur_id", utilisateurId.toString());
+    }
+    if (enginIdExclu && enginIdExclu > 0) {
+      formData.append("engin_id_exclu", enginIdExclu.toString());
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/carterose/verifier_chassis.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        cache: "no-store",
+      },
+    );
+
+    const data = await response.json();
+
+    if (data.status === "error") {
+      return {
+        status: "error",
+        message: data.message || "Erreur lors de la vérification du châssis",
+        data: null,
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Verification chassis error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification du châssis",
+      data: null,
+    };
+  }
+}
+
 /**
  * Vérifie le téléphone et le numéro de plaque
  */
@@ -197,6 +325,7 @@ export async function verifierPlaqueTelephone(
         status: "error",
         message: data.message || "Échec de la vérification",
         type: data.type,
+        details: data.details,
       };
     }
 
@@ -509,6 +638,8 @@ export async function soumettreCarteRose(
       return {
         status: "error",
         message: data.message || "Échec de la soumission de la carte rose",
+        type: data.type,
+        details: data.details,
       };
     }
 

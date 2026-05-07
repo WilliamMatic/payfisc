@@ -119,6 +119,11 @@ export default function Sidebar({
           label: "Historique des activités",
           href: "/system/audit-logs",
         },
+        {
+          icon: "🛡️",
+          label: "Audit Refactor",
+          href: "/system/refactor-audit",
+        },
         // { icon: "🧾", label: "Paiement", href: "/system/paiement" }
       ],
     },

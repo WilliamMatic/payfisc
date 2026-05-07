@@ -6,8 +6,8 @@
 
 export interface DonneesRefactor {
   id: number;
-  engin_id: number;
-  particulier_id: number;
+  engin_id: number | null;
+  particulier_id: number | null;
   numero_plaque: string;
   type_engin: string;
   marque: string;
@@ -30,14 +30,19 @@ export interface DonneesRefactor {
   date_paiement: string;
   site_nom: string;
   caissier: string;
-  source?: "locale" | "externe";
+  source?: "locale" | "carte_reprint" | "externe";
+  // Champs spécifiques carte_reprint
+  carte_reprint_id?: number;
+  date_creation?: string;
+  site_id?: number;
+  id_paiement?: number | null;
 }
 
 export interface RefactorResponse {
   status: "success" | "error";
   message?: string;
   data?: DonneesRefactor;
-  source?: "locale" | "externe";
+  source?: "locale" | "carte_reprint" | "externe";
 }
 
 const API_BASE_URL =
@@ -73,20 +78,24 @@ export const verifierIdDGRK = async (
         ...data,
         source: "locale",
       };
-    } else {
-      // Si erreur ou non trouvé localement, essayer avec la base externe
-      // Passer extensionNumber (qui est toujours un nombre) à verifierPlaqueExterne
-      const resultExterne = await verifierPlaqueExterne(
-        identifiant
-      );
-      return resultExterne;
     }
+
+    // 2) Tenter dans la table carte_reprint (filtrée par province de l'agent)
+    const resultReprint = await verifierPlaqueCarteReprint(identifiant, siteCode);
+    if (resultReprint.status === "success") {
+      return resultReprint;
+    }
+
+    // 3) Sinon, tenter dans la base externe
+    return await verifierPlaqueExterne(identifiant);
   } catch (error) {
     console.error("Verifier DGRK error:", error);
-    // En cas d'erreur, essayer quand même l'externe
+    // En cas d'erreur réseau sur la base locale, on tente la chaîne carte_reprint -> externe
     try {
-      // Utiliser 0 comme valeur par défaut si extension est undefined/null
-      const extensionNumber = 0;
+      const resultReprint = await verifierPlaqueCarteReprint(identifiant, siteCode);
+      if (resultReprint.status === "success") {
+        return resultReprint;
+      }
       return await verifierPlaqueExterne(identifiant);
     } catch (externeError) {
       return {
@@ -98,25 +107,77 @@ export const verifierIdDGRK = async (
 };
 
 /**
+ * 🔄 Vérifie un numéro de plaque dans la table carte_reprint
+ *    (filtrée sur les sites de la province de l'agent)
+ */
+export const verifierPlaqueCarteReprint = async (
+  numeroPlaque: string,
+  siteCode: string
+): Promise<RefactorResponse> => {
+  'use server';
+
+  try {
+    const formData = new FormData();
+    formData.append("numero_plaque", numeroPlaque);
+    formData.append("site_code", siteCode);
+
+    const response = await fetch(
+      `${API_BASE_URL}/refactor/verifier_carte_reprint.php`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        cache: 'no-store',
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.status === "success") {
+      return {
+        ...data,
+        source: "carte_reprint",
+      };
+    }
+
+    return {
+      status: "error",
+      message: data?.message || "Aucune donnée trouvée dans carte_reprint",
+    };
+  } catch (error) {
+    console.error("Verifier carte_reprint error:", error);
+    return {
+      status: "error",
+      message: "Erreur réseau lors de la vérification carte_reprint",
+    };
+  }
+};
+
+/**
  * 🔄 Traite une demande de refactor (TEMPS RÉEL)
  */
 export const traiterRefactor = async (
   idDGRK: string,
   donneesEngin: any,
   donneesParticulier: any,
-  source?: "locale" | "externe",
-  siteCode?: string // Ajouter le site_code comme paramètre
+  source?: "locale" | "carte_reprint" | "externe",
+  siteCode?: string,
+  carteReprintId?: number
 ): Promise<RefactorResponse> => {
   'use server';
   
   try {
-    const bodyData = {
+    const bodyData: Record<string, any> = {
       id_dgrk: idDGRK,
       donnees_engin: donneesEngin,
       donnees_particulier: donneesParticulier,
       source: source || "locale",
-      site_code: siteCode || "", // Ajouter le site_code ici
+      site_code: siteCode || "",
     };
+
+    if (source === "carte_reprint" && carteReprintId) {
+      bodyData.carte_reprint_id = carteReprintId;
+    }
 
     const response = await fetch(
       `${API_BASE_URL}/refactor/traiter_refactor.php`,
