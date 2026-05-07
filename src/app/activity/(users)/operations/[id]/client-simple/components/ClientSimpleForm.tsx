@@ -826,7 +826,7 @@ export default function ClientSimpleForm({
         }
 
         setLoading((prev) => ({ ...prev, puissances: true }));
-        const puissancesResponse = await getPuissancesFiscalesActives();
+        const puissancesResponse = await getPuissancesFiscalesActives(); 
         if (cancelled) return;
         if (puissancesResponse.status === "success") {
           setPuissancesFiscales(puissancesResponse.data || []);
