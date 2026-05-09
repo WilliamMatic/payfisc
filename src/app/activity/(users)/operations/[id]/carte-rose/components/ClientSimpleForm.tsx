@@ -385,45 +385,54 @@ export default function ClientSimpleForm({
     };
   }, []);
 
-  // Chargement des données initiales avec AbortController
+  // Chargement des données initiales avec Promise.all (parallélisé)
   useEffect(() => {
     let cancelled = false;
 
     const loadInitialData = async () => {
       try {
-        // Charger les types d'engins
-        setLoading((prev) => ({ ...prev, typeEngins: true }));
-        const typeEnginsResponse = await getTypeEnginsActifs();
-        if (!cancelled && typeEnginsResponse.status === "success") {
-          setTypeEngins(typeEnginsResponse.data || []);
-        }
+        // Démarrer tous les loading states
+        setLoading((prev) => ({
+          ...prev,
+          typeEngins: true,
+          energies: true,
+          couleurs: true,
+          usages: true,
+          puissances: true,
+        }));
 
-        // Charger les énergies
-        setLoading((prev) => ({ ...prev, energies: true }));
-        const energiesResponse = await getEnergies();
-        if (!cancelled && energiesResponse.status === "success") {
-          setEnergies(energiesResponse.data || []);
-        }
+        // ✅ Paralléliser TOUS les appels API en même temps
+        const [
+          typeEnginsResponse,
+          energiesResponse,
+          couleursResponse,
+          usagesResponse,
+          puissancesResponse,
+        ] = await Promise.all([
+          getTypeEnginsActifs(),
+          getEnergies(),
+          getCouleursActives(),
+          getUsagesActifs(),
+          getPuissancesFiscalesActives(),
+        ]);
 
-        // Charger les couleurs
-        setLoading((prev) => ({ ...prev, couleurs: true }));
-        const couleursResponse = await getCouleursActives();
-        if (!cancelled && couleursResponse.status === "success") {
-          setCouleurs(couleursResponse.data || []);
-        }
-
-        // Charger les usages
-        setLoading((prev) => ({ ...prev, usages: true }));
-        const usagesResponse = await getUsagesActifs();
-        if (!cancelled && usagesResponse.status === "success") {
-          setUsages(usagesResponse.data || []);
-        }
-
-        // Charger toutes les puissances fiscales
-        setLoading((prev) => ({ ...prev, puissances: true }));
-        const puissancesResponse = await getPuissancesFiscalesActives();
-        if (!cancelled && puissancesResponse.status === "success") {
-          setPuissancesFiscales(puissancesResponse.data || []);
+        // Mettre à jour les états si le composant est encore monté
+        if (!cancelled) {
+          if (typeEnginsResponse.status === "success") {
+            setTypeEngins(typeEnginsResponse.data || []);
+          }
+          if (energiesResponse.status === "success") {
+            setEnergies(energiesResponse.data || []);
+          }
+          if (couleursResponse.status === "success") {
+            setCouleurs(couleursResponse.data || []);
+          }
+          if (usagesResponse.status === "success") {
+            setUsages(usagesResponse.data || []);
+          }
+          if (puissancesResponse.status === "success") {
+            setPuissancesFiscales(puissancesResponse.data || []);
+          }
         }
       } catch (error) {
         if (!cancelled) {

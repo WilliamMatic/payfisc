@@ -782,54 +782,63 @@ export default function ClientSimpleForm({
   ), []);
 
   // Chargement des données initiales
+  // Chargement des données initiales avec Promise.all (parallélisé)
   useEffect(() => {
     let cancelled = false;
 
     const loadInitialData = async () => {
       try {
+        // Démarrer tous les loading states
         setLoadingTaux(true);
-        const tauxResponse = await getTauxActif({
-          province_id: null,
-          impot_id: Number(impotId),
-        });
-        if (cancelled) return;
-        if (tauxResponse.status === "success" && tauxResponse.data) {
-          setTauxActif(tauxResponse.data);
-        }
+        setLoading((prev) => ({
+          ...prev,
+          typeEngins: true,
+          energies: true,
+          couleurs: true,
+          usages: true,
+          puissances: true,
+        }));
 
-        setLoading((prev) => ({ ...prev, typeEngins: true }));
-        const typeEnginsResponse = await getTypeEnginsActifs();
-        if (cancelled) return;
-        if (typeEnginsResponse.status === "success") {
-          setTypeEngins(typeEnginsResponse.data || []);
-        }
+        // ✅ Paralléliser TOUS les appels API en même temps
+        const [
+          tauxResponse,
+          typeEnginsResponse,
+          energiesResponse,
+          couleursResponse,
+          usagesResponse,
+          puissancesResponse,
+        ] = await Promise.all([
+          getTauxActif({
+            province_id: null,
+            impot_id: Number(impotId),
+          }),
+          getTypeEnginsActifs(),
+          getEnergiesActives(),
+          getCouleursActives(),
+          getUsagesActifs(),
+          getPuissancesFiscalesActives(),
+        ]);
 
-        setLoading((prev) => ({ ...prev, energies: true }));
-        const energiesResponse = await getEnergiesActives();
-        if (cancelled) return;
-        if (energiesResponse.status === "success") {
-          setEnergies(energiesResponse.data || []);
-        }
-
-        setLoading((prev) => ({ ...prev, couleurs: true }));
-        const couleursResponse = await getCouleursActives();
-        if (cancelled) return;
-        if (couleursResponse.status === "success") {
-          setCouleurs(couleursResponse.data || []);
-        }
-
-        setLoading((prev) => ({ ...prev, usages: true }));
-        const usagesResponse = await getUsagesActifs();
-        if (cancelled) return;
-        if (usagesResponse.status === "success") {
-          setUsages(usagesResponse.data || []);
-        }
-
-        setLoading((prev) => ({ ...prev, puissances: true }));
-        const puissancesResponse = await getPuissancesFiscalesActives(); 
-        if (cancelled) return;
-        if (puissancesResponse.status === "success") {
-          setPuissancesFiscales(puissancesResponse.data || []);
+        // Mettre à jour les états si le composant est encore monté
+        if (!cancelled) {
+          if (tauxResponse.status === "success" && tauxResponse.data) {
+            setTauxActif(tauxResponse.data);
+          }
+          if (typeEnginsResponse.status === "success") {
+            setTypeEngins(typeEnginsResponse.data || []);
+          }
+          if (energiesResponse.status === "success") {
+            setEnergies(energiesResponse.data || []);
+          }
+          if (couleursResponse.status === "success") {
+            setCouleurs(couleursResponse.data || []);
+          }
+          if (usagesResponse.status === "success") {
+            setUsages(usagesResponse.data || []);
+          }
+          if (puissancesResponse.status === "success") {
+            setPuissancesFiscales(puissancesResponse.data || []);
+          }
         }
       } catch (error) {
         if (!cancelled) {
@@ -852,7 +861,7 @@ export default function ClientSimpleForm({
 
     loadInitialData();
     return () => { cancelled = true; };
-  }, []);
+  }, [impotId]);
 
   // Réinitialiser l'année de circulation si l'année de fabrication change
   useEffect(() => {
