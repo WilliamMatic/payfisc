@@ -460,7 +460,7 @@ const VentesTable = forwardRef<VentesTableRef, VentesTableProps>(({
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {formatDateVente(vente.date_paiement)}
+                      {vente.date_paiement ? formatDateVente(vente.date_paiement) : "—"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
