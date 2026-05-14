@@ -137,6 +137,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
   ) => {
     // États
     const [cartesRoses, setCartesRoses] = useState<CarteRose[]>([]);
+    const [perPage, setPerPage] = useState(20);
     const [pagination, setPagination] = useState({
       total: 0,
       page: 1,
@@ -165,7 +166,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
         try {
           const params: RechercheParamsCartesRoses = {
             page,
-            limit: pagination.limit,
+            limit: perPage,
             search: searchTerm,
             ...filters,
           };
@@ -181,10 +182,10 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
             const paginationData = result.data.pagination || {
               total: cartesRosesArray.length,
               page: page,
-              limit: pagination.limit,
+              limit: perPage,
               totalPages: Math.max(
                 1,
-                Math.ceil(cartesRosesArray.length / pagination.limit),
+                Math.ceil(cartesRosesArray.length / perPage),
               ),
             };
 
@@ -230,7 +231,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
           setIsLoading(false);
         }
       },
-      [searchTerm, filters, pagination.limit],
+      [searchTerm, filters, perPage],
     );
 
     // Exposer la méthode refresh au parent via ref
@@ -244,6 +245,12 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
     useEffect(() => {
       loadCartesRoses(1);
     }, [loadCartesRoses]);
+
+    // Changer le nombre de lignes par page
+    const handlePerPageChange = (val: number) => {
+      setPerPage(val);
+      setPagination((prev) => ({ ...prev, page: 1, limit: val }));
+    };
 
     // Gérer le changement de page
     const handlePageChange = (page: number) => {
@@ -410,7 +417,44 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
     return (
       <>
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Header info bar */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 bg-gray-50/60">
+            <p className="text-sm text-gray-600">
+              {isLoading ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                  Chargement...
+                </span>
+              ) : (
+                <span>
+                  <span className="font-semibold text-gray-800">{pagination.total}</span> résultat{pagination.total > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Lignes&nbsp;:</span>
+              <select
+                value={perPage}
+                onChange={(e) => handlePerPageChange(Number(e.target.value))}
+                className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              >
+                {[10, 20, 50].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="relative overflow-x-auto">
+            {/* Loading overlay (quand des données sont déjà affichées) */}
+            {isLoading && cartesRoses.length > 0 && (
+              <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                  <span className="text-sm text-gray-700">Mise à jour...</span>
+                </div>
+              </div>
+            )}
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -441,7 +485,9 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
                 {cartesRoses.map((carteRose, index) => (
                   <tr
                     key={`${carteRose.paiement_id}-${carteRose.engin_id}-${index}`}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    className={`transition-colors cursor-pointer hover:bg-blue-50/40 ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                    }`}
                     onClick={() => handleViewDetail(carteRose)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">

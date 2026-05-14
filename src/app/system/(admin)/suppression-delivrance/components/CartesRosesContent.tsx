@@ -47,10 +47,13 @@ export default function CartesRosesContent() {
   const statsCardsRef = useRef<{ refresh: () => Promise<void> }>(null);
   const cartesRosesTableRef = useRef<{ refresh: () => Promise<void> }>(null);
 
-  // États filtres
+  // Date du jour au format YYYY-MM-DD
+  const today = new Date().toISOString().split("T")[0];
+
+  // États filtres (par défaut : aujourd'hui)
   const [filters, setFilters] = useState<FilterState>({
-    date_debut: "",
-    date_fin: "",
+    date_debut: today,
+    date_fin: today,
     site_id: 0,
     type_engin: "",
     order_by: "date_attribution",
@@ -124,9 +127,10 @@ export default function CartesRosesContent() {
   };
 
   const handleResetFilters = () => {
+    const todayReset = new Date().toISOString().split("T")[0];
     const resetFilters: FilterState = {
-      date_debut: "",
-      date_fin: "",
+      date_debut: todayReset,
+      date_fin: todayReset,
       site_id: 0,
       type_engin: "",
       order_by: "date_attribution",
@@ -138,7 +142,7 @@ export default function CartesRosesContent() {
     showMessage(
       "info",
       "Filtres réinitialisés",
-      "Tous les filtres ont été réinitialisés",
+      "Retour aux données d'aujourd'hui",
     );
   };
 
