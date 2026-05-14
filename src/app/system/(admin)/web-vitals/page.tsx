@@ -55,7 +55,7 @@ async function getAnalyticsStats(startDate: string | null = null, endDate: strin
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 15 }
+      next: { revalidate: 300 }
     });
 
     if (!response.ok) {

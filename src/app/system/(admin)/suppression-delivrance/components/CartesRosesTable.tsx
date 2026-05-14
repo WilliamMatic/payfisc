@@ -112,6 +112,7 @@ interface CartesRosesTableProps {
   ) => void;
   onError: (error: string | null) => void;
   formatDate: (date: string) => string;
+  adminId: number;
   onDeleteSuccess?: () => void;
 }
 
@@ -129,6 +130,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
       showMessage,
       onError,
       formatDate,
+      adminId,
       onDeleteSuccess,
     },
     ref,
@@ -270,7 +272,7 @@ const CartesRosesTable = forwardRef<CartesRosesTableRef, CartesRosesTableProps>(
       try {
         const result = await annulerCarteRose(
           carteRoseToDelete.paiement_id,
-          1, // ID utilisateur - à remplacer par l'ID réel de l'utilisateur connecté
+          adminId,
           "Annulation via interface admin",
         );
 

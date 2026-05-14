@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import AuditStatsCards from './components/AuditStatsCards';
 import AuditLogsList from './components/AuditLogsList';
 import AuditStatsCardsSkeleton from './components/AuditStatsCardsSkeleton';
@@ -22,17 +22,27 @@ interface AuditStatsData {
   system: number;
 }
 
-interface AuditLogsPageClientProps {
-  initialStats: AuditStatsData | null;
-  initialAuditLogs: AuditLog[];
-}
+export default function AuditLogsPageClient() {
+  const [stats, setStats] = useState<AuditStatsData | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [logsLoading, setLogsLoading] = useState(true);
 
-export default function AuditLogsPageClient({ 
-  initialStats, 
-  initialAuditLogs 
-}: AuditLogsPageClientProps) {
-  const [stats, setStats] = useState<AuditStatsData | null>(initialStats);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
+  useEffect(() => {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    fetch(`${API_BASE_URL}/audit-logs/stats.php`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => { if (data.status === 'success') setStats(data.data); })
+      .catch(() => {})
+      .finally(() => setStatsLoading(false));
+
+    fetch(`${API_BASE_URL}/audit-logs/get-logs.php?limit=50`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => { if (data.status === 'success') setAuditLogs(data.data); })
+      .catch(() => {})
+      .finally(() => setLogsLoading(false));
+  }, []);
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -126,10 +136,12 @@ export default function AuditLogsPageClient({
           </p>
         </div>
 
-        {/* Statistiques avec Suspense */}
-        <Suspense fallback={<AuditStatsCardsSkeleton />}>
+        {/* Statistiques */}
+        {statsLoading ? (
+          <AuditStatsCardsSkeleton />
+        ) : (
           <AuditStatsCards stats={stats || realTimeStats} />
-        </Suspense>
+        )}
 
         {/* Filtres et recherche */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
@@ -205,8 +217,10 @@ export default function AuditLogsPageClient({
           </div>
         </div>
 
-        {/* Liste des logs avec Suspense */}
-        <Suspense fallback={<AuditLogsListSkeleton />}>
+        {/* Liste des logs */}
+        {logsLoading ? (
+          <AuditLogsListSkeleton />
+        ) : (
           <AuditLogsList
             auditLogs={filteredLogs}
             getUserTypeEmoji={getUserTypeEmoji}
@@ -214,7 +228,7 @@ export default function AuditLogsPageClient({
             formatDate={formatDate}
             formatFullDate={formatFullDate}
           />
-        </Suspense>
+        )}
       </div>
     </div>
   );

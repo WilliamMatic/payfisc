@@ -50,7 +50,7 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
   const [vignetteExpiree, setVignetteExpiree] = useState(false);
 
   const validatePlaque = (value: string): boolean => {
-    const regex = /^[A-Za-z]{2}\d{3}$/;
+    const regex = /^[A-Za-z]{2,10}\d{3}$/;
     return regex.test(value);
   };
 
@@ -59,7 +59,7 @@ export default function VignetteSearch({ impot, prix, tauxCdf }: VignetteSearchP
 
     if (!validatePlaque(plaqueUpper)) {
       setError(
-        "Format de plaque invalide. Utilisez le format: AA256 (2 lettres + 3 chiffres)",
+        "Format de plaque invalide. Utilisez le format: AA256 (2 à 10 lettres + 3 chiffres)",
       );
       return;
     }

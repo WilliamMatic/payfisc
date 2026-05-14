@@ -15,9 +15,9 @@ export const formatPlaque = (plaque: string): string => {
   const lettres = plaqueClean.match(/[A-Z]+/)?.[0] || '';
   const chiffres = plaqueClean.match(/\d+/)?.[0] || '';
 
-  // Valider que c'est bien 2 lettres
-  if (lettres.length !== 2) {
-    console.warn(`Format de plaque invalide: "${plaque}" - Doit contenir 2 lettres`);
+  // Valider que c'est bien entre 2 et 10 lettres
+  if (lettres.length < 2 || lettres.length > 10) {
+    console.warn(`Format de plaque invalide: "${plaque}" - Doit contenir entre 2 et 10 lettres`);
     return plaqueClean;
   }
 

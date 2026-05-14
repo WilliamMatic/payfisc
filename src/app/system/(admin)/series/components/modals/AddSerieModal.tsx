@@ -69,12 +69,12 @@ export default function AddSerieModal({
                 value={formData.nom_serie}
                 onChange={(e) => handleChange('nom_serie', e.target.value.toUpperCase())}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5B7A]/30 focus:border-[#2D5B7A]"
-                placeholder="Ex: AB"
-                maxLength={2}
+                placeholder="Ex: ABCD"
+                maxLength={10}
                 required
                 disabled={processing}
               />
-              <p className="text-xs text-gray-500 mt-1">2 lettres majuscules uniquement</p>
+              <p className="text-xs text-gray-500 mt-1">Entre 2 et 10 lettres majuscules</p>
             </div>
 
             <div>

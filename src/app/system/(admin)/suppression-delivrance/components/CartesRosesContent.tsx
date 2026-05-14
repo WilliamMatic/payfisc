@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@/app/contexts/AuthContext";
 import {
   Search,
   Filter as FilterIcon,
@@ -23,6 +24,8 @@ import type { FilterState, Site, TypeVehicule } from "../types";
 import { formatDate } from "../types";
 
 export default function CartesRosesContent() {
+  const { agent } = useAuth();
+
   // États principaux
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -267,6 +270,7 @@ export default function CartesRosesContent() {
           showMessage={showMessage}
           onError={setError}
           formatDate={formatDate}
+          adminId={agent?.id ?? 0}
           onDeleteSuccess={() => statsCardsRef.current?.refresh()}
         />
       </div>

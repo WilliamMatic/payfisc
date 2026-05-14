@@ -460,9 +460,9 @@ export default function PlaqueClient({
             return;
           }
 
-          if (!/^[A-Z]{2}$/.test(formData.nom_serie)) {
+          if (!/^[A-Z]{2,10}$/.test(formData.nom_serie)) {
             setError(
-              "Le nom de la série doit contenir exactement 2 lettres majuscules",
+              "Le nom de la série doit contenir entre 2 et 10 lettres majuscules",
             );
             return;
           }
@@ -527,9 +527,9 @@ export default function PlaqueClient({
             return;
           }
 
-          if (!/^[A-Z]{2}$/.test(formData.nom_serie)) {
+          if (!/^[A-Z]{2,10}$/.test(formData.nom_serie)) {
             setError(
-              "Le nom de la série doit contenir exactement 2 lettres majuscules",
+              "Le nom de la série doit contenir entre 2 et 10 lettres majuscules",
             );
             return;
           }

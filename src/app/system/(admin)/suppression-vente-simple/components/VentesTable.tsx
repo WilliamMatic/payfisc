@@ -101,6 +101,7 @@ interface VentesTableProps {
   getSiteName: (siteId: number) => string;
   showMessage: (type: "success" | "error" | "info" | "warning", title: string, message: string) => void;
   onError: (error: string | null) => void;
+  adminId: number;
   onDeleteSuccess?: () => void;
 }
 
@@ -114,8 +115,7 @@ const VentesTable = forwardRef<VentesTableRef, VentesTableProps>(({
   sites,
   getSiteName,
   showMessage,
-  onError,
-  onDeleteSuccess 
+  onError,  adminId,  onDeleteSuccess 
 }, ref) => {
   // États
   const [ventes, setVentes] = useState<VenteNonGrossiste[]>([]);
@@ -235,7 +235,7 @@ const VentesTable = forwardRef<VentesTableRef, VentesTableProps>(({
     try {
       const result = await supprimerVenteNonGrossiste(
         venteToDelete.paiement_id,
-        1,
+        adminId,
         "Suppression via interface admin"
       );
 

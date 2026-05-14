@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"; // Ajout de useRef
+import { useAuth } from "@/app/contexts/AuthContext";
 import {
   Search,
   Filter as FilterIcon,
@@ -18,6 +19,8 @@ import MessageModal from "./modals/MessageModal";
 import type { FilterState, Site } from "../types";
 
 export default function VentesContent() {
+  const { agent } = useAuth();
+
   // États principaux
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -242,6 +245,7 @@ export default function VentesContent() {
           getSiteName={getSiteName}
           showMessage={showMessage}
           onError={setError}
+          adminId={agent?.id ?? 0}
           onDeleteSuccess={() => statsCardsRef.current?.refresh()}
         />
       </div>
